@@ -3,19 +3,19 @@ import type { ListSituationsData } from "$lib/api";
 
 type SituationListQuery = NonNullable<ListSituationsData["query"]>;
 
-export const situationTabValues = ["raised", "watching", "muted", "closed"] as const;
+export const situationStatusValues = ["raised", "watching", "muted", "closed"] as const;
 
-export type SituationTab = (typeof situationTabValues)[number];
+export type SituationStatusFilter = (typeof situationStatusValues)[number];
 
-export type SituationTabOption = {
-	value: SituationTab;
+export type SituationStatusOption = {
+	value: SituationStatusFilter;
 	label: string;
 	emptyMessage: string;
 	query: Pick<SituationListQuery, "stage" | "muted">;
 };
 
-/** List tabs in display order; each is a stage and muted filter. */
-export const situationTabs: SituationTabOption[] = [
+/** Status options in display order; each is a stage and muted filter. */
+export const situationStatusOptions: SituationStatusOption[] = [
 	{
 		value: "raised",
 		label: "Raised",
@@ -44,13 +44,13 @@ export const situationTabs: SituationTabOption[] = [
 
 export const situationFilterSchema = z.object({
 	search: z.string().default("").catch(""),
-	tab: z.enum(situationTabValues).default("raised").catch("raised"),
+	status: z.enum(situationStatusValues).default("raised").catch("raised"),
 });
 
 export type SituationFilters = z.infer<typeof situationFilterSchema>;
 
-export function situationTab(value: SituationTab) {
-	return situationTabs.find((tab) => tab.value === value) ?? situationTabs[0];
+export function situationStatusOption(value: SituationStatusFilter) {
+	return situationStatusOptions.find((option) => option.value === value) ?? situationStatusOptions[0];
 }
 
 export function situationSearchFilter(search: string) {
@@ -58,5 +58,5 @@ export function situationSearchFilter(search: string) {
 }
 
 export function situationQueryFilters(filters: SituationFilters): SituationListQuery {
-	return { ...situationTab(filters.tab).query, search: situationSearchFilter(filters.search) };
+	return { ...situationStatusOption(filters.status).query, search: situationSearchFilter(filters.search) };
 }

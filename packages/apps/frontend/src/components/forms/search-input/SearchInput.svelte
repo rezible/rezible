@@ -1,31 +1,24 @@
 <script lang="ts">
 	import { Input } from "$components/ui/input";
-	import { useDebounce } from "runed";
 
 	type Props = {
-		value: string | undefined;
+		value: string;
+		/** Called with the raw text on every keystroke; callers debounce and trim. */
+		oninput: (value: string) => void;
 		label?: string;
 	};
-	let { value = $bindable(), label = "Search" }: Props = $props();
+
+	const { value, oninput, label = "Search" }: Props = $props();
 
 	const id = $props.id();
-
-	const commit = useDebounce((text: string) => {
-		const trimmed = text.trim();
-		if (trimmed) {
-			value = trimmed;
-		} else {
-			value = undefined;
-		}
-	}, 300);
 </script>
 
-<div class="min-w-0">
-	<label for={`${id}-search`} class="mb-1 block text-xs text-muted-foreground">{label}</label>
+<div class="flex min-w-0 flex-col gap-1.5">
+	<label for={`${id}-search`} class="region-label">{label}</label>
 	<Input
 		id={`${id}-search`}
 		type="search"
-		value={value ?? ""}
-		oninput={(event) => commit(event.currentTarget.value)}
+		{value}
+		oninput={(event) => oninput(event.currentTarget.value)}
 	/>
 </div>

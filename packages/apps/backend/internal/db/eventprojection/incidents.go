@@ -114,12 +114,23 @@ func (s *ProjectionService) saveProjectedIncidentSeverity(ctx context.Context, a
 		return uuid.Nil, fmt.Errorf("query incident severity: %w", queryErr)
 	}
 	if existing != nil {
+		if attributes.SeverityRank != nil && existing.Rank != *attributes.SeverityRank {
+			updateRank := s.db.Client(ctx).IncidentSeverity.UpdateOneID(existing.ID).
+				SetRank(*attributes.SeverityRank)
+			if updateErr := updateRank.Exec(ctx); updateErr != nil {
+				return uuid.Nil, fmt.Errorf("update incident severity rank: %w", updateErr)
+			}
+		}
 		return existing.ID, nil
 	}
 
+	rank := 0
+	if attributes.SeverityRank != nil {
+		rank = *attributes.SeverityRank
+	}
 	created, createErr := s.db.Client(ctx).IncidentSeverity.Create().
 		SetName(attributes.SeverityRef).
-		SetRank(0).
+		SetRank(rank).
 		Save(ctx)
 	if createErr != nil {
 		return uuid.Nil, fmt.Errorf("create incident severity: %w", createErr)

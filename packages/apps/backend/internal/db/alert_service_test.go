@@ -480,3 +480,34 @@ func (s *AlertServiceSuite) TestLoadSignalsBaseline() {
 	s.Require().NotNil(baseline.MedianDurationSeconds, "resolved firings give a median; a timed-out one does not")
 	s.Equal(int64(15*60), *baseline.MedianDurationSeconds)
 }
+
+func (s *AlertServiceSuite) TestListAlertsByAttentionLevel() {
+	_, tdb := s.SetupTestDatabase()
+	ctx, _ := s.NewIdentity(tdb, "alert owner")
+	h := s.newFixture(tdb)
+
+	unset := s.record(ctx, tdb, h, testAlert{definition: "unset", title: "Unset", key: "a"})
+	reset := s.record(ctx, tdb, h, testAlert{definition: "reset", title: "Reset", key: "b"})
+	watched := s.record(ctx, tdb, h, testAlert{definition: "watched", title: "Watched", key: "c"})
+	_, watchResetErr := h.alerts.SetAlertSituationSignalAttention(ctx, reset.ID, ssa.LevelWatchOnly)
+	s.Require().NoError(watchResetErr)
+	_, defaultErr := h.alerts.SetAlertSituationSignalAttention(ctx, reset.ID, ssa.LevelDefault)
+	s.Require().NoError(defaultErr)
+	_, watchErr := h.alerts.SetAlertSituationSignalAttention(ctx, watched.ID, ssa.LevelWatchOnly)
+	s.Require().NoError(watchErr)
+
+	listIDs := func(level ssa.Level) []uuid.UUID {
+		listed, listErr := h.alerts.ListAlerts(ctx, rez.ListAlertsParams{AttentionLevel: level})
+		s.Require().NoError(listErr)
+		ids := make([]uuid.UUID, len(listed.Data))
+		for i, definition := range listed.Data {
+			ids[i] = definition.ID
+		}
+		return ids
+	}
+
+	s.ElementsMatch([]uuid.UUID{unset.ID, reset.ID, watched.ID}, listIDs(""))
+	s.ElementsMatch([]uuid.UUID{unset.ID, reset.ID}, listIDs(ssa.LevelDefault), "no stored attention is the default level")
+	s.ElementsMatch([]uuid.UUID{watched.ID}, listIDs(ssa.LevelWatchOnly))
+	s.Empty(listIDs(ssa.LevelJoinOnly))
+}

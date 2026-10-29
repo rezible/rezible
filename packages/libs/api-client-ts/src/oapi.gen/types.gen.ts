@@ -5248,6 +5248,10 @@ export type ListAlertsData = {
         page?: number;
         pageSize?: number;
         search?: string;
+        /**
+         * Situation signal attention level
+         */
+        attention?: 'default' | 'watch_only' | 'join_only';
     };
     url: '/alerts';
 };

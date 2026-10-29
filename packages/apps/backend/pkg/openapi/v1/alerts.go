@@ -207,7 +207,8 @@ var ListAlerts = openapi.Operation{
 
 type ListAlertDefinitionsRequest struct {
 	PaginationRequest
-	Search string `query:"search" required:"false" nullable:"false"`
+	Search    string `query:"search" required:"false" nullable:"false"`
+	Attention string `query:"attention" required:"false" enum:"default,watch_only,join_only" doc:"Situation signal attention level"`
 }
 type ListAlertDefinitionsResponse PaginatedResponse[AlertDefinition]
 

@@ -145,6 +145,7 @@ type incidentObservedPayload struct {
 	Title           string    `json:"title"`
 	Summary         string    `json:"summary,omitempty"`
 	SeverityRef     string    `json:"severity_ref"`
+	SeverityRank    int       `json:"severity_rank"`
 	TypeRef         string    `json:"type_ref"`
 	SourceUpdatedAt time.Time `json:"source_updated_at"`
 	SourceURL       string    `json:"source_url"`
@@ -170,6 +171,7 @@ var demoIncidentEvents = []incidentObservedPayload{
 		Title:           "Catalog search returning stale results",
 		Summary:         "The catalog search index failed to refresh after the nightly product import.",
 		SeverityRef:     "SEV-2",
+		SeverityRank:    2,
 		TypeRef:         "Data Freshness",
 		SourceUpdatedAt: time.Date(2026, 4, 18, 3, 5, 0, 0, time.UTC),
 		SourceURL:       "https://status.demo.example/incidents/catalog-search-stale-results",
@@ -181,6 +183,7 @@ var demoIncidentEvents = []incidentObservedPayload{
 		Title:           "Checkout search lookups timing out",
 		Summary:         "Checkout requests that need product search enrichment are timing out for a subset of customers.",
 		SeverityRef:     "SEV-1",
+		SeverityRank:    1,
 		TypeRef:         "Customer Impact",
 		SourceUpdatedAt: time.Date(2026, 5, 12, 10, 5, 0, 0, time.UTC),
 		SourceURL:       "https://status.demo.example/incidents/checkout-search-timeouts",
@@ -192,6 +195,7 @@ var demoIncidentEvents = []incidentObservedPayload{
 		Title:           "Checkout search lookups timing out",
 		Summary:         "Checkout requests that need product search enrichment are timing out for a subset of customers.",
 		SeverityRef:     "SEV-1",
+		SeverityRank:    1,
 		TypeRef:         "Customer Impact",
 		SourceUpdatedAt: time.Date(2026, 5, 12, 10, 5, 0, 0, time.UTC),
 		SourceURL:       "https://status.demo.example/incidents/checkout-search-timeouts",
@@ -203,6 +207,7 @@ var demoIncidentEvents = []incidentObservedPayload{
 		Title:           "Search admin dashboard degraded",
 		Summary:         "Internal teams are seeing slow loads and intermittent errors in search administration views.",
 		SeverityRef:     "SEV-3",
+		SeverityRank:    3,
 		TypeRef:         "Internal Tooling",
 		SourceUpdatedAt: time.Date(2026, 5, 14, 5, 0, 0, 0, time.UTC),
 		SourceURL:       "https://status.demo.example/incidents/search-admin-dashboard-degraded",

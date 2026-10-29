@@ -11,7 +11,7 @@ export default {
 		{ action: "screenshot", name: "01-home", caption: "Home page before navigating to Situations." },
 		{ action: "click", selector: 'a[href="/situations"][aria-label="Situations"]' },
 		{ action: "waitFor", selector: 'a[href="/situations"][aria-current="page"]', state: "visible" },
-		{ action: "waitFor", selector: '[role="tablist"][aria-label="Situation status"]', state: "visible" },
+		{ action: "waitFor", selector: 'label:has(> input[value="raised"]:checked)', state: "visible" },
 		{ action: "waitFor", selector: '[aria-label="Loading situations"]', state: "absent" },
 		{
 			action: "screenshot",

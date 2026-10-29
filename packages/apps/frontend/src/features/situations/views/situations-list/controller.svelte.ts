@@ -4,11 +4,13 @@ import { onMount } from "svelte";
 import { page } from "$app/state";
 import { listSituationsOptions } from "$lib/api";
 import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
+import { createQuery } from "@tanstack/svelte-query";
 import {
 	situationFilterSchema,
 	situationQueryFilters,
 	situationSearchFilter,
-	situationTab,
+	situationStatusOption,
+	situationStatusOptions,
 	type SituationFilters,
 } from "$features/situations/lib/filters";
 
@@ -32,12 +34,12 @@ class SituationsListController {
 		queryOptions: (pagination) =>
 			listSituationsOptions({ query: { ...situationQueryFilters(this.committed), ...pagination } }),
 		resetWhen: () => this.filterKey,
-		// Rows from another tab must never show under the selected one while it loads.
+		// Rows from another status must never show under the selected one while it loads.
 		keepPreviousQueryData: false,
 	});
 
 	query = $derived(this.paginatedSituationsQuery.query);
-	activeTab = $derived(situationTab(this.committed.tab));
+	activeStatus = $derived(situationStatusOption(this.committed.status));
 
 	/** Render time for the long-running marker, refreshed with each fetch. */
 	now = $derived.by(() => {
@@ -45,25 +47,33 @@ class SituationsListController {
 		return Date.now();
 	});
 
-	private watchingPreview = createPaginatedQuery({
-		source: "local",
-		queryOptions: () =>
+	private statusTotals = situationStatusOptions.map((option) =>
+		createQuery(() =>
 			listSituationsOptions({
 				query: {
+					...option.query,
+					search: situationSearchFilter(this.committed.search),
 					page: 1,
 					pageSize: 1,
-					stage: ["candidate"],
-					muted: false,
-					search: situationSearchFilter(this.committed.search),
 				},
-			}),
-	});
+			})
+		)
+	);
 
-	/** Undefined until the preview has loaded. */
-	watchingCount = $derived(this.watchingPreview.query.data?.pagination.total);
+	/** Status options with how many situations each would show for the current search. */
+	statusOptions = $derived(
+		situationStatusOptions.map((option, index) => ({
+			value: option.value,
+			label: option.label,
+			count: this.statusTotals[index].data?.pagination.total,
+		}))
+	);
+
+	total = $derived(this.query.data?.pagination.total);
+	activeFilterCount = $derived(situationSearchFilter(this.filters.search) ? 1 : 0);
 
 	setFilters = (values: Partial<SituationFilters>) => this.params.update(values);
-	setTab = (value: string) => this.setFilters({ tab: situationFilterSchema.shape.tab.parse(value) });
+	clearSearch = () => this.setFilters({ search: "" });
 }
 
 const ctx = new Context<SituationsListController>("SituationsListController");

@@ -17,7 +17,7 @@ export default {
 		},
 		{
 			action: "waitFor",
-			selector: 'a[href^="/incidents/"]:first-of-type',
+			selector: 'ul > li:first-child a[data-row-link][href^="/incidents/"]',
 			state: "visible",
 		},
 		{
@@ -42,7 +42,7 @@ export default {
 		},
 		{
 			action: "click",
-			selector: 'a[href^="/incidents/"]:first-of-type',
+			selector: 'ul > li:first-child a[data-row-link][href^="/incidents/"]',
 		},
 		{
 			action: "waitFor",

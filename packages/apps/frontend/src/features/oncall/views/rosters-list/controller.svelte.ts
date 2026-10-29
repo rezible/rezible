@@ -1,19 +1,26 @@
 import { listOncallRostersOptions } from "$lib/api";
 import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
-import { Context } from "runed";
+import { Context, Debounced } from "runed";
 
 export class OncallRostersListController {
-	search = $state<string>();
+	search = $state("");
+	private debouncedSearch = new Debounced(() => this.search, 300);
+	private searchQuery = $derived(this.debouncedSearch.current.trim() || undefined);
 
 	paginatedRostersQuery = createPaginatedQuery({
 		queryOptions: (pagination) =>
 			listOncallRostersOptions({
-				query: { search: this.search, ...pagination },
+				query: { search: this.searchQuery, ...pagination },
 			}),
-		resetWhen: () => this.search,
+		resetWhen: () => this.searchQuery,
 	});
 
 	query = $derived(this.paginatedRostersQuery.query);
+	total = $derived(this.query.data?.pagination.total);
+
+	setSearch = (value: string) => {
+		this.search = value;
+	};
 }
 
 const ctx = new Context<OncallRostersListController>("OncallRostersListController");

@@ -4,7 +4,9 @@
 	import Filters from "$features/incidents/components/incident-filters/IncidentFilters.svelte";
 	import Row from "$features/incidents/components/incident-row/IncidentRow.svelte";
 	import { Button } from "$components/ui/button";
+	import FilterPage from "$components/layout/filter-page/FilterPage.svelte";
 	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import ListSkeleton from "$components/layout/list-skeleton/ListSkeleton.svelte";
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 	import PageActions from "./PageActions.svelte";
 
@@ -16,25 +18,53 @@
 	<PageActions />
 {/snippet}
 
-<div class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
-	<div class="flex flex-wrap items-end justify-between gap-2">
-		<Filters
-			filters={controller.filters}
-			onchange={controller.setFilters}
-			severities={controller.metadataQuery.data?.data.severities}
-		/>
-		{#if controller.filtersChanged}
-			<Button variant="ghost" size="sm" onclick={controller.resetFilters}>Reset filters</Button>
-		{/if}
-	</div>
-	<LoadingQueryWrapper query={controller.query} feedbackOnly />
-	<PaginatedQueryListBox {...controller.paginatedIncidentsQuery}>
-		{#if controller.query.data}
-			{#each controller.query.data.data as item (item.id)}
-				<Row incident={item} />
-			{:else}
-				<p class="p-6 text-sm text-muted-foreground">No matching incidents.</p>
-			{/each}
-		{/if}
+{#snippet filters()}
+	<Filters
+		filters={controller.filters}
+		onchange={controller.setFilters}
+		statusOptions={controller.statusOptions}
+		severityOptions={controller.severityOptions}
+	/>
+{/snippet}
+
+<FilterPage
+	{filters}
+	title="Incidents"
+	count={controller.total}
+	updating={controller.query.isFetching}
+	activeFilters={controller.activeFilterCount}
+	onclear={controller.resetFilters}
+>
+	<PaginatedQueryListBox {...controller.paginatedIncidentsQuery} showUpdating={false}>
+		<LoadingQueryWrapper
+			query={controller.query}
+			feedback="quiet"
+			isEmpty={(incidents) => incidents.length === 0}
+		>
+			{#snippet loading()}
+				<ListSkeleton label="Loading incidents" />
+			{/snippet}
+			{#snippet empty()}
+				<div
+					class="flex flex-col items-start gap-2 rounded-lg border bg-card p-6 text-sm text-muted-foreground"
+				>
+					{#if controller.activeFilterCount > 0}
+						<p>No incidents match these filters.</p>
+						<Button variant="link" size="inline" onclick={controller.resetFilters}>
+							Clear filters
+						</Button>
+					{:else}
+						<p>No incidents yet.</p>
+					{/if}
+				</div>
+			{/snippet}
+			{#snippet view(incidents)}
+				<ul class="divide-y overflow-hidden rounded-lg border bg-card">
+					{#each incidents as incident (incident.id)}
+						<Row {incident} />
+					{/each}
+				</ul>
+			{/snippet}
+		</LoadingQueryWrapper>
 	</PaginatedQueryListBox>
-</div>
+</FilterPage>

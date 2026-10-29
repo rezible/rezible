@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
-	import type { OncallRoster } from "$lib/api";
-	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
-	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
+	import ListRow from "$components/common/list-row/ListRow.svelte";
+	import SearchInput from "$components/forms/search-input/SearchInput.svelte";
+	import FilterPage from "$components/layout/filter-page/FilterPage.svelte";
+	import ListSkeleton from "$components/layout/list-skeleton/ListSkeleton.svelte";
+	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
-	import RosterCard from "$features/oncall/components/roster-card/RosterCard.svelte";
 	import { initOncallRostersListController } from "./controller.svelte";
 
 	registerPageDescriptor(() => ({ title: "Oncall Rosters" }));
@@ -14,20 +15,33 @@
 </script>
 
 {#snippet filters()}
-	<SearchInput bind:value={controller.search} />
+	<SearchInput value={controller.search} oninput={controller.setSearch} />
 {/snippet}
 
-<FilterPage {filters}>
-	<PaginatedQueryListBox {...controller.paginatedRostersQuery}>
-		<LoadingQueryWrapper query={controller.query}>
-			{#snippet view(rosters: OncallRoster[])}
-				{#each rosters as roster (roster.id)}
-					<RosterCard {roster} />
-				{:else}
-					<div class="grid place-items-center flex-1">
-						<span class="text-foreground/80">No Rosters Found</span>
-					</div>
-				{/each}
+<FilterPage {filters} title="Rosters" count={controller.total} updating={controller.query.isFetching}>
+	<PaginatedQueryListBox {...controller.paginatedRostersQuery} showUpdating={false}>
+		<LoadingQueryWrapper
+			query={controller.query}
+			feedback="quiet"
+			isEmpty={(rosters) => rosters.length === 0}
+		>
+			{#snippet loading()}
+				<ListSkeleton label="Loading rosters" />
+			{/snippet}
+			{#snippet empty()}
+				<p class="rounded-lg border bg-card p-6 text-sm text-muted-foreground">No rosters found.</p>
+			{/snippet}
+			{#snippet view(rosters)}
+				<ul class="divide-y overflow-hidden rounded-lg border bg-card">
+					{#each rosters as roster (roster.id)}
+						<ListRow
+							title={roster.attributes.name}
+							href={resolve("/(hidden)/oncall/rosters/[slug]", {
+								slug: roster.attributes.slug,
+							})}
+						/>
+					{/each}
+				</ul>
 			{/snippet}
 		</LoadingQueryWrapper>
 	</PaginatedQueryListBox>

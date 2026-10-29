@@ -324,10 +324,15 @@ func (p *eventProcessor) processIncident() (ent.NormalizedEvents, error) {
 	if payload.SourceURL != "" {
 		sourceURL = &payload.SourceURL
 	}
+	var severityRank *int
+	if payload.SeverityRank > 0 {
+		severityRank = &payload.SeverityRank
+	}
 	attrs := projections.IncidentEventAttributes{
 		Title:           payload.Title,
 		Summary:         payload.Summary,
 		SeverityRef:     payload.SeverityRef,
+		SeverityRank:    severityRank,
 		TypeRef:         payload.TypeRef,
 		OpenedAt:        occurredAt,
 		SourceUpdatedAt: sourceUpdatedAt,

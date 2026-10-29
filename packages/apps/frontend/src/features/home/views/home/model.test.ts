@@ -1,5 +1,5 @@
 import { expect, mock, test } from "bun:test";
-import type { ActivityRecord, InboxItem, Incident } from "$lib/api";
+import type { ActivityRecord, InboxItem } from "$lib/api";
 
 // SvelteKit's $app modules are unavailable under bun; resolve route IDs literally.
 mock.module("$app/paths", () => ({
@@ -9,7 +9,7 @@ mock.module("$app/paths", () => ({
 			.replace(/\[(\w+)(=\w+)?\]/g, (_, name) => params[name] ?? ""),
 }));
 
-const { activityHref, activityRow, inboxItemHref, inboxRow, incidentRow } = await import("./model");
+const { activityHref, activityRow, inboxItemHref, inboxRow } = await import("./model");
 
 const now = Date.parse("2026-05-14T12:00:00Z");
 
@@ -73,37 +73,6 @@ test("due status distinguishes overdue from upcoming", () => {
 	expect(upcoming?.label).toContain("Due");
 	expect(upcoming?.tone).toBe("neutral");
 	expect(inboxRow(inboxItem({}), now).due).toBeUndefined();
-});
-
-test("incident rows dedupe and limit service names", () => {
-	const impact = (name: string | undefined) => ({
-		id: name ?? "none",
-		note: "",
-		source: "",
-		knowledgeEntity: {
-			id: "entity",
-			attributes: name ? { latestState: { displayName: name } } : undefined,
-		},
-	});
-	const incident = {
-		id: "incident",
-		attributes: {
-			reference: "INC-1",
-			title: "Incident",
-			summary: " Summary ",
-			responseState: "started",
-			openedAt: "2026-05-14T10:00:00Z",
-			resolvedAt: null,
-			updatedAt: "2026-05-14T11:00:00Z",
-			impacts: ["a", "b", "a", undefined, "c", "d"].map(impact),
-		},
-	} as unknown as Incident;
-
-	const row = incidentRow(incident);
-	expect(row.services).toEqual(["a", "b", "c"]);
-	expect(row.moreServices).toBe(1);
-	expect(row.summary).toBe("Summary");
-	expect(row.response.label).toBe("Active");
 });
 
 test("activity rows group by local day", () => {

@@ -55,6 +55,16 @@ func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsPara
 	if search := strings.TrimSpace(params.Search); search != "" {
 		query.Where(ald.TitleContainsFold(search))
 	}
+	switch params.AttentionLevel {
+	case "":
+	case ssa.LevelDefault:
+		query.Where(ald.Or(
+			ald.Not(ald.HasSituationSignalAttention()),
+			ald.HasSituationSignalAttentionWith(ssa.LevelEQ(ssa.LevelDefault)),
+		))
+	default:
+		query.Where(ald.HasSituationSignalAttentionWith(ssa.LevelEQ(params.AttentionLevel)))
+	}
 	return ent.DoListQuery[ent.AlertDefinition, *ent.AlertDefinitionQuery](ctx, query, params.ListParams)
 }
 

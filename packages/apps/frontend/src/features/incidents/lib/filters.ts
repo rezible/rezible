@@ -1,11 +1,13 @@
 import { z } from "zod";
 import type { ListIncidentsData } from "$lib/api";
 
-export const incidentStatusOptions = [
+export type IncidentStatusFilter = "any" | "active" | "resolved";
+
+export const incidentStatusOptions: { value: IncidentStatusFilter; label: string }[] = [
+	{ value: "any", label: "All" },
 	{ value: "active", label: "Active" },
 	{ value: "resolved", label: "Resolved" },
-	{ value: "any", label: "Any" },
-] as const;
+];
 
 export const incidentFilterSchema = z.object({
 	search: z.string().default("").catch(""),
@@ -20,13 +22,13 @@ export type IncidentFilters = z.infer<typeof incidentFilterSchema>;
 
 const defaultIncidentFilters = incidentFilterSchema.parse({});
 
-/** True when any filter differs from its default. */
-export function incidentFiltersChanged(filters: IncidentFilters) {
-	return (
-		filters.search !== defaultIncidentFilters.search ||
-		filters.status !== defaultIncidentFilters.status ||
-		filters.severityId !== defaultIncidentFilters.severityId
-	);
+/** How many filters differ from their defaults. */
+export function incidentActiveFilterCount(filters: IncidentFilters) {
+	return [
+		filters.search !== defaultIncidentFilters.search,
+		filters.status !== defaultIncidentFilters.status,
+		filters.severityId !== defaultIncidentFilters.severityId,
+	].filter(Boolean).length;
 }
 
 export const incidentQueryFilters = ({

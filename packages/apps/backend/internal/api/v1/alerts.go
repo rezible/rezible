@@ -4,6 +4,7 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent/situationsignalattention"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -22,6 +23,7 @@ func (h *alertsHandler) ListAlertDefinitions(ctx context.Context, req *oapi.List
 		ListParams: req.ListParams(),
 	}
 	params.Search = req.Search
+	params.AttentionLevel = situationsignalattention.Level(req.Attention)
 	alerts, alertsErr := h.alerts.ListAlerts(ctx, params)
 	if alertsErr != nil {
 		return nil, oapi.Error(ctx, "failed to list alerts", alertsErr)

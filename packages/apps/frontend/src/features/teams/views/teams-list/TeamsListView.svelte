@@ -1,11 +1,12 @@
 <script lang="ts">
-	import type { Team } from "$lib/api";
-	import { registerPageDescriptor } from "$lib/app-shell.svelte";
-	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
-	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
-	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 	import { resolve } from "$app/paths";
+	import { registerPageDescriptor } from "$lib/app-shell.svelte";
+	import ListRow from "$components/common/list-row/ListRow.svelte";
+	import SearchInput from "$components/forms/search-input/SearchInput.svelte";
+	import FilterPage from "$components/layout/filter-page/FilterPage.svelte";
+	import ListSkeleton from "$components/layout/list-skeleton/ListSkeleton.svelte";
+	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import PaginatedQueryListBox from "$components/layout/paginated-query-listbox/PaginatedQueryListBox.svelte";
 	import { initTeamsListController } from "./controller.svelte";
 
 	registerPageDescriptor(() => ({ title: "Teams" }));
@@ -14,34 +15,33 @@
 </script>
 
 {#snippet filters()}
-	<SearchInput bind:value={controller.search} />
+	<SearchInput value={controller.search} oninput={controller.setSearch} />
 {/snippet}
 
-{#snippet teamCard(team: Team)}
-	<a href={resolve(`/teams/${team.attributes.slug}`)}>
-		<span>team card</span>
-		<!--ListItem title={team.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
-			<svelte:fragment slot="avatar">
-				<Avatar kind="team" size={32} id={team.id} />
-			</svelte:fragment>
-			<div slot="actions">
-				<RiArrowRightSLine class="text-foreground/50" aria-hidden="true" />
-			</div>
-		</ListItem-->
-	</a>
-{/snippet}
-
-<FilterPage {filters}>
-	<PaginatedQueryListBox {...controller.paginatedTeamsQuery}>
-		<LoadingQueryWrapper query={controller.query}>
-			{#snippet view(teams: Team[])}
-				{#each teams as team (team.id)}
-					{@render teamCard(team)}
-				{:else}
-					<div class="grid place-items-center flex-1">
-						<span class="text-foreground/80">No Teams Found</span>
-					</div>
-				{/each}
+<FilterPage {filters} title="Teams" count={controller.total} updating={controller.query.isFetching}>
+	<PaginatedQueryListBox {...controller.paginatedTeamsQuery} showUpdating={false}>
+		<LoadingQueryWrapper
+			query={controller.query}
+			feedback="quiet"
+			isEmpty={(teams) => teams.length === 0}
+		>
+			{#snippet loading()}
+				<ListSkeleton label="Loading teams" />
+			{/snippet}
+			{#snippet empty()}
+				<p class="rounded-lg border bg-card p-6 text-sm text-muted-foreground">No teams found.</p>
+			{/snippet}
+			{#snippet view(teams)}
+				<ul class="divide-y overflow-hidden rounded-lg border bg-card">
+					{#each teams as team (team.id)}
+						<ListRow
+							title={team.attributes.name}
+							href={resolve("/(hidden)/teams/[slug]/[[view=teamView]]", {
+								slug: team.attributes.slug,
+							})}
+						/>
+					{/each}
+				</ul>
 			{/snippet}
 		</LoadingQueryWrapper>
 	</PaginatedQueryListBox>

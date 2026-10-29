@@ -315,9 +315,11 @@ type (
 
 	// IncidentEventAttributes are the provider-neutral attributes persisted for incident observations.
 	IncidentEventAttributes struct {
-		Title           string     `json:"title" validate:"required"`
-		Summary         string     `json:"summary"`
-		SeverityRef     string     `json:"severity_ref" validate:"required"`
+		Title       string `json:"title" validate:"required"`
+		Summary     string `json:"summary"`
+		SeverityRef string `json:"severity_ref" validate:"required"`
+		// SeverityRank orders severities, 1 being the most severe. Omitted when the provider has no ordering.
+		SeverityRank    *int       `json:"severity_rank,omitempty" validate:"omitempty,min=0"`
 		TypeRef         string     `json:"type_ref" validate:"required"`
 		OpenedAt        time.Time  `json:"opened_at"`
 		SourceUpdatedAt *time.Time `json:"source_updated_at,omitempty"`

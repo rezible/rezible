@@ -1027,6 +1027,9 @@ type (
 type (
 	ListAlertsParams struct {
 		ent.ListParams
+		// AttentionLevel lists definitions at that situation signal attention level. A definition
+		// without a stored attention is at the default level. Empty lists every level.
+		AttentionLevel situationsignalattention.Level
 	}
 
 	GetAlertMetricsParams struct {

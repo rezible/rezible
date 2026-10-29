@@ -1,14 +1,15 @@
 <script lang="ts">
-	import { type MeetingSession } from "$lib/api";
-	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
-	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
+	import { resolve } from "$app/paths";
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
-	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
+	import ListRow from "$components/common/list-row/ListRow.svelte";
+	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
+	import FilterPage from "$components/layout/filter-page/FilterPage.svelte";
+	import ListSkeleton from "$components/layout/list-skeleton/ListSkeleton.svelte";
+	import LoadingQueryWrapper from "$components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import MeetingsPageActions from "./MeetingsListPageActions.svelte";
 	import { initMeetingsListViewController } from "./controller.svelte";
 
-	const view = initMeetingsListViewController();
-	const query = $derived(view.query);
+	const controller = initMeetingsListViewController();
 
 	registerPageDescriptor(() => ({
 		title: "Meetings",
@@ -20,25 +21,31 @@
 	<MeetingsPageActions />
 {/snippet}
 
-<FilterPage>
-	{#snippet filters()}
-		<div class="pb-2 border">
-			<span>month</span>
-			<!-- <Month bind:startOfMonth={viewState.monthStart} showOutsideDays /> -->
-		</div>
-	{/snippet}
-
-	<div class="flex min-h-0 flex-col gap-1 overflow-auto">
-		<LoadingQueryWrapper {query}>
-			{#snippet view(sessions: MeetingSession[])}
+<FilterPage title="Meetings" count={controller.total} updating={controller.query.isFetching}>
+	<LoadingQueryWrapper
+		query={controller.query}
+		feedback="quiet"
+		isEmpty={(sessions) => sessions.length === 0}
+	>
+		{#snippet loading()}
+			<ListSkeleton label="Loading meetings" />
+		{/snippet}
+		{#snippet empty()}
+			<p class="rounded-lg border bg-card p-6 text-sm text-muted-foreground">No upcoming meetings.</p>
+		{/snippet}
+		{#snippet view(sessions)}
+			<ul class="divide-y overflow-hidden rounded-lg border bg-card">
 				{#each sessions as session (session.id)}
-					<MeetingSessionCard {session} />
-				{:else}
-					<div class="grid place-items-center flex-1">
-						<span class="text-foreground/80">No Upcoming Meetings Found</span>
-					</div>
+					{#snippet startsAt()}
+						<Timestamp value={session.attributes.startsAt} />
+					{/snippet}
+					<ListRow
+						title={session.attributes.title}
+						href={resolve("/(hidden)/meetings/sessions/[id]", { id: session.id })}
+						aside={startsAt}
+					/>
 				{/each}
-			{/snippet}
-		</LoadingQueryWrapper>
-	</div>
+			</ul>
+		{/snippet}
+	</LoadingQueryWrapper>
 </FilterPage>

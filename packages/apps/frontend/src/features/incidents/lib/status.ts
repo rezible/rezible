@@ -37,11 +37,11 @@ const reviewDescription = "Rezible review stage";
 export function incidentResponseStatus(state: IncidentAttributes["responseState"]): StatusPresentation {
 	switch (state) {
 		case "started":
-			return { label: "Active", tone: "danger", icon: RiFireLine, description: responseDescription };
+			return { label: "Active", tone: "warning", icon: RiFireLine, description: responseDescription };
 		case "mitigated":
 			return {
 				label: "Mitigated",
-				tone: "warning",
+				tone: "neutral",
 				icon: RiShieldCheckLine,
 				description: responseDescription,
 			};

@@ -11216,6 +11216,17 @@ paths:
           name: search
           schema:
             type: string
+        - description: Situation signal attention level
+          explode: false
+          in: query
+          name: attention
+          schema:
+            description: Situation signal attention level
+            enum:
+              - default
+              - watch_only
+              - join_only
+            type: string
       responses:
         "200":
           content:

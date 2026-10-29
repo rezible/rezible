@@ -1,5 +1,6 @@
 import { Context } from "runed";
 import {
+	type Situation,
 	listActivityOptions,
 	listInboxItemsOptions,
 	listIncidentsOptions,
@@ -7,7 +8,7 @@ import {
 } from "$lib/api";
 import { createPaginatedQuery } from "$lib/api/queryPaginator.svelte";
 import { createInvestigationConclusions } from "$features/situations/lib/conclusions.svelte";
-import { activityRow, inboxRow, incidentRow, situationRow, type HomeActivityRow } from "./model";
+import { activityRow, inboxRow, type HomeActivityRow } from "./model";
 
 const PREVIEW_PAGE_SIZE = 5;
 const ACTIVITY_PAGE_SIZE = 8;
@@ -46,25 +47,21 @@ class HomeController {
 	});
 	activityQuery = $derived(this.activityPage.query);
 
-	private situations = $derived(this.situationsQuery.data?.data ?? []);
+	situations = $derived(this.situationsQuery.data?.data ?? []);
 	private conclusions = createInvestigationConclusions(() =>
 		this.situations.map((situation) => situation.attributes.investigation?.investigation.id)
 	);
 
 	inboxRows = $derived((this.inboxQuery.data?.data ?? []).map((item) => inboxRow(item)));
-	incidentRows = $derived((this.incidentsQuery.data?.data ?? []).map(incidentRow));
-	situationRows = $derived(this.buildSituationRows());
+	incidents = $derived(this.incidentsQuery.data?.data ?? []);
 	activityGroups = $derived(this.buildActivityGroups());
 
 	inboxTotal = $derived(this.inboxQuery.data?.pagination.total);
 	incidentsTotal = $derived(this.incidentsQuery.data?.pagination.total);
 	situationsTotal = $derived(this.situationsQuery.data?.pagination.total);
 
-	private buildSituationRows() {
-		return this.situations.map((situation) => {
-			const investigationId = situation.attributes.investigation?.investigation.id;
-			return situationRow(situation, this.conclusions.conclusionFor(investigationId));
-		});
+	conclusionFor(situation: Situation) {
+		return this.conclusions.conclusionFor(situation.attributes.investigation?.investigation.id);
 	}
 
 	private buildActivityGroups() {

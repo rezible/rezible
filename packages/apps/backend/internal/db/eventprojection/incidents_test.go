@@ -89,3 +89,35 @@ func (s *ProjectionServiceSuite) TestIncidentProjectionObservesCreateChangeAndRe
 	s.Require().NoError(typeCountErr)
 	s.Equal(1, typeCount)
 }
+
+func (s *ProjectionServiceSuite) TestIncidentProjectionKeepsProviderSeverityRank() {
+	ctx, tdb := s.SetupTestDatabase()
+
+	projector := s.projectionService(tdb)
+
+	openedAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	attrs := projections.IncidentEventAttributes{
+		Title:       "Search outage",
+		SeverityRef: "SEV-2",
+		TypeRef:     "Customer Impact",
+		OpenedAt:    openedAt,
+	}
+	unranked := s.createIncidentProjectionEvent(ctx, tdb, "incident-1", openedAt, attrs)
+	_, projErr := runProjection(ctx, projector, unranked)
+	s.Require().NoError(projErr)
+
+	created, createdErr := tdb.Client(ctx).IncidentSeverity.Query().Only(ctx)
+	s.Require().NoError(createdErr)
+	s.Equal(0, created.Rank)
+
+	rank := 2
+	attrs.SeverityRank = &rank
+	ranked := s.createIncidentProjectionEvent(ctx, tdb, "incident-1", openedAt.Add(time.Minute), attrs)
+	_, projRankedErr := runProjection(ctx, projector, ranked)
+	s.Require().NoError(projRankedErr)
+
+	updated, updatedErr := tdb.Client(ctx).IncidentSeverity.Query().Only(ctx)
+	s.Require().NoError(updatedErr)
+	s.Equal(created.ID, updated.ID)
+	s.Equal(2, updated.Rank)
+}

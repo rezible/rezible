@@ -81,7 +81,7 @@ export default {
 		},
 		{
 			action: "waitFor",
-			selector: 'li:first-child > a[href^="/signals/"]',
+			selector: 'ul > li:first-child a[data-row-link][href^="/signals/"]',
 			state: "visible",
 		},
 		{
@@ -91,7 +91,7 @@ export default {
 		},
 		{
 			action: "click",
-			selector: 'li:first-child > a[href^="/signals/"]',
+			selector: 'ul > li:first-child a[data-row-link][href^="/signals/"]',
 		},
 		{
 			action: "waitFor",

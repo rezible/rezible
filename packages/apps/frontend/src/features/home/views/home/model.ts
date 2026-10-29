@@ -1,13 +1,9 @@
 import type { Component } from "svelte";
 import { resolve } from "$app/paths";
-import type { ActivityRecord, InboxItem, Incident, Situation } from "$lib/api";
+import type { ActivityRecord, InboxItem } from "$lib/api";
 import type { StatusPresentation } from "$components/common/status-badge/status";
-import { formatDuration, formatTime } from "$lib/time";
+import { formatTime } from "$lib/time";
 import { investigationHref } from "$features/situations/lib/routes";
-import { situationStatus, situationSummaryTimes, type SituationTime } from "$features/situations/lib/status";
-import { incidentServiceImpacts } from "$features/incidents/lib/impacts";
-import type { SituationConclusion } from "$features/situations/lib/model";
-import { incidentResponseStatus, incidentSeverityStatus } from "$features/incidents/lib/status";
 
 import RiAlarmWarningLine from "remixicon-svelte/icons/alarm-warning-line";
 import RiChatQuoteLine from "remixicon-svelte/icons/chat-quote-line";
@@ -23,7 +19,7 @@ type ActivityKind = ActivityRecord["attributes"]["recordKind"];
 
 export type HomeInboxRow = {
 	id: string;
-	icon: Component;
+	kind: StatusPresentation;
 	title: string;
 	reason: string;
 	context: string | undefined;
@@ -31,33 +27,6 @@ export type HomeInboxRow = {
 	actionLabel: string | undefined;
 	occurredAt: string;
 	due: StatusPresentation | undefined;
-};
-
-export type HomeIncidentRow = {
-	id: string;
-	title: string;
-	summary: string;
-	href: string;
-	severity: StatusPresentation;
-	response: StatusPresentation;
-	accent: "danger" | "warning" | "none";
-	openedAt: string;
-	openFor: string | undefined;
-	updatedAt: string;
-	services: string[];
-	moreServices: number;
-};
-
-export type HomeSituationRow = {
-	id: string;
-	title: string;
-	summary: string;
-	href: string;
-	status: StatusPresentation;
-	times: SituationTime[];
-	sourceCount: number;
-	linkedIncidentCount: number;
-	conclusion: SituationConclusion;
 };
 
 export type HomeActivityRow = {
@@ -77,6 +46,13 @@ const inboxActions = {
 	maintenance: "Review",
 } satisfies Record<InboxKind, string>;
 
+const inboxKindLabels = {
+	question: "Question",
+	annotation: "Context request",
+	task: "Task",
+	maintenance: "Maintenance",
+} satisfies Record<InboxKind, string>;
+
 const inboxIcons = {
 	question: RiQuestionLine,
 	annotation: RiChatQuoteLine,
@@ -89,8 +65,6 @@ const activityIcons = {
 	"situation-investigation": RiSearchLine,
 	"inbox-item": RiInboxLine,
 } satisfies Record<ActivityKind, Component>;
-
-const MAX_SERVICES = 3;
 
 function incidentHref(ref: string, view?: "report") {
 	return resolve("/incidents/[ref]/[[view=incidentView]]", { ref, view });
@@ -150,7 +124,7 @@ export function inboxRow(item: InboxItem, now = Date.now()): HomeInboxRow {
 
 	return {
 		id: item.id,
-		icon: inboxIcons[attributes.kind],
+		kind: { label: inboxKindLabels[attributes.kind], tone: "neutral", icon: inboxIcons[attributes.kind] },
 		title: attributes.title,
 		reason: attributes.reason,
 		context: context || undefined,
@@ -158,57 +132,6 @@ export function inboxRow(item: InboxItem, now = Date.now()): HomeInboxRow {
 		actionLabel,
 		occurredAt: attributes.occurredAt,
 		due: dueStatus(attributes.dueAt, now),
-	};
-}
-
-function serviceNames(incident: Incident) {
-	const names = incidentServiceImpacts(incident.attributes).map((service) => service.name);
-	return [...new Set(names)];
-}
-
-function severityAccent(incident: Incident): HomeIncidentRow["accent"] {
-	switch (incidentSeverityStatus(incident.attributes.severity).tone) {
-		case "danger":
-			return "danger";
-		case "warning":
-			return "warning";
-		default:
-			return "none";
-	}
-}
-
-export function incidentRow(incident: Incident): HomeIncidentRow {
-	const attributes = incident.attributes;
-	const names = serviceNames(incident);
-
-	return {
-		id: incident.id,
-		title: attributes.title,
-		summary: attributes.summary.trim(),
-		href: incidentHref(attributes.reference),
-		severity: incidentSeverityStatus(attributes.severity),
-		response: incidentResponseStatus(attributes.responseState),
-		accent: severityAccent(incident),
-		openedAt: attributes.openedAt,
-		openFor: formatDuration(attributes.openedAt, attributes.resolvedAt),
-		updatedAt: attributes.updatedAt,
-		services: names.slice(0, MAX_SERVICES),
-		moreServices: Math.max(0, names.length - MAX_SERVICES),
-	};
-}
-
-export function situationRow(situation: Situation, conclusion: SituationConclusion): HomeSituationRow {
-	const attributes = situation.attributes;
-	return {
-		id: situation.id,
-		title: attributes.title,
-		summary: attributes.summary.trim(),
-		href: resolve("/situations/[ref]/[[view=situationView]]", { ref: attributes.reference }),
-		status: situationStatus(attributes),
-		times: situationSummaryTimes(attributes),
-		sourceCount: attributes.signalCount,
-		linkedIncidentCount: attributes.linkedIncidentIds.length,
-		conclusion,
 	};
 }
 

@@ -4,8 +4,8 @@ import { incidentResponseStatus, incidentSeverityStatus, retrospectiveStatus } f
 
 test("incidentResponseStatus labels", () => {
 	const cases = [
-		["started", "Active", "danger"],
-		["mitigated", "Mitigated", "warning"],
+		["started", "Active", "warning"],
+		["mitigated", "Mitigated", "neutral"],
 		["resolved", "Resolved", "success"],
 	] as const;
 	for (const [state, label, tone] of cases) {

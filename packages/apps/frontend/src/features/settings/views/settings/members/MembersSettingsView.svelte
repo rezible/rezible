@@ -23,7 +23,7 @@
 
 <div class="flex max-w-4xl flex-col gap-4">
 	<div class="max-w-sm">
-		<SearchInput label="Search members" bind:value={view.search} />
+		<SearchInput label="Search members" value={view.search} oninput={view.setSearch} />
 	</div>
 
 	{#if view.loading}

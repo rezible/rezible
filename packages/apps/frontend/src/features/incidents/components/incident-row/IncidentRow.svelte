@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import type { Incident } from "$lib/api";
-	import { Badge } from "$components/ui/badge";
+	import ListRow from "$components/common/list-row/ListRow.svelte";
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
 	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
-	import { incidentSeverityStatus } from "$features/incidents/lib/status";
+	import { incidentListRow } from "$features/incidents/lib/row";
 
 	type Props = {
 		incident: Incident;
@@ -12,22 +12,33 @@
 
 	let { incident }: Props = $props();
 
-	const attrs = $derived(incident.attributes);
+	const row = $derived(incidentListRow(incident));
+	const href = $derived(resolve("/incidents/[ref]/[[view=incidentView]]", { ref: row.reference }));
 </script>
 
-<a
-	href={resolve("/incidents/[ref]/[[view=incidentView]]", { ref: attrs.reference })}
-	class="block min-w-0 space-y-1 border-b border-border px-3 py-3 last:border-b-0 hover:bg-muted/50 focus-visible:outline-primary"
->
-	<div class="flex flex-wrap items-center gap-2">
-		<span class="min-w-0 break-words text-sm font-medium">{attrs.title}</span>
-		<Badge variant="outline" class="capitalize">{attrs.responseState}</Badge>
-		{#if attrs.severity?.attributes?.name}
-			<StatusBadge status={incidentSeverityStatus(attrs.severity)} />
-		{/if}
-	</div>
-	<div class="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground">
-		<span>{attrs.reference}</span>
-		<span>Opened <Timestamp value={attrs.openedAt} format="absolute" /></span>
-	</div>
-</a>
+{#snippet facts()}
+	<span>Opened <Timestamp value={row.openedAt} /></span>
+	{#if row.services.length}
+		<span aria-hidden="true">·</span>
+		<span>
+			{row.services.join(", ")}{#if row.moreServices > 0}&nbsp;+{row.moreServices}{/if}
+		</span>
+	{/if}
+{/snippet}
+
+{#snippet aside()}
+	{#if row.severity}
+		<StatusBadge status={row.severity} />
+	{/if}
+	<span>Updated <Timestamp value={row.updatedAt} /></span>
+{/snippet}
+
+<ListRow
+	title={row.title}
+	{href}
+	summary={row.summary}
+	status={row.response}
+	reference={row.reference}
+	{facts}
+	{aside}
+/>

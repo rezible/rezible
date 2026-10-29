@@ -4,8 +4,7 @@ import { Context } from "runed";
 
 export class MeetingsListViewController {
 	query = createQuery(() => listMeetingSessionsOptions());
-
-	monthStart = $state<Date>();
+	total = $derived(this.query.data?.data.length);
 }
 
 const ctx = new Context<MeetingsListViewController>("MeetingsListViewController");

@@ -1,24 +1,21 @@
 <script lang="ts">
-	import { Input } from "$components/ui/input";
-	import type { SituationFilters } from "../../lib/filters";
+	import SearchInput from "$components/forms/search-input/SearchInput.svelte";
+	import FilterOptions, { type FilterOption } from "$components/forms/filter-options/FilterOptions.svelte";
+	import type { SituationFilters, SituationStatusFilter } from "../../lib/filters";
 
 	type Props = {
 		filters: SituationFilters;
 		onchange: (values: Partial<SituationFilters>) => void;
+		statusOptions: FilterOption<SituationStatusFilter>[];
 	};
 
-	let { filters, onchange }: Props = $props();
-
-	const id = $props.id();
+	let { filters, onchange, statusOptions }: Props = $props();
 </script>
 
-<div class="min-w-0 basis-60">
-	<label for={`${id}-search`} class="sr-only">Search situations</label>
-	<Input
-		id={`${id}-search`}
-		type="search"
-		placeholder="Search situations"
-		value={filters.search}
-		oninput={(event) => onchange({ search: event.currentTarget.value })}
-	/>
-</div>
+<SearchInput value={filters.search} oninput={(search) => onchange({ search })} />
+<FilterOptions
+	label="Status"
+	options={statusOptions}
+	value={filters.status}
+	onchange={(status) => onchange({ status })}
+/>
