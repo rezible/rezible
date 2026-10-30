@@ -419,7 +419,7 @@ func (m *InvestigationMutation) ResetSystemAnalysis() {
 	m.clearedsystem_analysis = false
 }
 
-// AddSituationIDs adds the "situations" edge to the SituationInvestigation entity by ids.
+// AddSituationIDs adds the "situations" edge to the Situation entity by ids.
 func (m *InvestigationMutation) AddSituationIDs(ids ...uuid.UUID) {
 	if m.situations == nil {
 		m.situations = make(map[uuid.UUID]struct{})
@@ -429,17 +429,17 @@ func (m *InvestigationMutation) AddSituationIDs(ids ...uuid.UUID) {
 	}
 }
 
-// ClearSituations clears the "situations" edge to the SituationInvestigation entity.
+// ClearSituations clears the "situations" edge to the Situation entity.
 func (m *InvestigationMutation) ClearSituations() {
 	m.clearedsituations = true
 }
 
-// SituationsCleared reports if the "situations" edge to the SituationInvestigation entity was cleared.
+// SituationsCleared reports if the "situations" edge to the Situation entity was cleared.
 func (m *InvestigationMutation) SituationsCleared() bool {
 	return m.clearedsituations
 }
 
-// RemoveSituationIDs removes the "situations" edge to the SituationInvestigation entity by IDs.
+// RemoveSituationIDs removes the "situations" edge to the Situation entity by IDs.
 func (m *InvestigationMutation) RemoveSituationIDs(ids ...uuid.UUID) {
 	if m.removedsituations == nil {
 		m.removedsituations = make(map[uuid.UUID]struct{})
@@ -450,7 +450,7 @@ func (m *InvestigationMutation) RemoveSituationIDs(ids ...uuid.UUID) {
 	}
 }
 
-// RemovedSituations returns the removed IDs of the "situations" edge to the SituationInvestigation entity.
+// RemovedSituations returns the removed IDs of the "situations" edge to the Situation entity.
 func (m *InvestigationMutation) RemovedSituationsIDs() (ids []uuid.UUID) {
 	for id := range m.removedsituations {
 		ids = append(ids, id)

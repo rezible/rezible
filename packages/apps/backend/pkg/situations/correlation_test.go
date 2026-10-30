@@ -11,7 +11,6 @@ import (
 	rez "github.com/rezible/rezible"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	ssa "github.com/rezible/rezible/ent/situationsignalattention"
 )
 
@@ -53,69 +52,68 @@ type testRelationship struct {
 }
 
 func TestDecideCorrelation(t *testing.T) {
-	seeding := rez.SituationSignal{Severity: schematypes.SignalSeverityCritical, SignalAttention: ssa.LevelDefault}
-	info := rez.SituationSignal{Severity: schematypes.SignalSeverityInfo, SignalAttention: ssa.LevelDefault}
-	joinOnly := rez.SituationSignal{Severity: schematypes.SignalSeverityCritical, SignalAttention: ssa.LevelJoinOnly}
+	seeding := rez.SituationObservation{Severity: schematypes.SignalSeverityCritical, SignalAttention: ssa.LevelDefault}
+	info := rez.SituationObservation{Severity: schematypes.SignalSeverityInfo, SignalAttention: ssa.LevelDefault}
+	joinOnly := rez.SituationObservation{Severity: schematypes.SignalSeverityCritical, SignalAttention: ssa.LevelJoinOnly}
 	broadEntities := []string{"checkout", "payments", "search", "cart", "fleet"}
 
 	cases := []struct {
 		name          string
-		signal        rez.SituationSignal
+		observation   rez.SituationObservation
 		entities      []string
 		relationships []testRelationship
 		situations    []testSituation
 		// want is the situation joined, "seed" for a new candidate, or "" when not placed.
 		want     string
-		wantKind sitsig.MatchKind
-		wantVia  string
+		wantKind MatchKind
 	}{
 		{
-			name:       "shared entity",
-			signal:     seeding,
-			entities:   []string{"checkout"},
-			situations: []testSituation{{name: "s1", active: true, matching: []string{"checkout"}}},
-			want:       "s1", wantKind: sitsig.MatchKindSharedEntity,
+			name:        "shared entity",
+			observation: seeding,
+			entities:    []string{"checkout"},
+			situations:  []testSituation{{name: "s1", active: true, matching: []string{"checkout"}}},
+			want:        "s1", wantKind: MatchKindSharedEntity,
 		},
 		{
-			name:       "shared entity within its window of a quiet situation",
-			signal:     seeding,
-			entities:   []string{"checkout"},
-			situations: []testSituation{{name: "s1", quiet: 5 * time.Hour, matching: []string{"checkout"}}},
-			want:       "s1", wantKind: sitsig.MatchKindSharedEntity,
+			name:        "shared entity within its window of a quiet situation",
+			observation: seeding,
+			entities:    []string{"checkout"},
+			situations:  []testSituation{{name: "s1", quiet: 5 * time.Hour, matching: []string{"checkout"}}},
+			want:        "s1", wantKind: MatchKindSharedEntity,
 		},
 		{
-			name:       "shared entity beyond its window starts a candidate",
-			signal:     seeding,
-			entities:   []string{"checkout"},
-			situations: []testSituation{{name: "s1", quiet: 7 * time.Hour, matching: []string{"checkout"}}},
-			want:       "seed", wantKind: sitsig.MatchKindSeed,
+			name:        "shared entity beyond its window starts a candidate",
+			observation: seeding,
+			entities:    []string{"checkout"},
+			situations:  []testSituation{{name: "s1", quiet: 7 * time.Hour, matching: []string{"checkout"}}},
+			want:        "seed", wantKind: MatchKindSeed,
 		},
 		{
-			name:     "ranking: raised before candidates before muted",
-			signal:   seeding,
-			entities: []string{"checkout"},
+			name:        "ranking: raised before candidates before muted",
+			observation: seeding,
+			entities:    []string{"checkout"},
 			situations: []testSituation{
 				{name: "s1", muted: true, raised: true, active: true, matching: []string{"checkout"}},
 				{name: "s2", active: true, matching: []string{"checkout"}},
 				{name: "s3", raised: true, quiet: time.Hour, matching: []string{"checkout"}},
 			},
-			want: "s3", wantKind: sitsig.MatchKindSharedEntity,
+			want: "s3", wantKind: MatchKindSharedEntity,
 		},
 		{
-			name:     "ranking: most recent activity, then lowest ID",
-			signal:   seeding,
-			entities: []string{"checkout"},
+			name:        "ranking: most recent activity, then lowest ID",
+			observation: seeding,
+			entities:    []string{"checkout"},
 			situations: []testSituation{
 				{name: "s1", quiet: 2 * time.Hour, matching: []string{"checkout"}},
 				{name: "s3", quiet: time.Hour, matching: []string{"checkout"}},
 				{name: "s2", quiet: time.Hour, matching: []string{"checkout"}},
 			},
-			want: "s2", wantKind: sitsig.MatchKindSharedEntity,
+			want: "s2", wantKind: MatchKindSharedEntity,
 		},
 		{
-			name:     "shared entity before dependency",
-			signal:   seeding,
-			entities: []string{"search"},
+			name:        "shared entity before dependency",
+			observation: seeding,
+			entities:    []string{"search"},
 			relationships: []testRelationship{
 				{name: "r1", source: "checkout", predicate: "calls", target: "search"},
 			},
@@ -123,39 +121,39 @@ func TestDecideCorrelation(t *testing.T) {
 				{name: "s1", raised: true, active: true, matching: []string{"checkout"}},
 				{name: "s2", active: true, matching: []string{"search"}},
 			},
-			want: "s2", wantKind: sitsig.MatchKindSharedEntity,
+			want: "s2", wantKind: MatchKindSharedEntity,
 		},
 		{
-			name:     "dependency through the lowest-ID relationship",
-			signal:   seeding,
-			entities: []string{"search", "index"},
+			name:        "dependency through the lowest-ID relationship",
+			observation: seeding,
+			entities:    []string{"search", "index"},
 			relationships: []testRelationship{
 				{name: "r2", source: "checkout", predicate: "calls", target: "search"},
 				{name: "r1", source: "checkout", predicate: "reads_from", target: "index"},
 			},
 			situations: []testSituation{{name: "s1", active: true, matching: []string{"checkout"}}},
-			want:       "s1", wantKind: sitsig.MatchKindDependency, wantVia: "r1",
+			want:       "s1", wantKind: MatchKindDependency,
 		},
 		{
 			name:          "dependency beyond the one-hop window",
-			signal:        seeding,
+			observation:   seeding,
 			entities:      []string{"search"},
 			relationships: []testRelationship{{name: "r1", source: "checkout", predicate: "calls", target: "search"}},
 			situations:    []testSituation{{name: "s1", quiet: time.Hour, matching: []string{"checkout"}}},
-			want:          "seed", wantKind: sitsig.MatchKindSeed,
+			want:          "seed", wantKind: MatchKindSeed,
 		},
 		{
 			name:          "one dependent match",
-			signal:        seeding,
+			observation:   seeding,
 			entities:      []string{"checkout"},
 			relationships: []testRelationship{{name: "r1", source: "checkout", predicate: "calls", target: "search"}},
 			situations:    []testSituation{{name: "s1", quiet: 10 * time.Minute, matching: []string{"search"}}},
-			want:          "s1", wantKind: sitsig.MatchKindDependent, wantVia: "r1",
+			want:          "s1", wantKind: MatchKindDependent,
 		},
 		{
-			name:     "ambiguous dependent matches start a candidate",
-			signal:   seeding,
-			entities: []string{"checkout"},
+			name:        "ambiguous dependent matches start a candidate",
+			observation: seeding,
+			entities:    []string{"checkout"},
 			relationships: []testRelationship{
 				{name: "r1", source: "checkout", predicate: "calls", target: "search"},
 				{name: "r2", source: "checkout", predicate: "writes_to", target: "orders"},
@@ -164,12 +162,12 @@ func TestDecideCorrelation(t *testing.T) {
 				{name: "s1", active: true, matching: []string{"search"}},
 				{name: "s2", active: true, matching: []string{"orders"}},
 			},
-			want: "seed", wantKind: sitsig.MatchKindSeed,
+			want: "seed", wantKind: MatchKindSeed,
 		},
 		{
-			name:     "ambiguous adjacent matches leave a non-seeding signal unplaced",
-			signal:   info,
-			entities: []string{"queue"},
+			name:        "ambiguous adjacent matches leave a non-seeding observation unplaced",
+			observation: info,
+			entities:    []string{"queue"},
 			relationships: []testRelationship{
 				{name: "r1", source: "orders", predicate: "publishes_to", target: "queue"},
 				{name: "r2", source: "billing", predicate: "consumes_from", target: "queue"},
@@ -182,48 +180,48 @@ func TestDecideCorrelation(t *testing.T) {
 		},
 		{
 			name:          "adjacent in either direction",
-			signal:        seeding,
+			observation:   seeding,
 			entities:      []string{"queue"},
 			relationships: []testRelationship{{name: "r1", source: "orders", predicate: "publishes_to", target: "queue"}},
 			situations:    []testSituation{{name: "s1", active: true, matching: []string{"orders"}}},
-			want:          "s1", wantKind: sitsig.MatchKindAdjacent, wantVia: "r1",
+			want:          "s1", wantKind: MatchKindAdjacent,
 		},
 		{
 			name:          "structural relationships do not match",
-			signal:        seeding,
+			observation:   seeding,
 			entities:      []string{"checkout"},
 			relationships: []testRelationship{{name: "r1", source: "shop", predicate: "contains", target: "checkout"}},
 			situations:    []testSituation{{name: "s1", active: true, matching: []string{"shop"}}},
-			want:          "seed", wantKind: sitsig.MatchKindSeed,
+			want:          "seed", wantKind: MatchKindSeed,
 		},
 		{
-			name:       "a broad signal joins on a shared entity",
-			signal:     seeding,
-			entities:   broadEntities,
-			situations: []testSituation{{name: "s1", active: true, matching: []string{"fleet"}}},
-			want:       "s1", wantKind: sitsig.MatchKindSharedEntity,
+			name:        "a broad observation joins on a shared entity",
+			observation: seeding,
+			entities:    broadEntities,
+			situations:  []testSituation{{name: "s1", active: true, matching: []string{"fleet"}}},
+			want:        "s1", wantKind: MatchKindSharedEntity,
 		},
 		{
-			name:     "a broad signal with no match starts a candidate",
-			signal:   seeding,
-			entities: broadEntities,
-			want:     "seed", wantKind: sitsig.MatchKindSeed,
+			name:        "a broad observation with no match starts a candidate",
+			observation: seeding,
+			entities:    broadEntities,
+			want:        "seed", wantKind: MatchKindSeed,
 		},
 		{
-			name:       "an info signal joins",
-			signal:     info,
-			entities:   []string{"checkout"},
-			situations: []testSituation{{name: "s1", active: true, matching: []string{"checkout"}}},
-			want:       "s1", wantKind: sitsig.MatchKindSharedEntity,
+			name:        "an info observation joins",
+			observation: info,
+			entities:    []string{"checkout"},
+			situations:  []testSituation{{name: "s1", active: true, matching: []string{"checkout"}}},
+			want:        "s1", wantKind: MatchKindSharedEntity,
 		},
-		{name: "an info signal never starts a candidate", signal: info, entities: []string{"checkout"}, want: ""},
-		{name: "a join-only signal never starts a candidate", signal: joinOnly, entities: []string{"checkout"}, want: ""},
-		{name: "a signal with no entities starts a candidate", signal: seeding, want: "seed", wantKind: sitsig.MatchKindSeed},
+		{name: "an info observation never starts a candidate", observation: info, entities: []string{"checkout"}, want: ""},
+		{name: "a join-only observation never starts a candidate", observation: joinOnly, entities: []string{"checkout"}, want: ""},
+		{name: "an observation with no entities starts a candidate", observation: seeding, want: "seed", wantKind: MatchKindSeed},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			ids := correlationIDs{}
-			input := CorrelationInput{Now: correlationNow, Signal: tc.signal, EntityIDs: ids.set(tc.entities...)}
+			input := CorrelationInput{Now: correlationNow, Observation: tc.observation, EntityIDs: ids.set(tc.entities...)}
 			for _, r := range tc.relationships {
 				relationship := CorrelationRelationship{
 					ID:             ids.id(r.name),
@@ -253,11 +251,6 @@ func TestDecideCorrelation(t *testing.T) {
 				wantSituation = ids.id(tc.want)
 			}
 			assert.Equal(t, wantSituation, decision.SituationID)
-			if tc.wantVia == "" {
-				assert.Nil(t, decision.ViaRelationshipID)
-			} else if assert.NotNil(t, decision.ViaRelationshipID) {
-				assert.Equal(t, ids.id(tc.wantVia), *decision.ViaRelationshipID)
-			}
 		})
 	}
 }

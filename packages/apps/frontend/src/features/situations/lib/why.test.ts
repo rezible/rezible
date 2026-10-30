@@ -2,11 +2,9 @@ import { expect, test } from "bun:test";
 import type { SituationAttributes, SituationJudgment } from "$lib/api";
 import { whyPanelState } from "./why";
 
-const openedAt = "2026-05-14T04:00:00Z";
 const judgedAt = "2026-05-14T04:10:00Z";
 const raisedAt = "2026-05-14T04:20:00Z";
 const closedAt = "2026-05-14T05:00:00Z";
-const origin = { title: "High error rate", startedAt: openedAt };
 
 const situation = (attributes: Partial<SituationAttributes>) =>
 	({ stage: "candidate", links: [], ...attributes }) as SituationAttributes;
@@ -26,10 +24,9 @@ const judgment = (attributes: Partial<SituationJudgment>): SituationJudgment => 
 });
 
 test("a candidate without a judgment is pending", () => {
-	const why = whyPanelState(situation({}), origin);
+	const why = whyPanelState(situation({}));
 	expect(why.kind).toBe("pending");
 	expect(why.heading).toBe("Why Rezible is watching this");
-	expect(why.origin).toEqual(origin);
 });
 
 test("a candidate with a judgment shows the last assessment and keeps checking", () => {
@@ -55,8 +52,7 @@ test("an automatic raise shows the recorded decision", () => {
 			raisedAt,
 			raisedBy: { reason: "breadth" },
 			latestJudgment: judgment({ decision: "raise", citedReasons: ["breadth"] }),
-		}),
-		origin
+		})
 	);
 	if (why.kind !== "assessed") {
 		throw new Error(why.kind);
@@ -106,8 +102,7 @@ test("a muted situation is not being assessed", () => {
 
 test("a closed situation with a judgment shows the stored assessment with the closure", () => {
 	const why = whyPanelState(
-		situation({ stage: "closed", closedAt, closeReason: "expired", latestJudgment: judgment({}) }),
-		origin
+		situation({ stage: "closed", closedAt, closeReason: "expired", latestJudgment: judgment({}) })
 	);
 	if (why.kind !== "assessed") {
 		throw new Error(why.kind);
@@ -117,35 +112,9 @@ test("a closed situation with a judgment shows the stored assessment with the cl
 	expect(why.assessment.checksAgain).toBe(false);
 });
 
-test("a closed situation without a judgment shows origin and closure", () => {
-	const why = whyPanelState(situation({ stage: "closed", closedAt, closeReason: "dismissed" }), origin);
-	expect(why).toMatchObject({ kind: "closed-unassessed", origin, closure: { reasonLabel: "Dismissed" } });
-});
-
-test("a merged source links to its target with or without a judgment and without origin", () => {
-	const merged = {
-		stage: "closed" as const,
-		closedAt,
-		closeReason: "merged" as const,
-		links: [
-			{
-				kind: "merged_into" as const,
-				situationId: "target",
-				situationReference: "SIT-7",
-				title: "Checkout outage",
-				stage: "raised" as const,
-			},
-		],
-	};
-	const mergedInto = { reference: "SIT-7", title: "Checkout outage" };
-
-	const unassessed = whyPanelState(situation(merged));
-	expect(unassessed).toMatchObject({ kind: "closed-unassessed", closure: { mergedInto } });
-	expect(unassessed.origin).toBeUndefined();
-
-	const assessed = whyPanelState(situation({ ...merged, latestJudgment: judgment({}) }));
-	expect(assessed).toMatchObject({ kind: "assessed", closure: { mergedInto } });
-	expect(assessed.origin).toBeUndefined();
+test("a closed situation without a judgment shows its closure", () => {
+	const why = whyPanelState(situation({ stage: "closed", closedAt, closeReason: "dismissed" }));
+	expect(why).toMatchObject({ kind: "closed-unassessed", closure: { reasonLabel: "Dismissed" } });
 });
 
 test("an unavailable judge promises a retry only while watching", () => {

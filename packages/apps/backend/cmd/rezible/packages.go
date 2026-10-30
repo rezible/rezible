@@ -571,15 +571,15 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
-			do.MustInvoke[rez.SituationSignalService](i),
+			do.MustInvoke[rez.SituationObservationService](i),
 		)
 	}),
 	do.Bind[*db.AlertService, rez.AlertService](),
 
-	do.Lazy(func(i do.Injector) (*db.SituationSignalService, error) {
-		return db.NewSituationSignalService(do.MustInvoke[rez.JobService](i)), nil
+	do.Lazy(func(i do.Injector) (*db.SituationObservationService, error) {
+		return db.NewSituationObservationService(do.MustInvoke[rez.JobService](i)), nil
 	}),
-	do.Bind[*db.SituationSignalService, rez.SituationSignalService](),
+	do.Bind[*db.SituationObservationService, rez.SituationObservationService](),
 
 	do.Lazy(func(i do.Injector) (rez.PlaybookService, error) {
 		return db.NewPlaybookService(do.MustInvoke[rez.Database](i))
@@ -832,7 +832,7 @@ var pkgJobs = do.Package(
 		p.addInvokedProviderFunc(db.NewGenerateIncidentDebriefSuggestionsWorker)
 		p.addInvokedProviderFunc(db.NewScanOncallShiftsWorker)
 		p.addInvokedProviderFunc(db.NewSettleAlertEpisodeWorker)
-		p.addInvokedProviderFunc(db.NewProcessSituationSignalWorker)
+		p.addInvokedProviderFunc(db.NewProcessSituationObservationWorker)
 		p.addInvokedProviderFunc(db.NewEvaluateSituationWorker)
 		p.addInvokedProviderFunc(db.NewEnsureShiftHandoverSentWorker)
 		p.addInvokedProviderFunc(db.NewEnsureShiftHandoverReminderSentWorker)

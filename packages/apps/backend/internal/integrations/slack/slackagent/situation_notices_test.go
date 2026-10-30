@@ -14,7 +14,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
-	sitlink "github.com/rezible/rezible/ent/situationlink"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/projections"
@@ -118,8 +117,6 @@ func (s *AppSuite) headerText(content *noticeContent) *slack.TextBlockObject {
 }
 
 func (s *AppSuite) TestNoticeWording() {
-	survivorID := uuid.New()
-	survivorURL := "https://rezible.test/situations/SIT-7"
 	stages := []struct {
 		name  string
 		setup func(content *noticeContent)
@@ -151,7 +148,7 @@ func (s *AppSuite) TestNoticeWording() {
 				content.Situation.ClosedAt = new(noticeTestOpenedAt.Add(time.Hour))
 				content.Situation.CloseReason = new(sit.CloseReasonStabilized)
 			},
-			stage: "Closed: signals stopped",
+			stage: "Closed: observations stopped",
 		},
 		{
 			name: "dismissed",
@@ -166,17 +163,8 @@ func (s *AppSuite) TestNoticeWording() {
 			setup: func(content *noticeContent) {
 				content.Situation.ClosedAt = new(noticeTestOpenedAt.Add(time.Hour))
 				content.Situation.CloseReason = new(sit.CloseReasonMerged)
-				link := &ent.SituationLink{
-					Kind:              sitlink.KindMergedInto,
-					LinkedSituationID: survivorID,
-					Edges: ent.SituationLinkEdges{
-						LinkedSituation: &ent.Situation{ID: survivorID, Number: 7, Title: "Payments timeouts"},
-					},
-				}
-				content.Situation.Edges.Links = []*ent.SituationLink{link}
-				content.MergedIntoURL = survivorURL
 			},
-			stage: "Merged into <" + survivorURL + "|SIT-7 · Payments timeouts>",
+			stage: "Merged into another situation",
 		},
 	}
 	for _, stage := range stages {

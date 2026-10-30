@@ -43,36 +43,26 @@ const (
 	FieldClosedAt = "closed_at"
 	// FieldCloseReason holds the string denoting the close_reason field in the database.
 	FieldCloseReason = "close_reason"
-	// FieldSeedEntityID holds the string denoting the seed_entity_id field in the database.
-	FieldSeedEntityID = "seed_entity_id"
-	// FieldLatestJudgmentID holds the string denoting the latest_judgment_id field in the database.
-	FieldLatestJudgmentID = "latest_judgment_id"
+	// FieldInvestigationID holds the string denoting the investigation_id field in the database.
+	FieldInvestigationID = "investigation_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
 	EdgeInvestigation = "investigation"
-	// EdgeHazardAssessments holds the string denoting the hazard_assessments edge name in mutations.
-	EdgeHazardAssessments = "hazard_assessments"
 	// EdgeObservationGroups holds the string denoting the observation_groups edge name in mutations.
 	EdgeObservationGroups = "observation_groups"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
-	// EdgeSignals holds the string denoting the signals edge name in mutations.
-	EdgeSignals = "signals"
+	// EdgeObservations holds the string denoting the observations edge name in mutations.
+	EdgeObservations = "observations"
 	// EdgeEntities holds the string denoting the entities edge name in mutations.
 	EdgeEntities = "entities"
-	// EdgeLinks holds the string denoting the links edge name in mutations.
-	EdgeLinks = "links"
 	// EdgeActions holds the string denoting the actions edge name in mutations.
 	EdgeActions = "actions"
+	// EdgeJudgments holds the string denoting the judgments edge name in mutations.
+	EdgeJudgments = "judgments"
 	// EdgeNotices holds the string denoting the notices edge name in mutations.
 	EdgeNotices = "notices"
-	// EdgeNoticeRatings holds the string denoting the notice_ratings edge name in mutations.
-	EdgeNoticeRatings = "notice_ratings"
-	// EdgeLatestJudgment holds the string denoting the latest_judgment edge name in mutations.
-	EdgeLatestJudgment = "latest_judgment"
-	// EdgeSeedEntity holds the string denoting the seed_entity edge name in mutations.
-	EdgeSeedEntity = "seed_entity"
 	// Table holds the table name of the situation in the database.
 	Table = "situations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -83,19 +73,12 @@ const (
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
 	// InvestigationTable is the table that holds the investigation relation/edge.
-	InvestigationTable = "situation_investigations"
-	// InvestigationInverseTable is the table name for the SituationInvestigation entity.
-	// It exists in this package in order to avoid circular dependency with the "situationinvestigation" package.
-	InvestigationInverseTable = "situation_investigations"
+	InvestigationTable = "situations"
+	// InvestigationInverseTable is the table name for the Investigation entity.
+	// It exists in this package in order to avoid circular dependency with the "investigation" package.
+	InvestigationInverseTable = "investigations"
 	// InvestigationColumn is the table column denoting the investigation relation/edge.
-	InvestigationColumn = "situation_id"
-	// HazardAssessmentsTable is the table that holds the hazard_assessments relation/edge.
-	HazardAssessmentsTable = "situation_hazard_assessments"
-	// HazardAssessmentsInverseTable is the table name for the SituationHazardAssessment entity.
-	// It exists in this package in order to avoid circular dependency with the "situationhazardassessment" package.
-	HazardAssessmentsInverseTable = "situation_hazard_assessments"
-	// HazardAssessmentsColumn is the table column denoting the hazard_assessments relation/edge.
-	HazardAssessmentsColumn = "situation_id"
+	InvestigationColumn = "investigation_id"
 	// ObservationGroupsTable is the table that holds the observation_groups relation/edge.
 	ObservationGroupsTable = "situation_observation_groups"
 	// ObservationGroupsInverseTable is the table name for the SituationObservationGroup entity.
@@ -108,13 +91,13 @@ const (
 	// IncidentsInverseTable is the table name for the Incident entity.
 	// It exists in this package in order to avoid circular dependency with the "incident" package.
 	IncidentsInverseTable = "incidents"
-	// SignalsTable is the table that holds the signals relation/edge.
-	SignalsTable = "situation_signals"
-	// SignalsInverseTable is the table name for the SituationSignal entity.
-	// It exists in this package in order to avoid circular dependency with the "situationsignal" package.
-	SignalsInverseTable = "situation_signals"
-	// SignalsColumn is the table column denoting the signals relation/edge.
-	SignalsColumn = "situation_id"
+	// ObservationsTable is the table that holds the observations relation/edge.
+	ObservationsTable = "situation_observations"
+	// ObservationsInverseTable is the table name for the SituationObservation entity.
+	// It exists in this package in order to avoid circular dependency with the "situationobservation" package.
+	ObservationsInverseTable = "situation_observations"
+	// ObservationsColumn is the table column denoting the observations relation/edge.
+	ObservationsColumn = "situation_id"
 	// EntitiesTable is the table that holds the entities relation/edge.
 	EntitiesTable = "situation_entities"
 	// EntitiesInverseTable is the table name for the SituationEntity entity.
@@ -122,13 +105,6 @@ const (
 	EntitiesInverseTable = "situation_entities"
 	// EntitiesColumn is the table column denoting the entities relation/edge.
 	EntitiesColumn = "situation_id"
-	// LinksTable is the table that holds the links relation/edge.
-	LinksTable = "situation_links"
-	// LinksInverseTable is the table name for the SituationLink entity.
-	// It exists in this package in order to avoid circular dependency with the "situationlink" package.
-	LinksInverseTable = "situation_links"
-	// LinksColumn is the table column denoting the links relation/edge.
-	LinksColumn = "situation_id"
 	// ActionsTable is the table that holds the actions relation/edge.
 	ActionsTable = "situation_actions"
 	// ActionsInverseTable is the table name for the SituationAction entity.
@@ -136,6 +112,13 @@ const (
 	ActionsInverseTable = "situation_actions"
 	// ActionsColumn is the table column denoting the actions relation/edge.
 	ActionsColumn = "situation_id"
+	// JudgmentsTable is the table that holds the judgments relation/edge.
+	JudgmentsTable = "situation_judgments"
+	// JudgmentsInverseTable is the table name for the SituationJudgment entity.
+	// It exists in this package in order to avoid circular dependency with the "situationjudgment" package.
+	JudgmentsInverseTable = "situation_judgments"
+	// JudgmentsColumn is the table column denoting the judgments relation/edge.
+	JudgmentsColumn = "situation_id"
 	// NoticesTable is the table that holds the notices relation/edge.
 	NoticesTable = "situation_notices"
 	// NoticesInverseTable is the table name for the SituationNotice entity.
@@ -143,27 +126,6 @@ const (
 	NoticesInverseTable = "situation_notices"
 	// NoticesColumn is the table column denoting the notices relation/edge.
 	NoticesColumn = "situation_id"
-	// NoticeRatingsTable is the table that holds the notice_ratings relation/edge.
-	NoticeRatingsTable = "situation_notice_ratings"
-	// NoticeRatingsInverseTable is the table name for the SituationNoticeRating entity.
-	// It exists in this package in order to avoid circular dependency with the "situationnoticerating" package.
-	NoticeRatingsInverseTable = "situation_notice_ratings"
-	// NoticeRatingsColumn is the table column denoting the notice_ratings relation/edge.
-	NoticeRatingsColumn = "situation_id"
-	// LatestJudgmentTable is the table that holds the latest_judgment relation/edge.
-	LatestJudgmentTable = "situations"
-	// LatestJudgmentInverseTable is the table name for the SituationJudgment entity.
-	// It exists in this package in order to avoid circular dependency with the "situationjudgment" package.
-	LatestJudgmentInverseTable = "situation_judgments"
-	// LatestJudgmentColumn is the table column denoting the latest_judgment relation/edge.
-	LatestJudgmentColumn = "latest_judgment_id"
-	// SeedEntityTable is the table that holds the seed_entity relation/edge.
-	SeedEntityTable = "situations"
-	// SeedEntityInverseTable is the table name for the KnowledgeEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
-	SeedEntityInverseTable = "knowledge_entities"
-	// SeedEntityColumn is the table column denoting the seed_entity relation/edge.
-	SeedEntityColumn = "seed_entity_id"
 )
 
 // Columns holds all SQL columns for situation fields.
@@ -182,8 +144,7 @@ var Columns = []string{
 	FieldHoldUntil,
 	FieldClosedAt,
 	FieldCloseReason,
-	FieldSeedEntityID,
-	FieldLatestJudgmentID,
+	FieldInvestigationID,
 }
 
 var (
@@ -345,14 +306,9 @@ func ByCloseReason(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCloseReason, opts...).ToFunc()
 }
 
-// BySeedEntityID orders the results by the seed_entity_id field.
-func BySeedEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSeedEntityID, opts...).ToFunc()
-}
-
-// ByLatestJudgmentID orders the results by the latest_judgment_id field.
-func ByLatestJudgmentID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLatestJudgmentID, opts...).ToFunc()
+// ByInvestigationID orders the results by the investigation_id field.
+func ByInvestigationID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInvestigationID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -366,20 +322,6 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByInvestigationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newInvestigationStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByHazardAssessmentsCount orders the results by hazard_assessments count.
-func ByHazardAssessmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newHazardAssessmentsStep(), opts...)
-	}
-}
-
-// ByHazardAssessments orders the results by hazard_assessments terms.
-func ByHazardAssessments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newHazardAssessmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -411,17 +353,17 @@ func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// BySignalsCount orders the results by signals count.
-func BySignalsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByObservationsCount orders the results by observations count.
+func ByObservationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSignalsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newObservationsStep(), opts...)
 	}
 }
 
-// BySignals orders the results by signals terms.
-func BySignals(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByObservations orders the results by observations terms.
+func ByObservations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSignalsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newObservationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -439,20 +381,6 @@ func ByEntities(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByLinksCount orders the results by links count.
-func ByLinksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newLinksStep(), opts...)
-	}
-}
-
-// ByLinks orders the results by links terms.
-func ByLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByActionsCount orders the results by actions count.
 func ByActionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -464,6 +392,20 @@ func ByActionsCount(opts ...sql.OrderTermOption) OrderOption {
 func ByActions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newActionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByJudgmentsCount orders the results by judgments count.
+func ByJudgmentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newJudgmentsStep(), opts...)
+	}
+}
+
+// ByJudgments orders the results by judgments terms.
+func ByJudgments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newJudgmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -480,34 +422,6 @@ func ByNotices(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newNoticesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByNoticeRatingsCount orders the results by notice_ratings count.
-func ByNoticeRatingsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newNoticeRatingsStep(), opts...)
-	}
-}
-
-// ByNoticeRatings orders the results by notice_ratings terms.
-func ByNoticeRatings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newNoticeRatingsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByLatestJudgmentField orders the results by latest_judgment field.
-func ByLatestJudgmentField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newLatestJudgmentStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// BySeedEntityField orders the results by seed_entity field.
-func BySeedEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSeedEntityStep(), sql.OrderByField(field, opts...))
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -519,14 +433,7 @@ func newInvestigationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(InvestigationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, InvestigationTable, InvestigationColumn),
-	)
-}
-func newHazardAssessmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(HazardAssessmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, HazardAssessmentsTable, HazardAssessmentsColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, InvestigationTable, InvestigationColumn),
 	)
 }
 func newObservationGroupsStep() *sqlgraph.Step {
@@ -543,11 +450,11 @@ func newIncidentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
 	)
 }
-func newSignalsStep() *sqlgraph.Step {
+func newObservationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SignalsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SignalsTable, SignalsColumn),
+		sqlgraph.To(ObservationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ObservationsTable, ObservationsColumn),
 	)
 }
 func newEntitiesStep() *sqlgraph.Step {
@@ -557,13 +464,6 @@ func newEntitiesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, EntitiesTable, EntitiesColumn),
 	)
 }
-func newLinksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(LinksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, LinksTable, LinksColumn),
-	)
-}
 func newActionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -571,32 +471,18 @@ func newActionsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, ActionsTable, ActionsColumn),
 	)
 }
+func newJudgmentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(JudgmentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, JudgmentsTable, JudgmentsColumn),
+	)
+}
 func newNoticesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(NoticesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, NoticesTable, NoticesColumn),
-	)
-}
-func newNoticeRatingsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(NoticeRatingsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, NoticeRatingsTable, NoticeRatingsColumn),
-	)
-}
-func newLatestJudgmentStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(LatestJudgmentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, LatestJudgmentTable, LatestJudgmentColumn),
-	)
-}
-func newSeedEntityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SeedEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, SeedEntityTable, SeedEntityColumn),
 	)
 }
 

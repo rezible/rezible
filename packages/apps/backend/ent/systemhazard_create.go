@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/systemhazardriskassessment"
 	"github.com/rezible/rezible/ent/tenant"
@@ -161,21 +160,6 @@ func (_c *SystemHazardCreate) AddRiskAssessments(v ...*SystemHazardRiskAssessmen
 		ids[i] = v[i].ID
 	}
 	return _c.AddRiskAssessmentIDs(ids...)
-}
-
-// AddSituationAssessmentIDs adds the "situation_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (_c *SystemHazardCreate) AddSituationAssessmentIDs(ids ...uuid.UUID) *SystemHazardCreate {
-	_c.mutation.AddSituationAssessmentIDs(ids...)
-	return _c
-}
-
-// AddSituationAssessments adds the "situation_assessments" edges to the SituationHazardAssessment entity.
-func (_c *SystemHazardCreate) AddSituationAssessments(v ...*SituationHazardAssessment) *SystemHazardCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddSituationAssessmentIDs(ids...)
 }
 
 // Mutation returns the SystemHazardMutation object of the builder.
@@ -382,23 +366,6 @@ func (_c *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec)
 			},
 		}
 		edge.Schema = _c.schemaConfig.SystemHazardRiskAssessment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.SituationAssessmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   systemhazard.SituationAssessmentsTable,
-			Columns: []string{systemhazard.SituationAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SituationHazardAssessment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

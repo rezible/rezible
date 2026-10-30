@@ -27,11 +27,11 @@ func (s *BackendSuite) TestSituationDetection() {
 		s.Require().Len(response.Body.Data, 1)
 		return response.Body.Data[0]
 	}
-	processKind := jobs.ProcessSituationSignal{}.Kind()
+	processKind := jobs.ProcessSituationObservation{}.Kind()
 	evaluateKind := jobs.EvaluateSituation{}.Kind()
 	firedAt := ah.clock.Now()
 	// deliver ingests a notification of the definition's alert about the checkout service, then runs the
-	// signal processing and evaluations it triggers.
+	// observation processing and evaluations it triggers.
 	deliver := func(definition string, resolved bool) {
 		event := s.demoAlertEvent(definition, firedAt, ah.clock.Now(), resolved)
 		ah.IngestNow(ctx, event)
@@ -43,31 +43,33 @@ func (s *BackendSuite) TestSituationDetection() {
 	deliver("checkout-errors", false)
 	candidate := situation()
 	s.Equal("candidate", candidate.Attributes.Stage)
-	s.Equal(1, candidate.Attributes.SignalCount)
+	s.Len(candidate.Attributes.Observations, 1)
 
 	// A firing alert from a second definition on the same service joins it.
 	deliver("checkout-latency", false)
 	joined := situation()
 	s.Equal(candidate.Id, joined.Id)
 	s.Equal("candidate", joined.Attributes.Stage)
-	s.Equal(2, joined.Attributes.SignalCount)
+	s.Len(joined.Attributes.Observations, 2)
 
 	// Once the collection window has passed, its deadline evaluation raises it on breadth.
 	ah.clock.Advance(situations.CollectionWindow)
 	ah.RunDueJobs(ctx, evaluateKind, ah.clock.Now())
 	raised := situation()
 	s.Equal("raised", raised.Attributes.Stage)
-	s.Require().NotNil(raised.Attributes.LatestJudgment)
-	s.Equal([]string{"breadth"}, raised.Attributes.LatestJudgment.CitedReasons)
+	getSituation := api.Operation[oapiv1.GetSituationRequest, oapiv1.GetSituationResponse](oapiv1.GetSituation)
+	detail := getSituation.Call(requestCtx, oapiv1.GetSituationRequest{PathId: raised.Id.String()}).Body.Data
+	s.Require().NotNil(detail.Attributes.LatestJudgment)
+	s.Equal([]string{"breadth"}, detail.Attributes.LatestJudgment.CitedReasons)
 
 	// Raising starts real investigation work; allow it to succeed before advancing the evidence.
-	s.Require().NotNil(raised.Attributes.Investigation)
+	s.Require().NotNil(raised.Attributes.InvestigationId)
 	getInvestigation := api.Operation[
 		oapiv1.GetInvestigationRequest,
 		oapiv1.GetInvestigationResponse,
 	](oapiv1.GetInvestigation)
 	investigationRequest := oapiv1.GetInvestigationRequest{
-		Id: raised.Attributes.Investigation.Investigation.Id,
+		Id: *raised.Attributes.InvestigationId,
 	}
 	investigationResponse := getInvestigation.Call(requestCtx, investigationRequest)
 	ah.AwaitInvestigationTurn(ctx, investigationResponse.Body.Data.Attributes.SessionId, 1)

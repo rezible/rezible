@@ -66,8 +66,8 @@ func (s *InvestigationService) onAgentTurnUpdated(ctx context.Context, event *re
 		return nil
 	}
 	// A completed turn may have written a new summary of the situation.
-	for _, link := range current.Edges.Situations {
-		if publishErr := s.msgs.Publish(ctx, rez.EventOnSituationUpdated{SituationID: link.SituationID}); publishErr != nil {
+	for _, situation := range current.Edges.Situations {
+		if publishErr := s.msgs.Publish(ctx, rez.EventOnSituationUpdated{SituationID: situation.ID}); publishErr != nil {
 			return fmt.Errorf("publish situation updated: %w", publishErr)
 		}
 	}

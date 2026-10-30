@@ -214,22 +214,20 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 			match := rez.UnconfirmedMatch{ProposalID: uuid.New(), Value: "checkout", Entity: otherName}
 			return map[uuid.UUID][]rez.UnconfirmedMatch{firstListed.ID: {match}}, nil
 		})
-	// Signals attached later started earlier, so the most recently attached are listed newest-started first.
-	group := &ent.SituationObservationGroup{}
+	// Observations attached later started earlier, so the most recently attached are listed newest-started first.
 	var alertEntityIDs []uuid.UUID
-	signals := make(map[uuid.UUID]rez.SituationSignal)
+	observations := make(map[rez.SituationObservationRef]rez.SituationObservation)
 	for index := range 30 {
 		alertEntityID := uuid.New()
 		alertEntityIDs = append(alertEntityIDs, alertEntityID)
-		member := &ent.SituationSignal{
-			ID:                uuid.New(),
-			KnowledgeEntityID: uuid.New(),
-			SourceEntityID:    &alertEntityID,
-			AttachedAt:        openedAt.Add(time.Duration(index) * time.Minute),
+		member := &ent.SituationObservation{
+			ID:             uuid.New(),
+			AlertEpisodeID: new(uuid.New()),
+			AttachedAt:     openedAt.Add(time.Duration(index) * time.Minute),
 		}
-		group.Edges.Signals = append(group.Edges.Signals, member)
-		signals[member.KnowledgeEntityID] = rez.SituationSignal{
-			EntityID:       member.KnowledgeEntityID,
+		situation.Edges.Observations = append(situation.Edges.Observations, member)
+		observations[member.Ref()] = rez.SituationObservation{
+			Ref:            member.Ref(),
 			Title:          fmt.Sprintf("CheckoutErrors %02d", index),
 			SourceEntityID: &alertEntityID,
 			Severity:       schematypes.SignalSeverityCritical,
@@ -237,16 +235,13 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 			Active:         true,
 		}
 	}
-	sourceless := &ent.SituationSignal{ID: uuid.New(), KnowledgeEntityID: uuid.New(), AttachedAt: openedAt.Add(time.Hour)}
-	group.Edges.Signals = append(group.Edges.Signals, sourceless)
-	situation.Edges.ObservationGroups = []*ent.SituationObservationGroup{group}
-	var loaded []uuid.UUID
-	h.situations.EXPECT().LoadSignals(mock.Anything, mock.Anything, rez.LoadSituationSignalsOptions{}).
-		RunAndReturn(func(_ context.Context, entityIDs []uuid.UUID, _ rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
-			loaded = append(loaded, entityIDs...)
-			listed := make([]rez.SituationSignal, len(entityIDs))
-			for index, entityID := range entityIDs {
-				listed[index] = signals[entityID]
+	var loaded []rez.SituationObservationRef
+	h.situations.EXPECT().LoadObservations(mock.Anything, mock.Anything, rez.LoadSituationObservationsOptions{}).
+		RunAndReturn(func(_ context.Context, refs []rez.SituationObservationRef, _ rez.LoadSituationObservationsOptions) (map[rez.SituationObservationRef]rez.SituationObservation, error) {
+			loaded = append(loaded, refs...)
+			listed := make(map[rez.SituationObservationRef]rez.SituationObservation, len(refs))
+			for _, ref := range refs {
+				listed[ref] = observations[ref]
 			}
 			return listed, nil
 		})
@@ -265,13 +260,12 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	s.Equal("Checkout errors", introduction.Situation.Title)
 	s.Equal("Checkout is failing requests.", introduction.Situation.Summary)
 	s.Nil(introduction.Situation.ClosedAt)
-	s.Require().Len(introduction.Situation.Signals, introductionListLimit)
-	s.Len(loaded, introductionListLimit, "only the listed signals are loaded")
-	s.NotContains(loaded, sourceless.KnowledgeEntityID, "a signal without a source is left out")
-	newest := introduction.Situation.Signals[0]
+	s.Require().Len(introduction.Situation.Observations, introductionListLimit)
+	s.Len(loaded, introductionListLimit, "only the listed observations are loaded")
+	newest := introduction.Situation.Observations[0]
 	s.Equal(alertEntityIDs[5].String(), newest.Ref, "the most recently attached are listed newest-started first, by their source")
 	s.Equal("critical", newest.Severity)
-	s.Equal(alertEntityIDs[29].String(), introduction.Situation.Signals[introductionListLimit-1].Ref)
+	s.Equal(alertEntityIDs[29].String(), introduction.Situation.Observations[introductionListLimit-1].Ref)
 	s.Len(introduction.Situation.Entities, introductionListLimit)
 	s.Equal("service-00", introduction.Situation.Entities[0].Name, "entities are listed by name")
 	unconfirmed := []rezai.InvestigationUnconfirmedMatch{{Ref: otherName.ID.String(), Value: "checkout"}}

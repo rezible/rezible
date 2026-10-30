@@ -200,18 +200,18 @@ func (r *agentRun) install(ctx context.Context, scenario *Scenario) error {
 	return nil
 }
 
-// setup ingests the setup events, recording the signals each produces instead of letting detection place
+// setup ingests the setup events, recording the observations each produces instead of letting detection place
 // them, then has the harness start the session and waits for its first turn.
 func (r *agentRun) setup(ctx context.Context, scenario *Scenario) error {
-	signals := make(map[string][]uuid.UUID, len(scenario.Events))
+	observations := make(map[string][]rez.SituationObservationRef, len(scenario.Events))
 	for _, event := range scenario.Events {
 		setupCtx, recorder := withSetupEvent(ctx)
 		if ingestErr := r.ingest(setupCtx, event); ingestErr != nil {
 			return ingestErr
 		}
-		signals[event.Ref] = recorder.signals
+		observations[event.Ref] = recorder.observations
 	}
-	sessionID, setupErr := r.harness.Setup(ctx, scenario.Setup, signals)
+	sessionID, setupErr := r.harness.Setup(ctx, scenario.Setup, observations)
 	if setupErr != nil {
 		return setupErr
 	}

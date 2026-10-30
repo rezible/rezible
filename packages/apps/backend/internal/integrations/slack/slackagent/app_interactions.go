@@ -6,14 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/google/uuid"
 	"github.com/slack-go/slack"
 
 	"github.com/rezible/rezible/ent"
-	sit "github.com/rezible/rezible/ent/situation"
-	sitnr "github.com/rezible/rezible/ent/situationnoticerating"
 	"github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/rezible/rezible/pkg/execution"
 )
 
 func (a *App) SlashCommandHandlers() map[string]slackintegration.SlashCommandHandler {
@@ -51,10 +47,6 @@ func (a *App) handleMessageActionInteraction(ctx context.Context, ii *ent.Integr
 func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) (slackintegration.ViewErrors, error) {
 	for _, action := range ic.ActionCallback.BlockActions {
 		switch action.ActionID {
-		case actionIdSituationNoticeUseful:
-			return nil, a.rateSituationNotice(ctx, ic, action, true)
-		case actionIdSituationNoticeNotUseful:
-			return nil, a.rateSituationNotice(ctx, ic, action, false)
 		case actionIdSituationNoticeOpen, actionIdSituationNoticeDeclareIncident, actionIdSituationNoticeOpenIncident:
 			// The button opens its URL in the browser; Slack still reports the click.
 			return nil, nil
@@ -65,55 +57,6 @@ func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integra
 	slog.Debug("interaction callback", "ic", ic)
 
 	return nil, fmt.Errorf("unknown block actions: %s", ic.CallbackID)
-}
-
-// rateSituationNotice records the Slack user's rating of a situation's notice, replacing an earlier one,
-// and acknowledges it to them alone. The Rezible user is recorded when the Slack user maps to one.
-func (a *App) rateSituationNotice(ctx context.Context, ic *slack.InteractionCallback, action *slack.BlockAction, useful bool) error {
-	situationID, parseErr := uuid.Parse(action.Value)
-	if parseErr != nil {
-		return fmt.Errorf("parse situation notice rating situation: %w", parseErr)
-	}
-	client := a.db.Client(ctx)
-	querySituation := client.Situation.Query().
-		Where(sit.ID(situationID))
-	situationExists, situationErr := querySituation.Exist(ctx)
-	if situationErr != nil {
-		return fmt.Errorf("check rated situation: %w", situationErr)
-	}
-	if !situationExists {
-		return nil
-	}
-
-	createRating := client.SituationNoticeRating.Create().
-		SetSituationID(situationID).
-		SetChatUserID(ic.User.ID).
-		SetUseful(useful)
-	if userID, hasUser := execution.GetContext(ctx).UserID(); hasUser {
-		createRating.SetUserID(userID)
-	}
-	upsertRating := createRating.
-		OnConflictColumns(sitnr.FieldTenantID, sitnr.FieldSituationID, sitnr.FieldChatUserID).
-		UpdateUseful().
-		UpdateUserID().
-		UpdateUpdatedAt()
-	if upsertErr := upsertRating.Exec(ctx); upsertErr != nil {
-		return fmt.Errorf("record situation notice rating: %w", upsertErr)
-	}
-
-	acknowledgement := "Recorded as not useful. Thanks."
-	if useful {
-		acknowledgement = "Recorded as useful. Thanks."
-	}
-	reply := &slack.WebhookMessage{
-		Text:            acknowledgement,
-		ResponseType:    slack.ResponseTypeEphemeral,
-		ReplaceOriginal: false,
-	}
-	if replyErr := slack.PostWebhookContext(ctx, ic.ResponseURL, reply); replyErr != nil {
-		return fmt.Errorf("acknowledge situation notice rating: %w", replyErr)
-	}
-	return nil
 }
 
 func (a *App) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) (slackintegration.ViewErrors, error) {

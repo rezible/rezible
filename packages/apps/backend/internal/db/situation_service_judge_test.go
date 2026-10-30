@@ -53,8 +53,8 @@ func (j offJudge) Run(context.Context, rezai.SituationJudgeInput) (rezai.Situati
 func (s *SituationServiceSuite) persistentCandidate(ctx context.Context, tdb rez.Database, h *situationServiceFixture, judge *stubJudge) *ent.Situation {
 	h.situations.cfg.ModelJudge = true
 	h.situations.judge = judge
-	signal := s.signal(ctx, tdb, h, "checkout-errors", 0, s.entityRef(kne.CategoryContainer, "checkout"))
-	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
+	episode := s.alertEpisode(ctx, tdb, h, "checkout-errors", 0, s.entityRef(kne.CategoryContainer, "checkout"))
+	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {episode}})
 	h.clock.Advance(situations.CollectionWindow)
 	return candidate
 }
@@ -77,11 +77,11 @@ func (s *SituationServiceSuite) TestModelJudgeDecidesOnceForUnchangedFacts() {
 	s.evaluate(ctx, h, candidate.ID)
 	s.Nil(held.RaisedAt)
 	s.Require().Len(judge.inputs, 1, "unchanged facts are judged once")
-	s.Equal(situations.JudgeModel, held.Edges.LatestJudgment.Judge)
-	s.Equal(sitjudg.OutcomeNeedsDecision, held.Edges.LatestJudgment.Outcome)
+	s.Equal(situations.JudgeModel, held.Edges.Judgments[0].Judge)
+	s.Equal(sitjudg.OutcomeNeedsDecision, held.Edges.Judgments[0].Outcome)
 	facts := judge.inputs[0].Facts
 	s.Require().Len(facts.Entities, 1, "the judge sees the situation's entities")
-	s.Equal([]uuid.UUID{facts.Entities[0].ID}, facts.Signals[0].EntityIDs)
+	s.Equal([]uuid.UUID{facts.Entities[0].ID}, facts.Observations[0].EntityIDs)
 	s.Equal(1, s.countJudgments(ctx, tdb, candidate.ID))
 }
 
@@ -121,8 +121,8 @@ func (s *SituationServiceSuite) TestConcurrentEvaluationsCallJudgeTwiceButRecord
 	// Capture reserves no in-flight judgment, so unchanged facts still trigger a second model call.
 	held, _ := s.evaluate(ctx, h, candidate.ID)
 	s.Require().Len(judge.inputs, 2)
-	s.Require().NotNil(held.Edges.LatestJudgment)
-	judgmentID := held.Edges.LatestJudgment.ID
+	s.Require().NotEmpty(held.Edges.Judgments)
+	judgmentID := held.Edges.Judgments[0].ID
 	close(release)
 	s.Require().NoError(<-done)
 
@@ -130,7 +130,7 @@ func (s *SituationServiceSuite) TestConcurrentEvaluationsCallJudgeTwiceButRecord
 	final, getErr := h.situations.GetSituation(ctx, sit.ID(candidate.ID))
 	s.Require().NoError(getErr)
 	s.Nil(final.RaisedAt)
-	s.Equal(judgmentID, *final.LatestJudgmentID)
+	s.Equal(judgmentID, final.Edges.Judgments[0].ID)
 	s.Equal(1, s.countJudgments(ctx, tdb, candidate.ID))
 }
 
@@ -146,9 +146,9 @@ func (s *SituationServiceSuite) TestModelJudgeRaises() {
 
 	raised, _ := s.evaluate(ctx, h, candidate.ID)
 	s.NotNil(raised.RaisedAt)
-	s.NotNil(raised.Edges.Investigation)
-	s.Equal(situations.JudgeModel, raised.Edges.LatestJudgment.Judge)
-	s.Equal(answer.Reasons, raised.Edges.LatestJudgment.CitedReasons)
+	s.NotNil(raised.InvestigationID)
+	s.Equal(situations.JudgeModel, raised.Edges.Judgments[0].Judge)
+	s.Equal(answer.Reasons, raised.Edges.Judgments[0].CitedReasons)
 }
 
 func (s *SituationServiceSuite) TestModelJudgeRejectsMalformedAndInvalidAnswers() {
@@ -170,8 +170,8 @@ func (s *SituationServiceSuite) TestModelJudgeRejectsMalformedAndInvalidAnswers(
 
 			rejected, _ := s.evaluate(ctx, h, candidate.ID)
 			s.Nil(rejected.RaisedAt)
-			s.Equal(situations.JudgeModelRejected, rejected.Edges.LatestJudgment.Judge)
-			s.Equal(sitjudg.DecisionHold, rejected.Edges.LatestJudgment.Decision)
+			s.Equal(situations.JudgeModelRejected, rejected.Edges.Judgments[0].Judge)
+			s.Equal(sitjudg.DecisionHold, rejected.Edges.Judgments[0].Decision)
 		})
 	}
 }
@@ -184,7 +184,7 @@ func (s *SituationServiceSuite) TestModelJudgeRetriesWhenUnavailable() {
 
 	unavailable, deadline := s.evaluate(ctx, h, candidate.ID)
 	s.Nil(unavailable.RaisedAt)
-	s.Equal(situations.JudgeUnavailable, unavailable.Edges.LatestJudgment.Judge)
+	s.Equal(situations.JudgeUnavailable, unavailable.Edges.Judgments[0].Judge)
 	s.Require().NotNil(deadline)
 	s.True(h.clock.Now().Add(situations.JudgeRetryAfter).Equal(*deadline), "the retry is scheduled as a deadline")
 
@@ -197,7 +197,7 @@ func (s *SituationServiceSuite) TestModelJudgeRetriesWhenUnavailable() {
 	judge.answer = rezai.SituationJudgeOutput{Decision: "hold", Explanation: "Only one alert."}
 	judged, _ := s.evaluate(ctx, h, candidate.ID)
 	s.Len(judge.inputs, 2)
-	s.Equal(situations.JudgeModel, judged.Edges.LatestJudgment.Judge)
+	s.Equal(situations.JudgeModel, judged.Edges.Judgments[0].Judge)
 }
 
 func (s *SituationServiceSuite) TestModelJudgeAnswerIsDiscardedWhenFactsChange() {
@@ -215,6 +215,6 @@ func (s *SituationServiceSuite) TestModelJudgeAnswerIsDiscardedWhenFactsChange()
 
 	discarded, _ := s.evaluate(ctx, h, candidate.ID)
 	s.Nil(discarded.RaisedAt)
-	s.Nil(discarded.Edges.LatestJudgment)
+	s.Empty(discarded.Edges.Judgments)
 	s.Contains(h.evaluations, jobs.EvaluateSituation{SituationID: candidate.ID}, "an evaluation is requested now")
 }

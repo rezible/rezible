@@ -16,48 +16,29 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/schema"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitent "github.com/rezible/rezible/ent/situationentity"
-	sitlink "github.com/rezible/rezible/ent/situationlink"
+	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	sitog "github.com/rezible/rezible/ent/situationobservationgroup"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/situations"
 )
 
-// signalGraphPageSize is large enough to read a signal's observed entities or relationships in one page.
-const signalGraphPageSize = 10_000
+// observationGraphPageSize is large enough to read an observation's entities or relationships in one page.
+const observationGraphPageSize = 10_000
 
-// AttachSituationSignalsParams attaches signals to a situation under the observation group with GroupTitle.
-type AttachSituationSignalsParams struct {
-	SituationID       uuid.UUID
-	GroupTitle        string
-	SignalEntityIDs   []uuid.UUID
-	MatchKind         sitsig.MatchKind
-	ViaRelationshipID *uuid.UUID
-	Explanation       string
+// AttachSituationObservationsParams attaches observations to a situation, in its group with GroupID when set.
+type AttachSituationObservationsParams struct {
+	SituationID  uuid.UUID
+	GroupID      *uuid.UUID
+	Observations []rez.SituationObservationRef
+	Explanation  string
 }
 
-// situationMembership describes membership rows to create in one group.
-type situationMembership struct {
-	groupID           uuid.UUID
-	matchKind         sitsig.MatchKind
-	viaRelationshipID *uuid.UUID
-	explanation       string
-}
-
-// AttachSituationSignals attaches the signals the situation does not already hold. A signal held by another
-// situation, closed or not, is a conflict.
-func (s *SituationService) AttachSituationSignals(ctx context.Context, params AttachSituationSignalsParams) error {
-	title := strings.TrimSpace(params.GroupTitle)
-	if title == "" {
-		return fmt.Errorf("%w: observation group title is required", errs.ErrInvalidInput)
-	}
-	if matchErr := sitsig.MatchKindValidator(params.MatchKind); matchErr != nil {
-		return fmt.Errorf("%w: %w", errs.ErrInvalidInput, matchErr)
-	}
+// AttachSituationObservations attaches the observations the situation does not already have. Other
+// situations, closed or not, may have the same observations.
+func (s *SituationService) AttachSituationObservations(ctx context.Context, params AttachSituationObservationsParams) error {
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		now := s.clock.Now()
 		locked, lockErr := s.lockSituations(ctx, params.SituationID)
@@ -68,38 +49,33 @@ func (s *SituationService) AttachSituationSignals(ctx context.Context, params At
 		if situation.ClosedAt != nil {
 			return fmt.Errorf("%w: situation is closed", errs.ErrConflict)
 		}
-		memberIDs, membersErr := s.memberEntityIDs(ctx, situation.ID)
-		if membersErr != nil {
-			return membersErr
+		if params.GroupID != nil {
+			queryGroup := tx.SituationObservationGroup.Query().
+				Where(sitog.ID(*params.GroupID), sitog.SituationID(situation.ID))
+			if exists, groupErr := queryGroup.Exist(ctx); groupErr != nil {
+				return fmt.Errorf("query observation group: %w", groupErr)
+			} else if !exists {
+				return fmt.Errorf("%w: observation group is not the situation's", errs.ErrInvalidInput)
+			}
 		}
-		newIDs := mapset.NewSet(params.SignalEntityIDs...).Difference(mapset.NewSet(memberIDs...))
-		newIDs.Remove(uuid.Nil)
-		if newIDs.IsEmpty() {
+		observed, observedErr := s.observedRefs(ctx, situation.ID)
+		if observedErr != nil {
+			return observedErr
+		}
+		newRefs := mapset.NewSet(params.Observations...).Difference(mapset.NewSet(observed...))
+		newRefs.Remove(rez.SituationObservationRef{})
+		if newRefs.IsEmpty() {
 			return nil
 		}
-		signals, loadErr := s.loadSignals(ctx, newIDs.ToSlice(), rez.LoadSituationSignalsOptions{})
+		observations, loadErr := s.LoadObservations(ctx, newRefs.ToSlice(), rez.LoadSituationObservationsOptions{})
 		if loadErr != nil {
 			return loadErr
 		}
-
-		groupID, groupErr := s.observationGroupByTitle(ctx, situation.ID, title)
-		if groupErr != nil {
-			return groupErr
+		explanation := strings.TrimSpace(params.Explanation)
+		if observeErr := s.createObservations(ctx, situation.ID, params.GroupID, newRefs.ToSlice(), explanation, now); observeErr != nil {
+			return observeErr
 		}
-		membership := situationMembership{
-			groupID:           groupID,
-			matchKind:         params.MatchKind,
-			viaRelationshipID: params.ViaRelationshipID,
-			explanation:       strings.TrimSpace(params.Explanation),
-		}
-		newSignals := make([]rez.SituationSignal, 0, len(signals))
-		for _, signal := range signals {
-			newSignals = append(newSignals, signal)
-		}
-		if memberErr := s.createMemberships(ctx, situation.ID, membership, newSignals, now); memberErr != nil {
-			return memberErr
-		}
-		if lowerErr := s.lowerOpenedAt(ctx, situation, s.earliestStart(signals)); lowerErr != nil {
+		if lowerErr := s.lowerOpenedAt(ctx, situation, s.earliestStart(observations)); lowerErr != nil {
 			return lowerErr
 		}
 		if entitiesErr := s.recomputeSituationEntities(ctx, situation.ID); entitiesErr != nil {
@@ -109,57 +85,22 @@ func (s *SituationService) AttachSituationSignals(ctx context.Context, params At
 	})
 }
 
-// observationGroupByTitle returns the situation's group with exactly this title, creating it if needed.
-func (s *SituationService) observationGroupByTitle(ctx context.Context, situationID uuid.UUID, title string) (uuid.UUID, error) {
-	client := s.db.Client(ctx)
-	queryGroup := client.SituationObservationGroup.Query().
-		Where(sitog.SituationID(situationID), sitog.Title(title)).
-		Order(sitog.ByCreatedAt(), sitog.ByID())
-	group, queryErr := queryGroup.First(ctx)
-	if queryErr == nil {
-		return group.ID, nil
-	}
-	if !ent.IsNotFound(queryErr) {
-		return uuid.Nil, fmt.Errorf("find observation group: %w", queryErr)
-	}
-	createGroup := client.SituationObservationGroup.Create().
-		SetSituationID(situationID).
-		SetTitle(title)
-	created, createErr := createGroup.Save(ctx)
-	if createErr != nil {
-		return uuid.Nil, fmt.Errorf("create observation group: %w", createErr)
-	}
-	return created.ID, nil
-}
-
-// situationSignalMembershipIndex is the unique index that keeps a signal in at most one situation.
-const situationSignalMembershipIndex = "situationsignal_tenant_id_knowledge_entity_id"
-
-// createMemberships creates one membership per signal in the group. A signal belongs to at most one
-// situation; the unique index turns a second placement into a conflict.
-func (s *SituationService) createMemberships(ctx context.Context, situationID uuid.UUID, membership situationMembership, signals []rez.SituationSignal, now time.Time) error {
-	createMembers := s.db.Client(ctx).SituationSignal.MapCreateBulk(signals, func(c *ent.SituationSignalCreate, i int) {
-		c.SetSituationID(situationID).
-			SetObservationGroupID(membership.groupID).
-			SetKnowledgeEntityID(signals[i].EntityID).
-			SetKind(string(signals[i].Kind)).
-			SetNillableSourceEntityID(signals[i].SourceEntityID).
+// createObservations attaches the observations to the situation, in its group when groupID is set.
+func (s *SituationService) createObservations(ctx context.Context, situationID uuid.UUID, groupID *uuid.UUID, refs []rez.SituationObservationRef, explanation string, now time.Time) error {
+	createObservations := s.db.Client(ctx).SituationObservation.MapCreateBulk(refs, func(c *ent.SituationObservationCreate, i int) {
+		s.setObservationRef(c, refs[i]).
+			SetSituationID(situationID).
+			SetNillableObservationGroupID(groupID).
 			SetAttachedAt(now).
-			SetMatchKind(membership.matchKind).
-			SetNillableViaRelationshipID(membership.viaRelationshipID).
-			SetMatchExplanation(membership.explanation)
+			SetMatchExplanation(explanation)
 	})
-	// A merge can delete a referenced knowledge subject; its foreign key violation makes the job retry.
-	if createErr := createMembers.Exec(schema.ReportMissingReferences(ctx)); createErr != nil {
-		if constraint, isUnique := s.db.IsConstraintError(createErr); isUnique && constraint == situationSignalMembershipIndex {
-			return fmt.Errorf("%w: a signal already belongs to a situation", errs.ErrConflict)
-		}
-		return fmt.Errorf("create situation signals: %w", createErr)
+	if createErr := createObservations.Exec(ctx); createErr != nil {
+		return fmt.Errorf("create situation observations: %w", createErr)
 	}
 	return nil
 }
 
-// lowerOpenedAt moves the situation's opening back to an earlier signal start; it never moves it forward.
+// lowerOpenedAt moves the situation's opening back to an earlier observation start; it never moves it forward.
 func (s *SituationService) lowerOpenedAt(ctx context.Context, situation *ent.Situation, startedAt time.Time) error {
 	if !startedAt.Before(situation.OpenedAt) {
 		return nil
@@ -173,21 +114,22 @@ func (s *SituationService) lowerOpenedAt(ctx context.Context, situation *ent.Sit
 	return nil
 }
 
-// recomputeSituationEntities replaces the situation's entity rows with the union of its signals' runtime
-// entities, resolving every signal again. An entity is matching when a signal that is not broad touches it.
+// recomputeSituationEntities replaces the situation's entity rows with the union of its observations'
+// runtime entities, resolving each again. An entity is matching when an observation that is not broad
+// touches it.
 func (s *SituationService) recomputeSituationEntities(ctx context.Context, situationID uuid.UUID) error {
-	memberIDs, membersErr := s.memberEntityIDs(ctx, situationID)
-	if membersErr != nil {
-		return membersErr
+	refs, refsErr := s.observedRefs(ctx, situationID)
+	if refsErr != nil {
+		return refsErr
 	}
 	matching := make(map[uuid.UUID]bool)
-	if len(memberIDs) > 0 {
-		signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{})
+	if len(refs) > 0 {
+		observations, loadErr := s.LoadObservations(ctx, refs, rez.LoadSituationObservationsOptions{})
 		if loadErr != nil {
 			return loadErr
 		}
-		for _, signal := range signals {
-			entityIDs, entitiesErr := s.signalRuntimeEntities(ctx, signal)
+		for _, observation := range observations {
+			entityIDs, entitiesErr := s.observationRuntimeEntities(ctx, observation)
 			if entitiesErr != nil {
 				return entitiesErr
 			}
@@ -218,16 +160,16 @@ func (s *SituationService) recomputeSituationEntities(ctx context.Context, situa
 	return nil
 }
 
-// signalRuntimeEntities returns the runtime entities a signal is about: the entities its events observed,
-// and the endpoints of relationships they observed, resolved to the runtime structure level. Evidence that
-// an entity was deleted does not make a signal about it.
-func (s *SituationService) signalRuntimeEntities(ctx context.Context, signal rez.SituationSignal) (mapset.Set[uuid.UUID], error) {
+// observationRuntimeEntities returns the runtime entities an observation is about: the entities its events
+// observed, and the endpoints of relationships they observed, resolved to the runtime structure level.
+// Evidence that an entity was deleted does not make an observation about it.
+func (s *SituationService) observationRuntimeEntities(ctx context.Context, observation rez.SituationObservation) (mapset.Set[uuid.UUID], error) {
 	runtime := mapset.NewSet[uuid.UUID]()
-	if len(signal.EventIDs) == 0 {
+	if len(observation.EventIDs) == 0 {
 		return runtime, nil
 	}
-	observed := ksa.HasEvidenceWith(knev.EventIDIn(signal.EventIDs...), knev.KindEQ(knev.KindObserved))
-	pageParams := ent.ListParams{PageSize: signalGraphPageSize}
+	observed := ksa.HasEvidenceWith(knev.EventIDIn(observation.EventIDs...), knev.KindEQ(knev.KindObserved))
+	pageParams := ent.ListParams{PageSize: observationGraphPageSize}
 
 	listEntitiesParams := rez.ListKnowledgeEntitiesParams{
 		ListParams: pageParams,
@@ -263,7 +205,7 @@ func (s *SituationService) signalRuntimeEntities(ctx context.Context, signal rez
 	}
 	resolved, resolveErr := s.graph.ResolveStructure(ctx, resolveParams)
 	if resolveErr != nil {
-		return nil, fmt.Errorf("resolve signal entities: %w", resolveErr)
+		return nil, fmt.Errorf("resolve observation entities: %w", resolveErr)
 	}
 	for _, representatives := range resolved {
 		runtime.Append(representatives...)
@@ -271,7 +213,7 @@ func (s *SituationService) signalRuntimeEntities(ctx context.Context, signal rez
 	return runtime, nil
 }
 
-// MergeSituations moves the source's signals into the target and closes the source as merged.
+// MergeSituations moves the source's observations into the target and closes the source as merged.
 func (s *SituationService) MergeSituations(ctx context.Context, params rez.MergeSituationsParams) (*ent.Situation, error) {
 	if params.SourceID == uuid.Nil || params.TargetID == uuid.Nil {
 		return nil, fmt.Errorf("%w: source and target situations are required", errs.ErrInvalidInput)
@@ -291,19 +233,11 @@ func (s *SituationService) MergeSituations(ctx context.Context, params rez.Merge
 			return nil, fmt.Errorf("%w: closed situations cannot be merged", errs.ErrConflict)
 		}
 		explanation := strings.TrimSpace(params.Explanation)
-		if moveErr := s.moveSignals(ctx, source.ID, target.ID, explanation, now); moveErr != nil {
+		if moveErr := s.moveObservations(ctx, source.ID, target.ID, explanation, now); moveErr != nil {
 			return nil, moveErr
 		}
 		if closeErr := s.closeLocked(ctx, source, sit.CloseReasonMerged, explanation, now, now); closeErr != nil {
 			return nil, closeErr
-		}
-		createLink := tx.SituationLink.Create().
-			SetSituationID(source.ID).
-			SetLinkedSituationID(target.ID).
-			SetKind(sitlink.KindMergedInto).
-			SetCreatedAt(now)
-		if linkErr := createLink.Exec(ctx); linkErr != nil {
-			return nil, fmt.Errorf("link merged situation: %w", linkErr)
 		}
 		if lowerErr := s.lowerOpenedAt(ctx, target, source.OpenedAt); lowerErr != nil {
 			return nil, lowerErr
@@ -320,12 +254,22 @@ func (s *SituationService) MergeSituations(ctx context.Context, params rez.Merge
 	})
 }
 
-// moveSignals moves the source's memberships to the target as manual attachments made now; the reset
+// moveObservations moves the source's observations to the target as attachments made now; the reset
 // attachment time counts the merge as new evidence for the target, and the reset observed revision brings
-// the signals into the target's investigation. A source group joins the target's group of the same title;
-// other groups move with their signals.
-func (s *SituationService) moveSignals(ctx context.Context, sourceID, targetID uuid.UUID, explanation string, now time.Time) error {
+// them into the target's investigation. The source's observations the target already has are dropped. A
+// source group joins the target's group of the same title; other groups move.
+func (s *SituationService) moveObservations(ctx context.Context, sourceID, targetID uuid.UUID, explanation string, now time.Time) error {
 	client := s.db.Client(ctx)
+	targetRefs, targetRefsErr := s.observedRefs(ctx, targetID)
+	if targetRefsErr != nil {
+		return targetRefsErr
+	}
+	deleteDuplicates := client.SituationObservation.Delete().
+		Where(sitobs.SituationID(sourceID), s.observesAny(targetRefs...))
+	if _, deleteErr := deleteDuplicates.Exec(ctx); deleteErr != nil {
+		return fmt.Errorf("delete duplicate observations: %w", deleteErr)
+	}
+
 	queryTargetGroups := client.SituationObservationGroup.Query().
 		Where(sitog.SituationID(targetID))
 	targetGroups, targetErr := queryTargetGroups.All(ctx)
@@ -347,29 +291,32 @@ func (s *SituationService) moveSignals(ctx context.Context, sourceID, targetID u
 	for _, group := range sourceGroups {
 		destinationID, joins := targetGroupByTitle[group.Title]
 		if !joins {
-			destinationID = group.ID
 			moveGroup := client.SituationObservationGroup.UpdateOneID(group.ID).
 				SetSituationID(targetID)
 			if moveErr := moveGroup.Exec(ctx); moveErr != nil {
 				return fmt.Errorf("move observation group: %w", moveErr)
 			}
+			continue
 		}
-		moveMembers := client.SituationSignal.Update().
-			Where(sitsig.ObservationGroupID(group.ID)).
-			SetSituationID(targetID).
-			SetObservationGroupID(destinationID).
-			SetMatchKind(sitsig.MatchKindManual).
-			SetMatchExplanation(explanation).
-			SetAttachedAt(now).
-			SetObservedRevision(0)
-		if moveErr := moveMembers.Exec(ctx); moveErr != nil {
-			return fmt.Errorf("move situation signals: %w", moveErr)
+		joinGroup := client.SituationObservation.Update().
+			Where(sitobs.ObservationGroupID(group.ID)).
+			SetObservationGroupID(destinationID)
+		if joinErr := joinGroup.Exec(ctx); joinErr != nil {
+			return fmt.Errorf("join observation group: %w", joinErr)
 		}
-		if joins {
-			if deleteErr := client.SituationObservationGroup.DeleteOneID(group.ID).Exec(ctx); deleteErr != nil {
-				return fmt.Errorf("delete joined observation group: %w", deleteErr)
-			}
+		if deleteErr := client.SituationObservationGroup.DeleteOneID(group.ID).Exec(ctx); deleteErr != nil {
+			return fmt.Errorf("delete joined observation group: %w", deleteErr)
 		}
+	}
+
+	moveObservations := client.SituationObservation.Update().
+		Where(sitobs.SituationID(sourceID)).
+		SetSituationID(targetID).
+		SetMatchExplanation(explanation).
+		SetAttachedAt(now).
+		SetObservedRevision(0)
+	if moveErr := moveObservations.Exec(ctx); moveErr != nil {
+		return fmt.Errorf("move situation observations: %w", moveErr)
 	}
 	return nil
 }

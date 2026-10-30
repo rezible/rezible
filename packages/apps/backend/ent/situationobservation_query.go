@@ -14,63 +14,65 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situationobservation"
+	"github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// SituationInvestigationQuery is the builder for querying SituationInvestigation entities.
-type SituationInvestigationQuery struct {
+// SituationObservationQuery is the builder for querying SituationObservation entities.
+type SituationObservationQuery struct {
 	config
-	ctx               *QueryContext
-	order             []situationinvestigation.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.SituationInvestigation
-	withTenant        *TenantQuery
-	withSituation     *SituationQuery
-	withInvestigation *InvestigationQuery
-	modifiers         []func(*sql.Selector)
+	ctx                  *QueryContext
+	order                []situationobservation.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.SituationObservation
+	withTenant           *TenantQuery
+	withSituation        *SituationQuery
+	withObservationGroup *SituationObservationGroupQuery
+	withAlertEpisode     *AlertEpisodeQuery
+	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the SituationInvestigationQuery builder.
-func (_q *SituationInvestigationQuery) Where(ps ...predicate.SituationInvestigation) *SituationInvestigationQuery {
+// Where adds a new predicate for the SituationObservationQuery builder.
+func (_q *SituationObservationQuery) Where(ps ...predicate.SituationObservation) *SituationObservationQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *SituationInvestigationQuery) Limit(limit int) *SituationInvestigationQuery {
+func (_q *SituationObservationQuery) Limit(limit int) *SituationObservationQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *SituationInvestigationQuery) Offset(offset int) *SituationInvestigationQuery {
+func (_q *SituationObservationQuery) Offset(offset int) *SituationObservationQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *SituationInvestigationQuery) Unique(unique bool) *SituationInvestigationQuery {
+func (_q *SituationObservationQuery) Unique(unique bool) *SituationObservationQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *SituationInvestigationQuery) Order(o ...situationinvestigation.OrderOption) *SituationInvestigationQuery {
+func (_q *SituationObservationQuery) Order(o ...situationobservation.OrderOption) *SituationObservationQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *SituationInvestigationQuery) QueryTenant() *TenantQuery {
+func (_q *SituationObservationQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -81,13 +83,13 @@ func (_q *SituationInvestigationQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(situationinvestigation.Table, situationinvestigation.FieldID, selector),
+			sqlgraph.From(situationobservation.Table, situationobservation.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, situationinvestigation.TenantTable, situationinvestigation.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationobservation.TenantTable, situationobservation.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SituationInvestigation
+		step.Edge.Schema = schemaConfig.SituationObservation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -95,7 +97,7 @@ func (_q *SituationInvestigationQuery) QueryTenant() *TenantQuery {
 }
 
 // QuerySituation chains the current query on the "situation" edge.
-func (_q *SituationInvestigationQuery) QuerySituation() *SituationQuery {
+func (_q *SituationObservationQuery) QuerySituation() *SituationQuery {
 	query := (&SituationClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -106,22 +108,22 @@ func (_q *SituationInvestigationQuery) QuerySituation() *SituationQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(situationinvestigation.Table, situationinvestigation.FieldID, selector),
+			sqlgraph.From(situationobservation.Table, situationobservation.FieldID, selector),
 			sqlgraph.To(situation.Table, situation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, situationinvestigation.SituationTable, situationinvestigation.SituationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationobservation.SituationTable, situationobservation.SituationColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Situation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
+		step.Edge.Schema = schemaConfig.SituationObservation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryInvestigation chains the current query on the "investigation" edge.
-func (_q *SituationInvestigationQuery) QueryInvestigation() *InvestigationQuery {
-	query := (&InvestigationClient{config: _q.config}).Query()
+// QueryObservationGroup chains the current query on the "observation_group" edge.
+func (_q *SituationObservationQuery) QueryObservationGroup() *SituationObservationGroupQuery {
+	query := (&SituationObservationGroupClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -131,34 +133,59 @@ func (_q *SituationInvestigationQuery) QueryInvestigation() *InvestigationQuery 
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(situationinvestigation.Table, situationinvestigation.FieldID, selector),
-			sqlgraph.To(investigation.Table, investigation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, situationinvestigation.InvestigationTable, situationinvestigation.InvestigationColumn),
+			sqlgraph.From(situationobservation.Table, situationobservation.FieldID, selector),
+			sqlgraph.To(situationobservationgroup.Table, situationobservationgroup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, situationobservation.ObservationGroupTable, situationobservation.ObservationGroupColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Investigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
+		step.To.Schema = schemaConfig.SituationObservationGroup
+		step.Edge.Schema = schemaConfig.SituationObservation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// First returns the first SituationInvestigation entity from the query.
-// Returns a *NotFoundError when no SituationInvestigation was found.
-func (_q *SituationInvestigationQuery) First(ctx context.Context) (*SituationInvestigation, error) {
+// QueryAlertEpisode chains the current query on the "alert_episode" edge.
+func (_q *SituationObservationQuery) QueryAlertEpisode() *AlertEpisodeQuery {
+	query := (&AlertEpisodeClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situationobservation.Table, situationobservation.FieldID, selector),
+			sqlgraph.To(alertepisode.Table, alertepisode.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, situationobservation.AlertEpisodeTable, situationobservation.AlertEpisodeColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.SituationObservation
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// First returns the first SituationObservation entity from the query.
+// Returns a *NotFoundError when no SituationObservation was found.
+func (_q *SituationObservationQuery) First(ctx context.Context) (*SituationObservation, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{situationinvestigation.Label}
+		return nil, &NotFoundError{situationobservation.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *SituationInvestigationQuery) FirstX(ctx context.Context) *SituationInvestigation {
+func (_q *SituationObservationQuery) FirstX(ctx context.Context) *SituationObservation {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -166,22 +193,22 @@ func (_q *SituationInvestigationQuery) FirstX(ctx context.Context) *SituationInv
 	return node
 }
 
-// FirstID returns the first SituationInvestigation ID from the query.
-// Returns a *NotFoundError when no SituationInvestigation ID was found.
-func (_q *SituationInvestigationQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first SituationObservation ID from the query.
+// Returns a *NotFoundError when no SituationObservation ID was found.
+func (_q *SituationObservationQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{situationinvestigation.Label}
+		err = &NotFoundError{situationobservation.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *SituationInvestigationQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *SituationObservationQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -189,10 +216,10 @@ func (_q *SituationInvestigationQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single SituationInvestigation entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one SituationInvestigation entity is found.
-// Returns a *NotFoundError when no SituationInvestigation entities are found.
-func (_q *SituationInvestigationQuery) Only(ctx context.Context) (*SituationInvestigation, error) {
+// Only returns a single SituationObservation entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one SituationObservation entity is found.
+// Returns a *NotFoundError when no SituationObservation entities are found.
+func (_q *SituationObservationQuery) Only(ctx context.Context) (*SituationObservation, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -201,14 +228,14 @@ func (_q *SituationInvestigationQuery) Only(ctx context.Context) (*SituationInve
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{situationinvestigation.Label}
+		return nil, &NotFoundError{situationobservation.Label}
 	default:
-		return nil, &NotSingularError{situationinvestigation.Label}
+		return nil, &NotSingularError{situationobservation.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *SituationInvestigationQuery) OnlyX(ctx context.Context) *SituationInvestigation {
+func (_q *SituationObservationQuery) OnlyX(ctx context.Context) *SituationObservation {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -216,10 +243,10 @@ func (_q *SituationInvestigationQuery) OnlyX(ctx context.Context) *SituationInve
 	return node
 }
 
-// OnlyID is like Only, but returns the only SituationInvestigation ID in the query.
-// Returns a *NotSingularError when more than one SituationInvestigation ID is found.
+// OnlyID is like Only, but returns the only SituationObservation ID in the query.
+// Returns a *NotSingularError when more than one SituationObservation ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *SituationInvestigationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SituationObservationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -228,15 +255,15 @@ func (_q *SituationInvestigationQuery) OnlyID(ctx context.Context) (id uuid.UUID
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{situationinvestigation.Label}
+		err = &NotFoundError{situationobservation.Label}
 	default:
-		err = &NotSingularError{situationinvestigation.Label}
+		err = &NotSingularError{situationobservation.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *SituationInvestigationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *SituationObservationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -244,18 +271,18 @@ func (_q *SituationInvestigationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of SituationInvestigations.
-func (_q *SituationInvestigationQuery) All(ctx context.Context) ([]*SituationInvestigation, error) {
+// All executes the query and returns a list of SituationObservations.
+func (_q *SituationObservationQuery) All(ctx context.Context) ([]*SituationObservation, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*SituationInvestigation, *SituationInvestigationQuery]()
-	return withInterceptors[[]*SituationInvestigation](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*SituationObservation, *SituationObservationQuery]()
+	return withInterceptors[[]*SituationObservation](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *SituationInvestigationQuery) AllX(ctx context.Context) []*SituationInvestigation {
+func (_q *SituationObservationQuery) AllX(ctx context.Context) []*SituationObservation {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -263,20 +290,20 @@ func (_q *SituationInvestigationQuery) AllX(ctx context.Context) []*SituationInv
 	return nodes
 }
 
-// IDs executes the query and returns a list of SituationInvestigation IDs.
-func (_q *SituationInvestigationQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of SituationObservation IDs.
+func (_q *SituationObservationQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(situationinvestigation.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(situationobservation.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *SituationInvestigationQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *SituationObservationQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -285,16 +312,16 @@ func (_q *SituationInvestigationQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *SituationInvestigationQuery) Count(ctx context.Context) (int, error) {
+func (_q *SituationObservationQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*SituationInvestigationQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*SituationObservationQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *SituationInvestigationQuery) CountX(ctx context.Context) int {
+func (_q *SituationObservationQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -303,7 +330,7 @@ func (_q *SituationInvestigationQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *SituationInvestigationQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *SituationObservationQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -316,7 +343,7 @@ func (_q *SituationInvestigationQuery) Exist(ctx context.Context) (bool, error) 
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *SituationInvestigationQuery) ExistX(ctx context.Context) bool {
+func (_q *SituationObservationQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -324,21 +351,22 @@ func (_q *SituationInvestigationQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the SituationInvestigationQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the SituationObservationQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *SituationInvestigationQuery) Clone() *SituationInvestigationQuery {
+func (_q *SituationObservationQuery) Clone() *SituationObservationQuery {
 	if _q == nil {
 		return nil
 	}
-	return &SituationInvestigationQuery{
-		config:            _q.config,
-		ctx:               _q.ctx.Clone(),
-		order:             append([]situationinvestigation.OrderOption{}, _q.order...),
-		inters:            append([]Interceptor{}, _q.inters...),
-		predicates:        append([]predicate.SituationInvestigation{}, _q.predicates...),
-		withTenant:        _q.withTenant.Clone(),
-		withSituation:     _q.withSituation.Clone(),
-		withInvestigation: _q.withInvestigation.Clone(),
+	return &SituationObservationQuery{
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]situationobservation.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.SituationObservation{}, _q.predicates...),
+		withTenant:           _q.withTenant.Clone(),
+		withSituation:        _q.withSituation.Clone(),
+		withObservationGroup: _q.withObservationGroup.Clone(),
+		withAlertEpisode:     _q.withAlertEpisode.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -347,7 +375,7 @@ func (_q *SituationInvestigationQuery) Clone() *SituationInvestigationQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationInvestigationQuery) WithTenant(opts ...func(*TenantQuery)) *SituationInvestigationQuery {
+func (_q *SituationObservationQuery) WithTenant(opts ...func(*TenantQuery)) *SituationObservationQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -358,7 +386,7 @@ func (_q *SituationInvestigationQuery) WithTenant(opts ...func(*TenantQuery)) *S
 
 // WithSituation tells the query-builder to eager-load the nodes that are connected to
 // the "situation" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationInvestigationQuery) WithSituation(opts ...func(*SituationQuery)) *SituationInvestigationQuery {
+func (_q *SituationObservationQuery) WithSituation(opts ...func(*SituationQuery)) *SituationObservationQuery {
 	query := (&SituationClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -367,14 +395,25 @@ func (_q *SituationInvestigationQuery) WithSituation(opts ...func(*SituationQuer
 	return _q
 }
 
-// WithInvestigation tells the query-builder to eager-load the nodes that are connected to
-// the "investigation" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationInvestigationQuery) WithInvestigation(opts ...func(*InvestigationQuery)) *SituationInvestigationQuery {
-	query := (&InvestigationClient{config: _q.config}).Query()
+// WithObservationGroup tells the query-builder to eager-load the nodes that are connected to
+// the "observation_group" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationObservationQuery) WithObservationGroup(opts ...func(*SituationObservationGroupQuery)) *SituationObservationQuery {
+	query := (&SituationObservationGroupClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withInvestigation = query
+	_q.withObservationGroup = query
+	return _q
+}
+
+// WithAlertEpisode tells the query-builder to eager-load the nodes that are connected to
+// the "alert_episode" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationObservationQuery) WithAlertEpisode(opts ...func(*AlertEpisodeQuery)) *SituationObservationQuery {
+	query := (&AlertEpisodeClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAlertEpisode = query
 	return _q
 }
 
@@ -388,15 +427,15 @@ func (_q *SituationInvestigationQuery) WithInvestigation(opts ...func(*Investiga
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.SituationInvestigation.Query().
-//		GroupBy(situationinvestigation.FieldTenantID).
+//	client.SituationObservation.Query().
+//		GroupBy(situationobservation.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *SituationInvestigationQuery) GroupBy(field string, fields ...string) *SituationInvestigationGroupBy {
+func (_q *SituationObservationQuery) GroupBy(field string, fields ...string) *SituationObservationGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SituationInvestigationGroupBy{build: _q}
+	grbuild := &SituationObservationGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = situationinvestigation.Label
+	grbuild.label = situationobservation.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -410,23 +449,23 @@ func (_q *SituationInvestigationQuery) GroupBy(field string, fields ...string) *
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.SituationInvestigation.Query().
-//		Select(situationinvestigation.FieldTenantID).
+//	client.SituationObservation.Query().
+//		Select(situationobservation.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *SituationInvestigationQuery) Select(fields ...string) *SituationInvestigationSelect {
+func (_q *SituationObservationQuery) Select(fields ...string) *SituationObservationSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &SituationInvestigationSelect{SituationInvestigationQuery: _q}
-	sbuild.label = situationinvestigation.Label
+	sbuild := &SituationObservationSelect{SituationObservationQuery: _q}
+	sbuild.label = situationobservation.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a SituationInvestigationSelect configured with the given aggregations.
-func (_q *SituationInvestigationQuery) Aggregate(fns ...AggregateFunc) *SituationInvestigationSelect {
+// Aggregate returns a SituationObservationSelect configured with the given aggregations.
+func (_q *SituationObservationQuery) Aggregate(fns ...AggregateFunc) *SituationObservationSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *SituationInvestigationQuery) prepareQuery(ctx context.Context) error {
+func (_q *SituationObservationQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -438,7 +477,7 @@ func (_q *SituationInvestigationQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !situationinvestigation.ValidColumn(f) {
+		if !situationobservation.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -449,35 +488,36 @@ func (_q *SituationInvestigationQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if situationinvestigation.Policy == nil {
-		return errors.New("ent: uninitialized situationinvestigation.Policy (forgotten import ent/runtime?)")
+	if situationobservation.Policy == nil {
+		return errors.New("ent: uninitialized situationobservation.Policy (forgotten import ent/runtime?)")
 	}
-	if err := situationinvestigation.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := situationobservation.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *SituationInvestigationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SituationInvestigation, error) {
+func (_q *SituationObservationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SituationObservation, error) {
 	var (
-		nodes       = []*SituationInvestigation{}
+		nodes       = []*SituationObservation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withSituation != nil,
-			_q.withInvestigation != nil,
+			_q.withObservationGroup != nil,
+			_q.withAlertEpisode != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*SituationInvestigation).scanValues(nil, columns)
+		return (*SituationObservation).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SituationInvestigation{config: _q.config}
+		node := &SituationObservation{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.SituationInvestigation
+	_spec.Node.Schema = _q.schemaConfig.SituationObservation
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -493,28 +533,34 @@ func (_q *SituationInvestigationQuery) sqlAll(ctx context.Context, hooks ...quer
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *SituationInvestigation, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *SituationObservation, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withSituation; query != nil {
 		if err := _q.loadSituation(ctx, query, nodes, nil,
-			func(n *SituationInvestigation, e *Situation) { n.Edges.Situation = e }); err != nil {
+			func(n *SituationObservation, e *Situation) { n.Edges.Situation = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withInvestigation; query != nil {
-		if err := _q.loadInvestigation(ctx, query, nodes, nil,
-			func(n *SituationInvestigation, e *Investigation) { n.Edges.Investigation = e }); err != nil {
+	if query := _q.withObservationGroup; query != nil {
+		if err := _q.loadObservationGroup(ctx, query, nodes, nil,
+			func(n *SituationObservation, e *SituationObservationGroup) { n.Edges.ObservationGroup = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAlertEpisode; query != nil {
+		if err := _q.loadAlertEpisode(ctx, query, nodes, nil,
+			func(n *SituationObservation, e *AlertEpisode) { n.Edges.AlertEpisode = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *SituationInvestigationQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SituationInvestigation, init func(*SituationInvestigation), assign func(*SituationInvestigation, *Tenant)) error {
+func (_q *SituationObservationQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SituationObservation, init func(*SituationObservation), assign func(*SituationObservation, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*SituationInvestigation)
+	nodeids := make(map[int][]*SituationObservation)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -541,9 +587,9 @@ func (_q *SituationInvestigationQuery) loadTenant(ctx context.Context, query *Te
 	}
 	return nil
 }
-func (_q *SituationInvestigationQuery) loadSituation(ctx context.Context, query *SituationQuery, nodes []*SituationInvestigation, init func(*SituationInvestigation), assign func(*SituationInvestigation, *Situation)) error {
+func (_q *SituationObservationQuery) loadSituation(ctx context.Context, query *SituationQuery, nodes []*SituationObservation, init func(*SituationObservation), assign func(*SituationObservation, *Situation)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SituationInvestigation)
+	nodeids := make(map[uuid.UUID][]*SituationObservation)
 	for i := range nodes {
 		fk := nodes[i].SituationID
 		if _, ok := nodeids[fk]; !ok {
@@ -570,11 +616,14 @@ func (_q *SituationInvestigationQuery) loadSituation(ctx context.Context, query 
 	}
 	return nil
 }
-func (_q *SituationInvestigationQuery) loadInvestigation(ctx context.Context, query *InvestigationQuery, nodes []*SituationInvestigation, init func(*SituationInvestigation), assign func(*SituationInvestigation, *Investigation)) error {
+func (_q *SituationObservationQuery) loadObservationGroup(ctx context.Context, query *SituationObservationGroupQuery, nodes []*SituationObservation, init func(*SituationObservation), assign func(*SituationObservation, *SituationObservationGroup)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SituationInvestigation)
+	nodeids := make(map[uuid.UUID][]*SituationObservation)
 	for i := range nodes {
-		fk := nodes[i].InvestigationID
+		if nodes[i].ObservationGroupID == nil {
+			continue
+		}
+		fk := *nodes[i].ObservationGroupID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -583,7 +632,7 @@ func (_q *SituationInvestigationQuery) loadInvestigation(ctx context.Context, qu
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(investigation.IDIn(ids...))
+	query.Where(situationobservationgroup.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -591,7 +640,39 @@ func (_q *SituationInvestigationQuery) loadInvestigation(ctx context.Context, qu
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "investigation_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "observation_group_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *SituationObservationQuery) loadAlertEpisode(ctx context.Context, query *AlertEpisodeQuery, nodes []*SituationObservation, init func(*SituationObservation), assign func(*SituationObservation, *AlertEpisode)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SituationObservation)
+	for i := range nodes {
+		if nodes[i].AlertEpisodeID == nil {
+			continue
+		}
+		fk := *nodes[i].AlertEpisodeID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(alertepisode.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "alert_episode_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -600,9 +681,9 @@ func (_q *SituationInvestigationQuery) loadInvestigation(ctx context.Context, qu
 	return nil
 }
 
-func (_q *SituationInvestigationQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *SituationObservationQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.SituationInvestigation
+	_spec.Node.Schema = _q.schemaConfig.SituationObservation
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -614,8 +695,8 @@ func (_q *SituationInvestigationQuery) sqlCount(ctx context.Context) (int, error
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *SituationInvestigationQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(situationinvestigation.Table, situationinvestigation.Columns, sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID))
+func (_q *SituationObservationQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(situationobservation.Table, situationobservation.Columns, sqlgraph.NewFieldSpec(situationobservation.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -624,20 +705,23 @@ func (_q *SituationInvestigationQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, situationinvestigation.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, situationobservation.FieldID)
 		for i := range fields {
-			if fields[i] != situationinvestigation.FieldID {
+			if fields[i] != situationobservation.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(situationinvestigation.FieldTenantID)
+			_spec.Node.AddColumnOnce(situationobservation.FieldTenantID)
 		}
 		if _q.withSituation != nil {
-			_spec.Node.AddColumnOnce(situationinvestigation.FieldSituationID)
+			_spec.Node.AddColumnOnce(situationobservation.FieldSituationID)
 		}
-		if _q.withInvestigation != nil {
-			_spec.Node.AddColumnOnce(situationinvestigation.FieldInvestigationID)
+		if _q.withObservationGroup != nil {
+			_spec.Node.AddColumnOnce(situationobservation.FieldObservationGroupID)
+		}
+		if _q.withAlertEpisode != nil {
+			_spec.Node.AddColumnOnce(situationobservation.FieldAlertEpisodeID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -663,12 +747,12 @@ func (_q *SituationInvestigationQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *SituationInvestigationQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *SituationObservationQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(situationinvestigation.Table)
+	t1 := builder.Table(situationobservation.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = situationinvestigation.Columns
+		columns = situationobservation.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -678,7 +762,7 @@ func (_q *SituationInvestigationQuery) sqlQuery(ctx context.Context) *sql.Select
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.SituationInvestigation)
+	t1.Schema(_q.schemaConfig.SituationObservation)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -704,7 +788,7 @@ func (_q *SituationInvestigationQuery) sqlQuery(ctx context.Context) *sql.Select
 // ForUpdate locks the selected rows against concurrent updates, and prevent them from being
 // updated, deleted or "selected ... for update" by other sessions, until the transaction is
 // either committed or rolled-back.
-func (_q *SituationInvestigationQuery) ForUpdate(opts ...sql.LockOption) *SituationInvestigationQuery {
+func (_q *SituationObservationQuery) ForUpdate(opts ...sql.LockOption) *SituationObservationQuery {
 	if _q.driver.Dialect() == dialect.Postgres {
 		_q.Unique(false)
 	}
@@ -717,7 +801,7 @@ func (_q *SituationInvestigationQuery) ForUpdate(opts ...sql.LockOption) *Situat
 // ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
 // on any rows that are read. Other sessions can read the rows, but cannot modify them
 // until your transaction commits.
-func (_q *SituationInvestigationQuery) ForShare(opts ...sql.LockOption) *SituationInvestigationQuery {
+func (_q *SituationObservationQuery) ForShare(opts ...sql.LockOption) *SituationObservationQuery {
 	if _q.driver.Dialect() == dialect.Postgres {
 		_q.Unique(false)
 	}
@@ -727,28 +811,28 @@ func (_q *SituationInvestigationQuery) ForShare(opts ...sql.LockOption) *Situati
 	return _q
 }
 
-// SituationInvestigationGroupBy is the group-by builder for SituationInvestigation entities.
-type SituationInvestigationGroupBy struct {
+// SituationObservationGroupBy is the group-by builder for SituationObservation entities.
+type SituationObservationGroupBy struct {
 	selector
-	build *SituationInvestigationQuery
+	build *SituationObservationQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *SituationInvestigationGroupBy) Aggregate(fns ...AggregateFunc) *SituationInvestigationGroupBy {
+func (_g *SituationObservationGroupBy) Aggregate(fns ...AggregateFunc) *SituationObservationGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *SituationInvestigationGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *SituationObservationGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SituationInvestigationQuery, *SituationInvestigationGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*SituationObservationQuery, *SituationObservationGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *SituationInvestigationGroupBy) sqlScan(ctx context.Context, root *SituationInvestigationQuery, v any) error {
+func (_g *SituationObservationGroupBy) sqlScan(ctx context.Context, root *SituationObservationQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -775,28 +859,28 @@ func (_g *SituationInvestigationGroupBy) sqlScan(ctx context.Context, root *Situ
 	return sql.ScanSlice(rows, v)
 }
 
-// SituationInvestigationSelect is the builder for selecting fields of SituationInvestigation entities.
-type SituationInvestigationSelect struct {
-	*SituationInvestigationQuery
+// SituationObservationSelect is the builder for selecting fields of SituationObservation entities.
+type SituationObservationSelect struct {
+	*SituationObservationQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *SituationInvestigationSelect) Aggregate(fns ...AggregateFunc) *SituationInvestigationSelect {
+func (_s *SituationObservationSelect) Aggregate(fns ...AggregateFunc) *SituationObservationSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *SituationInvestigationSelect) Scan(ctx context.Context, v any) error {
+func (_s *SituationObservationSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SituationInvestigationQuery, *SituationInvestigationSelect](ctx, _s.SituationInvestigationQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*SituationObservationQuery, *SituationObservationSelect](ctx, _s.SituationObservationQuery, _s, _s.inters, v)
 }
 
-func (_s *SituationInvestigationSelect) sqlScan(ctx context.Context, root *SituationInvestigationQuery, v any) error {
+func (_s *SituationObservationSelect) sqlScan(ctx context.Context, root *SituationObservationQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {

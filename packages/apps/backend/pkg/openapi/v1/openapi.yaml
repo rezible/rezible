@@ -119,36 +119,6 @@ components:
       required:
         - data
       type: object
-    AddSituationHazardAssessmentRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/AddSituationHazardAssessmentRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/AttributesStruct1"
-      required:
-        - attributes
-      type: object
-    AddSituationHazardAssessmentResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/AddSituationHazardAssessmentResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SituationHazardAssessment"
-      required:
-        - data
-      type: object
     AddSystemAnalysisEdgeAttributes:
       additionalProperties: false
       properties:
@@ -929,24 +899,6 @@ components:
           type: string
       required:
         - body
-      type: object
-    AttributesStruct1:
-      additionalProperties: false
-      properties:
-        status:
-          enum:
-            - suspected
-            - confirmed
-            - disproven
-          type: string
-        summary:
-          type: string
-        systemHazardId:
-          type: string
-      required:
-        - systemHazardId
-        - status
-        - summary
       type: object
     ChatChannel:
       additionalProperties: false
@@ -2888,16 +2840,6 @@ components:
       properties:
         attributes:
           $ref: "#/components/schemas/IncidentTypeAttributes"
-        id:
-          type: string
-      required:
-        - id
-      type: object
-    ExpandableInvestigationAttributes:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/InvestigationAttributes"
         id:
           type: string
       required:
@@ -6711,26 +6653,6 @@ components:
         - data
         - pagination
       type: object
-    PaginatedResponseBodySituationHazardAssessment:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/PaginatedResponseBodySituationHazardAssessment.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/SituationHazardAssessment"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/Pagination"
-      required:
-        - data
-        - pagination
-      type: object
     PaginatedResponseBodySituationJudgmentHistoryItem:
       additionalProperties: false
       properties:
@@ -7754,17 +7676,14 @@ components:
         holdUntil:
           format: date-time
           type: string
-        investigation:
-          $ref: "#/components/schemas/SituationInvestigation"
+        investigationId:
+          type: string
         latestJudgment:
           $ref: "#/components/schemas/SituationJudgment"
+          description: Set when getting one situation
         linkedIncidentIds:
           items:
             type: string
-          type: array
-        links:
-          items:
-            $ref: "#/components/schemas/SituationLink"
           type: array
         muteReason:
           enum:
@@ -7774,8 +7693,6 @@ components:
         mutedAt:
           format: date-time
           type: string
-        noticeRatings:
-          $ref: "#/components/schemas/SituationNoticeRatings"
         notices:
           items:
             $ref: "#/components/schemas/SituationNotice"
@@ -7783,6 +7700,10 @@ components:
         observationGroups:
           items:
             $ref: "#/components/schemas/SituationObservationGroup"
+          type: array
+        observations:
+          items:
+            $ref: "#/components/schemas/SituationObservation"
           type: array
         openedAt:
           format: date-time
@@ -7794,11 +7715,6 @@ components:
           $ref: "#/components/schemas/SituationRaisedBy"
         reference:
           type: string
-        seedEntityId:
-          type: string
-        signalCount:
-          format: int64
-          type: integer
         stage:
           enum:
             - candidate
@@ -7817,17 +7733,14 @@ components:
         - title
         - summary
         - stage
-        - signalCount
-        - seedEntityId
         - openedAt
         - createdAt
         - updatedAt
         - linkedIncidentIds
+        - observations
         - observationGroups
-        - links
         - entities
         - notices
-        - noticeRatings
       type: object
     SituationBaselineFacts:
       additionalProperties: false
@@ -8034,27 +7947,6 @@ components:
         - kind
         - text
       type: object
-    SituationEarlierFacts:
-      additionalProperties: false
-      properties:
-        close_reason:
-          type: string
-        closed_at:
-          format: date-time
-          type: string
-        incident_linked:
-          type: boolean
-        mute_reason:
-          type: string
-        situation_id:
-          type: string
-        was_raised:
-          type: boolean
-      required:
-        - situation_id
-        - was_raised
-        - incident_linked
-      type: object
     SituationEntity:
       additionalProperties: false
       properties:
@@ -8068,7 +7960,7 @@ components:
         kind:
           type: string
         matching:
-          description: Whether it attracts related signals
+          description: Whether it attracts related observations
           type: boolean
       required:
         - id
@@ -8105,10 +7997,6 @@ components:
         as_of:
           format: date-time
           type: string
-        earlier:
-          items:
-            $ref: "#/components/schemas/SituationEarlierFacts"
-          type: array
         entities:
           items:
             $ref: "#/components/schemas/SituationEntityFacts"
@@ -8117,6 +8005,10 @@ components:
           items:
             $ref: "#/components/schemas/SituationIncidentFacts"
           type: array
+        observations:
+          items:
+            $ref: "#/components/schemas/SituationObservationFacts"
+          type: array
         opened_at:
           format: date-time
           type: string
@@ -8124,56 +8016,11 @@ components:
           items:
             $ref: "#/components/schemas/SituationRelationshipFacts"
           type: array
-        signals:
-          items:
-            $ref: "#/components/schemas/SituationSignalFacts"
-          type: array
       required:
         - as_of
         - opened_at
-        - signals
+        - observations
         - linked_incidents
-      type: object
-    SituationHazardAssessment:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SituationHazardAssessmentAttrs"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SituationHazardAssessmentAttrs:
-      additionalProperties: false
-      properties:
-        agentTurnId:
-          type: string
-        assessedAt:
-          format: date-time
-          type: string
-        revision:
-          format: int64
-          type: integer
-        status:
-          enum:
-            - suspected
-            - confirmed
-            - disproven
-          type: string
-        summary:
-          type: string
-        systemHazardId:
-          type: string
-        userId:
-          type: string
-      required:
-        - systemHazardId
-        - revision
-        - status
-        - summary
-        - assessedAt
       type: object
     SituationIncidentFacts:
       additionalProperties: false
@@ -8188,14 +8035,6 @@ components:
       required:
         - id
         - title
-      type: object
-    SituationInvestigation:
-      additionalProperties: false
-      properties:
-        investigation:
-          $ref: "#/components/schemas/ExpandableInvestigationAttributes"
-      required:
-        - investigation
       type: object
     SituationJudgment:
       additionalProperties: false
@@ -8287,33 +8126,6 @@ components:
         - id
         - attributes
       type: object
-    SituationLink:
-      additionalProperties: false
-      properties:
-        kind:
-          enum:
-            - recurrence_of
-            - merged_into
-          type: string
-        situationId:
-          type: string
-        situationReference:
-          type: string
-        stage:
-          enum:
-            - candidate
-            - raised
-            - closed
-          type: string
-        title:
-          type: string
-      required:
-        - kind
-        - situationId
-        - situationReference
-        - title
-        - stage
-      type: object
     SituationNotice:
       additionalProperties: false
       properties:
@@ -8341,18 +8153,66 @@ components:
         - channelId
         - status
       type: object
-    SituationNoticeRatings:
+    SituationObservation:
       additionalProperties: false
       properties:
-        notUseful:
-          format: int64
-          type: integer
-        useful:
-          format: int64
-          type: integer
+        alertEpisodeId:
+          type: string
+        attachedAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        matchExplanation:
+          type: string
+        observationGroupId:
+          type: string
       required:
-        - useful
-        - notUseful
+        - id
+        - attachedAt
+      type: object
+    SituationObservationFacts:
+      additionalProperties: false
+      properties:
+        alert:
+          $ref: "#/components/schemas/SituationAlertFacts"
+        alert_episode_id:
+          type: string
+        attention:
+          type: string
+        attention_set_at:
+          format: date-time
+          type: string
+        entity_ids:
+          items:
+            type: string
+          type: array
+        finished_at:
+          format: date-time
+          type: string
+        kind:
+          type: string
+        prior_outcomes:
+          $ref: "#/components/schemas/SituationPriorOutcomeFacts"
+        ref:
+          type: string
+        seeding:
+          type: boolean
+        source_id:
+          type: string
+        started_at:
+          format: date-time
+          type: string
+        title:
+          type: string
+      required:
+        - ref
+        - kind
+        - title
+        - source_id
+        - seeding
+        - attention
+        - started_at
       type: object
     SituationObservationGroup:
       additionalProperties: false
@@ -8370,10 +8230,6 @@ components:
       properties:
         body:
           type: string
-        signals:
-          items:
-            $ref: "#/components/schemas/SituationSignal"
-          type: array
         situationId:
           type: string
         title:
@@ -8381,7 +8237,6 @@ components:
       required:
         - situationId
         - title
-        - signals
       type: object
     SituationPriorOutcomeFacts:
       additionalProperties: false
@@ -8446,79 +8301,6 @@ components:
         - source_id
         - predicate
         - target_id
-      type: object
-    SituationSignal:
-      additionalProperties: false
-      properties:
-        attachedAt:
-          format: date-time
-          type: string
-        kind:
-          type: string
-        knowledgeEntityId:
-          type: string
-        matchKind:
-          enum:
-            - seed
-            - shared_entity
-            - dependency
-            - dependent
-            - adjacent
-            - manual
-          type: string
-        sourceEntityId:
-          type: string
-      required:
-        - knowledgeEntityId
-        - kind
-        - attachedAt
-        - matchKind
-      type: object
-    SituationSignalFacts:
-      additionalProperties: false
-      properties:
-        alert:
-          $ref: "#/components/schemas/SituationAlertFacts"
-        attention:
-          type: string
-        attention_set_at:
-          format: date-time
-          type: string
-        entity_id:
-          type: string
-        entity_ids:
-          items:
-            type: string
-          type: array
-        finished_at:
-          format: date-time
-          type: string
-        kind:
-          type: string
-        match_kind:
-          type: string
-        prior_outcomes:
-          $ref: "#/components/schemas/SituationPriorOutcomeFacts"
-        ref:
-          type: string
-        seeding:
-          type: boolean
-        source_entity_id:
-          type: string
-        started_at:
-          format: date-time
-          type: string
-        title:
-          type: string
-      required:
-        - ref
-        - entity_id
-        - kind
-        - title
-        - seeding
-        - attention
-        - match_kind
-        - started_at
       type: object
     SituationUnconfirmedMatch:
       additionalProperties: false
@@ -21400,138 +21182,6 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Close Situation
-      tags:
-        - Situations
-  /situations/{id}/hazard_assessments:
-    get:
-      operationId: list-situation-hazard-assessments
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: page
-          schema:
-            default: 1
-            format: int64
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: pageSize
-          schema:
-            default: 25
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PaginatedResponseBodySituationHazardAssessment"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Situation Hazard Assessments
-      tags:
-        - Situations
-    post:
-      operationId: add-situation-hazard-assessment
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AddSituationHazardAssessmentRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AddSituationHazardAssessmentResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Add Situation Hazard Assessment
       tags:
         - Situations
   /situations/{id}/hold:

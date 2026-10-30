@@ -12,7 +12,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	sitnot "github.com/rezible/rezible/ent/situationnotice"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/test"
@@ -108,19 +107,11 @@ func (s *SituationNoticeServiceSuite) TestFailingDeploymentLookupOmitsDeployment
 }
 
 func (s *SituationNoticeServiceSuite) createRaisedSituation(ctx context.Context, tdb rez.Database) *ent.Situation {
-	client := tdb.Client(ctx)
-	createSeed := client.KnowledgeEntity.Create().
-		SetCategory(kne.CategoryContainer).
-		SetKind("service")
-	seed, seedErr := createSeed.Save(ctx)
-	s.Require().NoError(seedErr)
-
-	createSituation := client.Situation.Create().
+	createSituation := tdb.Client(ctx).Situation.Create().
 		SetNumber(1).
 		SetTitle("Checkout errors").
 		SetOpenedAt(noticeTestOpenedAt).
-		SetRaisedAt(noticeTestOpenedAt).
-		SetSeedEntityID(seed.ID)
+		SetRaisedAt(noticeTestOpenedAt)
 	situation, situationErr := createSituation.Save(ctx)
 	s.Require().NoError(situationErr)
 	return situation

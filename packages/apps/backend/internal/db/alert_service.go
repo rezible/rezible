@@ -19,7 +19,7 @@ import (
 	nev "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
+	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	ssa "github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
@@ -27,22 +27,22 @@ import (
 )
 
 type AlertService struct {
-	cfg       rez.AlertsConfig
-	db        rez.Database
-	knowledge rez.KnowledgeGraphIngestionService
-	jobs      rez.JobService
-	signals   rez.SituationSignalService
-	clock     rez.Clock
+	cfg          rez.AlertsConfig
+	db           rez.Database
+	knowledge    rez.KnowledgeGraphIngestionService
+	jobs         rez.JobService
+	observations rez.SituationObservationService
+	clock        rez.Clock
 }
 
-func NewAlertService(cfg rez.AlertsConfig, clock rez.Clock, db rez.Database, js rez.JobService, knowledge rez.KnowledgeGraphIngestionService, signals rez.SituationSignalService) (*AlertService, error) {
+func NewAlertService(cfg rez.AlertsConfig, clock rez.Clock, db rez.Database, js rez.JobService, knowledge rez.KnowledgeGraphIngestionService, observations rez.SituationObservationService) (*AlertService, error) {
 	s := &AlertService{
-		cfg:       cfg,
-		clock:     clock,
-		db:        db,
-		jobs:      js,
-		signals:   signals,
-		knowledge: knowledge,
+		cfg:          cfg,
+		clock:        clock,
+		db:           db,
+		jobs:         js,
+		observations: observations,
+		knowledge:    knowledge,
 	}
 
 	return s, nil
@@ -75,8 +75,8 @@ func (s *AlertService) GetAlert(ctx context.Context, id uuid.UUID) (*ent.AlertDe
 	return query.Only(ctx)
 }
 
-// ListAlertEpisodes lists episodes by start. With a situation, it lists the episodes that are the
-// situation's signals, read from its membership rows.
+// ListAlertEpisodes lists episodes by start. With a situation, it lists the episodes the situation
+// observes.
 func (s *AlertService) ListAlertEpisodes(ctx context.Context, params rez.ListAlertEpisodesParams) (*ent.ListResult[ent.AlertEpisode], error) {
 	client := s.db.Client(ctx)
 	query := client.AlertEpisode.Query().
@@ -88,18 +88,7 @@ func (s *AlertService) ListAlertEpisodes(ctx context.Context, params rez.ListAle
 		}).
 		Order(ale.ByStartedAt(params.GetOrder()), ale.ByID(params.GetOrder()))
 	if params.SituationID != uuid.Nil {
-		queryMembers := client.SituationSignal.Query().
-			Where(sitsig.SituationID(params.SituationID)).
-			Select(sitsig.FieldKnowledgeEntityID)
-		members, membersErr := queryMembers.All(ctx)
-		if membersErr != nil {
-			return nil, fmt.Errorf("query situation signals: %w", membersErr)
-		}
-		entityIDs := make([]uuid.UUID, len(members))
-		for i, member := range members {
-			entityIDs[i] = member.KnowledgeEntityID
-		}
-		query.Where(ale.KnowledgeEntityIDIn(entityIDs...))
+		query.Where(ale.HasSituationObservationsWith(sitobs.SituationID(params.SituationID)))
 	}
 	return ent.DoListQuery[ent.AlertEpisode, *ent.AlertEpisodeQuery](ctx, query, params.ListParams)
 }
@@ -208,31 +197,37 @@ func (s *AlertService) SetAlertSituationSignalAttention(ctx context.Context, id 
 func (s *AlertService) notifyUnclosedEpisodesChanged(ctx context.Context, definitionID uuid.UUID) error {
 	queryEpisodes := s.db.Client(ctx).AlertEpisode.Query().
 		Where(ale.AlertDefinitionID(definitionID), ale.ClosedAtIsNil()).
-		Select(ale.FieldKnowledgeEntityID)
+		Select(ale.FieldID)
 	episodes, queryErr := queryEpisodes.All(ctx)
 	if queryErr != nil {
 		return fmt.Errorf("query unclosed alert episodes: %w", queryErr)
 	}
 	for _, episode := range episodes {
-		if notifyErr := s.signals.NotifySignalChanged(ctx, *episode.KnowledgeEntityID); notifyErr != nil {
+		if notifyErr := s.observations.NotifyObservationChanged(ctx, rez.SituationObservationRef{AlertEpisodeID: episode.ID}); notifyErr != nil {
 			return fmt.Errorf("notify alert episode changed: %w", notifyErr)
 		}
 	}
 	return nil
 }
 
-func (s *AlertService) SituationSignalKind() rez.SituationSignalKind {
-	return rez.SignalKindAlertEpisode
+func (s *AlertService) SituationObservationKind() schematypes.SituationObservationKind {
+	return schematypes.SituationObservationKindAlertEpisode
 }
 
-// LoadSignals describes the alert episodes with the given knowledge entities from their stored state, with
-// their definitions' baselines when asked for history.
-func (s *AlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
-	if len(entityIDs) == 0 {
+// LoadObservations describes the observed alert episodes from their stored state, with their definitions'
+// baselines when asked for history.
+func (s *AlertService) LoadObservations(ctx context.Context, refs []rez.SituationObservationRef, opts rez.LoadSituationObservationsOptions) ([]rez.SituationObservation, error) {
+	alertEpisodeIDs := make([]uuid.UUID, 0, len(refs))
+	for _, ref := range refs {
+		if ref.AlertEpisodeID != uuid.Nil {
+			alertEpisodeIDs = append(alertEpisodeIDs, ref.AlertEpisodeID)
+		}
+	}
+	if len(alertEpisodeIDs) == 0 {
 		return nil, nil
 	}
 	queryEpisodes := s.db.Client(ctx).AlertEpisode.Query().
-		Where(ale.KnowledgeEntityIDIn(entityIDs...)).
+		Where(ale.IDIn(alertEpisodeIDs...)).
 		WithAlertDefinition(func(query *ent.AlertDefinitionQuery) {
 			query.WithSituationSignalAttention()
 		}).
@@ -259,7 +254,7 @@ func (s *AlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, o
 	}
 
 	asOf := s.clock.Now()
-	signals := make([]rez.SituationSignal, 0, len(episodes))
+	observations := make([]rez.SituationObservation, 0, len(episodes))
 	for _, episode := range episodes {
 		definition := episode.Edges.AlertDefinition
 		windows := newAlertEpisodeState(episode.Edges.Instances)
@@ -290,10 +285,10 @@ func (s *AlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, o
 			return bytes.Compare(a[:], b[:])
 		})
 
-		signals = append(signals, rez.SituationSignal{
-			EntityID:             *episode.KnowledgeEntityID,
-			Kind:                 rez.SignalKindAlertEpisode,
+		observations = append(observations, rez.SituationObservation{
+			Ref:                  rez.SituationObservationRef{AlertEpisodeID: episode.ID},
 			Title:                definition.Title,
+			SourceID:             definition.ID,
 			SourceEntityID:       definition.KnowledgeEntityID,
 			SignalAttention:      attention,
 			SignalAttentionSetAt: attentionSetAt,
@@ -307,7 +302,7 @@ func (s *AlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, o
 			Alert:                &facts,
 		})
 	}
-	return signals, nil
+	return observations, nil
 }
 
 // alertBaselines describes, for each episode, how often its definition fired within the novelty window before

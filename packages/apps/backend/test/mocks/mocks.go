@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -7086,60 +7087,60 @@ func (_c *MockAlertService_ListAlerts_Call) RunAndReturn(run func(context1 conte
 	return _c
 }
 
-// LoadSignals provides a mock function for the type MockAlertService
-func (_mock *MockAlertService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
-	ret := _mock.Called(ctx, entityIDs, opts)
+// LoadObservations provides a mock function for the type MockAlertService
+func (_mock *MockAlertService) LoadObservations(ctx context.Context, refs []rez.SituationObservationRef, opts rez.LoadSituationObservationsOptions) ([]rez.SituationObservation, error) {
+	ret := _mock.Called(ctx, refs, opts)
 
 	if len(ret) == 0 {
-		panic("no return value specified for LoadSignals")
+		panic("no return value specified for LoadObservations")
 	}
 
-	var r0 []rez.SituationSignal
+	var r0 []rez.SituationObservation
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error)); ok {
-		return returnFunc(ctx, entityIDs, opts)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []rez.SituationObservationRef, rez.LoadSituationObservationsOptions) ([]rez.SituationObservation, error)); ok {
+		return returnFunc(ctx, refs, opts)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) []rez.SituationSignal); ok {
-		r0 = returnFunc(ctx, entityIDs, opts)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []rez.SituationObservationRef, rez.LoadSituationObservationsOptions) []rez.SituationObservation); ok {
+		r0 = returnFunc(ctx, refs, opts)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]rez.SituationSignal)
+			r0 = ret.Get(0).([]rez.SituationObservation)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) error); ok {
-		r1 = returnFunc(ctx, entityIDs, opts)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []rez.SituationObservationRef, rez.LoadSituationObservationsOptions) error); ok {
+		r1 = returnFunc(ctx, refs, opts)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockAlertService_LoadSignals_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LoadSignals'
-type MockAlertService_LoadSignals_Call struct {
+// MockAlertService_LoadObservations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LoadObservations'
+type MockAlertService_LoadObservations_Call struct {
 	*mock.Call
 }
 
-// LoadSignals is a helper method to define mock.On call
+// LoadObservations is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityIDs []uuid.UUID
-//   - opts rez.LoadSituationSignalsOptions
-func (_e *MockAlertService_Expecter) LoadSignals(ctx interface{}, entityIDs interface{}, opts interface{}) *MockAlertService_LoadSignals_Call {
-	return &MockAlertService_LoadSignals_Call{Call: _e.mock.On("LoadSignals", ctx, entityIDs, opts)}
+//   - refs []rez.SituationObservationRef
+//   - opts rez.LoadSituationObservationsOptions
+func (_e *MockAlertService_Expecter) LoadObservations(ctx interface{}, refs interface{}, opts interface{}) *MockAlertService_LoadObservations_Call {
+	return &MockAlertService_LoadObservations_Call{Call: _e.mock.On("LoadObservations", ctx, refs, opts)}
 }
 
-func (_c *MockAlertService_LoadSignals_Call) Run(run func(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions)) *MockAlertService_LoadSignals_Call {
+func (_c *MockAlertService_LoadObservations_Call) Run(run func(ctx context.Context, refs []rez.SituationObservationRef, opts rez.LoadSituationObservationsOptions)) *MockAlertService_LoadObservations_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []uuid.UUID
+		var arg1 []rez.SituationObservationRef
 		if args[1] != nil {
-			arg1 = args[1].([]uuid.UUID)
+			arg1 = args[1].([]rez.SituationObservationRef)
 		}
-		var arg2 rez.LoadSituationSignalsOptions
+		var arg2 rez.LoadSituationObservationsOptions
 		if args[2] != nil {
-			arg2 = args[2].(rez.LoadSituationSignalsOptions)
+			arg2 = args[2].(rez.LoadSituationObservationsOptions)
 		}
 		run(
 			arg0,
@@ -7150,12 +7151,12 @@ func (_c *MockAlertService_LoadSignals_Call) Run(run func(ctx context.Context, e
 	return _c
 }
 
-func (_c *MockAlertService_LoadSignals_Call) Return(situationSignals []rez.SituationSignal, err error) *MockAlertService_LoadSignals_Call {
-	_c.Call.Return(situationSignals, err)
+func (_c *MockAlertService_LoadObservations_Call) Return(situationObservations []rez.SituationObservation, err error) *MockAlertService_LoadObservations_Call {
+	_c.Call.Return(situationObservations, err)
 	return _c
 }
 
-func (_c *MockAlertService_LoadSignals_Call) RunAndReturn(run func(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error)) *MockAlertService_LoadSignals_Call {
+func (_c *MockAlertService_LoadObservations_Call) RunAndReturn(run func(ctx context.Context, refs []rez.SituationObservationRef, opts rez.LoadSituationObservationsOptions) ([]rez.SituationObservation, error)) *MockAlertService_LoadObservations_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -7376,46 +7377,46 @@ func (_c *MockAlertService_SetAlertSituationSignalAttention_Call) RunAndReturn(r
 	return _c
 }
 
-// SituationSignalKind provides a mock function for the type MockAlertService
-func (_mock *MockAlertService) SituationSignalKind() rez.SituationSignalKind {
+// SituationObservationKind provides a mock function for the type MockAlertService
+func (_mock *MockAlertService) SituationObservationKind() schematypes.SituationObservationKind {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
-		panic("no return value specified for SituationSignalKind")
+		panic("no return value specified for SituationObservationKind")
 	}
 
-	var r0 rez.SituationSignalKind
-	if returnFunc, ok := ret.Get(0).(func() rez.SituationSignalKind); ok {
+	var r0 schematypes.SituationObservationKind
+	if returnFunc, ok := ret.Get(0).(func() schematypes.SituationObservationKind); ok {
 		r0 = returnFunc()
 	} else {
-		r0 = ret.Get(0).(rez.SituationSignalKind)
+		r0 = ret.Get(0).(schematypes.SituationObservationKind)
 	}
 	return r0
 }
 
-// MockAlertService_SituationSignalKind_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SituationSignalKind'
-type MockAlertService_SituationSignalKind_Call struct {
+// MockAlertService_SituationObservationKind_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SituationObservationKind'
+type MockAlertService_SituationObservationKind_Call struct {
 	*mock.Call
 }
 
-// SituationSignalKind is a helper method to define mock.On call
-func (_e *MockAlertService_Expecter) SituationSignalKind() *MockAlertService_SituationSignalKind_Call {
-	return &MockAlertService_SituationSignalKind_Call{Call: _e.mock.On("SituationSignalKind")}
+// SituationObservationKind is a helper method to define mock.On call
+func (_e *MockAlertService_Expecter) SituationObservationKind() *MockAlertService_SituationObservationKind_Call {
+	return &MockAlertService_SituationObservationKind_Call{Call: _e.mock.On("SituationObservationKind")}
 }
 
-func (_c *MockAlertService_SituationSignalKind_Call) Run(run func()) *MockAlertService_SituationSignalKind_Call {
+func (_c *MockAlertService_SituationObservationKind_Call) Run(run func()) *MockAlertService_SituationObservationKind_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run()
 	})
 	return _c
 }
 
-func (_c *MockAlertService_SituationSignalKind_Call) Return(situationSignalKind rez.SituationSignalKind) *MockAlertService_SituationSignalKind_Call {
-	_c.Call.Return(situationSignalKind)
+func (_c *MockAlertService_SituationObservationKind_Call) Return(situationObservationKind schematypes.SituationObservationKind) *MockAlertService_SituationObservationKind_Call {
+	_c.Call.Return(situationObservationKind)
 	return _c
 }
 
-func (_c *MockAlertService_SituationSignalKind_Call) RunAndReturn(run func() rez.SituationSignalKind) *MockAlertService_SituationSignalKind_Call {
+func (_c *MockAlertService_SituationObservationKind_Call) RunAndReturn(run func() schematypes.SituationObservationKind) *MockAlertService_SituationObservationKind_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -8522,74 +8523,6 @@ func (_m *MockSituationService) EXPECT() *MockSituationService_Expecter {
 	return &MockSituationService_Expecter{mock: &_m.Mock}
 }
 
-// AddSituationHazardAssessment provides a mock function for the type MockSituationService
-func (_mock *MockSituationService) AddSituationHazardAssessment(context1 context.Context, addSituationHazardAssessmentParams rez.AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error) {
-	ret := _mock.Called(context1, addSituationHazardAssessmentParams)
-
-	if len(ret) == 0 {
-		panic("no return value specified for AddSituationHazardAssessment")
-	}
-
-	var r0 *ent.SituationHazardAssessment
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error)); ok {
-		return returnFunc(context1, addSituationHazardAssessmentParams)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.AddSituationHazardAssessmentParams) *ent.SituationHazardAssessment); ok {
-		r0 = returnFunc(context1, addSituationHazardAssessmentParams)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.SituationHazardAssessment)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.AddSituationHazardAssessmentParams) error); ok {
-		r1 = returnFunc(context1, addSituationHazardAssessmentParams)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockSituationService_AddSituationHazardAssessment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddSituationHazardAssessment'
-type MockSituationService_AddSituationHazardAssessment_Call struct {
-	*mock.Call
-}
-
-// AddSituationHazardAssessment is a helper method to define mock.On call
-//   - context1 context.Context
-//   - addSituationHazardAssessmentParams rez.AddSituationHazardAssessmentParams
-func (_e *MockSituationService_Expecter) AddSituationHazardAssessment(context1 interface{}, addSituationHazardAssessmentParams interface{}) *MockSituationService_AddSituationHazardAssessment_Call {
-	return &MockSituationService_AddSituationHazardAssessment_Call{Call: _e.mock.On("AddSituationHazardAssessment", context1, addSituationHazardAssessmentParams)}
-}
-
-func (_c *MockSituationService_AddSituationHazardAssessment_Call) Run(run func(context1 context.Context, addSituationHazardAssessmentParams rez.AddSituationHazardAssessmentParams)) *MockSituationService_AddSituationHazardAssessment_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 rez.AddSituationHazardAssessmentParams
-		if args[1] != nil {
-			arg1 = args[1].(rez.AddSituationHazardAssessmentParams)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockSituationService_AddSituationHazardAssessment_Call) Return(situationHazardAssessment *ent.SituationHazardAssessment, err error) *MockSituationService_AddSituationHazardAssessment_Call {
-	_c.Call.Return(situationHazardAssessment, err)
-	return _c
-}
-
-func (_c *MockSituationService_AddSituationHazardAssessment_Call) RunAndReturn(run func(context1 context.Context, addSituationHazardAssessmentParams rez.AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error)) *MockSituationService_AddSituationHazardAssessment_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // CloseSituation provides a mock function for the type MockSituationService
 func (_mock *MockSituationService) CloseSituation(context1 context.Context, uUID uuid.UUID, closeSituationParams rez.CloseSituationParams) (*ent.Situation, error) {
 	ret := _mock.Called(context1, uUID, closeSituationParams)
@@ -8868,74 +8801,6 @@ func (_c *MockSituationService_ListSituationEventIDs_Call) RunAndReturn(run func
 	return _c
 }
 
-// ListSituationHazardAssessments provides a mock function for the type MockSituationService
-func (_mock *MockSituationService) ListSituationHazardAssessments(context1 context.Context, listSituationHazardAssessmentsParams rez.ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error) {
-	ret := _mock.Called(context1, listSituationHazardAssessmentsParams)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ListSituationHazardAssessments")
-	}
-
-	var r0 *ent.ListResult[ent.SituationHazardAssessment]
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error)); ok {
-		return returnFunc(context1, listSituationHazardAssessmentsParams)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListSituationHazardAssessmentsParams) *ent.ListResult[ent.SituationHazardAssessment]); ok {
-		r0 = returnFunc(context1, listSituationHazardAssessmentsParams)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.ListResult[ent.SituationHazardAssessment])
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListSituationHazardAssessmentsParams) error); ok {
-		r1 = returnFunc(context1, listSituationHazardAssessmentsParams)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockSituationService_ListSituationHazardAssessments_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListSituationHazardAssessments'
-type MockSituationService_ListSituationHazardAssessments_Call struct {
-	*mock.Call
-}
-
-// ListSituationHazardAssessments is a helper method to define mock.On call
-//   - context1 context.Context
-//   - listSituationHazardAssessmentsParams rez.ListSituationHazardAssessmentsParams
-func (_e *MockSituationService_Expecter) ListSituationHazardAssessments(context1 interface{}, listSituationHazardAssessmentsParams interface{}) *MockSituationService_ListSituationHazardAssessments_Call {
-	return &MockSituationService_ListSituationHazardAssessments_Call{Call: _e.mock.On("ListSituationHazardAssessments", context1, listSituationHazardAssessmentsParams)}
-}
-
-func (_c *MockSituationService_ListSituationHazardAssessments_Call) Run(run func(context1 context.Context, listSituationHazardAssessmentsParams rez.ListSituationHazardAssessmentsParams)) *MockSituationService_ListSituationHazardAssessments_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 rez.ListSituationHazardAssessmentsParams
-		if args[1] != nil {
-			arg1 = args[1].(rez.ListSituationHazardAssessmentsParams)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockSituationService_ListSituationHazardAssessments_Call) Return(listResult *ent.ListResult[ent.SituationHazardAssessment], err error) *MockSituationService_ListSituationHazardAssessments_Call {
-	_c.Call.Return(listResult, err)
-	return _c
-}
-
-func (_c *MockSituationService_ListSituationHazardAssessments_Call) RunAndReturn(run func(context1 context.Context, listSituationHazardAssessmentsParams rez.ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error)) *MockSituationService_ListSituationHazardAssessments_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // ListSituationJudgments provides a mock function for the type MockSituationService
 func (_mock *MockSituationService) ListSituationJudgments(context1 context.Context, listSituationJudgmentsParams rez.ListSituationJudgmentsParams) (*ent.ListResult[ent.SituationJudgment], error) {
 	ret := _mock.Called(context1, listSituationJudgmentsParams)
@@ -9072,60 +8937,60 @@ func (_c *MockSituationService_ListSituations_Call) RunAndReturn(run func(contex
 	return _c
 }
 
-// LoadSignals provides a mock function for the type MockSituationService
-func (_mock *MockSituationService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
-	ret := _mock.Called(ctx, entityIDs, opts)
+// LoadObservations provides a mock function for the type MockSituationService
+func (_mock *MockSituationService) LoadObservations(ctx context.Context, refs []rez.SituationObservationRef, opts rez.LoadSituationObservationsOptions) (map[rez.SituationObservationRef]rez.SituationObservation, error) {
+	ret := _mock.Called(ctx, refs, opts)
 
 	if len(ret) == 0 {
-		panic("no return value specified for LoadSignals")
+		panic("no return value specified for LoadObservations")
 	}
 
-	var r0 []rez.SituationSignal
+	var r0 map[rez.SituationObservationRef]rez.SituationObservation
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error)); ok {
-		return returnFunc(ctx, entityIDs, opts)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []rez.SituationObservationRef, rez.LoadSituationObservationsOptions) (map[rez.SituationObservationRef]rez.SituationObservation, error)); ok {
+		return returnFunc(ctx, refs, opts)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) []rez.SituationSignal); ok {
-		r0 = returnFunc(ctx, entityIDs, opts)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []rez.SituationObservationRef, rez.LoadSituationObservationsOptions) map[rez.SituationObservationRef]rez.SituationObservation); ok {
+		r0 = returnFunc(ctx, refs, opts)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]rez.SituationSignal)
+			r0 = ret.Get(0).(map[rez.SituationObservationRef]rez.SituationObservation)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, rez.LoadSituationSignalsOptions) error); ok {
-		r1 = returnFunc(ctx, entityIDs, opts)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []rez.SituationObservationRef, rez.LoadSituationObservationsOptions) error); ok {
+		r1 = returnFunc(ctx, refs, opts)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockSituationService_LoadSignals_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LoadSignals'
-type MockSituationService_LoadSignals_Call struct {
+// MockSituationService_LoadObservations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LoadObservations'
+type MockSituationService_LoadObservations_Call struct {
 	*mock.Call
 }
 
-// LoadSignals is a helper method to define mock.On call
+// LoadObservations is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityIDs []uuid.UUID
-//   - opts rez.LoadSituationSignalsOptions
-func (_e *MockSituationService_Expecter) LoadSignals(ctx interface{}, entityIDs interface{}, opts interface{}) *MockSituationService_LoadSignals_Call {
-	return &MockSituationService_LoadSignals_Call{Call: _e.mock.On("LoadSignals", ctx, entityIDs, opts)}
+//   - refs []rez.SituationObservationRef
+//   - opts rez.LoadSituationObservationsOptions
+func (_e *MockSituationService_Expecter) LoadObservations(ctx interface{}, refs interface{}, opts interface{}) *MockSituationService_LoadObservations_Call {
+	return &MockSituationService_LoadObservations_Call{Call: _e.mock.On("LoadObservations", ctx, refs, opts)}
 }
 
-func (_c *MockSituationService_LoadSignals_Call) Run(run func(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions)) *MockSituationService_LoadSignals_Call {
+func (_c *MockSituationService_LoadObservations_Call) Run(run func(ctx context.Context, refs []rez.SituationObservationRef, opts rez.LoadSituationObservationsOptions)) *MockSituationService_LoadObservations_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []uuid.UUID
+		var arg1 []rez.SituationObservationRef
 		if args[1] != nil {
-			arg1 = args[1].([]uuid.UUID)
+			arg1 = args[1].([]rez.SituationObservationRef)
 		}
-		var arg2 rez.LoadSituationSignalsOptions
+		var arg2 rez.LoadSituationObservationsOptions
 		if args[2] != nil {
-			arg2 = args[2].(rez.LoadSituationSignalsOptions)
+			arg2 = args[2].(rez.LoadSituationObservationsOptions)
 		}
 		run(
 			arg0,
@@ -9136,12 +9001,12 @@ func (_c *MockSituationService_LoadSignals_Call) Run(run func(ctx context.Contex
 	return _c
 }
 
-func (_c *MockSituationService_LoadSignals_Call) Return(situationSignals []rez.SituationSignal, err error) *MockSituationService_LoadSignals_Call {
-	_c.Call.Return(situationSignals, err)
+func (_c *MockSituationService_LoadObservations_Call) Return(vToSituationObservation map[rez.SituationObservationRef]rez.SituationObservation, err error) *MockSituationService_LoadObservations_Call {
+	_c.Call.Return(vToSituationObservation, err)
 	return _c
 }
 
-func (_c *MockSituationService_LoadSignals_Call) RunAndReturn(run func(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error)) *MockSituationService_LoadSignals_Call {
+func (_c *MockSituationService_LoadObservations_Call) RunAndReturn(run func(ctx context.Context, refs []rez.SituationObservationRef, opts rez.LoadSituationObservationsOptions) (map[rez.SituationObservationRef]rez.SituationObservation, error)) *MockSituationService_LoadObservations_Call {
 	_c.Call.Return(run)
 	return _c
 }

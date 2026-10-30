@@ -1,4 +1,4 @@
-import type { SituationNotice, SituationNoticeRatings } from "$lib/api";
+import type { SituationNotice } from "$lib/api";
 
 /** One chat notice of the situation, as its line on the situation page shows it. */
 export type NoticeLine = {
@@ -66,12 +66,4 @@ function withReason(text: string, error: string | undefined) {
 
 export function noticeLines(notices: SituationNotice[] | undefined): NoticeLine[] {
 	return (notices ?? []).map(noticeLine);
-}
-
-/** The ratings people gave the notice, or undefined before anyone has rated it. */
-export function noticeRatingsText(ratings: SituationNoticeRatings | undefined) {
-	if (!ratings || ratings.useful + ratings.notUseful === 0) {
-		return undefined;
-	}
-	return `Rated useful by ${ratings.useful}, not useful by ${ratings.notUseful}`;
 }

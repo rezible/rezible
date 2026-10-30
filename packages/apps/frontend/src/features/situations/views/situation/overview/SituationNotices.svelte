@@ -55,8 +55,5 @@
 				{/if}
 			</li>
 		{/each}
-		{#if notices.ratings}
-			<li class="pl-5">{notices.ratings}</li>
-		{/if}
 	</ul>
 {/if}

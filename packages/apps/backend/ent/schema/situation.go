@@ -32,7 +32,7 @@ func (Situation) Fields() []ent.Field {
 		field.String("title").NotEmpty(),
 		field.Text("summary").Optional(),
 		field.Time("opened_at").
-			Comment("The earliest start of its signals; lowered when an earlier signal joins, never raised"),
+			Comment("The earliest start of its observations; lowered when an earlier one joins, never raised"),
 		field.Time("raised_at").
 			Optional().
 			Nillable().
@@ -51,47 +51,32 @@ func (Situation) Fields() []ent.Field {
 			Values("stabilized", "expired", "merged", "dismissed").
 			Optional().
 			Nillable(),
-		field.UUID("seed_entity_id", uuid.UUID{}).
-			Comment("Knowledge entity of the signal that started it; kept after situation merges, re-pointed by entity merges"),
-		field.UUID("latest_judgment_id", uuid.UUID{}).
+		field.UUID("investigation_id", uuid.UUID{}).
 			Optional().
 			Nillable().
-			Comment("Its most recently recorded judgment"),
+			Comment("The investigation of its observations; several situations may share one"),
 	}
 }
 
 func (Situation) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("investigation", SituationInvestigation.Type).
+		edge.To("investigation", Investigation.Type).
+			Field("investigation_id").
 			Unique(),
-		edge.From("hazard_assessments", SituationHazardAssessment.Type).
-			Ref("situation"),
 		edge.From("observation_groups", SituationObservationGroup.Type).
 			Ref("situation"),
 		edge.From("incidents", Incident.Type).
 			Ref("situations"),
-		edge.From("signals", SituationSignal.Type).
+		edge.From("observations", SituationObservation.Type).
 			Ref("situation"),
 		edge.From("entities", SituationEntity.Type).
 			Ref("situation"),
-		edge.From("links", SituationLink.Type).
-			Ref("situation"),
 		edge.From("actions", SituationAction.Type).
+			Ref("situation"),
+		edge.From("judgments", SituationJudgment.Type).
 			Ref("situation"),
 		edge.To("notices", SituationNotice.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
-		edge.To("notice_ratings", SituationNoticeRating.Type).
-			Annotations(entsql.OnDelete(entsql.Cascade)),
-		edge.To("latest_judgment", SituationJudgment.Type).
-			Field("latest_judgment_id").
-			Unique(),
-		// No action on delete: an entity merge re-points the seed before it deletes the entity, so a missed
-		// re-point fails the merge instead of losing the reference.
-		edge.To("seed_entity", KnowledgeEntity.Type).
-			Field("seed_entity_id").
-			Required().
-			Unique().
-			Annotations(entsql.OnDelete(entsql.NoAction)),
 	}
 }
 
@@ -102,11 +87,11 @@ func (Situation) Indexes() []ent.Index {
 			StorageKey("situations_number_key"),
 		index.Fields("tenant_id", "opened_at"),
 		index.Fields("tenant_id", "closed_at"),
-		index.Fields("tenant_id", "seed_entity_id"),
+		index.Fields("tenant_id", "investigation_id"),
 	}
 }
 
-// SituationObservationGroup is a titled group of a situation's signals.
+// SituationObservationGroup is a titled group of some of a situation's observations.
 type SituationObservationGroup struct {
 	ent.Schema
 }
@@ -134,56 +119,58 @@ func (SituationObservationGroup) Edges() []ent.Edge {
 			Field("situation_id").
 			Required().
 			Unique(),
-		edge.From("signals", SituationSignal.Type).
+		edge.From("observations", SituationObservation.Type).
 			Ref("observation_group"),
 	}
 }
 
-// SituationSignal is one signal's membership in a situation. A signal is referenced by its knowledge entity
-// and belongs to at most one situation, closed ones included.
-type SituationSignal struct {
+// SituationObservation is one piece of evidence a situation is an account of. An alert episode may be
+// observed by several situations, closed ones included, but once by each.
+type SituationObservation struct {
 	ent.Schema
 }
 
-func (SituationSignal) Mixin() []ent.Mixin {
+func (SituationObservation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (SituationSignal) Fields() []ent.Field {
+func (SituationObservation) Annotations() []entschema.Annotation {
+	return []entschema.Annotation{
+		entsql.Annotation{Checks: map[string]string{
+			"situation_observation_observed_revision_nonnegative": "observed_revision >= 0",
+			// Each observation kind's reference is one nullable column; exactly one is set.
+			"situation_observation_exactly_one_reference": "num_nonnulls(alert_episode_id) = 1",
+		}},
+	}
+}
+
+func (SituationObservation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("situation_id", uuid.UUID{}),
 		field.UUID("observation_group_id", uuid.UUID{}).
-			Comment("A group of the same situation"),
-		field.UUID("knowledge_entity_id", uuid.UUID{}),
-		field.String("kind").
-			NotEmpty().
-			Comment("The signal's kind, copied when attached"),
-		field.UUID("source_entity_id", uuid.UUID{}).
 			Optional().
 			Nillable().
-			Comment("Knowledge entity of what produced the signal, copied when attached"),
+			Comment("A group of the same situation"),
+		field.UUID("alert_episode_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
 		field.Time("attached_at").
 			Comment("Processing time of attachment"),
-		field.Enum("match_kind").
-			Values("seed", "shared_entity", "dependency", "dependent", "adjacent", "manual"),
-		field.UUID("via_relationship_id", uuid.UUID{}).
-			Optional().
-			Nillable().
-			Comment("The relationship that justified a one-hop match"),
 		field.Text("match_explanation").
 			Optional().
 			Comment("A person's reason for a manual attachment or merge"),
 		field.Int("observed_revision").
+			NonNegative().
 			Default(0).
-			Comment("The signal revision the situation's investigation last saw"),
+			Comment("The evidence revision the situation's investigation last saw"),
 	}
 }
 
-func (SituationSignal) Edges() []ent.Edge {
+func (SituationObservation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("situation", Situation.Type).
 			Field("situation_id").
@@ -191,36 +178,22 @@ func (SituationSignal) Edges() []ent.Edge {
 			Unique(),
 		edge.To("observation_group", SituationObservationGroup.Type).
 			Field("observation_group_id").
-			Required().
 			Unique(),
-		edge.To("knowledge_entity", KnowledgeEntity.Type).
-			Field("knowledge_entity_id").
-			Required().
+		edge.From("alert_episode", AlertEpisode.Type).
+			Ref("situation_observations").
+			Field("alert_episode_id").
 			Unique(),
-		// No action on delete, rather than Ent's default of setting null: an entity merge re-points these
-		// before it deletes an entity or a folded relationship, so a missed re-point fails the merge instead of
-		// losing the signal's provenance.
-		edge.To("source_entity", KnowledgeEntity.Type).
-			Field("source_entity_id").
-			Unique().
-			Annotations(entsql.OnDelete(entsql.NoAction)),
-		edge.To("via_relationship", KnowledgeRelationship.Type).
-			Field("via_relationship_id").
-			Unique().
-			Annotations(entsql.OnDelete(entsql.NoAction)),
 	}
 }
 
-func (SituationSignal) Indexes() []ent.Index {
+func (SituationObservation) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "knowledge_entity_id").Unique(),
-		index.Fields("tenant_id", "situation_id"),
-		index.Fields("tenant_id", "source_entity_id"),
-		index.Fields("tenant_id", "via_relationship_id"),
+		index.Fields("tenant_id", "situation_id", "alert_episode_id").Unique(),
+		index.Fields("tenant_id", "alert_episode_id"),
 	}
 }
 
-// SituationEntity is one of a situation's runtime entities, recomputed from its signals.
+// SituationEntity is one of a situation's runtime entities, recomputed from its observations.
 type SituationEntity struct {
 	ent.Schema
 }
@@ -238,7 +211,7 @@ func (SituationEntity) Fields() []ent.Field {
 		field.UUID("situation_id", uuid.UUID{}).Immutable(),
 		field.UUID("knowledge_entity_id", uuid.UUID{}),
 		field.Bool("matching").
-			Comment("Whether a signal that is not broad touches it, so it attracts related signals"),
+			Comment("Whether an observation that is not broad touches it, so it attracts related observations"),
 	}
 }
 
@@ -263,51 +236,6 @@ func (SituationEntity) Indexes() []ent.Index {
 		index.Fields("tenant_id", "situation_id", "knowledge_entity_id").Unique(),
 		index.Fields("tenant_id", "knowledge_entity_id").
 			Annotations(entsql.IndexWhere("matching")),
-	}
-}
-
-// SituationLink points from a recurrence or a merged situation to the earlier or surviving one.
-type SituationLink struct {
-	ent.Schema
-}
-
-func (SituationLink) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-	}
-}
-
-func (SituationLink) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("situation_id", uuid.UUID{}).Immutable(),
-		field.UUID("linked_situation_id", uuid.UUID{}).Immutable(),
-		field.Enum("kind").
-			Values("recurrence_of", "merged_into").
-			Immutable(),
-		field.Time("created_at").Immutable(),
-	}
-}
-
-func (SituationLink) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("situation", Situation.Type).
-			Field("situation_id").
-			Required().
-			Unique().
-			Immutable(),
-		edge.To("linked_situation", Situation.Type).
-			Field("linked_situation_id").
-			Required().
-			Unique().
-			Immutable(),
-	}
-}
-
-func (SituationLink) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "situation_id", "linked_situation_id", "kind").Unique(),
 	}
 }
 
@@ -427,115 +355,6 @@ func (SituationJudgment) Edges() []ent.Edge {
 func (SituationJudgment) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "situation_id", "judged_at"),
-	}
-}
-
-type SituationInvestigation struct {
-	ent.Schema
-}
-
-func (SituationInvestigation) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-		TimestampsMixin{},
-	}
-}
-
-func (SituationInvestigation) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("situation_id", uuid.UUID{}).Immutable(),
-		field.UUID("investigation_id", uuid.UUID{}).Immutable(),
-	}
-}
-
-func (SituationInvestigation) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.From("situation", Situation.Type).
-			Ref("investigation").
-			Unique().
-			Required().
-			Immutable().
-			Field("situation_id"),
-		edge.From("investigation", Investigation.Type).
-			Ref("situations").
-			Unique().
-			Required().
-			Immutable().
-			Field("investigation_id"),
-	}
-}
-
-func (SituationInvestigation) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "situation_id").Unique(),
-		index.Fields("tenant_id", "investigation_id").Unique(),
-	}
-}
-
-type SituationHazardAssessment struct {
-	ent.Schema
-}
-
-func (SituationHazardAssessment) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-		TimestampsMixin{},
-	}
-}
-
-func (SituationHazardAssessment) Annotations() []entschema.Annotation {
-	return []entschema.Annotation{
-		entsql.Annotation{Checks: map[string]string{
-			"situation_hazard_assessment_exactly_one_assessor": "num_nonnulls(user_id, agent_turn_id) = 1",
-		}},
-	}
-}
-
-func (SituationHazardAssessment) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("situation_id", uuid.UUID{}).Immutable(),
-		field.UUID("system_hazard_id", uuid.UUID{}).Immutable(),
-		field.Int("revision").Positive().Immutable(),
-		field.Enum("status").Values("suspected", "confirmed", "disproven").Immutable(),
-		field.Text("summary").NotEmpty().Immutable(),
-		field.Time("assessed_at").Immutable(),
-		field.UUID("user_id", uuid.UUID{}).Optional().Nillable().Immutable(),
-		field.UUID("agent_turn_id", uuid.UUID{}).Optional().Nillable().Immutable(),
-	}
-}
-
-func (SituationHazardAssessment) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("situation", Situation.Type).
-			Unique().
-			Required().
-			Immutable().
-			Field("situation_id"),
-		edge.To("system_hazard", SystemHazard.Type).
-			Unique().
-			Required().
-			Immutable().
-			Field("system_hazard_id"),
-		edge.To("user", User.Type).
-			Unique().
-			Immutable().
-			Field("user_id"),
-		edge.To("agent_turn", AgentTurn.Type).
-			Unique().
-			Immutable().
-			Field("agent_turn_id"),
-	}
-}
-
-func (SituationHazardAssessment) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "situation_id", "system_hazard_id", "revision").Unique(),
-		index.Fields("tenant_id", "situation_id", "assessed_at"),
-		index.Fields("tenant_id", "system_hazard_id", "assessed_at"),
 	}
 }
 

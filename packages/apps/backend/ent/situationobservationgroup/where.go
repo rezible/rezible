@@ -405,27 +405,27 @@ func HasSituationWith(preds ...predicate.Situation) predicate.SituationObservati
 	})
 }
 
-// HasSignals applies the HasEdge predicate on the "signals" edge.
-func HasSignals() predicate.SituationObservationGroup {
+// HasObservations applies the HasEdge predicate on the "observations" edge.
+func HasObservations() predicate.SituationObservationGroup {
 	return predicate.SituationObservationGroup(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, SignalsTable, SignalsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, ObservationsTable, ObservationsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationSignal
-		step.Edge.Schema = schemaConfig.SituationSignal
+		step.To.Schema = schemaConfig.SituationObservation
+		step.Edge.Schema = schemaConfig.SituationObservation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSignalsWith applies the HasEdge predicate on the "signals" edge with a given conditions (other predicates).
-func HasSignalsWith(preds ...predicate.SituationSignal) predicate.SituationObservationGroup {
+// HasObservationsWith applies the HasEdge predicate on the "observations" edge with a given conditions (other predicates).
+func HasObservationsWith(preds ...predicate.SituationObservation) predicate.SituationObservationGroup {
 	return predicate.SituationObservationGroup(func(s *sql.Selector) {
-		step := newSignalsStep()
+		step := newObservationsStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationSignal
-		step.Edge.Schema = schemaConfig.SituationSignal
+		step.To.Schema = schemaConfig.SituationObservation
+		step.Edge.Schema = schemaConfig.SituationObservation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

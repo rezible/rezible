@@ -7,7 +7,6 @@ import (
 	"slices"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 
@@ -17,8 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitent "github.com/rezible/rezible/ent/situationentity"
-	sitlink "github.com/rezible/rezible/ent/situationlink"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
+	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
@@ -28,90 +26,95 @@ import (
 // situationCorrelationLock names the tenant correlation lock.
 const situationCorrelationLock = "situation_correlation"
 
-func NewProcessSituationSignalWorker(service *SituationService) jobs.WorkerDefinition {
-	return jobs.DefineWorkerFunc(func(ctx context.Context, args jobs.ProcessSituationSignal) error {
-		return service.signalJobError(service.ProcessSignal(ctx, args.SignalEntityID))
+func NewProcessSituationObservationWorker(service *SituationService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(func(ctx context.Context, args jobs.ProcessSituationObservation) error {
+		return service.observationJobError(service.ProcessObservation(ctx, args.Ref))
 	})
 }
 
-// signalJobError marks processErr retryable when an entity merge deleted a knowledge subject that correlation
-// read: correlation found it gone, or a write referring to it failed on its foreign key. The next attempt reads
-// the merged graph.
-func (s *SituationService) signalJobError(processErr error) error {
+// observationJobError marks processErr retryable when an entity merge deleted a knowledge subject that
+// correlation read: correlation found it gone, or a write referring to it failed on its foreign key. The next
+// attempt reads the merged graph.
+func (s *SituationService) observationJobError(processErr error) error {
 	if errors.Is(processErr, errs.ErrKnowledgeSubjectMerged) || s.db.IsForeignKeyError(processErr, ent.KnowledgeForeignKeyConstraints...) {
 		return jobs.MarkRetryableError(processErr)
 	}
 	return processErr
 }
 
-// ProcessSignal brings situations up to date with a signal's stored state. It refreshes the situation
-// holding the signal, or places an eligible signal that no situation holds. Unknown signals and kinds
-// without a source are ignored.
-func (s *SituationService) ProcessSignal(ctx context.Context, signalEntityID uuid.UUID) error {
-	signals, loadErr := s.loadSignals(ctx, []uuid.UUID{signalEntityID}, rez.LoadSituationSignalsOptions{})
+// ProcessObservation brings situations up to date with an observation's stored state. It refreshes the
+// situations that have the observation, or places an eligible observation that no situation has. Unknown
+// observations are ignored.
+func (s *SituationService) ProcessObservation(ctx context.Context, ref rez.SituationObservationRef) error {
+	observations, loadErr := s.LoadObservations(ctx, []rez.SituationObservationRef{ref}, rez.LoadSituationObservationsOptions{})
 	if loadErr != nil {
 		if errors.Is(loadErr, errs.ErrInvalidInput) {
 			return nil
 		}
 		return loadErr
 	}
-	signal := signals[signalEntityID]
-	held, heldErr := s.refreshHoldingSituation(ctx, signalEntityID)
-	if heldErr != nil || held {
-		return heldErr
+	observation := observations[ref]
+	observed, observedErr := s.refreshObservingSituations(ctx, ref)
+	if observedErr != nil || observed {
+		return observedErr
 	}
-	if !situations.EligibleAt(signal, s.clock.Now()) {
+	if !situations.EligibleAt(observation, s.clock.Now()) {
 		return nil
 	}
-	return s.correlateSignal(ctx, signal)
+	return s.correlateObservation(ctx, observation)
 }
 
-// refreshHoldingSituation recomputes the entity rows of the situation holding the signal and requests its
-// evaluation, unless it has closed. It reports whether any situation holds the signal: a signal is never
-// placed twice.
-func (s *SituationService) refreshHoldingSituation(ctx context.Context, signalEntityID uuid.UUID) (bool, error) {
+// refreshObservingSituations recomputes the entity rows of the unclosed situations with the observation and
+// requests their evaluation. It reports whether any situation, closed or not, has the observation:
+// correlation never places an observation again.
+func (s *SituationService) refreshObservingSituations(ctx context.Context, ref rez.SituationObservationRef) (bool, error) {
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (bool, error) {
-		queryMembership := tx.SituationSignal.Query().
-			Where(sitsig.KnowledgeEntityID(signalEntityID))
-		membership, queryErr := queryMembership.Only(ctx)
+		queryObserving := tx.Situation.Query().
+			Where(sit.HasObservationsWith(s.observesAny(ref)))
+		ids, queryErr := queryObserving.IDs(ctx)
 		if queryErr != nil {
-			if ent.IsNotFound(queryErr) {
-				return false, nil
-			}
-			return false, fmt.Errorf("query signal membership: %w", queryErr)
+			return false, fmt.Errorf("query observing situations: %w", queryErr)
 		}
-		locked, lockErr := s.lockSituations(ctx, membership.SituationID)
+		if len(ids) == 0 {
+			return false, nil
+		}
+		locked, lockErr := s.lockSituations(ctx, ids...)
 		if lockErr != nil {
 			return false, lockErr
 		}
-		if locked[membership.SituationID].ClosedAt != nil {
-			return true, nil
+		for _, id := range ids {
+			if locked[id].ClosedAt != nil {
+				continue
+			}
+			if entitiesErr := s.recomputeSituationEntities(ctx, id); entitiesErr != nil {
+				return true, entitiesErr
+			}
+			if evaluateErr := s.requestEvaluation(ctx, id); evaluateErr != nil {
+				return true, evaluateErr
+			}
 		}
-		if entitiesErr := s.recomputeSituationEntities(ctx, membership.SituationID); entitiesErr != nil {
-			return true, entitiesErr
-		}
-		return true, s.requestEvaluation(ctx, membership.SituationID)
+		return true, nil
 	})
 }
 
-// correlateSignal places the signal into a situation about the same or a related runtime entity, or into
-// a new candidate.
-func (s *SituationService) correlateSignal(ctx context.Context, signal rez.SituationSignal) error {
+// correlateObservation places the observation into a situation about the same or a related runtime entity, or
+// into a new candidate.
+func (s *SituationService) correlateObservation(ctx context.Context, observation rez.SituationObservation) error {
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		// Without this lock, two signals about the same entities correlated at once could each find no
+		// Without this lock, two observations about the same entities correlated at once could each find no
 		// match and each start a candidate. No row represents the tenant's situations about some entities,
 		// so no row lock can prevent it. AcquireTxLocks scopes the key to the tenant, making it one lock per
 		// tenant. It is taken before any situation row lock.
 		if lockErr := s.db.AcquireTxLocks(ctx, situationCorrelationLock, "tenant"); lockErr != nil {
 			return fmt.Errorf("acquire situation correlation lock: %w", lockErr)
 		}
-		// Two runs for one signal can both find it unplaced before either takes the lock.
-		held, heldErr := s.refreshHoldingSituation(ctx, signal.EntityID)
-		if heldErr != nil || held {
-			return heldErr
+		// Two runs for one observation can both find it unobserved before either takes the lock.
+		observed, observedErr := s.refreshObservingSituations(ctx, observation.Ref)
+		if observedErr != nil || observed {
+			return observedErr
 		}
 
-		entityIDs, entitiesErr := s.signalRuntimeEntities(ctx, signal)
+		entityIDs, entitiesErr := s.observationRuntimeEntities(ctx, observation)
 		if entitiesErr != nil {
 			return entitiesErr
 		}
@@ -129,7 +132,7 @@ func (s *SituationService) correlateSignal(ctx context.Context, signal rez.Situa
 		}
 		input := situations.CorrelationInput{
 			Now:           s.clock.Now(),
-			Signal:        signal,
+			Observation:   observation,
 			EntityIDs:     entityIDs,
 			Relationships: relationships,
 			Situations:    candidates,
@@ -138,17 +141,21 @@ func (s *SituationService) correlateSignal(ctx context.Context, signal rez.Situa
 		switch {
 		case !decision.Placed():
 			return nil
-		case decision.MatchKind == sitsig.MatchKindSeed:
-			return s.startCandidate(ctx, signal, input.Now)
+		case decision.MatchKind == situations.MatchKindSeed:
+			createParams := rez.CreateSituationParams{
+				Title:        observation.Title,
+				Observations: []rez.SituationObservationRef{observation.Ref},
+			}
+			if _, createErr := s.CreateSituation(ctx, createParams); createErr != nil {
+				return fmt.Errorf("start candidate: %w", createErr)
+			}
+			return nil
 		}
-		attachParams := AttachSituationSignalsParams{
-			SituationID:       decision.SituationID,
-			GroupTitle:        signal.Title,
-			SignalEntityIDs:   []uuid.UUID{signal.EntityID},
-			MatchKind:         decision.MatchKind,
-			ViaRelationshipID: decision.ViaRelationshipID,
+		attachParams := AttachSituationObservationsParams{
+			SituationID:  decision.SituationID,
+			Observations: []rez.SituationObservationRef{observation.Ref},
 		}
-		return s.AttachSituationSignals(ctx, attachParams)
+		return s.AttachSituationObservations(ctx, attachParams)
 	})
 }
 
@@ -163,7 +170,7 @@ func (s *SituationService) correlationRelationships(ctx context.Context, entityI
 		knowledgegraph.RelationshipClassAdjacent.Predicates(),
 	)
 	listParams := rez.ListKnowledgeRelationshipsParams{
-		PageSize: signalGraphPageSize,
+		PageSize: observationGraphPageSize,
 		Predicates: []predicate.KnowledgeRelationship{
 			knr.PredicateIn(classPredicates...),
 			knr.Or(knr.SourceEntityIDIn(ids...), knr.TargetEntityIDIn(ids...)),
@@ -186,7 +193,7 @@ func (s *SituationService) correlationRelationships(ctx context.Context, entityI
 }
 
 // correlationSituations locks the unclosed situations with a matching entity in the reach and describes
-// them from their signals. A situation that closed before its lock was taken is left out.
+// them from their observations. A situation that closed before its lock was taken is left out.
 func (s *SituationService) correlationSituations(ctx context.Context, reach mapset.Set[uuid.UUID]) ([]situations.CorrelationSituation, error) {
 	if reach.IsEmpty() {
 		return nil, nil
@@ -234,18 +241,18 @@ func (s *SituationService) correlationSituations(ctx context.Context, reach maps
 		}
 	}
 
-	queryMembers := client.SituationSignal.Query().
-		Where(sitsig.SituationIDIn(ids...))
+	queryMembers := client.SituationObservation.Query().
+		Where(sitobs.SituationIDIn(ids...))
 	members, membersErr := queryMembers.All(ctx)
 	if membersErr != nil {
-		return nil, fmt.Errorf("query correlation situation signals: %w", membersErr)
+		return nil, fmt.Errorf("query correlation situation observations: %w", membersErr)
 	}
-	memberIDs := make([]uuid.UUID, len(members))
+	memberRefs := make([]rez.SituationObservationRef, len(members))
 	for i, member := range members {
-		memberIDs[i] = member.KnowledgeEntityID
+		memberRefs[i] = member.Ref()
 	}
 
-	signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{})
+	observations, loadErr := s.LoadObservations(ctx, memberRefs, rez.LoadSituationObservationsOptions{})
 	if loadErr != nil {
 		return nil, loadErr
 	}
@@ -255,9 +262,9 @@ func (s *SituationService) correlationSituations(ctx context.Context, reach maps
 		if candidate == nil {
 			continue
 		}
-		signal := signals[member.KnowledgeEntityID]
-		candidate.Active = candidate.Active || signal.Active
-		for _, at := range []time.Time{member.AttachedAt, signal.LastActivityAt} {
+		observation := observations[member.Ref()]
+		candidate.Active = candidate.Active || observation.Active
+		for _, at := range []time.Time{member.AttachedAt, observation.LastActivityAt} {
 			if at.After(candidate.LastActivityAt) {
 				candidate.LastActivityAt = at
 			}
@@ -269,49 +276,4 @@ func (s *SituationService) correlationSituations(ctx context.Context, reach maps
 		candidates = append(candidates, *candidate)
 	}
 	return candidates, nil
-}
-
-// startCandidate creates the signal's own candidate. It links the candidate as a recurrence of the most
-// recent situation, other than a merged one, that closed within RecurrenceLookback and held a signal of
-// the same source; equal closing times go to the lower ID.
-func (s *SituationService) startCandidate(ctx context.Context, signal rez.SituationSignal, now time.Time) error {
-	createParams := rez.CreateSituationParams{
-		Title:        signal.Title,
-		SeedEntityID: signal.EntityID,
-		ObservationGroups: []rez.SituationObservationGroupParams{{
-			Title:           signal.Title,
-			SignalEntityIDs: []uuid.UUID{signal.EntityID},
-		}},
-	}
-	created, createErr := s.CreateSituation(ctx, createParams)
-	if createErr != nil {
-		return fmt.Errorf("start candidate: %w", createErr)
-	}
-	if signal.SourceEntityID == nil {
-		return nil
-	}
-	client := s.db.Client(ctx)
-	queryRecurrence := client.Situation.Query().
-		Where(
-			sit.ClosedAtGTE(now.Add(-situations.RecurrenceLookback)),
-			sit.CloseReasonNEQ(sit.CloseReasonMerged),
-			sit.HasSignalsWith(sitsig.SourceEntityID(*signal.SourceEntityID)),
-		).
-		Order(sit.ByClosedAt(sql.OrderDesc()), sit.ByID())
-	earlier, queryErr := queryRecurrence.First(ctx)
-	if queryErr != nil {
-		if ent.IsNotFound(queryErr) {
-			return nil
-		}
-		return fmt.Errorf("query recurrence situation: %w", queryErr)
-	}
-	createLink := client.SituationLink.Create().
-		SetSituationID(created.ID).
-		SetLinkedSituationID(earlier.ID).
-		SetKind(sitlink.KindRecurrenceOf).
-		SetCreatedAt(now)
-	if linkErr := createLink.Exec(ctx); linkErr != nil {
-		return fmt.Errorf("link recurrence situation: %w", linkErr)
-	}
-	return nil
 }

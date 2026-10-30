@@ -46,7 +46,7 @@ type InvestigationEdges struct {
 	// SystemAnalysis holds the value of the system_analysis edge.
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// Situations holds the value of the situations edge.
-	Situations []*SituationInvestigation `json:"situations,omitempty"`
+	Situations []*Situation `json:"situations,omitempty"`
 	// UserInputs holds the value of the user_inputs edge.
 	UserInputs []*InvestigationUserInput `json:"user_inputs,omitempty"`
 	// EvidenceRevisions holds the value of the evidence_revisions edge.
@@ -97,7 +97,7 @@ func (e InvestigationEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
 
 // SituationsOrErr returns the Situations value or an error if the edge
 // was not loaded in eager-loading.
-func (e InvestigationEdges) SituationsOrErr() ([]*SituationInvestigation, error) {
+func (e InvestigationEdges) SituationsOrErr() ([]*Situation, error) {
 	if e.loadedTypes[3] {
 		return e.Situations, nil
 	}
@@ -240,7 +240,7 @@ func (_m *Investigation) QuerySystemAnalysis() *SystemAnalysisQuery {
 }
 
 // QuerySituations queries the "situations" edge of the Investigation entity.
-func (_m *Investigation) QuerySituations() *SituationInvestigationQuery {
+func (_m *Investigation) QuerySituations() *SituationQuery {
 	return NewInvestigationClient(_m.config).QuerySituations(_m)
 }
 

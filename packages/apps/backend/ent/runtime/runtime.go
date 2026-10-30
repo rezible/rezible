@@ -84,14 +84,10 @@ import (
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
-	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
-	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationnotice"
-	"github.com/rezible/rezible/ent/situationnoticerating"
+	"github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
-	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
@@ -2074,70 +2070,6 @@ func init() {
 	situationentityDescID := situationentityFields[0].Descriptor()
 	// situationentity.DefaultID holds the default value on creation for the id field.
 	situationentity.DefaultID = situationentityDescID.Default.(func() uuid.UUID)
-	situationhazardassessmentMixin := schema.SituationHazardAssessment{}.Mixin()
-	situationhazardassessment.Policy = privacy.NewPolicies(situationhazardassessmentMixin[0], situationhazardassessmentMixin[1], schema.SituationHazardAssessment{})
-	situationhazardassessment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := situationhazardassessment.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	situationhazardassessmentMixinFields2 := situationhazardassessmentMixin[2].Fields()
-	_ = situationhazardassessmentMixinFields2
-	situationhazardassessmentFields := schema.SituationHazardAssessment{}.Fields()
-	_ = situationhazardassessmentFields
-	// situationhazardassessmentDescCreatedAt is the schema descriptor for created_at field.
-	situationhazardassessmentDescCreatedAt := situationhazardassessmentMixinFields2[0].Descriptor()
-	// situationhazardassessment.DefaultCreatedAt holds the default value on creation for the created_at field.
-	situationhazardassessment.DefaultCreatedAt = situationhazardassessmentDescCreatedAt.Default.(func() time.Time)
-	// situationhazardassessmentDescUpdatedAt is the schema descriptor for updated_at field.
-	situationhazardassessmentDescUpdatedAt := situationhazardassessmentMixinFields2[1].Descriptor()
-	// situationhazardassessment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	situationhazardassessment.DefaultUpdatedAt = situationhazardassessmentDescUpdatedAt.Default.(func() time.Time)
-	// situationhazardassessment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	situationhazardassessment.UpdateDefaultUpdatedAt = situationhazardassessmentDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// situationhazardassessmentDescRevision is the schema descriptor for revision field.
-	situationhazardassessmentDescRevision := situationhazardassessmentFields[3].Descriptor()
-	// situationhazardassessment.RevisionValidator is a validator for the "revision" field. It is called by the builders before save.
-	situationhazardassessment.RevisionValidator = situationhazardassessmentDescRevision.Validators[0].(func(int) error)
-	// situationhazardassessmentDescSummary is the schema descriptor for summary field.
-	situationhazardassessmentDescSummary := situationhazardassessmentFields[5].Descriptor()
-	// situationhazardassessment.SummaryValidator is a validator for the "summary" field. It is called by the builders before save.
-	situationhazardassessment.SummaryValidator = situationhazardassessmentDescSummary.Validators[0].(func(string) error)
-	// situationhazardassessmentDescID is the schema descriptor for id field.
-	situationhazardassessmentDescID := situationhazardassessmentFields[0].Descriptor()
-	// situationhazardassessment.DefaultID holds the default value on creation for the id field.
-	situationhazardassessment.DefaultID = situationhazardassessmentDescID.Default.(func() uuid.UUID)
-	situationinvestigationMixin := schema.SituationInvestigation{}.Mixin()
-	situationinvestigation.Policy = privacy.NewPolicies(situationinvestigationMixin[0], situationinvestigationMixin[1], schema.SituationInvestigation{})
-	situationinvestigation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := situationinvestigation.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	situationinvestigationMixinFields2 := situationinvestigationMixin[2].Fields()
-	_ = situationinvestigationMixinFields2
-	situationinvestigationFields := schema.SituationInvestigation{}.Fields()
-	_ = situationinvestigationFields
-	// situationinvestigationDescCreatedAt is the schema descriptor for created_at field.
-	situationinvestigationDescCreatedAt := situationinvestigationMixinFields2[0].Descriptor()
-	// situationinvestigation.DefaultCreatedAt holds the default value on creation for the created_at field.
-	situationinvestigation.DefaultCreatedAt = situationinvestigationDescCreatedAt.Default.(func() time.Time)
-	// situationinvestigationDescUpdatedAt is the schema descriptor for updated_at field.
-	situationinvestigationDescUpdatedAt := situationinvestigationMixinFields2[1].Descriptor()
-	// situationinvestigation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	situationinvestigation.DefaultUpdatedAt = situationinvestigationDescUpdatedAt.Default.(func() time.Time)
-	// situationinvestigation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	situationinvestigation.UpdateDefaultUpdatedAt = situationinvestigationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// situationinvestigationDescID is the schema descriptor for id field.
-	situationinvestigationDescID := situationinvestigationFields[0].Descriptor()
-	// situationinvestigation.DefaultID holds the default value on creation for the id field.
-	situationinvestigation.DefaultID = situationinvestigationDescID.Default.(func() uuid.UUID)
 	situationjudgmentMixin := schema.SituationJudgment{}.Mixin()
 	situationjudgment.Policy = privacy.NewPolicies(situationjudgmentMixin[0], situationjudgmentMixin[1], schema.SituationJudgment{})
 	situationjudgment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -2154,22 +2086,6 @@ func init() {
 	situationjudgmentDescID := situationjudgmentFields[0].Descriptor()
 	// situationjudgment.DefaultID holds the default value on creation for the id field.
 	situationjudgment.DefaultID = situationjudgmentDescID.Default.(func() uuid.UUID)
-	situationlinkMixin := schema.SituationLink{}.Mixin()
-	situationlink.Policy = privacy.NewPolicies(situationlinkMixin[0], situationlinkMixin[1], schema.SituationLink{})
-	situationlink.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := situationlink.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	situationlinkFields := schema.SituationLink{}.Fields()
-	_ = situationlinkFields
-	// situationlinkDescID is the schema descriptor for id field.
-	situationlinkDescID := situationlinkFields[0].Descriptor()
-	// situationlink.DefaultID holds the default value on creation for the id field.
-	situationlink.DefaultID = situationlinkDescID.Default.(func() uuid.UUID)
 	situationnoticeMixin := schema.SituationNotice{}.Mixin()
 	situationnotice.Policy = privacy.NewPolicies(situationnoticeMixin[0], situationnoticeMixin[1], schema.SituationNotice{})
 	situationnotice.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -2202,38 +2118,28 @@ func init() {
 	situationnoticeDescID := situationnoticeFields[0].Descriptor()
 	// situationnotice.DefaultID holds the default value on creation for the id field.
 	situationnotice.DefaultID = situationnoticeDescID.Default.(func() uuid.UUID)
-	situationnoticeratingMixin := schema.SituationNoticeRating{}.Mixin()
-	situationnoticerating.Policy = privacy.NewPolicies(situationnoticeratingMixin[0], situationnoticeratingMixin[1], schema.SituationNoticeRating{})
-	situationnoticerating.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	situationobservationMixin := schema.SituationObservation{}.Mixin()
+	situationobservation.Policy = privacy.NewPolicies(situationobservationMixin[0], situationobservationMixin[1], schema.SituationObservation{})
+	situationobservation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := situationnoticerating.Policy.EvalMutation(ctx, m); err != nil {
+			if err := situationobservation.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	situationnoticeratingMixinFields2 := situationnoticeratingMixin[2].Fields()
-	_ = situationnoticeratingMixinFields2
-	situationnoticeratingFields := schema.SituationNoticeRating{}.Fields()
-	_ = situationnoticeratingFields
-	// situationnoticeratingDescCreatedAt is the schema descriptor for created_at field.
-	situationnoticeratingDescCreatedAt := situationnoticeratingMixinFields2[0].Descriptor()
-	// situationnoticerating.DefaultCreatedAt holds the default value on creation for the created_at field.
-	situationnoticerating.DefaultCreatedAt = situationnoticeratingDescCreatedAt.Default.(func() time.Time)
-	// situationnoticeratingDescUpdatedAt is the schema descriptor for updated_at field.
-	situationnoticeratingDescUpdatedAt := situationnoticeratingMixinFields2[1].Descriptor()
-	// situationnoticerating.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	situationnoticerating.DefaultUpdatedAt = situationnoticeratingDescUpdatedAt.Default.(func() time.Time)
-	// situationnoticerating.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	situationnoticerating.UpdateDefaultUpdatedAt = situationnoticeratingDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// situationnoticeratingDescChatUserID is the schema descriptor for chat_user_id field.
-	situationnoticeratingDescChatUserID := situationnoticeratingFields[2].Descriptor()
-	// situationnoticerating.ChatUserIDValidator is a validator for the "chat_user_id" field. It is called by the builders before save.
-	situationnoticerating.ChatUserIDValidator = situationnoticeratingDescChatUserID.Validators[0].(func(string) error)
-	// situationnoticeratingDescID is the schema descriptor for id field.
-	situationnoticeratingDescID := situationnoticeratingFields[0].Descriptor()
-	// situationnoticerating.DefaultID holds the default value on creation for the id field.
-	situationnoticerating.DefaultID = situationnoticeratingDescID.Default.(func() uuid.UUID)
+	situationobservationFields := schema.SituationObservation{}.Fields()
+	_ = situationobservationFields
+	// situationobservationDescObservedRevision is the schema descriptor for observed_revision field.
+	situationobservationDescObservedRevision := situationobservationFields[6].Descriptor()
+	// situationobservation.DefaultObservedRevision holds the default value on creation for the observed_revision field.
+	situationobservation.DefaultObservedRevision = situationobservationDescObservedRevision.Default.(int)
+	// situationobservation.ObservedRevisionValidator is a validator for the "observed_revision" field. It is called by the builders before save.
+	situationobservation.ObservedRevisionValidator = situationobservationDescObservedRevision.Validators[0].(func(int) error)
+	// situationobservationDescID is the schema descriptor for id field.
+	situationobservationDescID := situationobservationFields[0].Descriptor()
+	// situationobservation.DefaultID holds the default value on creation for the id field.
+	situationobservation.DefaultID = situationobservationDescID.Default.(func() uuid.UUID)
 	situationobservationgroupMixin := schema.SituationObservationGroup{}.Mixin()
 	situationobservationgroup.Policy = privacy.NewPolicies(situationobservationgroupMixin[0], situationobservationgroupMixin[1], schema.SituationObservationGroup{})
 	situationobservationgroup.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -2266,30 +2172,6 @@ func init() {
 	situationobservationgroupDescID := situationobservationgroupFields[0].Descriptor()
 	// situationobservationgroup.DefaultID holds the default value on creation for the id field.
 	situationobservationgroup.DefaultID = situationobservationgroupDescID.Default.(func() uuid.UUID)
-	situationsignalMixin := schema.SituationSignal{}.Mixin()
-	situationsignal.Policy = privacy.NewPolicies(situationsignalMixin[0], situationsignalMixin[1], schema.SituationSignal{})
-	situationsignal.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := situationsignal.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	situationsignalFields := schema.SituationSignal{}.Fields()
-	_ = situationsignalFields
-	// situationsignalDescKind is the schema descriptor for kind field.
-	situationsignalDescKind := situationsignalFields[4].Descriptor()
-	// situationsignal.KindValidator is a validator for the "kind" field. It is called by the builders before save.
-	situationsignal.KindValidator = situationsignalDescKind.Validators[0].(func(string) error)
-	// situationsignalDescObservedRevision is the schema descriptor for observed_revision field.
-	situationsignalDescObservedRevision := situationsignalFields[10].Descriptor()
-	// situationsignal.DefaultObservedRevision holds the default value on creation for the observed_revision field.
-	situationsignal.DefaultObservedRevision = situationsignalDescObservedRevision.Default.(int)
-	// situationsignalDescID is the schema descriptor for id field.
-	situationsignalDescID := situationsignalFields[0].Descriptor()
-	// situationsignal.DefaultID holds the default value on creation for the id field.
-	situationsignal.DefaultID = situationsignalDescID.Default.(func() uuid.UUID)
 	situationsignalattentionMixin := schema.SituationSignalAttention{}.Mixin()
 	situationsignalattention.Policy = privacy.NewPolicies(situationsignalattentionMixin[0], situationsignalattentionMixin[1], schema.SituationSignalAttention{})
 	situationsignalattention.Hooks[0] = func(next ent.Mutator) ent.Mutator {

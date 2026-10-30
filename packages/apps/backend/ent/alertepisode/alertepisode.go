@@ -44,6 +44,8 @@ const (
 	EdgeAlertDefinition = "alert_definition"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
+	// EdgeSituationObservations holds the string denoting the situation_observations edge name in mutations.
+	EdgeSituationObservations = "situation_observations"
 	// Table holds the table name of the alertepisode in the database.
 	Table = "alert_episodes"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -74,6 +76,13 @@ const (
 	InstancesInverseTable = "alert_instances"
 	// InstancesColumn is the table column denoting the instances relation/edge.
 	InstancesColumn = "alert_episode_id"
+	// SituationObservationsTable is the table that holds the situation_observations relation/edge.
+	SituationObservationsTable = "situation_observations"
+	// SituationObservationsInverseTable is the table name for the SituationObservation entity.
+	// It exists in this package in order to avoid circular dependency with the "situationobservation" package.
+	SituationObservationsInverseTable = "situation_observations"
+	// SituationObservationsColumn is the table column denoting the situation_observations relation/edge.
+	SituationObservationsColumn = "alert_episode_id"
 )
 
 // Columns holds all SQL columns for alertepisode fields.
@@ -212,6 +221,20 @@ func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySituationObservationsCount orders the results by situation_observations count.
+func BySituationObservationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSituationObservationsStep(), opts...)
+	}
+}
+
+// BySituationObservations orders the results by situation_observations terms.
+func BySituationObservations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSituationObservationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -238,5 +261,12 @@ func newInstancesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(InstancesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
+	)
+}
+func newSituationObservationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SituationObservationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SituationObservationsTable, SituationObservationsColumn),
 	)
 }

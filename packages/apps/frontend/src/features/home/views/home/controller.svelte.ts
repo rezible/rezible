@@ -49,7 +49,7 @@ class HomeController {
 
 	situations = $derived(this.situationsQuery.data?.data ?? []);
 	private conclusions = createInvestigationConclusions(() =>
-		this.situations.map((situation) => situation.attributes.investigation?.investigation.id)
+		this.situations.map((situation) => situation.attributes.investigationId)
 	);
 
 	inboxRows = $derived((this.inboxQuery.data?.data ?? []).map((item) => inboxRow(item)));
@@ -61,7 +61,7 @@ class HomeController {
 	situationsTotal = $derived(this.situationsQuery.data?.pagination.total);
 
 	conclusionFor(situation: Situation) {
-		return this.conclusions.conclusionFor(situation.attributes.investigation?.investigation.id);
+		return this.conclusions.conclusionFor(situation.attributes.investigationId);
 	}
 
 	private buildActivityGroups() {

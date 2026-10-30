@@ -25,7 +25,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/review"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/user"
@@ -256,21 +255,6 @@ func (_u *UserUpdate) AddEventAnnotations(v ...*EventAnnotation) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddEventAnnotationIDs(ids...)
-}
-
-// AddSituationHazardAssessmentIDs adds the "situation_hazard_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (_u *UserUpdate) AddSituationHazardAssessmentIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.AddSituationHazardAssessmentIDs(ids...)
-	return _u
-}
-
-// AddSituationHazardAssessments adds the "situation_hazard_assessments" edges to the SituationHazardAssessment entity.
-func (_u *UserUpdate) AddSituationHazardAssessments(v ...*SituationHazardAssessment) *UserUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddSituationHazardAssessmentIDs(ids...)
 }
 
 // AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationUserInstallState entity by IDs.
@@ -522,27 +506,6 @@ func (_u *UserUpdate) RemoveEventAnnotations(v ...*EventAnnotation) *UserUpdate 
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEventAnnotationIDs(ids...)
-}
-
-// ClearSituationHazardAssessments clears all "situation_hazard_assessments" edges to the SituationHazardAssessment entity.
-func (_u *UserUpdate) ClearSituationHazardAssessments() *UserUpdate {
-	_u.mutation.ClearSituationHazardAssessments()
-	return _u
-}
-
-// RemoveSituationHazardAssessmentIDs removes the "situation_hazard_assessments" edge to SituationHazardAssessment entities by IDs.
-func (_u *UserUpdate) RemoveSituationHazardAssessmentIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.RemoveSituationHazardAssessmentIDs(ids...)
-	return _u
-}
-
-// RemoveSituationHazardAssessments removes "situation_hazard_assessments" edges to SituationHazardAssessment entities.
-func (_u *UserUpdate) RemoveSituationHazardAssessments(v ...*SituationHazardAssessment) *UserUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveSituationHazardAssessmentIDs(ids...)
 }
 
 // ClearIntegrationOauthStates clears all "integration_oauth_states" edges to the IntegrationUserInstallState entity.
@@ -1106,54 +1069,6 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.EventAnnotation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.SituationHazardAssessmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SituationHazardAssessmentsTable,
-			Columns: []string{user.SituationHazardAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedSituationHazardAssessmentsIDs(); len(nodes) > 0 && !_u.mutation.SituationHazardAssessmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SituationHazardAssessmentsTable,
-			Columns: []string{user.SituationHazardAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SituationHazardAssessmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SituationHazardAssessmentsTable,
-			Columns: []string{user.SituationHazardAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1827,21 +1742,6 @@ func (_u *UserUpdateOne) AddEventAnnotations(v ...*EventAnnotation) *UserUpdateO
 	return _u.AddEventAnnotationIDs(ids...)
 }
 
-// AddSituationHazardAssessmentIDs adds the "situation_hazard_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (_u *UserUpdateOne) AddSituationHazardAssessmentIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.AddSituationHazardAssessmentIDs(ids...)
-	return _u
-}
-
-// AddSituationHazardAssessments adds the "situation_hazard_assessments" edges to the SituationHazardAssessment entity.
-func (_u *UserUpdateOne) AddSituationHazardAssessments(v ...*SituationHazardAssessment) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddSituationHazardAssessmentIDs(ids...)
-}
-
 // AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationUserInstallState entity by IDs.
 func (_u *UserUpdateOne) AddIntegrationOauthStateIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.AddIntegrationOauthStateIDs(ids...)
@@ -2091,27 +1991,6 @@ func (_u *UserUpdateOne) RemoveEventAnnotations(v ...*EventAnnotation) *UserUpda
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEventAnnotationIDs(ids...)
-}
-
-// ClearSituationHazardAssessments clears all "situation_hazard_assessments" edges to the SituationHazardAssessment entity.
-func (_u *UserUpdateOne) ClearSituationHazardAssessments() *UserUpdateOne {
-	_u.mutation.ClearSituationHazardAssessments()
-	return _u
-}
-
-// RemoveSituationHazardAssessmentIDs removes the "situation_hazard_assessments" edge to SituationHazardAssessment entities by IDs.
-func (_u *UserUpdateOne) RemoveSituationHazardAssessmentIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.RemoveSituationHazardAssessmentIDs(ids...)
-	return _u
-}
-
-// RemoveSituationHazardAssessments removes "situation_hazard_assessments" edges to SituationHazardAssessment entities.
-func (_u *UserUpdateOne) RemoveSituationHazardAssessments(v ...*SituationHazardAssessment) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveSituationHazardAssessmentIDs(ids...)
 }
 
 // ClearIntegrationOauthStates clears all "integration_oauth_states" edges to the IntegrationUserInstallState entity.
@@ -2705,54 +2584,6 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.EventAnnotation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.SituationHazardAssessmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SituationHazardAssessmentsTable,
-			Columns: []string{user.SituationHazardAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedSituationHazardAssessmentsIDs(); len(nodes) > 0 && !_u.mutation.SituationHazardAssessmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SituationHazardAssessmentsTable,
-			Columns: []string{user.SituationHazardAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SituationHazardAssessmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SituationHazardAssessmentsTable,
-			Columns: []string{user.SituationHazardAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

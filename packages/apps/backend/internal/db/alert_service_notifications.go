@@ -413,7 +413,7 @@ func (s *AlertService) storeAlertEpisodeState(ctx context.Context, definition *e
 		}
 	}
 	if changed {
-		if notifyErr := s.signals.NotifySignalChanged(ctx, *episode.KnowledgeEntityID); notifyErr != nil {
+		if notifyErr := s.observations.NotifyObservationChanged(ctx, rez.SituationObservationRef{AlertEpisodeID: episode.ID}); notifyErr != nil {
 			return fmt.Errorf("notify alert episode changed: %w", notifyErr)
 		}
 	}

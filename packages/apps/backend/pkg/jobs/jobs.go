@@ -235,15 +235,15 @@ func (SettleAlertEpisode) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
 
-// ProcessSituationSignal places a changed signal into situations, or refreshes the situation holding it.
-// It is not unique: a trigger dropped while an identical job runs would miss the change, so its handler is
-// idempotent instead.
-type ProcessSituationSignal struct {
-	SignalEntityID uuid.UUID `json:"signal_entity_id"`
+// ProcessSituationObservation places a changed observation into a situation, or refreshes the situations
+// observing it. It is not unique: a trigger dropped while an identical job runs would miss the change, so its
+// handler is idempotent instead.
+type ProcessSituationObservation struct {
+	Ref rez.SituationObservationRef `json:"ref"`
 }
 
-func (ProcessSituationSignal) Kind() string {
-	return "process-situation-signal"
+func (ProcessSituationObservation) Kind() string {
+	return "process-situation-observation"
 }
 
 // SituationsQueue runs situation evaluations, which may wait on a model judge, apart from the default queue.

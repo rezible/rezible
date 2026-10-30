@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import type { SituationNotice } from "$lib/api";
-import { noticeLines, noticeRatingsText } from "./notices";
+import { noticeLines } from "./notices";
 
 const notice = (attributes: Partial<SituationNotice>): SituationNotice => ({
 	channelId: "C0AAA1",
@@ -67,12 +67,4 @@ test("a channel whose name is not known shows its ID", () => {
 	const [line] = noticeLines([notice({ channelName: undefined })]);
 
 	expect(line.channel).toBe("C0AAA1");
-});
-
-test("ratings are shown once anyone has rated", () => {
-	expect(noticeRatingsText(undefined)).toBeUndefined();
-	expect(noticeRatingsText({ useful: 0, notUseful: 0 })).toBeUndefined();
-	const text = noticeRatingsText({ useful: 2, notUseful: 1 });
-	expect(text).toContain("useful by 2");
-	expect(text).toContain("not useful by 1");
 });

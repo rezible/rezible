@@ -112,14 +112,9 @@ func ClosedAt(v time.Time) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldClosedAt, v))
 }
 
-// SeedEntityID applies equality check predicate on the "seed_entity_id" field. It's identical to SeedEntityIDEQ.
-func SeedEntityID(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldEQ(FieldSeedEntityID, v))
-}
-
-// LatestJudgmentID applies equality check predicate on the "latest_judgment_id" field. It's identical to LatestJudgmentIDEQ.
-func LatestJudgmentID(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldEQ(FieldLatestJudgmentID, v))
+// InvestigationID applies equality check predicate on the "investigation_id" field. It's identical to InvestigationIDEQ.
+func InvestigationID(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldInvestigationID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -702,54 +697,34 @@ func CloseReasonNotNil() predicate.Situation {
 	return predicate.Situation(sql.FieldNotNull(FieldCloseReason))
 }
 
-// SeedEntityIDEQ applies the EQ predicate on the "seed_entity_id" field.
-func SeedEntityIDEQ(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldEQ(FieldSeedEntityID, v))
+// InvestigationIDEQ applies the EQ predicate on the "investigation_id" field.
+func InvestigationIDEQ(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldInvestigationID, v))
 }
 
-// SeedEntityIDNEQ applies the NEQ predicate on the "seed_entity_id" field.
-func SeedEntityIDNEQ(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldNEQ(FieldSeedEntityID, v))
+// InvestigationIDNEQ applies the NEQ predicate on the "investigation_id" field.
+func InvestigationIDNEQ(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldNEQ(FieldInvestigationID, v))
 }
 
-// SeedEntityIDIn applies the In predicate on the "seed_entity_id" field.
-func SeedEntityIDIn(vs ...uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldIn(FieldSeedEntityID, vs...))
+// InvestigationIDIn applies the In predicate on the "investigation_id" field.
+func InvestigationIDIn(vs ...uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldIn(FieldInvestigationID, vs...))
 }
 
-// SeedEntityIDNotIn applies the NotIn predicate on the "seed_entity_id" field.
-func SeedEntityIDNotIn(vs ...uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldNotIn(FieldSeedEntityID, vs...))
+// InvestigationIDNotIn applies the NotIn predicate on the "investigation_id" field.
+func InvestigationIDNotIn(vs ...uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldNotIn(FieldInvestigationID, vs...))
 }
 
-// LatestJudgmentIDEQ applies the EQ predicate on the "latest_judgment_id" field.
-func LatestJudgmentIDEQ(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldEQ(FieldLatestJudgmentID, v))
+// InvestigationIDIsNil applies the IsNil predicate on the "investigation_id" field.
+func InvestigationIDIsNil() predicate.Situation {
+	return predicate.Situation(sql.FieldIsNull(FieldInvestigationID))
 }
 
-// LatestJudgmentIDNEQ applies the NEQ predicate on the "latest_judgment_id" field.
-func LatestJudgmentIDNEQ(v uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldNEQ(FieldLatestJudgmentID, v))
-}
-
-// LatestJudgmentIDIn applies the In predicate on the "latest_judgment_id" field.
-func LatestJudgmentIDIn(vs ...uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldIn(FieldLatestJudgmentID, vs...))
-}
-
-// LatestJudgmentIDNotIn applies the NotIn predicate on the "latest_judgment_id" field.
-func LatestJudgmentIDNotIn(vs ...uuid.UUID) predicate.Situation {
-	return predicate.Situation(sql.FieldNotIn(FieldLatestJudgmentID, vs...))
-}
-
-// LatestJudgmentIDIsNil applies the IsNil predicate on the "latest_judgment_id" field.
-func LatestJudgmentIDIsNil() predicate.Situation {
-	return predicate.Situation(sql.FieldIsNull(FieldLatestJudgmentID))
-}
-
-// LatestJudgmentIDNotNil applies the NotNil predicate on the "latest_judgment_id" field.
-func LatestJudgmentIDNotNil() predicate.Situation {
-	return predicate.Situation(sql.FieldNotNull(FieldLatestJudgmentID))
+// InvestigationIDNotNil applies the NotNil predicate on the "investigation_id" field.
+func InvestigationIDNotNil() predicate.Situation {
+	return predicate.Situation(sql.FieldNotNull(FieldInvestigationID))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -786,51 +761,22 @@ func HasInvestigation() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, InvestigationTable, InvestigationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, InvestigationTable, InvestigationColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationInvestigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
+		step.To.Schema = schemaConfig.Investigation
+		step.Edge.Schema = schemaConfig.Situation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
 // HasInvestigationWith applies the HasEdge predicate on the "investigation" edge with a given conditions (other predicates).
-func HasInvestigationWith(preds ...predicate.SituationInvestigation) predicate.Situation {
+func HasInvestigationWith(preds ...predicate.Investigation) predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
 		step := newInvestigationStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationInvestigation
-		step.Edge.Schema = schemaConfig.SituationInvestigation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasHazardAssessments applies the HasEdge predicate on the "hazard_assessments" edge.
-func HasHazardAssessments() predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, HazardAssessmentsTable, HazardAssessmentsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationHazardAssessment
-		step.Edge.Schema = schemaConfig.SituationHazardAssessment
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasHazardAssessmentsWith applies the HasEdge predicate on the "hazard_assessments" edge with a given conditions (other predicates).
-func HasHazardAssessmentsWith(preds ...predicate.SituationHazardAssessment) predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := newHazardAssessmentsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationHazardAssessment
-		step.Edge.Schema = schemaConfig.SituationHazardAssessment
+		step.To.Schema = schemaConfig.Investigation
+		step.Edge.Schema = schemaConfig.Situation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -897,27 +843,27 @@ func HasIncidentsWith(preds ...predicate.Incident) predicate.Situation {
 	})
 }
 
-// HasSignals applies the HasEdge predicate on the "signals" edge.
-func HasSignals() predicate.Situation {
+// HasObservations applies the HasEdge predicate on the "observations" edge.
+func HasObservations() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, SignalsTable, SignalsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, ObservationsTable, ObservationsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationSignal
-		step.Edge.Schema = schemaConfig.SituationSignal
+		step.To.Schema = schemaConfig.SituationObservation
+		step.Edge.Schema = schemaConfig.SituationObservation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSignalsWith applies the HasEdge predicate on the "signals" edge with a given conditions (other predicates).
-func HasSignalsWith(preds ...predicate.SituationSignal) predicate.Situation {
+// HasObservationsWith applies the HasEdge predicate on the "observations" edge with a given conditions (other predicates).
+func HasObservationsWith(preds ...predicate.SituationObservation) predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
-		step := newSignalsStep()
+		step := newObservationsStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationSignal
-		step.Edge.Schema = schemaConfig.SituationSignal
+		step.To.Schema = schemaConfig.SituationObservation
+		step.Edge.Schema = schemaConfig.SituationObservation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -955,35 +901,6 @@ func HasEntitiesWith(preds ...predicate.SituationEntity) predicate.Situation {
 	})
 }
 
-// HasLinks applies the HasEdge predicate on the "links" edge.
-func HasLinks() predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, LinksTable, LinksColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationLink
-		step.Edge.Schema = schemaConfig.SituationLink
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasLinksWith applies the HasEdge predicate on the "links" edge with a given conditions (other predicates).
-func HasLinksWith(preds ...predicate.SituationLink) predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := newLinksStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationLink
-		step.Edge.Schema = schemaConfig.SituationLink
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasActions applies the HasEdge predicate on the "actions" edge.
 func HasActions() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
@@ -1013,6 +930,35 @@ func HasActionsWith(preds ...predicate.SituationAction) predicate.Situation {
 	})
 }
 
+// HasJudgments applies the HasEdge predicate on the "judgments" edge.
+func HasJudgments() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, JudgmentsTable, JudgmentsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationJudgment
+		step.Edge.Schema = schemaConfig.SituationJudgment
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasJudgmentsWith applies the HasEdge predicate on the "judgments" edge with a given conditions (other predicates).
+func HasJudgmentsWith(preds ...predicate.SituationJudgment) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newJudgmentsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationJudgment
+		step.Edge.Schema = schemaConfig.SituationJudgment
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasNotices applies the HasEdge predicate on the "notices" edge.
 func HasNotices() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
@@ -1034,93 +980,6 @@ func HasNoticesWith(preds ...predicate.SituationNotice) predicate.Situation {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SituationNotice
 		step.Edge.Schema = schemaConfig.SituationNotice
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasNoticeRatings applies the HasEdge predicate on the "notice_ratings" edge.
-func HasNoticeRatings() predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NoticeRatingsTable, NoticeRatingsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationNoticeRating
-		step.Edge.Schema = schemaConfig.SituationNoticeRating
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasNoticeRatingsWith applies the HasEdge predicate on the "notice_ratings" edge with a given conditions (other predicates).
-func HasNoticeRatingsWith(preds ...predicate.SituationNoticeRating) predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := newNoticeRatingsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationNoticeRating
-		step.Edge.Schema = schemaConfig.SituationNoticeRating
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasLatestJudgment applies the HasEdge predicate on the "latest_judgment" edge.
-func HasLatestJudgment() predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, LatestJudgmentTable, LatestJudgmentColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationJudgment
-		step.Edge.Schema = schemaConfig.Situation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasLatestJudgmentWith applies the HasEdge predicate on the "latest_judgment" edge with a given conditions (other predicates).
-func HasLatestJudgmentWith(preds ...predicate.SituationJudgment) predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := newLatestJudgmentStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationJudgment
-		step.Edge.Schema = schemaConfig.Situation
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasSeedEntity applies the HasEdge predicate on the "seed_entity" edge.
-func HasSeedEntity() predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, SeedEntityTable, SeedEntityColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.Situation
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSeedEntityWith applies the HasEdge predicate on the "seed_entity" edge with a given conditions (other predicates).
-func HasSeedEntityWith(preds ...predicate.KnowledgeEntity) predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := newSeedEntityStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.Situation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -20,29 +20,32 @@ import (
 // AlertEpisodeMutation represents an operation that mutates the AlertEpisode nodes in the graph.
 type AlertEpisodeMutation struct {
 	config
-	op                          Op
-	typ                         string
-	id                          *uuid.UUID
-	created_at                  *time.Time
-	updated_at                  *time.Time
-	started_at                  *time.Time
-	closed_at                   *time.Time
-	highest_severity            *schematypes.SignalSeverity
-	identity_group_labels       *[]string
-	appendidentity_group_labels []string
-	clearedFields               map[string]struct{}
-	tenant                      *int
-	clearedtenant               bool
-	knowledge_entity            *uuid.UUID
-	clearedknowledge_entity     bool
-	alert_definition            *uuid.UUID
-	clearedalert_definition     bool
-	instances                   map[uuid.UUID]struct{}
-	removedinstances            map[uuid.UUID]struct{}
-	clearedinstances            bool
-	done                        bool
-	oldValue                    func(context.Context) (*AlertEpisode, error)
-	predicates                  []predicate.AlertEpisode
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	created_at                    *time.Time
+	updated_at                    *time.Time
+	started_at                    *time.Time
+	closed_at                     *time.Time
+	highest_severity              *schematypes.SignalSeverity
+	identity_group_labels         *[]string
+	appendidentity_group_labels   []string
+	clearedFields                 map[string]struct{}
+	tenant                        *int
+	clearedtenant                 bool
+	knowledge_entity              *uuid.UUID
+	clearedknowledge_entity       bool
+	alert_definition              *uuid.UUID
+	clearedalert_definition       bool
+	instances                     map[uuid.UUID]struct{}
+	removedinstances              map[uuid.UUID]struct{}
+	clearedinstances              bool
+	situation_observations        map[uuid.UUID]struct{}
+	removedsituation_observations map[uuid.UUID]struct{}
+	clearedsituation_observations bool
+	done                          bool
+	oldValue                      func(context.Context) (*AlertEpisode, error)
+	predicates                    []predicate.AlertEpisode
 }
 
 var _ ent.Mutation = (*AlertEpisodeMutation)(nil)
@@ -663,6 +666,60 @@ func (m *AlertEpisodeMutation) ResetInstances() {
 	m.removedinstances = nil
 }
 
+// AddSituationObservationIDs adds the "situation_observations" edge to the SituationObservation entity by ids.
+func (m *AlertEpisodeMutation) AddSituationObservationIDs(ids ...uuid.UUID) {
+	if m.situation_observations == nil {
+		m.situation_observations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.situation_observations[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSituationObservations clears the "situation_observations" edge to the SituationObservation entity.
+func (m *AlertEpisodeMutation) ClearSituationObservations() {
+	m.clearedsituation_observations = true
+}
+
+// SituationObservationsCleared reports if the "situation_observations" edge to the SituationObservation entity was cleared.
+func (m *AlertEpisodeMutation) SituationObservationsCleared() bool {
+	return m.clearedsituation_observations
+}
+
+// RemoveSituationObservationIDs removes the "situation_observations" edge to the SituationObservation entity by IDs.
+func (m *AlertEpisodeMutation) RemoveSituationObservationIDs(ids ...uuid.UUID) {
+	if m.removedsituation_observations == nil {
+		m.removedsituation_observations = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.situation_observations, ids[i])
+		m.removedsituation_observations[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSituationObservations returns the removed IDs of the "situation_observations" edge to the SituationObservation entity.
+func (m *AlertEpisodeMutation) RemovedSituationObservationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsituation_observations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SituationObservationsIDs returns the "situation_observations" edge IDs in the mutation.
+func (m *AlertEpisodeMutation) SituationObservationsIDs() (ids []uuid.UUID) {
+	for id := range m.situation_observations {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSituationObservations resets all changes to the "situation_observations" edge.
+func (m *AlertEpisodeMutation) ResetSituationObservations() {
+	m.situation_observations = nil
+	m.clearedsituation_observations = false
+	m.removedsituation_observations = nil
+}
+
 // Where appends a list predicates to the AlertEpisodeMutation builder.
 func (m *AlertEpisodeMutation) Where(ps ...predicate.AlertEpisode) {
 	m.predicates = append(m.predicates, ps...)
@@ -956,7 +1013,7 @@ func (m *AlertEpisodeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AlertEpisodeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, alertepisode.EdgeTenant)
 	}
@@ -968,6 +1025,9 @@ func (m *AlertEpisodeMutation) AddedEdges() []string {
 	}
 	if m.instances != nil {
 		edges = append(edges, alertepisode.EdgeInstances)
+	}
+	if m.situation_observations != nil {
+		edges = append(edges, alertepisode.EdgeSituationObservations)
 	}
 	return edges
 }
@@ -994,15 +1054,24 @@ func (m *AlertEpisodeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case alertepisode.EdgeSituationObservations:
+		ids := make([]ent.Value, 0, len(m.situation_observations))
+		for id := range m.situation_observations {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AlertEpisodeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedinstances != nil {
 		edges = append(edges, alertepisode.EdgeInstances)
+	}
+	if m.removedsituation_observations != nil {
+		edges = append(edges, alertepisode.EdgeSituationObservations)
 	}
 	return edges
 }
@@ -1017,13 +1086,19 @@ func (m *AlertEpisodeMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case alertepisode.EdgeSituationObservations:
+		ids := make([]ent.Value, 0, len(m.removedsituation_observations))
+		for id := range m.removedsituation_observations {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AlertEpisodeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, alertepisode.EdgeTenant)
 	}
@@ -1035,6 +1110,9 @@ func (m *AlertEpisodeMutation) ClearedEdges() []string {
 	}
 	if m.clearedinstances {
 		edges = append(edges, alertepisode.EdgeInstances)
+	}
+	if m.clearedsituation_observations {
+		edges = append(edges, alertepisode.EdgeSituationObservations)
 	}
 	return edges
 }
@@ -1051,6 +1129,8 @@ func (m *AlertEpisodeMutation) EdgeCleared(name string) bool {
 		return m.clearedalert_definition
 	case alertepisode.EdgeInstances:
 		return m.clearedinstances
+	case alertepisode.EdgeSituationObservations:
+		return m.clearedsituation_observations
 	}
 	return false
 }
@@ -1087,6 +1167,9 @@ func (m *AlertEpisodeMutation) ResetEdge(name string) error {
 		return nil
 	case alertepisode.EdgeInstances:
 		m.ResetInstances()
+		return nil
+	case alertepisode.EdgeSituationObservations:
+		m.ResetSituationObservations()
 		return nil
 	}
 	return fmt.Errorf("unknown AlertEpisode edge %s", name)

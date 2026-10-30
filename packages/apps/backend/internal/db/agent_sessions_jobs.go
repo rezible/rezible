@@ -260,8 +260,8 @@ func (c *agentTurnClaim) spanAttributes() []attribute.KeyValue {
 		attribute.String("agent_turn_id", c.turn.ID.String()),
 	}
 	if investigation := c.session.Edges.Investigation; investigation != nil {
-		for _, link := range investigation.Edges.Situations {
-			attrs = append(attrs, attribute.String("situation_id", link.SituationID.String()))
+		for _, situation := range investigation.Edges.Situations {
+			attrs = append(attrs, attribute.String("situation_id", situation.ID.String()))
 		}
 	}
 	return attrs

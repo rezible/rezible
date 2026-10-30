@@ -60,22 +60,6 @@ export type AddRetrospectiveReviewerResponseBody = {
     data: Retrospective;
 };
 
-export type AddSituationHazardAssessmentRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: AttributesStruct1;
-};
-
-export type AddSituationHazardAssessmentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SituationHazardAssessment;
-};
-
 export type AddSystemAnalysisEdgeAttributes = {
     descriptionOverride?: string;
     hidden?: boolean;
@@ -397,12 +381,6 @@ export type AlertSituationSignalAttention = {
 
 export type AttributesStruct = {
     body: string;
-};
-
-export type AttributesStruct1 = {
-    status: 'suspected' | 'confirmed' | 'disproven';
-    summary: string;
-    systemHazardId: string;
 };
 
 export type ChatChannel = {
@@ -1335,11 +1313,6 @@ export type ExpandableIncidentSeverityAttributes = {
 
 export type ExpandableIncidentTypeAttributes = {
     attributes?: IncidentTypeAttributes;
-    id: string;
-};
-
-export type ExpandableInvestigationAttributes = {
-    attributes?: InvestigationAttributes;
     id: string;
 };
 
@@ -2970,15 +2943,6 @@ export type PaginatedResponseBodySituation = {
     pagination: Pagination;
 };
 
-export type PaginatedResponseBodySituationHazardAssessment = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<SituationHazardAssessment>;
-    pagination: Pagination;
-};
-
 export type PaginatedResponseBodySituationJudgmentHistoryItem = {
     /**
      * A URL to the JSON Schema for this object.
@@ -3448,21 +3412,21 @@ export type SituationAttributes = {
     createdAt: string;
     entities: Array<SituationEntity>;
     holdUntil?: string;
-    investigation?: SituationInvestigation;
+    investigationId?: string;
+    /**
+     * Set when getting one situation
+     */
     latestJudgment?: SituationJudgment;
     linkedIncidentIds: Array<string>;
-    links: Array<SituationLink>;
     muteReason?: 'not_noteworthy' | 'expected';
     mutedAt?: string;
-    noticeRatings: SituationNoticeRatings;
     notices: Array<SituationNotice>;
     observationGroups: Array<SituationObservationGroup>;
+    observations: Array<SituationObservation>;
     openedAt: string;
     raisedAt?: string;
     raisedBy?: SituationRaisedBy;
     reference: string;
-    seedEntityId: string;
-    signalCount: number;
     stage: 'candidate' | 'raised' | 'closed';
     summary: string;
     title: string;
@@ -3553,15 +3517,6 @@ export type SituationBriefUnseen = {
     text: string;
 };
 
-export type SituationEarlierFacts = {
-    close_reason?: string;
-    closed_at?: string;
-    incident_linked: boolean;
-    mute_reason?: string;
-    situation_id: string;
-    was_raised: boolean;
-};
-
 export type SituationEntity = {
     category: string;
     displayName: string;
@@ -3571,7 +3526,7 @@ export type SituationEntity = {
     id: string;
     kind: string;
     /**
-     * Whether it attracts related signals
+     * Whether it attracts related observations
      */
     matching: boolean;
 };
@@ -3589,37 +3544,17 @@ export type SituationEntityFacts = {
 
 export type SituationFacts = {
     as_of: string;
-    earlier?: Array<SituationEarlierFacts>;
     entities?: Array<SituationEntityFacts>;
     linked_incidents: Array<SituationIncidentFacts>;
+    observations: Array<SituationObservationFacts>;
     opened_at: string;
     relationships?: Array<SituationRelationshipFacts>;
-    signals: Array<SituationSignalFacts>;
-};
-
-export type SituationHazardAssessment = {
-    attributes: SituationHazardAssessmentAttrs;
-    id: string;
-};
-
-export type SituationHazardAssessmentAttrs = {
-    agentTurnId?: string;
-    assessedAt: string;
-    revision: number;
-    status: 'suspected' | 'confirmed' | 'disproven';
-    summary: string;
-    systemHazardId: string;
-    userId?: string;
 };
 
 export type SituationIncidentFacts = {
     id: string;
     resolved_at?: string;
     title: string;
-};
-
-export type SituationInvestigation = {
-    investigation: ExpandableInvestigationAttributes;
 };
 
 export type SituationJudgment = {
@@ -3648,14 +3583,6 @@ export type SituationJudgmentHistoryItem = {
     id: string;
 };
 
-export type SituationLink = {
-    kind: 'recurrence_of' | 'merged_into';
-    situationId: string;
-    situationReference: string;
-    stage: 'candidate' | 'raised' | 'closed';
-    title: string;
-};
-
 export type SituationNotice = {
     channelId: string;
     /**
@@ -3671,9 +3598,28 @@ export type SituationNotice = {
     status: 'pending' | 'posted' | 'failed' | 'skipped';
 };
 
-export type SituationNoticeRatings = {
-    notUseful: number;
-    useful: number;
+export type SituationObservation = {
+    alertEpisodeId?: string;
+    attachedAt: string;
+    id: string;
+    matchExplanation?: string;
+    observationGroupId?: string;
+};
+
+export type SituationObservationFacts = {
+    alert?: SituationAlertFacts;
+    alert_episode_id?: string;
+    attention: string;
+    attention_set_at?: string;
+    entity_ids?: Array<string>;
+    finished_at?: string;
+    kind: string;
+    prior_outcomes?: SituationPriorOutcomeFacts;
+    ref: string;
+    seeding: boolean;
+    source_id: string;
+    started_at: string;
+    title: string;
 };
 
 export type SituationObservationGroup = {
@@ -3683,7 +3629,6 @@ export type SituationObservationGroup = {
 
 export type SituationObservationGroupAttributes = {
     body?: string;
-    signals: Array<SituationSignal>;
     situationId: string;
     title: string;
 };
@@ -3710,31 +3655,6 @@ export type SituationRelationshipFacts = {
     predicate: string;
     source_id: string;
     target_id: string;
-};
-
-export type SituationSignal = {
-    attachedAt: string;
-    kind: string;
-    knowledgeEntityId: string;
-    matchKind: 'seed' | 'shared_entity' | 'dependency' | 'dependent' | 'adjacent' | 'manual';
-    sourceEntityId?: string;
-};
-
-export type SituationSignalFacts = {
-    alert?: SituationAlertFacts;
-    attention: string;
-    attention_set_at?: string;
-    entity_id: string;
-    entity_ids?: Array<string>;
-    finished_at?: string;
-    kind: string;
-    match_kind: string;
-    prior_outcomes?: SituationPriorOutcomeFacts;
-    ref: string;
-    seeding: boolean;
-    source_entity_id?: string;
-    started_at: string;
-    title: string;
 };
 
 export type SituationUnconfirmedMatch = {
@@ -13175,103 +13095,6 @@ export type CloseSituationResponses = {
 };
 
 export type CloseSituationResponse = CloseSituationResponses[keyof CloseSituationResponses];
-
-export type ListSituationHazardAssessmentsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: {
-        page?: number;
-        pageSize?: number;
-    };
-    url: '/situations/{id}/hazard_assessments';
-};
-
-export type ListSituationHazardAssessmentsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListSituationHazardAssessmentsError = ListSituationHazardAssessmentsErrors[keyof ListSituationHazardAssessmentsErrors];
-
-export type ListSituationHazardAssessmentsResponses = {
-    /**
-     * OK
-     */
-    200: PaginatedResponseBodySituationHazardAssessment;
-};
-
-export type ListSituationHazardAssessmentsResponse = ListSituationHazardAssessmentsResponses[keyof ListSituationHazardAssessmentsResponses];
-
-export type AddSituationHazardAssessmentData = {
-    body: AddSituationHazardAssessmentRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/situations/{id}/hazard_assessments';
-};
-
-export type AddSituationHazardAssessmentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type AddSituationHazardAssessmentError = AddSituationHazardAssessmentErrors[keyof AddSituationHazardAssessmentErrors];
-
-export type AddSituationHazardAssessmentResponses = {
-    /**
-     * OK
-     */
-    200: AddSituationHazardAssessmentResponseBody;
-};
-
-export type AddSituationHazardAssessmentResponse = AddSituationHazardAssessmentResponses[keyof AddSituationHazardAssessmentResponses];
 
 export type ClearSituationHoldData = {
     body?: never;

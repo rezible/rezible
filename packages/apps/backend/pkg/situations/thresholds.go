@@ -3,23 +3,20 @@ package situations
 import "time"
 
 const (
-	// EntityResolutionDepth is the most structure steps climbed when resolving a signal's entities to the
+	// EntityResolutionDepth is the most structure steps climbed when resolving an observation's entities to the
 	// runtime level.
 	EntityResolutionDepth = 3
-	// BroadSignalEntityLimit is the most runtime entities a signal may touch and still make its situation
-	// attract signals about them.
-	BroadSignalEntityLimit = 4
+	// BroadObservationEntityLimit is the most runtime entities an observation may touch and still make its
+	// situation attract observations about them.
+	BroadObservationEntityLimit = 4
 	// HoldDefault is a hold's length when none is given.
 	HoldDefault = 24 * time.Hour
-	// SharedEntityWindow is how long after its last activity a situation with no active signal still
-	// attracts signals about one of its matching entities.
+	// SharedEntityWindow is how long after its last activity a situation with no active observation still
+	// attracts observations about one of its matching entities.
 	SharedEntityWindow = 6 * time.Hour
-	// OneHopWindow is how long a quiet situation still attracts signals one relationship away. A signal
+	// OneHopWindow is how long a quiet situation still attracts observations one relationship away. An observation
 	// that finished longer ago than this is not placed.
 	OneHopWindow = 30 * time.Minute
-	// RecurrenceLookback is how long ago a situation of the same source may have closed to be linked as
-	// a recurrence of a new candidate.
-	RecurrenceLookback = 7 * 24 * time.Hour
 
 	// SituationQuietPeriod is how long a situation waits after its last evidence finished or attached before
 	// it closes.
@@ -56,8 +53,8 @@ const (
 	AutoInvestigationLimit  = 3
 	AutoInvestigationWindow = time.Hour
 
-	// JudgeMaxSignals is the most signals sent to the model judge.
-	JudgeMaxSignals = 20
+	// JudgeMaxObservations is the most observations sent to the model judge.
+	JudgeMaxObservations = 20
 	// JudgeMaxEntities is the most entities sent to the model judge.
 	JudgeMaxEntities = 30
 	// JudgeCallTimeout bounds one model judge call in real time.
@@ -66,7 +63,7 @@ const (
 	JudgeRetryAfter = 5 * time.Minute
 )
 
-// IsBroad reports whether a signal touching this many runtime entities is broad.
+// IsBroad reports whether an observation touching this many runtime entities is broad.
 func IsBroad(entityCount int) bool {
-	return entityCount > BroadSignalEntityLimit
+	return entityCount > BroadObservationEntityLimit
 }

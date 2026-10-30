@@ -31,9 +31,9 @@ type AgentHarness interface {
 	// ValidateSetup checks the scenario's setup without running anything. setupEventRefs are the refs of the
 	// events ingested before it.
 	ValidateSetup(setup json.RawMessage, setupEventRefs mapset.Set[string]) error
-	// Setup prepares the agent's environment and starts its session. signals holds the signal entities each
+	// Setup prepares the agent's environment and starts its session. observations holds the observations each
 	// setup event produced, by the event's ref.
-	Setup(ctx context.Context, setup json.RawMessage, signals map[string][]uuid.UUID) (uuid.UUID, error)
+	Setup(ctx context.Context, setup json.RawMessage, observations map[string][]rez.SituationObservationRef) (uuid.UUID, error)
 	// Ask puts a person's question to the session. key is unique within the session.
 	Ask(ctx context.Context, sessionID uuid.UUID, text, key string) error
 	// WaitForReady blocks until the session has a turn after the given sequence and none queued or running.

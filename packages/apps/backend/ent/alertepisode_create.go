@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -165,6 +166,21 @@ func (_c *AlertEpisodeCreate) AddInstances(v ...*AlertInstance) *AlertEpisodeCre
 		ids[i] = v[i].ID
 	}
 	return _c.AddInstanceIDs(ids...)
+}
+
+// AddSituationObservationIDs adds the "situation_observations" edge to the SituationObservation entity by IDs.
+func (_c *AlertEpisodeCreate) AddSituationObservationIDs(ids ...uuid.UUID) *AlertEpisodeCreate {
+	_c.mutation.AddSituationObservationIDs(ids...)
+	return _c
+}
+
+// AddSituationObservations adds the "situation_observations" edges to the SituationObservation entity.
+func (_c *AlertEpisodeCreate) AddSituationObservations(v ...*SituationObservation) *AlertEpisodeCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSituationObservationIDs(ids...)
 }
 
 // Mutation returns the AlertEpisodeMutation object of the builder.
@@ -390,6 +406,23 @@ func (_c *AlertEpisodeCreate) createSpec() (*AlertEpisode, *sqlgraph.CreateSpec)
 			},
 		}
 		edge.Schema = _c.schemaConfig.AlertInstance
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SituationObservationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   alertepisode.SituationObservationsTable,
+			Columns: []string{alertepisode.SituationObservationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationobservation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationObservation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

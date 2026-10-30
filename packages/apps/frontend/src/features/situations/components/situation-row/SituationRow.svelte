@@ -4,7 +4,7 @@
 	import ListRow from "$components/common/list-row/ListRow.svelte";
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
 	import SituationTimes from "$features/situations/components/situation-times/SituationTimes.svelte";
-	import { situationSourceCount, type SituationConclusion } from "$features/situations/lib/model";
+	import type { SituationConclusion } from "$features/situations/lib/model";
 	import { situationHref } from "$features/situations/lib/routes";
 	import {
 		longRunningStatus,
@@ -25,7 +25,7 @@
 	const attributes = $derived(situation.attributes);
 	const status = $derived(situationStatus(attributes));
 	const longRunning = $derived(longRunningStatus(attributes, now));
-	const sourceCount = $derived(situationSourceCount(attributes));
+	const observationCount = $derived(attributes.observations.length);
 	const linkedIncidentCount = $derived(attributes.linkedIncidentIds.length);
 	const times = $derived(situationSummaryTimes(attributes));
 	const summary = $derived(attributes.summary.trim());
@@ -47,7 +47,10 @@
 {#snippet facts()}
 	<SituationTimes {times} />
 	<span aria-hidden="true">·</span>
-	<span class="tabular-nums">{sourceCount} {sourceCount === 1 ? "source" : "sources"}</span>
+	<span class="tabular-nums">
+		{observationCount}
+		{observationCount === 1 ? "observation" : "observations"}
+	</span>
 	{#if linkedIncidentCount > 0}
 		<span aria-hidden="true">·</span>
 		<span class="tabular-nums">

@@ -14,11 +14,11 @@
 
 	const controller = useSituationOverviewController();
 	const observations = $derived(controller.observations);
-	const sourceLabel = $derived(controller.sourceCount === 1 ? "source" : "sources");
+	const countLabel = $derived(controller.observationCount === 1 ? "observation" : "observations");
 </script>
 
 {#snippet headingActions()}
-	<span class="text-xs text-muted-foreground tabular-nums">{controller.sourceCount} {sourceLabel}</span>
+	<span class="text-xs text-muted-foreground tabular-nums">{controller.observationCount} {countLabel}</span>
 	{#if observations.length > 1}
 		<Button variant="ghost" size="sm" onclick={controller.expandAll}>
 			<RiExpandUpDownLine data-icon="inline-start" />
@@ -131,6 +131,6 @@
 			</Collapsible.Content>
 		</Collapsible.Root>
 	{:else}
-		<p class="text-sm text-muted-foreground">No observations have been grouped for this situation.</p>
+		<p class="text-sm text-muted-foreground">No observations for this situation.</p>
 	{/each}
 </section>

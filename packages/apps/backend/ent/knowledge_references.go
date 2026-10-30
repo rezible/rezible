@@ -115,36 +115,6 @@ var KnowledgeEntityReferences = []KnowledgeReference{
 		},
 	},
 	{
-		Table:  "situation_signals",
-		Column: "knowledge_entity_id",
-		Update: func(ctx context.Context, client *Client, where func(*sql.Selector), id uuid.UUID) error {
-			update := client.SituationSignal.Update().
-				Where(predicate.SituationSignal(where)).
-				SetKnowledgeEntityID(id)
-			return update.Exec(ctx)
-		},
-	},
-	{
-		Table:  "situation_signals",
-		Column: "source_entity_id",
-		Update: func(ctx context.Context, client *Client, where func(*sql.Selector), id uuid.UUID) error {
-			update := client.SituationSignal.Update().
-				Where(predicate.SituationSignal(where)).
-				SetSourceEntityID(id)
-			return update.Exec(ctx)
-		},
-	},
-	{
-		Table:  "situations",
-		Column: "seed_entity_id",
-		Update: func(ctx context.Context, client *Client, where func(*sql.Selector), id uuid.UUID) error {
-			update := client.Situation.Update().
-				Where(predicate.Situation(where)).
-				SetSeedEntityID(id)
-			return update.Exec(ctx)
-		},
-	},
-	{
 		Table:  "system_analyses",
 		Column: "scope_entity_id",
 		Update: func(ctx context.Context, client *Client, where func(*sql.Selector), id uuid.UUID) error {
@@ -243,16 +213,6 @@ var KnowledgeRelationshipReferences = []KnowledgeReference{
 		},
 	},
 	{
-		Table:  "situation_signals",
-		Column: "via_relationship_id",
-		Update: func(ctx context.Context, client *Client, where func(*sql.Selector), id uuid.UUID) error {
-			update := client.SituationSignal.Update().
-				Where(predicate.SituationSignal(where)).
-				SetViaRelationshipID(id)
-			return update.Exec(ctx)
-		},
-	},
-	{
 		Table:            "system_analysis_entry_subjects",
 		Column:           "knowledge_relationship_id",
 		DeleteDuplicates: true,
@@ -314,10 +274,6 @@ var KnowledgeForeignKeyConstraints = []string{
 	"knowledge_subject_alias_knowledge_entities_entity",
 	"knowledge_subject_alias_knowledge_relationships_relationship",
 	"situation_entities_knowledge_entities_knowledge_entity",
-	"situation_signals_knowledge_entities_knowledge_entity",
-	"situation_signals_knowledge_entities_source_entity",
-	"situation_signals_knowledge_relationships_via_relationship",
-	"situations_knowledge_entities_seed_entity",
 	"system_analyses_knowledge_entities_scope_entity",
 	"system_analyses_knowledge_entities_subject_entity",
 	"system_analysis_entities_knowledge_entities_knowledge_entity",

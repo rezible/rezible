@@ -117,18 +117,18 @@ export function activeHoldUntil(attributes: SituationAttributes, now: number): s
 
 export type SituationTime = { key: string; label: string; at: string; reason?: string };
 
-export const FIRST_SIGNAL_LABEL = "First signal";
+export const FIRST_OBSERVATION_LABEL = "First observation";
 export const RAISED_LABEL = "Raised";
 export const WATCHING_SINCE_LABEL = "Watching since";
 
 /**
- * The times a situation summary shows, in the brief's order: its first signal, then the one time that
+ * The times a situation summary shows, in the brief's order: its first observation, then the one time that
  * describes its current state, with the reason for a mute or close.
  */
 export function situationSummaryTimes(attributes: SituationAttributes): SituationTime[] {
-	const firstSignal: SituationTime = {
-		key: "first-signal",
-		label: FIRST_SIGNAL_LABEL,
+	const firstObservation: SituationTime = {
+		key: "first-observation",
+		label: FIRST_OBSERVATION_LABEL,
 		at: attributes.openedAt,
 	};
 
@@ -153,7 +153,7 @@ export function situationSummaryTimes(attributes: SituationAttributes): Situatio
 		state = { key: "watching", label: WATCHING_SINCE_LABEL, at: attributes.createdAt };
 	}
 
-	return [firstSignal, state];
+	return [firstObservation, state];
 }
 
 export function investigationRunStatus(attributes?: InvestigationAttributes): StatusPresentation {

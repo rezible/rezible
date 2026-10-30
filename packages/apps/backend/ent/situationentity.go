@@ -26,7 +26,7 @@ type SituationEntity struct {
 	SituationID uuid.UUID `json:"situation_id,omitempty"`
 	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
 	KnowledgeEntityID uuid.UUID `json:"knowledge_entity_id,omitempty"`
-	// Whether a signal that is not broad touches it, so it attracts related signals
+	// Whether an observation that is not broad touches it, so it attracts related observations
 	Matching bool `json:"matching,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SituationEntityQuery when eager-loading is set.

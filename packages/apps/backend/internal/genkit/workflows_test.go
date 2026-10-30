@@ -219,11 +219,12 @@ func (s *AiRuntimeSuite) TestJudgeSituationCandidateWorkflowAcceptsFactsAndRejec
 	entityID := uuid.New()
 	input := rezai.SituationJudgeInput{
 		Facts: schematypes.SituationFacts{
-			Signals: []schematypes.SituationSignalFacts{{
-				Ref:            "s1",
-				EntityID:       uuid.New(),
-				SourceEntityID: new(uuid.New()),
-				EntityIDs:      []uuid.UUID{entityID},
+			Observations: []schematypes.SituationObservationFacts{{
+				Ref:                     "o1",
+				SituationObservationRef: schematypes.SituationObservationRef{AlertEpisodeID: uuid.New()},
+				Kind:                    schematypes.SituationObservationKindAlertEpisode,
+				SourceID:                uuid.New(),
+				EntityIDs:               []uuid.UUID{entityID},
 				Alert: &schematypes.SituationAlertFacts{
 					Severity:        schematypes.SignalSeverityCritical,
 					ActiveInstances: []schematypes.SituationAlertInstanceFacts{},
@@ -232,7 +233,6 @@ func (s *AiRuntimeSuite) TestJudgeSituationCandidateWorkflowAcceptsFactsAndRejec
 			LinkedIncidents: []schematypes.SituationIncidentFacts{},
 			Entities:        []schematypes.SituationEntityFacts{{ID: entityID, Properties: map[string]any{"tier": "core"}, Matching: true}},
 			Relationships:   []schematypes.SituationRelationshipFacts{},
-			Earlier:         []schematypes.SituationEarlierFacts{},
 		},
 		Reasons:   []schematypes.SituationReasonResult{{Reason: schematypes.SituationRaiseReasonBreadth, Met: true}},
 		Truncated: []string{},

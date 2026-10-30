@@ -41,8 +41,8 @@ func TestMatchSubset(t *testing.T) {
 		},
 		{
 			name:      "nested objects compare by the reference's keys",
-			reference: `{"facts": {"signals": 2}}`,
-			output:    `{"facts": {"signals": 2, "entities": 3}}`,
+			reference: `{"facts": {"observations": 2}}`,
+			output:    `{"facts": {"observations": 2, "entities": 3}}`,
 			matches:   true,
 		},
 		{

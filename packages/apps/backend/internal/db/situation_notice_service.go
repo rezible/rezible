@@ -294,11 +294,7 @@ func (s *SituationNoticeService) capReached(ctx context.Context, tx *ent.Client,
 // notice, when its lookup fails.
 func (s *SituationNoticeService) readContent(ctx context.Context, situationID uuid.UUID) (*integrations.SituationNoticeContent, error) {
 	querySituation := s.db.Client(ctx).Situation.Query().
-		Where(sit.ID(situationID)).
-		WithLinks(func(q *ent.SituationLinkQuery) {
-			q.WithLinkedSituation()
-		}).
-		WithInvestigation()
+		Where(sit.ID(situationID))
 	situation, getErr := querySituation.Only(ctx)
 	if getErr != nil {
 		return nil, fmt.Errorf("get situation: %w", getErr)
@@ -310,13 +306,6 @@ func (s *SituationNoticeService) readContent(ctx context.Context, situationID uu
 		return nil, fmt.Errorf("situation url: %w", urlErr)
 	}
 	content.SituationURL = situationURL.String()
-	if link := content.MergedInto(); link != nil {
-		mergedURL, mergedErr := s.cfg.App.GetFrontendUrl("situations", link.Edges.LinkedSituation.Reference())
-		if mergedErr != nil {
-			return nil, fmt.Errorf("merged situation url: %w", mergedErr)
-		}
-		content.MergedIntoURL = mergedURL.String()
-	}
 
 	if incidentErr := s.readIncidentLinks(ctx, content); incidentErr != nil {
 		return nil, incidentErr
@@ -340,9 +329,9 @@ func (s *SituationNoticeService) readContent(ctx context.Context, situationID uu
 		}
 	}
 
-	if link := situation.Edges.Investigation; link != nil {
+	if situation.InvestigationID != nil {
 		params := rez.GetInvestigationReportParams{
-			InvestigationID: link.InvestigationID,
+			InvestigationID: *situation.InvestigationID,
 			Selection:       rez.InvestigationReportSelectionCompleted,
 		}
 		report, reportErr := s.outputs.GetInvestigationReport(ctx, params)

@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
@@ -21,9 +20,8 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitact "github.com/rezible/rezible/ent/situationaction"
-	siti "github.com/rezible/rezible/ent/situationinvestigation"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
+	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/situations"
 )
@@ -122,9 +120,9 @@ func (s *SituationService) evaluateLocked(ctx context.Context, id uuid.UUID) (*c
 	return nil, s.scheduleEvaluation(ctx, id, input.NextDeadline())
 }
 
-// loadEvaluationInput loads the situation's members with their signals, including history, its linked
+// loadEvaluationInput loads the situation's observations, including history, its linked
 // incidents and, for an unmuted candidate, its latest judgment.
-func (s *SituationService) loadEvaluationInput(ctx context.Context, situation *ent.Situation, now time.Time) (situations.EvaluationInput, []*ent.SituationSignal, error) {
+func (s *SituationService) loadEvaluationInput(ctx context.Context, situation *ent.Situation, now time.Time) (situations.EvaluationInput, []*ent.SituationObservation, error) {
 	input := situations.EvaluationInput{
 		Now:       now,
 		OpenedAt:  situation.OpenedAt,
@@ -134,25 +132,24 @@ func (s *SituationService) loadEvaluationInput(ctx context.Context, situation *e
 		HoldUntil: situation.HoldUntil,
 	}
 	client := s.db.Client(ctx)
-	queryMembers := client.SituationSignal.Query().
-		Where(sitsig.SituationID(situation.ID))
+	queryMembers := client.SituationObservation.Query().
+		Where(sitobs.SituationID(situation.ID))
 	members, membersErr := queryMembers.All(ctx)
 	if membersErr != nil {
-		return input, nil, fmt.Errorf("query situation signals: %w", membersErr)
+		return input, nil, fmt.Errorf("query situation observations: %w", membersErr)
 	}
-	memberIDs := make([]uuid.UUID, len(members))
+	memberRefs := make([]rez.SituationObservationRef, len(members))
 	for i, member := range members {
-		memberIDs[i] = member.KnowledgeEntityID
+		memberRefs[i] = member.Ref()
 	}
-	signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{History: true})
+	observations, loadErr := s.LoadObservations(ctx, memberRefs, rez.LoadSituationObservationsOptions{History: true})
 	if loadErr != nil {
 		return input, nil, loadErr
 	}
-	for _, member := range members {
+	for i, member := range members {
 		evaluated := situations.Member{
-			Signal:     signals[member.KnowledgeEntityID],
-			AttachedAt: member.AttachedAt,
-			MatchKind:  member.MatchKind,
+			Observation: observations[memberRefs[i]],
+			AttachedAt:  member.AttachedAt,
 		}
 		input.Members = append(input.Members, evaluated)
 	}
@@ -167,13 +164,10 @@ func (s *SituationService) loadEvaluationInput(ctx context.Context, situation *e
 		linked := situations.LinkedIncident{ID: incident.ID, Title: incident.Title, ResolvedAt: incident.ResolvedAt}
 		input.Incidents = append(input.Incidents, linked)
 	}
-	if !input.Raised && !input.Muted && situation.LatestJudgmentID != nil {
-		queryLatest := client.SituationJudgment.Query().
-			Where(sitjudg.ID(*situation.LatestJudgmentID)).
-			Select(sitjudg.FieldJudgedAt, sitjudg.FieldJudge, sitjudg.FieldFingerprint)
-		latest, latestErr := queryLatest.Only(ctx)
-		if latestErr != nil {
-			return input, nil, fmt.Errorf("query latest situation judgment: %w", latestErr)
+	if !input.Raised && !input.Muted {
+		latest, latestErr := s.latestJudgment(ctx, situation.ID)
+		if latestErr != nil || latest == nil {
+			return input, members, latestErr
 		}
 		input.Latest = &situations.LatestJudgment{
 			JudgedAt:    latest.JudgedAt,
@@ -184,45 +178,39 @@ func (s *SituationService) loadEvaluationInput(ctx context.Context, situation *e
 	return input, members, nil
 }
 
-// refreshInvestigation refreshes the investigation of an unmuted situation for the members whose signal
+// refreshInvestigation refreshes the investigation of an unmuted situation for the observations that
 // changed since it last saw them, and records that it saw them. A raised situation also records one evidence
 // revision for the change. A muted situation is left alone, and catches up once after an unmute.
-func (s *SituationService) refreshInvestigation(ctx context.Context, situation *ent.Situation, members []*ent.SituationSignal, input situations.EvaluationInput) error {
-	if input.Muted {
+func (s *SituationService) refreshInvestigation(ctx context.Context, situation *ent.Situation, members []*ent.SituationObservation, input situations.EvaluationInput) error {
+	if input.Muted || situation.InvestigationID == nil {
 		return nil
 	}
-	queryInvestigation := s.db.Client(ctx).SituationInvestigation.Query().
-		Where(siti.SituationID(situation.ID)).
-		WithInvestigation()
-	link, queryErr := queryInvestigation.Only(ctx)
+	investigation, queryErr := s.db.Client(ctx).Investigation.Get(ctx, *situation.InvestigationID)
 	if queryErr != nil {
-		if ent.IsNotFound(queryErr) {
-			return nil
-		}
 		return fmt.Errorf("query situation investigation: %w", queryErr)
 	}
 
-	revisions := make(map[uuid.UUID]int, len(members))
+	revisions := make(map[rez.SituationObservationRef]int, len(members))
 	for _, member := range members {
-		revisions[member.KnowledgeEntityID] = member.ObservedRevision
+		revisions[member.Ref()] = member.ObservedRevision
 	}
-	var changed []rez.SituationSignal
+	var changed []rez.SituationObservation
 	var keyParts, titles []string
 	var changedEventIDs []uuid.UUID
 	for _, evaluated := range input.Members {
-		signal := evaluated.Signal
-		if revisions[signal.EntityID] == signal.Revision {
+		observation := evaluated.Observation
+		if revisions[observation.Ref] == observation.Revision {
 			continue
 		}
-		changed = append(changed, signal)
-		changedEventIDs = append(changedEventIDs, signal.EventIDs...)
-		keyParts = append(keyParts, fmt.Sprintf("%s@%d", signal.EntityID, signal.Revision))
-		titles = append(titles, signal.Title)
+		changed = append(changed, observation)
+		changedEventIDs = append(changedEventIDs, observation.EventIDs...)
+		keyParts = append(keyParts, fmt.Sprintf("%s@%d", observation.Ref, observation.Revision))
+		titles = append(titles, observation.Title)
 	}
 	if len(changed) == 0 {
 		return nil
 	}
-	analysisID := link.Edges.Investigation.SystemAnalysisID
+	analysisID := investigation.SystemAnalysisID
 	if refreshErr := s.prepareOrRefreshSituationAnalysis(ctx, analysisID, changedEventIDs); refreshErr != nil {
 		return fmt.Errorf("refresh situation investigation analysis: %w", refreshErr)
 	}
@@ -230,7 +218,7 @@ func (s *SituationService) refreshInvestigation(ctx context.Context, situation *
 		slices.Sort(keyParts)
 		digest := sha256.Sum256([]byte(strings.Join(keyParts, ",")))
 		revisionParams := rez.RecordInvestigationEvidenceRevisionParams{
-			InvestigationID: link.InvestigationID,
+			InvestigationID: investigation.ID,
 			CallerKey:       "situation:" + situation.ID.String() + ":evidence:" + hex.EncodeToString(digest[:16]),
 			Explanation:     "Evidence changed: " + strings.Join(titles, ", ") + ".",
 		}
@@ -241,14 +229,14 @@ func (s *SituationService) refreshInvestigation(ctx context.Context, situation *
 	return s.observeRevisions(ctx, situation.ID, changed)
 }
 
-// observeRevisions records that the situation's investigation saw the signals' current revisions.
-func (s *SituationService) observeRevisions(ctx context.Context, situationID uuid.UUID, signals []rez.SituationSignal) error {
-	for _, signal := range signals {
-		observeSignal := s.db.Client(ctx).SituationSignal.Update().
-			Where(sitsig.SituationID(situationID), sitsig.KnowledgeEntityID(signal.EntityID)).
-			SetObservedRevision(signal.Revision)
-		if observeErr := observeSignal.Exec(ctx); observeErr != nil {
-			return fmt.Errorf("observe situation signal revision: %w", observeErr)
+// observeRevisions records that the situation's investigation saw the observations' current revisions.
+func (s *SituationService) observeRevisions(ctx context.Context, situationID uuid.UUID, observations []rez.SituationObservation) error {
+	for _, observation := range observations {
+		observeRevision := s.db.Client(ctx).SituationObservation.Update().
+			Where(sitobs.SituationID(situationID), s.observesAny(observation.Ref)).
+			SetObservedRevision(observation.Revision)
+		if observeErr := observeRevision.Exec(ctx); observeErr != nil {
+			return fmt.Errorf("observe situation observation revision: %w", observeErr)
 		}
 	}
 	return nil
@@ -297,8 +285,7 @@ func (s *SituationService) snapshotCandidate(ctx context.Context, situation *ent
 	return snapshot, nil
 }
 
-// recordJudgment records the judgment of the snapshot's facts at the processing time, makes it the latest,
-// and raises the candidate automatically when it decides to.
+// recordJudgment records the judgment of the snapshot's facts at the processing time and raises the candidate automatically when it decides to.
 func (s *SituationService) recordJudgment(ctx context.Context, situation *ent.Situation, snapshot *candidateSnapshot, judgment situations.Judgment, now time.Time) error {
 	client := s.db.Client(ctx)
 	createJudgment := client.SituationJudgment.Create().
@@ -312,14 +299,8 @@ func (s *SituationService) recordJudgment(ctx context.Context, situation *ent.Si
 		SetExplanation(judgment.Explanation).
 		SetJudge(judgment.Judge).
 		SetFingerprint(snapshot.fingerprint)
-	created, createErr := createJudgment.Save(ctx)
-	if createErr != nil {
+	if createErr := createJudgment.Exec(ctx); createErr != nil {
 		return fmt.Errorf("record situation judgment: %w", createErr)
-	}
-	setLatest := client.Situation.UpdateOneID(situation.ID).
-		SetLatestJudgmentID(created.ID)
-	if setErr := setLatest.Exec(ctx); setErr != nil {
-		return fmt.Errorf("set latest situation judgment: %w", setErr)
 	}
 	if judgment.Decision != sitjudg.DecisionRaise {
 		return nil
@@ -327,75 +308,52 @@ func (s *SituationService) recordJudgment(ctx context.Context, situation *ent.Si
 	return s.raiseAutomatically(ctx, situation, judgment.Cited, now)
 }
 
-func (s *SituationService) aggregateCountDistinctSituations(sel *sql.Selector) string {
-	return sql.As(sql.Count(sql.Distinct(sel.C(sitsig.FieldSituationID))), "count")
-}
-
-// priorOutcomes counts, for each source of the members' signals, the other situations opened within
-// PastIncidentLookback that hold a signal of it: raised, muted as not noteworthy, and linked to an incident.
-// The database counts each outcome, grouped by source.
-func (s *SituationService) priorOutcomes(ctx context.Context, situationID uuid.UUID, input situations.EvaluationInput) (map[uuid.UUID]schematypes.SituationPriorOutcomeFacts, error) {
-	sources := mapset.NewSet[uuid.UUID]()
+// priorOutcomes counts, for each kind and source of the situation's observations, the other situations
+// opened within PastIncidentLookback with an observation of that kind from that source: raised, muted as
+// not noteworthy, and linked to an incident.
+func (s *SituationService) priorOutcomes(ctx context.Context, situationID uuid.UUID, input situations.EvaluationInput) (map[schematypes.SituationObservationKind]map[uuid.UUID]schematypes.SituationPriorOutcomeFacts, error) {
+	type observationSource struct {
+		kind schematypes.SituationObservationKind
+		id   uuid.UUID
+	}
+	sources := mapset.NewSet[observationSource]()
 	for _, member := range input.Members {
-		if source := member.Signal.SourceEntityID; source != nil {
-			sources.Add(*source)
-		}
+		sources.Add(observationSource{kind: member.Observation.Ref.Kind(), id: member.Observation.SourceID})
 	}
-	outcomes := make(map[uuid.UUID]schematypes.SituationPriorOutcomeFacts, sources.Cardinality())
-	if sources.IsEmpty() {
-		return outcomes, nil
-	}
-	sourceIDs := sources.ToSlice()
+	outcomes := make(map[schematypes.SituationObservationKind]map[uuid.UUID]schematypes.SituationPriorOutcomeFacts)
 	cutoff := input.Now.Add(-situations.PastIncidentLookback)
 	client := s.db.Client(ctx)
-
-	type matchingSituationSourceRow struct {
-		SourceEntityID uuid.UUID `json:"source_entity_id"`
-		Count          int       `json:"count"`
+	// countSituations counts the matching situations with an observation from the source.
+	countSituations := func(source observationSource, matches predicate.Situation) (int, error) {
+		query := client.Situation.Query().
+			Where(
+				sit.IDNEQ(situationID),
+				sit.OpenedAtGTE(cutoff),
+				matches,
+				sit.HasObservationsWith(s.observesSource(source.kind, source.id)),
+			)
+		return query.Count(ctx)
 	}
-
-	pIsSourceEntitySignal := sitsig.SourceEntityIDIn(sourceIDs...)
-	// countSituationsBySource counts, for each of the sources, the matching situations that hold a signal of it.
-	// A situation holding several signals of one source counts once for it.
-	countSituationsBySource := func(matches predicate.Situation) (map[uuid.UUID]int, error) {
-		pHasMatchingSituation := sitsig.HasSituationWith(sit.IDNEQ(situationID), sit.OpenedAtGTE(cutoff), matches)
-		query := client.SituationSignal.Query().
-			Where(pIsSourceEntitySignal, pHasMatchingSituation).
-			GroupBy(sitsig.FieldSourceEntityID).
-			Aggregate(s.aggregateCountDistinctSituations)
-
-		var rows []matchingSituationSourceRow
-		if scanErr := query.Scan(ctx, &rows); scanErr != nil {
-			return nil, scanErr
+	for _, source := range sources.ToSlice() {
+		raised, raisedErr := countSituations(source, sit.RaisedAtNotNil())
+		if raisedErr != nil {
+			return nil, fmt.Errorf("count previously raised situations: %w", raisedErr)
 		}
-
-		counts := make(map[uuid.UUID]int, len(rows))
-		for _, row := range rows {
-			counts[row.SourceEntityID] = row.Count
+		muted, mutedErr := countSituations(source, sit.MuteReasonEQ(sit.MuteReasonNotNoteworthy))
+		if mutedErr != nil {
+			return nil, fmt.Errorf("count previously muted situations: %w", mutedErr)
 		}
-		return counts, nil
-	}
-
-	raised, raisedErr := countSituationsBySource(sit.RaisedAtNotNil())
-	if raisedErr != nil {
-		return nil, fmt.Errorf("count previously raised situations: %w", raisedErr)
-	}
-
-	muted, mutedErr := countSituationsBySource(sit.MuteReasonEQ(sit.MuteReasonNotNoteworthy))
-	if mutedErr != nil {
-		return nil, fmt.Errorf("count previously muted situations: %w", mutedErr)
-	}
-
-	incidentLinked, incidentErr := countSituationsBySource(sit.HasIncidents())
-	if incidentErr != nil {
-		return nil, fmt.Errorf("count incident-linked situations: %w", incidentErr)
-	}
-
-	for _, sourceID := range sourceIDs {
-		outcomes[sourceID] = schematypes.SituationPriorOutcomeFacts{
-			Raised:             raised[sourceID],
-			MutedNotNoteworthy: muted[sourceID],
-			IncidentLinked:     incidentLinked[sourceID],
+		incidentLinked, incidentErr := countSituations(source, sit.HasIncidents())
+		if incidentErr != nil {
+			return nil, fmt.Errorf("count incident-linked situations: %w", incidentErr)
+		}
+		if outcomes[source.kind] == nil {
+			outcomes[source.kind] = make(map[uuid.UUID]schematypes.SituationPriorOutcomeFacts)
+		}
+		outcomes[source.kind][source.id] = schematypes.SituationPriorOutcomeFacts{
+			Raised:             raised,
+			MutedNotNoteworthy: muted,
+			IncidentLinked:     incidentLinked,
 		}
 	}
 	return outcomes, nil

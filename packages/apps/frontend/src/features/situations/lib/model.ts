@@ -3,10 +3,8 @@ import type {
 	AlertInstanceAttributes,
 	InvestigationReport,
 	InvestigationReportAttributes,
-	SituationAttributes,
-	SituationLink,
+	SituationObservation,
 	SituationObservationGroup,
-	SituationSignal,
 } from "$lib/api";
 import type { StatusPresentation } from "$components/common/status-badge/status";
 import { attentionStatus } from "$features/signals/lib/attention";
@@ -58,24 +56,27 @@ function windowDescription(window: AlertInstanceAttributes) {
 	return `${fired} · ${windowEndLabel(window.endReason)} ${formatTime(window.endedAt).absolute}`;
 }
 
-/** A signal's record; an alert episode, when loaded, adds its definition and firing windows. */
-function signalSourceRecord(
-	signal: SituationSignal,
+/** An observation's record; its alert episode, when loaded, adds its definition and firing windows. */
+function observationSourceRecord(
+	observation: SituationObservation,
 	groupTitle: string,
 	episode?: AlertEpisode
 ): SourceRecord {
 	const record: SourceRecord = {
-		key: `signal:${signal.knowledgeEntityId}`,
-		id: signal.knowledgeEntityId,
+		key: `observation:${observation.id}`,
+		id: observation.alertEpisodeId ?? observation.id,
 		type: "Alert episode",
 		title: groupTitle,
 		source: "Alert episode",
-		time: formatTime(signal.attachedAt),
+		time: formatTime(observation.attachedAt),
 		timeLabel: "Attached",
 		content: "",
-		fields: [{ label: "Match", value: signal.matchKind }],
+		fields: [],
 		links: [],
 	};
+	if (observation.matchExplanation) {
+		record.fields.push({ label: "Attached because", value: observation.matchExplanation });
+	}
 	if (!episode) {
 		return record;
 	}
@@ -97,26 +98,6 @@ function signalSourceRecord(
 	return record;
 }
 
-/** Distinct sources: each alert definition once, and each signal without a source (a code change) once. */
-export function situationSourceCount(attributes: SituationAttributes) {
-	const keys = new Set<string>();
-	for (const group of attributes.observationGroups) {
-		for (const signal of group.attributes.signals) {
-			keys.add(signal.sourceEntityId ?? signal.knowledgeEntityId);
-		}
-	}
-	return keys.size;
-}
-
-export function situationLinkKindLabel(kind: SituationLink["kind"]) {
-	switch (kind) {
-		case "recurrence_of":
-			return "Recurrence of";
-		case "merged_into":
-			return "Merged into";
-	}
-}
-
 /** "Alert episode" or "Event · datadog"; never repeats the type. */
 export function sourceMeta(record: SourceRecord): string {
 	if (record.source && record.source !== record.type) {
@@ -132,22 +113,41 @@ export function sourceIcon(record: SourceRecord): Component {
 	return RiAlarmWarningLine;
 }
 
-/** Groups with their records, enriched by the situation's alert episodes keyed by knowledge entity. */
+const UNGROUPED_OBSERVATIONS_TITLE = "Ungrouped observations";
+
+/**
+ * Groups with their records, enriched by the situation's alert episodes keyed by ID. Ungrouped observations
+ * come first, as a group of their own.
+ */
 export function observationGroups(
+	observations: SituationObservation[],
 	groups: SituationObservationGroup[],
-	episodesByEntity: Map<string, AlertEpisode>
+	episodesById: Map<string, AlertEpisode>
 ) {
-	return groups.map((group) => {
-		const records = group.attributes.signals.map((signal) =>
-			signalSourceRecord(signal, group.attributes.title, episodesByEntity.get(signal.knowledgeEntityId))
-		);
-		return {
-			id: group.id,
-			title: group.attributes.title,
-			body: group.attributes.body,
-			records,
-		};
-	});
+	const records = (groupId: string | undefined, title: string) =>
+		observations
+			.filter((observation) => observation.observationGroupId === groupId)
+			.map((observation) =>
+				observationSourceRecord(
+					observation,
+					title,
+					observation.alertEpisodeId ? episodesById.get(observation.alertEpisodeId) : undefined
+				)
+			);
+	const grouped = groups.map((group) => ({
+		id: group.id,
+		title: group.attributes.title,
+		body: group.attributes.body,
+		records: records(group.id, group.attributes.title),
+	}));
+	const ungrouped = records(undefined, UNGROUPED_OBSERVATIONS_TITLE);
+	if (!ungrouped.length) {
+		return grouped;
+	}
+	return [
+		{ id: "ungrouped", title: UNGROUPED_OBSERVATIONS_TITLE, body: undefined, records: ungrouped },
+		...grouped,
+	];
 }
 
 export const SITUATION_POLL_INTERVAL_MS = 30_000;

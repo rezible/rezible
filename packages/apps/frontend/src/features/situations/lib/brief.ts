@@ -17,7 +17,7 @@ import {
 /** The Brief tab's sections after the header, in the order they are shown. */
 export type BriefSection =
 	| { kind: "interpretation"; nextChecks: NextCheckView[] }
-	| { kind: "signals" }
+	| { kind: "observations" }
 	| { kind: "changes"; state: ChangesState }
 	| { kind: "checked"; state: CheckedState }
 	| { kind: "unseen"; state: UnseenState };
@@ -118,7 +118,7 @@ export function briefSections(
 ): BriefSection[] {
 	return [
 		{ kind: "interpretation", nextChecks: nextCheckViews(report?.nextChecks ?? []) },
-		{ kind: "signals" },
+		{ kind: "observations" },
 		{ kind: "changes", state: changesState(load) },
 		{ kind: "checked", state: checkedState(report) },
 		{ kind: "unseen", state: unseenState(load) },

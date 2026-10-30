@@ -489,6 +489,35 @@ func HasInstancesWith(preds ...predicate.AlertInstance) predicate.AlertEpisode {
 	})
 }
 
+// HasSituationObservations applies the HasEdge predicate on the "situation_observations" edge.
+func HasSituationObservations() predicate.AlertEpisode {
+	return predicate.AlertEpisode(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SituationObservationsTable, SituationObservationsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationObservation
+		step.Edge.Schema = schemaConfig.SituationObservation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSituationObservationsWith applies the HasEdge predicate on the "situation_observations" edge with a given conditions (other predicates).
+func HasSituationObservationsWith(preds ...predicate.SituationObservation) predicate.AlertEpisode {
+	return predicate.AlertEpisode(func(s *sql.Selector) {
+		step := newSituationObservationsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SituationObservation
+		step.Edge.Schema = schemaConfig.SituationObservation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AlertEpisode) predicate.AlertEpisode {
 	return predicate.AlertEpisode(sql.AndPredicates(predicates...))

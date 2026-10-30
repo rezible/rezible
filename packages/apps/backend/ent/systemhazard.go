@@ -50,11 +50,9 @@ type SystemHazardEdges struct {
 	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// RiskAssessments holds the value of the risk_assessments edge.
 	RiskAssessments []*SystemHazardRiskAssessment `json:"risk_assessments,omitempty"`
-	// SituationAssessments holds the value of the situation_assessments edge.
-	SituationAssessments []*SituationHazardAssessment `json:"situation_assessments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -86,15 +84,6 @@ func (e SystemHazardEdges) RiskAssessmentsOrErr() ([]*SystemHazardRiskAssessment
 		return e.RiskAssessments, nil
 	}
 	return nil, &NotLoadedError{edge: "risk_assessments"}
-}
-
-// SituationAssessmentsOrErr returns the SituationAssessments value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemHazardEdges) SituationAssessmentsOrErr() ([]*SituationHazardAssessment, error) {
-	if e.loadedTypes[3] {
-		return e.SituationAssessments, nil
-	}
-	return nil, &NotLoadedError{edge: "situation_assessments"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -208,11 +197,6 @@ func (_m *SystemHazard) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 // QueryRiskAssessments queries the "risk_assessments" edge of the SystemHazard entity.
 func (_m *SystemHazard) QueryRiskAssessments() *SystemHazardRiskAssessmentQuery {
 	return NewSystemHazardClient(_m.config).QueryRiskAssessments(_m)
-}
-
-// QuerySituationAssessments queries the "situation_assessments" edge of the SystemHazard entity.
-func (_m *SystemHazard) QuerySituationAssessments() *SituationHazardAssessmentQuery {
-	return NewSystemHazardClient(_m.config).QuerySituationAssessments(_m)
 }
 
 // Update returns a builder for updating this SystemHazard.

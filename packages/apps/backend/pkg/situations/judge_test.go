@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
 )
@@ -16,7 +17,7 @@ import (
 func TestValidateAnswer(t *testing.T) {
 	// Breadth is met; persistence is not.
 	reasons := CheckReasons(schematypes.SituationFacts{
-		Signals: []schematypes.SituationSignalFacts{activeAlert("s1", time.Minute), activeAlert("s2", time.Minute)},
+		Observations: []schematypes.SituationObservationFacts{activeAlert("o1", time.Minute), activeAlert("o2", time.Minute)},
 	})
 	breadth := schematypes.SituationRaiseReasonBreadth
 	cases := []struct {
@@ -48,11 +49,11 @@ func TestValidateAnswer(t *testing.T) {
 	}
 }
 
-// judgeFacts are facts with the given numbers of signals and entities, each signal about every entity, and a
-// relationship between each consecutive pair of entities. Entities alternate matching, ordered as Facts
-// orders them.
-func judgeFacts(signals, entities int) schematypes.SituationFacts {
-	judgeContext := JudgeContext{SignalEntityIDs: make(map[uuid.UUID][]uuid.UUID)}
+// judgeFacts are facts with the given numbers of observations and entities, each observation about every
+// entity, and a relationship between each consecutive pair of entities. Entities alternate matching, ordered
+// as Facts orders them.
+func judgeFacts(observations, entities int) schematypes.SituationFacts {
+	judgeContext := JudgeContext{ObservationEntityIDs: make(map[rez.SituationObservationRef][]uuid.UUID)}
 	var entityIDs []uuid.UUID
 	for i := range entities {
 		id := uuid.New()
@@ -64,9 +65,9 @@ func judgeFacts(signals, entities int) schematypes.SituationFacts {
 		}
 	}
 	input := EvaluationInput{Now: evaluationNow, Context: &judgeContext}
-	for i := range signals {
+	for i := range observations {
 		attached := member(i, nil, 1)
-		judgeContext.SignalEntityIDs[attached.Signal.EntityID] = entityIDs
+		judgeContext.ObservationEntityIDs[attached.Observation.Ref] = entityIDs
 		input.Members = append(input.Members, attached)
 	}
 	return input.Facts()
@@ -76,20 +77,19 @@ func TestJudgeFacts(t *testing.T) {
 	t.Run("within the limits nothing is cut", func(t *testing.T) {
 		facts := judgeFacts(2, 3)
 		kept, truncated := JudgeFacts(facts)
-		assert.Equal(t, facts.Signals, kept.Signals)
+		assert.Equal(t, facts.Observations, kept.Observations)
 		assert.Equal(t, facts.Entities, kept.Entities)
 		assert.Equal(t, facts.Relationships, kept.Relationships)
 		assert.NotNil(t, truncated)
 		assert.Empty(t, truncated)
 		assert.NotNil(t, kept.LinkedIncidents, "lists are never nil")
-		assert.NotNil(t, kept.Earlier, "lists are never nil")
 	})
 
-	t.Run("past the limits it keeps the latest signals and matching entities, and says so", func(t *testing.T) {
-		facts := judgeFacts(JudgeMaxSignals+2, JudgeMaxEntities+4)
+	t.Run("past the limits it keeps the latest observations and matching entities, and says so", func(t *testing.T) {
+		facts := judgeFacts(JudgeMaxObservations+2, JudgeMaxEntities+4)
 		kept, truncated := JudgeFacts(facts)
-		require.Len(t, kept.Signals, JudgeMaxSignals)
-		assert.Equal(t, facts.Signals[2].Ref, kept.Signals[0].Ref, "the most recently attached are kept")
+		require.Len(t, kept.Observations, JudgeMaxObservations)
+		assert.Equal(t, facts.Observations[2].Ref, kept.Observations[0].Ref, "the most recently attached are kept")
 		require.Len(t, kept.Entities, JudgeMaxEntities)
 		assert.Equal(t, facts.Entities[:JudgeMaxEntities], kept.Entities, "matching entities first, then by ID")
 		keptIDs := make(map[uuid.UUID]bool)
@@ -100,8 +100,8 @@ func TestJudgeFacts(t *testing.T) {
 			assert.True(t, keptIDs[relationship.SourceID] && keptIDs[relationship.TargetID])
 		}
 		assert.Less(t, len(kept.Relationships), len(facts.Relationships))
-		assert.Len(t, kept.Signals[0].EntityIDs, JudgeMaxEntities)
-		assert.Len(t, truncated, 4, "signals, entities, relationships and signal entity references: %v", truncated)
+		assert.Len(t, kept.Observations[0].EntityIDs, JudgeMaxEntities)
+		assert.Len(t, truncated, 4, "observations, entities, relationships and observation entity references: %v", truncated)
 
 		again, againTruncated := JudgeFacts(facts)
 		assert.Equal(t, kept, again, "truncation is deterministic")
@@ -110,8 +110,8 @@ func TestJudgeFacts(t *testing.T) {
 
 	t.Run("a sampled alert is declared", func(t *testing.T) {
 		facts := judgeFacts(1, 1)
-		facts.Signals[0].Alert.ActiveInstanceCount = AlertFactsMaxInstances + 1
+		facts.Observations[0].Alert.ActiveInstanceCount = AlertFactsMaxInstances + 1
 		_, truncated := JudgeFacts(facts)
-		assert.Equal(t, []string{fmt.Sprintf("s1 alert active_instances: kept 0 of %d, by instance key", AlertFactsMaxInstances+1)}, truncated)
+		assert.Equal(t, []string{fmt.Sprintf("o1 alert active_instances: kept 0 of %d, by instance key", AlertFactsMaxInstances+1)}, truncated)
 	})
 }

@@ -57,7 +57,7 @@ func (s *ChangesServiceSuite) newFixture(tdb rez.Database) *changesFixture {
 		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{}}, nil).
 		Maybe()
 	clock := test.NewClock(changesTestStart)
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, knowledge, NewSituationSignalService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, knowledge, NewSituationObservationService(jobService))
 	s.Require().NoError(alertsErr)
 
 	projection, projectionErr := eventprojection.NewProjectionService(tdb, knowledge, knowledgeQuery, nil, nil, alerts)

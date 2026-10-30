@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -215,6 +216,8 @@ func (AlertEpisode) Edges() []ent.Edge {
 			Immutable().
 			Field("alert_definition_id"),
 		edge.To("instances", AlertInstance.Type),
+		edge.To("situation_observations", SituationObservation.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }
 

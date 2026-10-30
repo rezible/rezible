@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/systemhazardriskassessment"
 )
@@ -161,21 +160,6 @@ func (_u *SystemHazardUpdate) AddRiskAssessments(v ...*SystemHazardRiskAssessmen
 	return _u.AddRiskAssessmentIDs(ids...)
 }
 
-// AddSituationAssessmentIDs adds the "situation_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (_u *SystemHazardUpdate) AddSituationAssessmentIDs(ids ...uuid.UUID) *SystemHazardUpdate {
-	_u.mutation.AddSituationAssessmentIDs(ids...)
-	return _u
-}
-
-// AddSituationAssessments adds the "situation_assessments" edges to the SituationHazardAssessment entity.
-func (_u *SystemHazardUpdate) AddSituationAssessments(v ...*SituationHazardAssessment) *SystemHazardUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddSituationAssessmentIDs(ids...)
-}
-
 // Mutation returns the SystemHazardMutation object of the builder.
 func (_u *SystemHazardUpdate) Mutation() *SystemHazardMutation {
 	return _u.mutation
@@ -206,27 +190,6 @@ func (_u *SystemHazardUpdate) RemoveRiskAssessments(v ...*SystemHazardRiskAssess
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRiskAssessmentIDs(ids...)
-}
-
-// ClearSituationAssessments clears all "situation_assessments" edges to the SituationHazardAssessment entity.
-func (_u *SystemHazardUpdate) ClearSituationAssessments() *SystemHazardUpdate {
-	_u.mutation.ClearSituationAssessments()
-	return _u
-}
-
-// RemoveSituationAssessmentIDs removes the "situation_assessments" edge to SituationHazardAssessment entities by IDs.
-func (_u *SystemHazardUpdate) RemoveSituationAssessmentIDs(ids ...uuid.UUID) *SystemHazardUpdate {
-	_u.mutation.RemoveSituationAssessmentIDs(ids...)
-	return _u
-}
-
-// RemoveSituationAssessments removes "situation_assessments" edges to SituationHazardAssessment entities.
-func (_u *SystemHazardUpdate) RemoveSituationAssessments(v ...*SituationHazardAssessment) *SystemHazardUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveSituationAssessmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -404,54 +367,6 @@ func (_u *SystemHazardUpdate) sqlSave(ctx context.Context) (_node int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.SituationAssessmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   systemhazard.SituationAssessmentsTable,
-			Columns: []string{systemhazard.SituationAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedSituationAssessmentsIDs(); len(nodes) > 0 && !_u.mutation.SituationAssessmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   systemhazard.SituationAssessmentsTable,
-			Columns: []string{systemhazard.SituationAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SituationAssessmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   systemhazard.SituationAssessmentsTable,
-			Columns: []string{systemhazard.SituationAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	_spec.Node.Schema = _u.schemaConfig.SystemHazard
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -602,21 +517,6 @@ func (_u *SystemHazardUpdateOne) AddRiskAssessments(v ...*SystemHazardRiskAssess
 	return _u.AddRiskAssessmentIDs(ids...)
 }
 
-// AddSituationAssessmentIDs adds the "situation_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (_u *SystemHazardUpdateOne) AddSituationAssessmentIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
-	_u.mutation.AddSituationAssessmentIDs(ids...)
-	return _u
-}
-
-// AddSituationAssessments adds the "situation_assessments" edges to the SituationHazardAssessment entity.
-func (_u *SystemHazardUpdateOne) AddSituationAssessments(v ...*SituationHazardAssessment) *SystemHazardUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddSituationAssessmentIDs(ids...)
-}
-
 // Mutation returns the SystemHazardMutation object of the builder.
 func (_u *SystemHazardUpdateOne) Mutation() *SystemHazardMutation {
 	return _u.mutation
@@ -647,27 +547,6 @@ func (_u *SystemHazardUpdateOne) RemoveRiskAssessments(v ...*SystemHazardRiskAss
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRiskAssessmentIDs(ids...)
-}
-
-// ClearSituationAssessments clears all "situation_assessments" edges to the SituationHazardAssessment entity.
-func (_u *SystemHazardUpdateOne) ClearSituationAssessments() *SystemHazardUpdateOne {
-	_u.mutation.ClearSituationAssessments()
-	return _u
-}
-
-// RemoveSituationAssessmentIDs removes the "situation_assessments" edge to SituationHazardAssessment entities by IDs.
-func (_u *SystemHazardUpdateOne) RemoveSituationAssessmentIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
-	_u.mutation.RemoveSituationAssessmentIDs(ids...)
-	return _u
-}
-
-// RemoveSituationAssessments removes "situation_assessments" edges to SituationHazardAssessment entities.
-func (_u *SystemHazardUpdateOne) RemoveSituationAssessments(v ...*SituationHazardAssessment) *SystemHazardUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveSituationAssessmentIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemHazardUpdate builder.
@@ -870,54 +749,6 @@ func (_u *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHaza
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemHazardRiskAssessment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.SituationAssessmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   systemhazard.SituationAssessmentsTable,
-			Columns: []string{systemhazard.SituationAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedSituationAssessmentsIDs(); len(nodes) > 0 && !_u.mutation.SituationAssessmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   systemhazard.SituationAssessmentsTable,
-			Columns: []string{systemhazard.SituationAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SituationAssessmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   systemhazard.SituationAssessmentsTable,
-			Columns: []string{systemhazard.SituationAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SituationHazardAssessment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

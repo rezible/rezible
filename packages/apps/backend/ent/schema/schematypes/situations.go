@@ -7,6 +7,35 @@ import (
 	"github.com/google/uuid"
 )
 
+// SituationObservationKind is what a situation observation is of.
+type SituationObservationKind string
+
+const SituationObservationKindAlertEpisode SituationObservationKind = "alert_episode"
+
+// SituationObservationRef names what one observation is of, with one field per observation kind mirroring
+// the observation's reference columns. A valid reference sets exactly one field. It is comparable, so it keys
+// maps.
+type SituationObservationRef struct {
+	AlertEpisodeID uuid.UUID `json:"alert_episode_id,omitzero"`
+}
+
+// Kind is the kind of the one field set, or empty for a reference that is not valid.
+func (r SituationObservationRef) Kind() SituationObservationKind {
+	if r.AlertEpisodeID != uuid.Nil {
+		return SituationObservationKindAlertEpisode
+	}
+	return ""
+}
+
+// String is "<kind>:<id>", a stable key and order for the reference, or empty for one that is not valid.
+func (r SituationObservationRef) String() string {
+	switch kind := r.Kind(); kind {
+	case SituationObservationKindAlertEpisode:
+		return string(kind) + ":" + r.AlertEpisodeID.String()
+	}
+	return ""
+}
+
 // SignalSeverity is the normalized severity a signal source reports, ordered from lowest to highest. It is
 // the Go type of the alert window and episode severity enums.
 type SignalSeverity string
@@ -40,7 +69,7 @@ func (s SignalSeverity) Compare(other SignalSeverity) int {
 	return slices.Index(signalSeverityOrder, s) - slices.Index(signalSeverityOrder, other)
 }
 
-// SituationAlertFacts describe an alert episode signal from its stored state.
+// SituationAlertFacts describe an observed alert episode from its stored state.
 type SituationAlertFacts struct {
 	Description string `json:"description,omitempty"`
 	Definition  string `json:"definition,omitempty"`
@@ -105,34 +134,36 @@ type SituationReasonResult struct {
 	Detail string `json:"detail"`
 }
 
-// SituationPriorOutcomeFacts count how other situations holding a signal of the same source ended up.
+// SituationPriorOutcomeFacts count how other situations observing the same signal ended up.
 type SituationPriorOutcomeFacts struct {
 	Raised             int `json:"raised"`
 	MutedNotNoteworthy int `json:"muted_not_noteworthy"`
 	IncidentLinked     int `json:"incident_linked"`
 }
 
-// SituationSignalFacts describe one member signal as of the facts' time.
-type SituationSignalFacts struct {
-	// Ref is "s1", "s2", … by attachment, then entity ID.
-	Ref            string     `json:"ref"`
-	EntityID       uuid.UUID  `json:"entity_id"`
-	Kind           string     `json:"kind"`
-	Title          string     `json:"title"`
-	SourceEntityID *uuid.UUID `json:"source_entity_id,omitempty"`
-	// Seeding is true when the signal may start a candidate and so counts toward raise reasons.
-	Seeding        bool       `json:"seeding"`
+// SituationObservationFacts describe one observation as of the facts' time.
+type SituationObservationFacts struct {
+	// Ref is "o1", "o2", … by attachment, then observation reference.
+	Ref string `json:"ref"`
+	SituationObservationRef
+	Kind  SituationObservationKind `json:"kind"`
+	Title string                   `json:"title"`
+	// SourceID is the signal that produced it, such as an episode's alert definition.
+	SourceID uuid.UUID `json:"source_id"`
+	// Seeding is true when the observation may start a candidate and so counts toward raise reasons.
+	Seeding bool `json:"seeding"`
+	// Attention is the signal's attention level.
 	Attention      string     `json:"attention"`
 	AttentionSetAt *time.Time `json:"attention_set_at,omitempty"`
-	MatchKind      string     `json:"match_kind"`
 	StartedAt      time.Time  `json:"started_at"`
-	// FinishedAt is absent while the signal is unfinished.
+	// FinishedAt is absent while the observation is unfinished.
 	FinishedAt *time.Time `json:"finished_at,omitempty"`
-	// PriorOutcomes describe other situations with the signal's source, when it has one.
+	// PriorOutcomes describe other situations observing the same signal.
 	PriorOutcomes *SituationPriorOutcomeFacts `json:"prior_outcomes,omitempty"`
-	// EntityIDs are the runtime entities the signal is about, by ID. Only the model judge's facts have them.
-	EntityIDs []uuid.UUID          `json:"entity_ids,omitempty"`
-	Alert     *SituationAlertFacts `json:"alert,omitempty"`
+	// EntityIDs are the runtime entities the observation is about, by ID. Only the model judge's facts have them.
+	EntityIDs []uuid.UUID `json:"entity_ids,omitempty"`
+	// Alert describes an alert episode.
+	Alert *SituationAlertFacts `json:"alert,omitempty"`
 }
 
 // SituationIncidentFacts describe one linked incident.
@@ -150,7 +181,7 @@ type SituationEntityFacts struct {
 	Kind        string         `json:"kind"`
 	DisplayName string         `json:"display_name,omitempty"`
 	Properties  map[string]any `json:"properties,omitempty"`
-	// Matching is true when a signal that is not broad touches the entity.
+	// Matching is true when an observation that is not broad touches the entity.
 	Matching bool `json:"matching"`
 }
 
@@ -161,28 +192,16 @@ type SituationRelationshipFacts struct {
 	TargetID  uuid.UUID `json:"target_id"`
 }
 
-// SituationEarlierFacts describe an earlier situation the situation recurs, and how it ended up.
-type SituationEarlierFacts struct {
-	SituationID    uuid.UUID  `json:"situation_id"`
-	WasRaised      bool       `json:"was_raised"`
-	MuteReason     string     `json:"mute_reason,omitempty"`
-	CloseReason    string     `json:"close_reason,omitempty"`
-	ClosedAt       *time.Time `json:"closed_at,omitempty"`
-	IncidentLinked bool       `json:"incident_linked"`
-}
-
 // SituationFacts are a snapshot of what Rezible knew about a situation at one processing time. Entities,
-// Relationships, Earlier and each signal's EntityIDs are context only the model judge reads; facts judged by
+// Relationships and each observation's EntityIDs are context only the model judge reads; facts judged by
 // the rules leave them out.
 type SituationFacts struct {
-	AsOf            time.Time                `json:"as_of"`
-	OpenedAt        time.Time                `json:"opened_at"`
-	Signals         []SituationSignalFacts   `json:"signals"`
-	LinkedIncidents []SituationIncidentFacts `json:"linked_incidents"`
+	AsOf            time.Time                   `json:"as_of"`
+	OpenedAt        time.Time                   `json:"opened_at"`
+	Observations    []SituationObservationFacts `json:"observations"`
+	LinkedIncidents []SituationIncidentFacts    `json:"linked_incidents"`
 	// Entities are ordered matching first, then by ID.
 	Entities []SituationEntityFacts `json:"entities,omitempty"`
 	// Relationships are the depends-on and adjacent relationships among the entities.
 	Relationships []SituationRelationshipFacts `json:"relationships,omitempty"`
-	// Earlier are the situations this one recurs.
-	Earlier []SituationEarlierFacts `json:"earlier,omitempty"`
 }

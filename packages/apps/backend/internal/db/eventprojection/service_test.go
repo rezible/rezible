@@ -60,7 +60,7 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 		}, nil).
 		Maybe()
 	clock := test.NewClock(time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC))
-	alerts, alertsErr := db.NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, knowledge, db.NewSituationSignalService(jobService))
+	alerts, alertsErr := db.NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, knowledge, db.NewSituationObservationService(jobService))
 	s.Require().NoError(alertsErr)
 
 	service, serviceErr := NewProjectionService(tdb, knowledge, knowledgeQuery, users, incidents, alerts)

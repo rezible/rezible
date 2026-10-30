@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { Badge } from "$components/ui/badge";
-	import { Skeleton } from "$components/ui/skeleton";
 	import StatusBadge from "$components/common/status-badge/StatusBadge.svelte";
 	import Timestamp from "$components/common/timestamp/Timestamp.svelte";
-	import { situationHref } from "$features/situations/lib/routes";
-	import type { WhyAssessment, WhyClosure, WhyOrigin, WhyRaise } from "$features/situations/lib/why";
+	import type { WhyAssessment, WhyClosure, WhyRaise } from "$features/situations/lib/why";
 	import { cn } from "$lib/utils";
 	import RiCheckboxBlankCircleLine from "remixicon-svelte/icons/checkbox-blank-circle-line";
 	import RiCheckboxCircleFill from "remixicon-svelte/icons/checkbox-circle-fill";
@@ -12,7 +10,6 @@
 
 	const controller = useSituationOverviewController();
 	const why = $derived(controller.why);
-	const mergedInto = $derived(why && "closure" in why ? why.closure?.mergedInto : undefined);
 
 	const raiseActor: Record<WhyRaise["by"], string> = {
 		person: "By a person",
@@ -20,36 +17,6 @@
 		system: "By a system action",
 	};
 </script>
-
-{#snippet originFact(origin: WhyOrigin | undefined)}
-	<div class="flex flex-col gap-1 sm:contents">
-		<dt class="text-muted-foreground">What started it</dt>
-		<dd class="flex min-w-0 flex-col gap-0.5">
-			{#if origin}
-				<span class="font-medium wrap-anywhere">{origin.title}</span>
-				<span class="text-xs text-muted-foreground">
-					Started
-					<Timestamp value={origin.startedAt} />
-				</span>
-			{:else if controller.originLoading}
-				<Skeleton class="h-4 w-1/2" aria-label="Loading the original signal" />
-			{:else if mergedInto}
-				<span class="text-muted-foreground">
-					Its signals moved to
-					<a
-						class="font-medium text-foreground hover:underline"
-						href={situationHref(mergedInto.reference)}
-					>
-						{mergedInto.title}
-					</a>
-					when it was merged.
-				</span>
-			{:else}
-				<span class="text-muted-foreground">The original signal's details are unavailable.</span>
-			{/if}
-		</dd>
-	</div>
-{/snippet}
 
 {#snippet raiseFact(raise: WhyRaise)}
 	<div class="flex flex-col gap-1 sm:contents">
@@ -158,7 +125,6 @@
 		<h2 id="why-title" class="region-label">{why.heading}</h2>
 
 		<dl class="grid grid-cols-1 gap-x-4 gap-y-3 text-sm sm:grid-cols-[9rem_minmax(0,1fr)]">
-			{@render originFact(why.origin)}
 			{#if why.kind === "muted"}
 				<div class="flex flex-col gap-1 sm:contents">
 					<dt class="text-muted-foreground">Muted</dt>

@@ -29,7 +29,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/review"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
@@ -39,28 +38,27 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx                            *QueryContext
-	order                          []user.OrderOption
-	inters                         []Interceptor
-	predicates                     []predicate.User
-	withTenant                     *TenantQuery
-	withKnowledgeEntity            *KnowledgeEntityQuery
-	withTeams                      *TeamQuery
-	withWatchedOncallRosters       *OncallRosterQuery
-	withOncallSchedules            *OncallScheduleParticipantQuery
-	withOncallShifts               *OncallShiftQuery
-	withEventAnnotations           *EventAnnotationQuery
-	withSituationHazardAssessments *SituationHazardAssessmentQuery
-	withIntegrationOauthStates     *IntegrationUserInstallStateQuery
-	withIncidentMilestones         *IncidentMilestoneQuery
-	withIncidentDebriefs           *IncidentDebriefQuery
-	withReviewRequests             *ReviewQuery
-	withReviewResponses            *ReviewQuery
-	withDiscussionThreads          *DiscussionThreadQuery
-	withDiscussionComments         *DiscussionCommentQuery
-	withDocumentAccesses           *DocumentAccessQuery
-	withTeamMemberships            *TeamMembershipQuery
-	modifiers                      []func(*sql.Selector)
+	ctx                        *QueryContext
+	order                      []user.OrderOption
+	inters                     []Interceptor
+	predicates                 []predicate.User
+	withTenant                 *TenantQuery
+	withKnowledgeEntity        *KnowledgeEntityQuery
+	withTeams                  *TeamQuery
+	withWatchedOncallRosters   *OncallRosterQuery
+	withOncallSchedules        *OncallScheduleParticipantQuery
+	withOncallShifts           *OncallShiftQuery
+	withEventAnnotations       *EventAnnotationQuery
+	withIntegrationOauthStates *IntegrationUserInstallStateQuery
+	withIncidentMilestones     *IncidentMilestoneQuery
+	withIncidentDebriefs       *IncidentDebriefQuery
+	withReviewRequests         *ReviewQuery
+	withReviewResponses        *ReviewQuery
+	withDiscussionThreads      *DiscussionThreadQuery
+	withDiscussionComments     *DiscussionCommentQuery
+	withDocumentAccesses       *DocumentAccessQuery
+	withTeamMemberships        *TeamMembershipQuery
+	modifiers                  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -266,31 +264,6 @@ func (_q *UserQuery) QueryEventAnnotations() *EventAnnotationQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.EventAnnotation
 		step.Edge.Schema = schemaConfig.EventAnnotation
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySituationHazardAssessments chains the current query on the "situation_hazard_assessments" edge.
-func (_q *UserQuery) QuerySituationHazardAssessments() *SituationHazardAssessmentQuery {
-	query := (&SituationHazardAssessmentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(situationhazardassessment.Table, situationhazardassessment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.SituationHazardAssessmentsTable, user.SituationHazardAssessmentsColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SituationHazardAssessment
-		step.Edge.Schema = schemaConfig.SituationHazardAssessment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -709,28 +682,27 @@ func (_q *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:                         _q.config,
-		ctx:                            _q.ctx.Clone(),
-		order:                          append([]user.OrderOption{}, _q.order...),
-		inters:                         append([]Interceptor{}, _q.inters...),
-		predicates:                     append([]predicate.User{}, _q.predicates...),
-		withTenant:                     _q.withTenant.Clone(),
-		withKnowledgeEntity:            _q.withKnowledgeEntity.Clone(),
-		withTeams:                      _q.withTeams.Clone(),
-		withWatchedOncallRosters:       _q.withWatchedOncallRosters.Clone(),
-		withOncallSchedules:            _q.withOncallSchedules.Clone(),
-		withOncallShifts:               _q.withOncallShifts.Clone(),
-		withEventAnnotations:           _q.withEventAnnotations.Clone(),
-		withSituationHazardAssessments: _q.withSituationHazardAssessments.Clone(),
-		withIntegrationOauthStates:     _q.withIntegrationOauthStates.Clone(),
-		withIncidentMilestones:         _q.withIncidentMilestones.Clone(),
-		withIncidentDebriefs:           _q.withIncidentDebriefs.Clone(),
-		withReviewRequests:             _q.withReviewRequests.Clone(),
-		withReviewResponses:            _q.withReviewResponses.Clone(),
-		withDiscussionThreads:          _q.withDiscussionThreads.Clone(),
-		withDiscussionComments:         _q.withDiscussionComments.Clone(),
-		withDocumentAccesses:           _q.withDocumentAccesses.Clone(),
-		withTeamMemberships:            _q.withTeamMemberships.Clone(),
+		config:                     _q.config,
+		ctx:                        _q.ctx.Clone(),
+		order:                      append([]user.OrderOption{}, _q.order...),
+		inters:                     append([]Interceptor{}, _q.inters...),
+		predicates:                 append([]predicate.User{}, _q.predicates...),
+		withTenant:                 _q.withTenant.Clone(),
+		withKnowledgeEntity:        _q.withKnowledgeEntity.Clone(),
+		withTeams:                  _q.withTeams.Clone(),
+		withWatchedOncallRosters:   _q.withWatchedOncallRosters.Clone(),
+		withOncallSchedules:        _q.withOncallSchedules.Clone(),
+		withOncallShifts:           _q.withOncallShifts.Clone(),
+		withEventAnnotations:       _q.withEventAnnotations.Clone(),
+		withIntegrationOauthStates: _q.withIntegrationOauthStates.Clone(),
+		withIncidentMilestones:     _q.withIncidentMilestones.Clone(),
+		withIncidentDebriefs:       _q.withIncidentDebriefs.Clone(),
+		withReviewRequests:         _q.withReviewRequests.Clone(),
+		withReviewResponses:        _q.withReviewResponses.Clone(),
+		withDiscussionThreads:      _q.withDiscussionThreads.Clone(),
+		withDiscussionComments:     _q.withDiscussionComments.Clone(),
+		withDocumentAccesses:       _q.withDocumentAccesses.Clone(),
+		withTeamMemberships:        _q.withTeamMemberships.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -811,17 +783,6 @@ func (_q *UserQuery) WithEventAnnotations(opts ...func(*EventAnnotationQuery)) *
 		opt(query)
 	}
 	_q.withEventAnnotations = query
-	return _q
-}
-
-// WithSituationHazardAssessments tells the query-builder to eager-load the nodes that are connected to
-// the "situation_hazard_assessments" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithSituationHazardAssessments(opts ...func(*SituationHazardAssessmentQuery)) *UserQuery {
-	query := (&SituationHazardAssessmentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withSituationHazardAssessments = query
 	return _q
 }
 
@@ -1008,7 +969,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [17]bool{
+		loadedTypes = [16]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withTeams != nil,
@@ -1016,7 +977,6 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			_q.withOncallSchedules != nil,
 			_q.withOncallShifts != nil,
 			_q.withEventAnnotations != nil,
-			_q.withSituationHazardAssessments != nil,
 			_q.withIntegrationOauthStates != nil,
 			_q.withIncidentMilestones != nil,
 			_q.withIncidentDebriefs != nil,
@@ -1097,15 +1057,6 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadEventAnnotations(ctx, query, nodes,
 			func(n *User) { n.Edges.EventAnnotations = []*EventAnnotation{} },
 			func(n *User, e *EventAnnotation) { n.Edges.EventAnnotations = append(n.Edges.EventAnnotations, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withSituationHazardAssessments; query != nil {
-		if err := _q.loadSituationHazardAssessments(ctx, query, nodes,
-			func(n *User) { n.Edges.SituationHazardAssessments = []*SituationHazardAssessment{} },
-			func(n *User, e *SituationHazardAssessment) {
-				n.Edges.SituationHazardAssessments = append(n.Edges.SituationHazardAssessments, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1451,40 +1402,6 @@ func (_q *UserQuery) loadEventAnnotations(ctx context.Context, query *EventAnnot
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "creator_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *UserQuery) loadSituationHazardAssessments(ctx context.Context, query *SituationHazardAssessmentQuery, nodes []*User, init func(*User), assign func(*User, *SituationHazardAssessment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(situationhazardassessment.FieldUserID)
-	}
-	query.Where(predicate.SituationHazardAssessment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.SituationHazardAssessmentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.UserID
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

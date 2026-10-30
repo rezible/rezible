@@ -20,7 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/investigationhypothesis"
 	"github.com/rezible/rezible/ent/investigationreport"
 	"github.com/rezible/rezible/ent/investigationuserinput"
-	"github.com/rezible/rezible/ent/situationinvestigation"
+	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -108,14 +108,14 @@ func (_c *InvestigationCreate) SetSystemAnalysis(v *SystemAnalysis) *Investigati
 	return _c.SetSystemAnalysisID(v.ID)
 }
 
-// AddSituationIDs adds the "situations" edge to the SituationInvestigation entity by IDs.
+// AddSituationIDs adds the "situations" edge to the Situation entity by IDs.
 func (_c *InvestigationCreate) AddSituationIDs(ids ...uuid.UUID) *InvestigationCreate {
 	_c.mutation.AddSituationIDs(ids...)
 	return _c
 }
 
-// AddSituations adds the "situations" edges to the SituationInvestigation entity.
-func (_c *InvestigationCreate) AddSituations(v ...*SituationInvestigation) *InvestigationCreate {
+// AddSituations adds the "situations" edges to the Situation entity.
+func (_c *InvestigationCreate) AddSituations(v ...*Situation) *InvestigationCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -387,15 +387,15 @@ func (_c *InvestigationCreate) createSpec() (*Investigation, *sqlgraph.CreateSpe
 	if nodes := _c.mutation.SituationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   investigation.SituationsTable,
 			Columns: []string{investigation.SituationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SituationInvestigation
+		edge.Schema = _c.schemaConfig.Situation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

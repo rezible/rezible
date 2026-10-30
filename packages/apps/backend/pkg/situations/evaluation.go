@@ -13,7 +13,6 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	ssa "github.com/rezible/rezible/ent/situationsignalattention"
 )
 
@@ -27,8 +26,8 @@ type EvaluationInput struct {
 	HoldUntil *time.Time
 	Members   []Member
 	Incidents []LinkedIncident
-	// PriorOutcomes are by source entity; only judgment reads them.
-	PriorOutcomes map[uuid.UUID]schematypes.SituationPriorOutcomeFacts
+	// PriorOutcomes are by observation kind, then source; only judgment reads them.
+	PriorOutcomes map[schematypes.SituationObservationKind]map[uuid.UUID]schematypes.SituationPriorOutcomeFacts
 	// Latest is an unmuted candidate's latest judgment, if any.
 	Latest *LatestJudgment
 	// Context is set only when the model judge is about to be called.
@@ -42,21 +41,19 @@ type LatestJudgment struct {
 	Fingerprint string
 }
 
-// JudgeContext is what only the model judge reads: the situation's entities, each signal's entities, the
-// relationships among them, and the situations it recurs.
+// JudgeContext is what only the model judge reads: the situation's entities, each observation's entities,
+// and the relationships among them.
 type JudgeContext struct {
 	Entities []schematypes.SituationEntityFacts
-	// SignalEntityIDs are each signal's runtime entities, by signal entity.
-	SignalEntityIDs map[uuid.UUID][]uuid.UUID
-	Relationships   []schematypes.SituationRelationshipFacts
-	Earlier         []schematypes.SituationEarlierFacts
+	// ObservationEntityIDs are each observation's runtime entities.
+	ObservationEntityIDs map[rez.SituationObservationRef][]uuid.UUID
+	Relationships        []schematypes.SituationRelationshipFacts
 }
 
-// Member is one of the situation's signals with its membership.
+// Member is one of the situation's observations with its attachment time.
 type Member struct {
-	Signal     rez.SituationSignal
-	AttachedAt time.Time
-	MatchKind  sitsig.MatchKind
+	Observation rez.SituationObservation
+	AttachedAt  time.Time
 }
 
 // LinkedIncident is an incident linked to the situation. It is resolved once it has a resolution time.
@@ -80,7 +77,7 @@ func (in *EvaluationInput) CloseableAt() *time.Time {
 	var closeableAt time.Time
 	if in.finished() {
 		for _, member := range in.Members {
-			latest = later(later(latest, *member.Signal.FinishedAt), member.AttachedAt)
+			latest = later(later(latest, *member.Observation.FinishedAt), member.AttachedAt)
 		}
 		closeableAt = latest.Add(SituationQuietPeriod)
 	} else if in.Raised {
@@ -96,7 +93,7 @@ func (in *EvaluationInput) CloseableAt() *time.Time {
 
 func (in *EvaluationInput) finished() bool {
 	return !slices.ContainsFunc(in.Members, func(member Member) bool {
-		return member.Signal.FinishedAt == nil
+		return member.Observation.FinishedAt == nil
 	})
 }
 
@@ -158,9 +155,9 @@ func (in *EvaluationInput) NextDeadline() *time.Time {
 			deadlines = append(deadlines, *retryAt)
 		}
 		for _, member := range in.Members {
-			signal := member.Signal
-			alert := signal.Alert
-			if !Seeds(signal) || signal.SignalAttention != ssa.LevelDefault || alert == nil || !alert.Active {
+			observation := member.Observation
+			alert := observation.Alert
+			if !Seeds(observation) || observation.SignalAttention != ssa.LevelDefault || alert == nil || !alert.Active {
 				continue
 			}
 			active := time.Duration(alert.ActiveSeconds) * time.Second
@@ -183,43 +180,41 @@ func (in *EvaluationInput) NextDeadline() *time.Time {
 	return next
 }
 
-// Facts describe the situation as of Now: its signals ordered by attachment then entity ID, and its linked
-// incidents by ID. With a judge context, they also hold its entities, matching first then by ID, each
-// signal's entities, the relationships among them and the situations it recurs.
+// Facts describe the situation as of Now: its observations ordered by attachment then reference, and its
+// linked incidents by ID. With a judge context, they also hold its entities, matching first then by ID, each
+// observation's entities and the relationships among them.
 func (in *EvaluationInput) Facts() schematypes.SituationFacts {
 	members := slices.Clone(in.Members)
 	slices.SortFunc(members, func(a, b Member) int {
-		return cmp.Or(a.AttachedAt.Compare(b.AttachedAt), compareIDs(a.Signal.EntityID, b.Signal.EntityID))
+		return cmp.Or(a.AttachedAt.Compare(b.AttachedAt), cmp.Compare(a.Observation.Ref.String(), b.Observation.Ref.String()))
 	})
 	facts := schematypes.SituationFacts{
 		AsOf:            in.Now,
 		OpenedAt:        in.OpenedAt,
-		Signals:         make([]schematypes.SituationSignalFacts, 0, len(members)),
+		Observations:    make([]schematypes.SituationObservationFacts, 0, len(members)),
 		LinkedIncidents: make([]schematypes.SituationIncidentFacts, 0, len(in.Incidents)),
 	}
 	for i, member := range members {
-		signal := member.Signal
-		signalFacts := schematypes.SituationSignalFacts{
-			Ref:            fmt.Sprintf("s%d", i+1),
-			EntityID:       signal.EntityID,
-			Kind:           string(signal.Kind),
-			Title:          signal.Title,
-			SourceEntityID: signal.SourceEntityID,
-			Seeding:        Seeds(signal),
-			Attention:      string(signal.SignalAttention),
-			AttentionSetAt: signal.SignalAttentionSetAt,
-			MatchKind:      string(member.MatchKind),
-			StartedAt:      signal.StartedAt,
-			FinishedAt:     signal.FinishedAt,
-			Alert:          signal.Alert,
-		}
-		if signal.SourceEntityID != nil {
-			signalFacts.PriorOutcomes = new(in.PriorOutcomes[*signal.SourceEntityID])
+		observation := member.Observation
+		kind := observation.Ref.Kind()
+		observationFacts := schematypes.SituationObservationFacts{
+			Ref:                     fmt.Sprintf("o%d", i+1),
+			SituationObservationRef: observation.Ref,
+			Kind:                    kind,
+			Title:                   observation.Title,
+			SourceID:                observation.SourceID,
+			Seeding:                 Seeds(observation),
+			Attention:               string(observation.SignalAttention),
+			AttentionSetAt:          observation.SignalAttentionSetAt,
+			StartedAt:               observation.StartedAt,
+			FinishedAt:              observation.FinishedAt,
+			PriorOutcomes:           new(in.PriorOutcomes[kind][observation.SourceID]),
+			Alert:                   observation.Alert,
 		}
 		if in.Context != nil {
-			signalFacts.EntityIDs = slices.SortedFunc(slices.Values(in.Context.SignalEntityIDs[signal.EntityID]), compareIDs)
+			observationFacts.EntityIDs = slices.SortedFunc(slices.Values(in.Context.ObservationEntityIDs[observation.Ref]), compareIDs)
 		}
-		facts.Signals = append(facts.Signals, signalFacts)
+		facts.Observations = append(facts.Observations, observationFacts)
 	}
 	for _, incident := range in.Incidents {
 		incidentFacts := schematypes.SituationIncidentFacts{
@@ -252,9 +247,6 @@ func (c JudgeContext) addTo(facts *schematypes.SituationFacts) {
 	facts.Relationships = slices.Compact(slices.SortedFunc(slices.Values(c.Relationships), func(a, b schematypes.SituationRelationshipFacts) int {
 		return cmp.Or(compareIDs(a.SourceID, b.SourceID), cmp.Compare(a.Predicate, b.Predicate), compareIDs(a.TargetID, b.TargetID))
 	}))
-	facts.Earlier = slices.SortedFunc(slices.Values(c.Earlier), func(a, b schematypes.SituationEarlierFacts) int {
-		return compareIDs(a.SituationID, b.SituationID)
-	})
 }
 
 func compareIDs(a, b uuid.UUID) int {

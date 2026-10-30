@@ -12,7 +12,6 @@ import { resolve } from "$app/paths";
 import { page } from "$app/state";
 import { toast } from "svelte-sonner";
 import {
-	type AlertEpisode,
 	clearSituationHoldMutation,
 	clearSituationMuteMutation,
 	closeSituationMutation,
@@ -55,7 +54,6 @@ import {
 	longRunningStatus,
 } from "$features/situations/lib/status";
 import type { BriefLoad } from "$features/situations/lib/brief";
-import type { WhyOrigin } from "$features/situations/lib/why";
 import { incidentResponseStatus } from "$features/incidents/lib/status";
 import {
 	declareSituationFrom,
@@ -202,12 +200,7 @@ export class SituationController {
 		refetchInterval: SITUATION_POLL_INTERVAL_MS,
 		refetchIntervalInBackground: false,
 	}));
-	episodesByEntity = $derived(this.getEpisodesByEntity());
-	/** True until every page has loaded, unless loading a page failed. */
-	originLoading = $derived(
-		this.episodesQuery.isPending || (this.episodesQuery.hasNextPage && !this.episodesQuery.isError)
-	);
-	origin = $derived(this.getOrigin());
+	episodesById = $derived(this.getEpisodesById());
 
 	incidentIds = $derived([...new SvelteSet(this.situation?.attributes.linkedIncidentIds ?? [])]);
 	incidentsQuery = createQueries(() => ({
@@ -239,8 +232,7 @@ export class SituationController {
 		this.incidentDialog.openCreate({ situation: declareSituationFrom(this.situation) });
 	}
 
-	situationInvestigation = $derived(this.situation?.attributes.investigation);
-	investigationId = $derived(this.situationInvestigation?.investigation.id);
+	investigationId = $derived(this.situation?.attributes.investigationId);
 	investigationHref = $derived(situationHref(this.linkRef, "investigation", page.url.search));
 
 	investigationQuery = createQuery(() => ({
@@ -688,27 +680,9 @@ export class SituationController {
 		return "raise";
 	}
 
-	private getEpisodesByEntity() {
-		const episodes = new Map<string, AlertEpisode>();
+	private getEpisodesById() {
 		const loaded = this.episodesQuery.data?.pages.flatMap((page) => page.data) ?? [];
-		for (const episode of loaded) {
-			const entityId = episode.attributes.knowledgeEntityId;
-			if (entityId) {
-				episodes.set(entityId, episode);
-			}
-		}
-		return episodes;
-	}
-
-	/** The seed's details, when one of the situation's current episodes is the seed. */
-	private getOrigin(): WhyOrigin | undefined {
-		const seedEntityId = this.situation?.attributes.seedEntityId;
-		const seed = seedEntityId ? this.episodesByEntity.get(seedEntityId) : undefined;
-		const title = seed?.attributes.definition?.attributes.title;
-		if (!seed || !title) {
-			return undefined;
-		}
-		return { title, startedAt: seed.attributes.startedAt };
+		return new Map(loaded.map((episode) => [episode.id, episode]));
 	}
 
 	private getReportState(): ReportState {

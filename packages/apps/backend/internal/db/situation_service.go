@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
@@ -14,18 +13,15 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/sequencecounter"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitact "github.com/rezible/rezible/ent/situationaction"
-	sha "github.com/rezible/rezible/ent/situationhazardassessment"
-	siti "github.com/rezible/rezible/ent/situationinvestigation"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
 	sitnot "github.com/rezible/rezible/ent/situationnotice"
-	sitnr "github.com/rezible/rezible/ent/situationnoticerating"
+	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	sitog "github.com/rezible/rezible/ent/situationobservationgroup"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
@@ -33,22 +29,22 @@ import (
 
 const defaultSituationInvestigationQuestion = "Explain what is happening in this situation."
 
-// SituationSignalService tells situations that signals changed. Signal sources depend on it, so they
-// need not depend on situations.
-type SituationSignalService struct {
+// SituationObservationService tells situations that observations changed. Observation sources depend on
+// it, so they need not depend on situations.
+type SituationObservationService struct {
 	jobs rez.JobService
 }
 
-var _ rez.SituationSignalService = (*SituationSignalService)(nil)
+var _ rez.SituationObservationService = (*SituationObservationService)(nil)
 
-func NewSituationSignalService(js rez.JobService) *SituationSignalService {
-	return &SituationSignalService{jobs: js}
+func NewSituationObservationService(js rez.JobService) *SituationObservationService {
+	return &SituationObservationService{jobs: js}
 }
 
-func (s *SituationSignalService) NotifySignalChanged(ctx context.Context, signalEntityID uuid.UUID) error {
-	args := jobs.ProcessSituationSignal{SignalEntityID: signalEntityID}
+func (s *SituationObservationService) NotifyObservationChanged(ctx context.Context, ref rez.SituationObservationRef) error {
+	args := jobs.ProcessSituationObservation{Ref: ref}
 	if _, insertErr := s.jobs.Insert(ctx, args, nil); insertErr != nil {
-		return fmt.Errorf("insert process situation signal job: %w", insertErr)
+		return fmt.Errorf("insert process situation observation job: %w", insertErr)
 	}
 	return nil
 }
@@ -63,10 +59,10 @@ type SituationService struct {
 	analyses       rez.SystemAnalysisService
 	graph          rez.KnowledgeGraphQueryService
 	judge          rezai.JudgeSituationCandidateWorkflow
-	signalSources  map[rez.SituationSignalKind]rez.SituationSignalSource
+	sources        map[schematypes.SituationObservationKind]rez.SituationObservationSource
 }
 
-func NewSituationService(cfg rez.SituationsConfig, db rez.Database, clock rez.Clock, js rez.JobService, msgs rez.MessageQueue, investigations rez.InvestigationService, analyses rez.SystemAnalysisService, graph rez.KnowledgeGraphQueryService, judge rezai.JudgeSituationCandidateWorkflow, signalSources ...rez.SituationSignalSource) (*SituationService, error) {
+func NewSituationService(cfg rez.SituationsConfig, db rez.Database, clock rez.Clock, js rez.JobService, msgs rez.MessageQueue, investigations rez.InvestigationService, analyses rez.SystemAnalysisService, graph rez.KnowledgeGraphQueryService, judge rezai.JudgeSituationCandidateWorkflow, sources ...rez.SituationObservationSource) (*SituationService, error) {
 	if judge == nil {
 		return nil, fmt.Errorf("situation judge workflow is required")
 	}
@@ -80,40 +76,43 @@ func NewSituationService(cfg rez.SituationsConfig, db rez.Database, clock rez.Cl
 		analyses:       analyses,
 		graph:          graph,
 		judge:          judge,
-		signalSources:  make(map[rez.SituationSignalKind]rez.SituationSignalSource, len(signalSources)),
+		sources:        make(map[schematypes.SituationObservationKind]rez.SituationObservationSource, len(sources)),
 	}
-	for _, source := range signalSources {
-		s.signalSources[source.SituationSignalKind()] = source
+	for _, source := range sources {
+		s.sources[source.SituationObservationKind()] = source
 	}
 	return s, nil
 }
 
 func (s *SituationService) withSituationMembership(query *ent.SituationQuery) *ent.SituationQuery {
 	return query.
-		WithInvestigation().
 		WithActions(func(q *ent.SituationActionQuery) {
 			q.Where(sitact.ActionEQ(sitact.ActionRaised)).Order(sitact.ByID())
 		}).
 		WithObservationGroups(func(q *ent.SituationObservationGroupQuery) {
 			q.Order(sitog.ByCreatedAt(), sitog.ByID())
-			q.WithSignals(func(q *ent.SituationSignalQuery) {
-				q.Order(sitsig.ByAttachedAt(), sitsig.ByID())
-			})
+		}).
+		WithObservations(func(q *ent.SituationObservationQuery) {
+			q.Order(sitobs.ByAttachedAt(), sitobs.ByID())
 		}).
 		WithEntities(func(q *ent.SituationEntityQuery) {
 			q.WithKnowledgeEntity()
-		}).
-		WithLatestJudgment(func(q *ent.SituationJudgmentQuery) {
-			q.Select(
-				sitjudg.FieldJudgedAt,
-				sitjudg.FieldOutcome,
-				sitjudg.FieldDecision,
-				sitjudg.FieldReasons,
-				sitjudg.FieldCitedReasons,
-				sitjudg.FieldExplanation,
-				sitjudg.FieldJudge,
-			)
 		})
+}
+
+// latestJudgment returns the situation's most recent judgment, or nil if it has none.
+func (s *SituationService) latestJudgment(ctx context.Context, situationID uuid.UUID) (*ent.SituationJudgment, error) {
+	queryLatest := s.db.Client(ctx).SituationJudgment.Query().
+		Where(sitjudg.SituationID(situationID)).
+		Order(sitjudg.ByJudgedAt(sql.OrderDesc()), sitjudg.ByID(sql.OrderDesc()))
+	latest, queryErr := queryLatest.First(ctx)
+	if ent.IsNotFound(queryErr) {
+		return nil, nil
+	}
+	if queryErr != nil {
+		return nil, fmt.Errorf("query latest situation judgment: %w", queryErr)
+	}
+	return latest, nil
 }
 
 func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSituationsParams) (*ent.ListResult[ent.Situation], error) {
@@ -153,7 +152,7 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 		query.Where(sit.OpenedAtGTE(*params.OpenedAfter))
 	}
 	if params.InvestigationID != uuid.Nil {
-		query.Where(sit.HasInvestigationWith(siti.InvestigationID(params.InvestigationID)))
+		query.Where(sit.InvestigationID(params.InvestigationID))
 	}
 	return ent.DoListQuery[ent.Situation, *ent.SituationQuery](ctx, query, params.ListParams)
 }
@@ -161,9 +160,6 @@ func (s *SituationService) ListSituations(ctx context.Context, params rez.ListSi
 func (s *SituationService) GetSituation(ctx context.Context, pred predicate.Situation) (*ent.Situation, error) {
 	query := s.withSituationMembership(s.db.Client(ctx).Situation.Query()).
 		Where(pred).
-		WithLinks(func(q *ent.SituationLinkQuery) {
-			q.WithLinkedSituation()
-		}).
 		WithIncidents().
 		WithActions(func(q *ent.SituationActionQuery) {
 			q.Order(sitact.ByID())
@@ -171,8 +167,9 @@ func (s *SituationService) GetSituation(ctx context.Context, pred predicate.Situ
 		WithNotices(func(q *ent.SituationNoticeQuery) {
 			q.Order(sitnot.ByCreatedAt(), sitnot.ByID())
 		}).
-		WithNoticeRatings(func(q *ent.SituationNoticeRatingQuery) {
-			q.Select(sitnr.FieldSituationID, sitnr.FieldUseful)
+		WithJudgments(func(q *ent.SituationJudgmentQuery) {
+			// The limit applies across parents, so only one situation is read: Only fails on several.
+			q.Order(sitjudg.ByJudgedAt(sql.OrderDesc()), sitjudg.ByID(sql.OrderDesc())).Limit(1)
 		})
 	return query.Only(ctx)
 }
@@ -190,17 +187,17 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 	if title == "" {
 		return nil, fmt.Errorf("%w: situation title is required", errs.ErrInvalidInput)
 	}
-	groups, signalIDs, normalizeErr := s.normalizeObservationGroups(params.ObservationGroups)
+	ungrouped, groups, refs, normalizeErr := s.normalizeObservations(params)
 	if normalizeErr != nil {
 		return nil, normalizeErr
 	}
-	if !slices.Contains(signalIDs, params.SeedEntityID) {
-		return nil, fmt.Errorf("%w: the seed must be one of the situation's signals", errs.ErrInvalidInput)
+	if len(refs) == 0 {
+		return nil, fmt.Errorf("%w: a situation needs an observation", errs.ErrInvalidInput)
 	}
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.Situation, error) {
 		now := s.clock.Now()
-		signals, loadErr := s.loadSignals(ctx, signalIDs, rez.LoadSituationSignalsOptions{})
+		observations, loadErr := s.LoadObservations(ctx, refs, rez.LoadSituationObservationsOptions{})
 		if loadErr != nil {
 			return nil, loadErr
 		}
@@ -211,8 +208,7 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 		createSituation := tx.Situation.Create().
 			SetNumber(number).
 			SetTitle(title).
-			SetOpenedAt(s.earliestStart(signals)).
-			SetSeedEntityID(params.SeedEntityID).
+			SetOpenedAt(s.earliestStart(observations)).
 			SetCreatedAt(now).
 			SetUpdatedAt(now)
 		if summary := strings.TrimSpace(params.Summary); summary != "" {
@@ -223,6 +219,9 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 			return nil, fmt.Errorf("create situation: %w", createErr)
 		}
 
+		if observeErr := s.createObservations(ctx, created.ID, nil, ungrouped, "", now); observeErr != nil {
+			return nil, observeErr
+		}
 		for _, group := range groups {
 			createGroup := tx.SituationObservationGroup.Create().
 				SetSituationID(created.ID).
@@ -232,15 +231,8 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 			if groupErr != nil {
 				return nil, fmt.Errorf("create situation observation group: %w", groupErr)
 			}
-			for _, signalID := range group.SignalEntityIDs {
-				membership := situationMembership{groupID: createdGroup.ID, matchKind: sitsig.MatchKindManual}
-				if signalID == params.SeedEntityID {
-					membership.matchKind = sitsig.MatchKindSeed
-				}
-				memberSignals := []rez.SituationSignal{signals[signalID]}
-				if memberErr := s.createMemberships(ctx, created.ID, membership, memberSignals, now); memberErr != nil {
-					return nil, memberErr
-				}
+			if observeErr := s.createObservations(ctx, created.ID, &createdGroup.ID, group.Observations, "", now); observeErr != nil {
+				return nil, observeErr
 			}
 		}
 		if entitiesErr := s.recomputeSituationEntities(ctx, created.ID); entitiesErr != nil {
@@ -258,84 +250,40 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 	})
 }
 
-// normalizeObservationGroups trims group titles and keeps each signal in the first group naming it.
-func (s *SituationService) normalizeObservationGroups(input []rez.SituationObservationGroupParams) ([]rez.SituationObservationGroupParams, []uuid.UUID, error) {
-	groups := make([]rez.SituationObservationGroupParams, 0, len(input))
-	var signalIDs []uuid.UUID
-	seen := mapset.NewSet[uuid.UUID]()
-	for _, inputGroup := range input {
-		group := rez.SituationObservationGroupParams{Title: strings.TrimSpace(inputGroup.Title), Body: inputGroup.Body}
-		if group.Title == "" {
-			return nil, nil, fmt.Errorf("%w: observation group title is required", errs.ErrInvalidInput)
-		}
-		for _, signalID := range inputGroup.SignalEntityIDs {
-			if signalID != uuid.Nil && seen.Add(signalID) {
-				group.SignalEntityIDs = append(group.SignalEntityIDs, signalID)
-				signalIDs = append(signalIDs, signalID)
+// normalizeObservations trims group titles and keeps each observation in the first place naming it,
+// ungrouped first. It returns the ungrouped observations, the nonempty groups, and every observation.
+func (s *SituationService) normalizeObservations(params rez.CreateSituationParams) ([]rez.SituationObservationRef, []rez.SituationObservationGroupParams, []rez.SituationObservationRef, error) {
+	seen := mapset.NewSet[rez.SituationObservationRef]()
+	var all []rez.SituationObservationRef
+	keep := func(refs []rez.SituationObservationRef) []rez.SituationObservationRef {
+		var kept []rez.SituationObservationRef
+		for _, ref := range refs {
+			if ref.Kind() != "" && seen.Add(ref) {
+				kept = append(kept, ref)
+				all = append(all, ref)
 			}
 		}
-		if len(group.SignalEntityIDs) > 0 {
+		return kept
+	}
+	ungrouped := keep(params.Observations)
+	groups := make([]rez.SituationObservationGroupParams, 0, len(params.ObservationGroups))
+	for _, inputGroup := range params.ObservationGroups {
+		group := rez.SituationObservationGroupParams{Title: strings.TrimSpace(inputGroup.Title), Body: inputGroup.Body}
+		if group.Title == "" {
+			return nil, nil, nil, fmt.Errorf("%w: observation group title is required", errs.ErrInvalidInput)
+		}
+		if group.Observations = keep(inputGroup.Observations); len(group.Observations) > 0 {
 			groups = append(groups, group)
 		}
 	}
-	return groups, signalIDs, nil
+	return ungrouped, groups, all, nil
 }
 
-// LoadSignals loads signals of any kind from their sources, in the order of entityIDs.
-func (s *SituationService) LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) ([]rez.SituationSignal, error) {
-	loaded, loadErr := s.loadSignals(ctx, entityIDs, opts)
-	if loadErr != nil {
-		return nil, loadErr
-	}
-	signals := make([]rez.SituationSignal, len(entityIDs))
-	for i, entityID := range entityIDs {
-		signals[i] = loaded[entityID]
-	}
-	return signals, nil
-}
-
-// loadSignals loads each signal through the source for its knowledge entity's kind. An unknown entity or
-// a kind without a source is invalid input.
-func (s *SituationService) loadSignals(ctx context.Context, entityIDs []uuid.UUID, opts rez.LoadSituationSignalsOptions) (map[uuid.UUID]rez.SituationSignal, error) {
-	queryEntities := s.db.Client(ctx).KnowledgeEntity.Query().
-		Where(kne.IDIn(entityIDs...)).
-		Select(kne.FieldID, kne.FieldKind)
-	entities, queryErr := queryEntities.All(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("query signal entities: %w", queryErr)
-	}
-
-	idsByKind := make(map[rez.SituationSignalKind][]uuid.UUID)
-	for _, entity := range entities {
-		kind := rez.SituationSignalKind(entity.Kind)
-		idsByKind[kind] = append(idsByKind[kind], entity.ID)
-	}
-
-	signals := make(map[uuid.UUID]rez.SituationSignal, len(entityIDs))
-	for kind, ids := range idsByKind {
-		source, supported := s.signalSources[kind]
-		if !supported {
-			return nil, fmt.Errorf("%w: unsupported signal kind %q", errs.ErrInvalidInput, kind)
-		}
-		loaded, loadErr := source.LoadSignals(ctx, ids, opts)
-		if loadErr != nil {
-			return nil, fmt.Errorf("load %s signals: %w", kind, loadErr)
-		}
-		for _, signal := range loaded {
-			signals[signal.EntityID] = signal
-		}
-	}
-	if len(signals) != len(entityIDs) {
-		return nil, fmt.Errorf("%w: signal not found", errs.ErrInvalidInput)
-	}
-	return signals, nil
-}
-
-func (s *SituationService) earliestStart(signals map[uuid.UUID]rez.SituationSignal) time.Time {
+func (s *SituationService) earliestStart(observations map[rez.SituationObservationRef]rez.SituationObservation) time.Time {
 	var earliest time.Time
-	for _, signal := range signals {
-		if earliest.IsZero() || signal.StartedAt.Before(earliest) {
-			earliest = signal.StartedAt
+	for _, observation := range observations {
+		if earliest.IsZero() || observation.StartedAt.Before(earliest) {
+			earliest = observation.StartedAt
 		}
 	}
 	return earliest
@@ -384,96 +332,19 @@ func (s *SituationService) recordAction(ctx context.Context, situationID uuid.UU
 	return nil
 }
 
-// ListSituationEventIDs lists the events of the situation's signals, as their sources report them.
+// ListSituationEventIDs lists the events of the situation's observations, as their sources report them.
 func (s *SituationService) ListSituationEventIDs(ctx context.Context, id uuid.UUID) ([]uuid.UUID, error) {
-	memberIDs, membersErr := s.memberEntityIDs(ctx, id)
-	if membersErr != nil || len(memberIDs) == 0 {
-		return nil, membersErr
+	refs, refsErr := s.observedRefs(ctx, id)
+	if refsErr != nil || len(refs) == 0 {
+		return nil, refsErr
 	}
-	signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{})
+	observations, loadErr := s.LoadObservations(ctx, refs, rez.LoadSituationObservationsOptions{})
 	if loadErr != nil {
 		return nil, loadErr
 	}
 	eventIDs := mapset.NewSet[uuid.UUID]()
-	for _, signal := range signals {
-		eventIDs.Append(signal.EventIDs...)
+	for _, observation := range observations {
+		eventIDs.Append(observation.EventIDs...)
 	}
 	return eventIDs.ToSlice(), nil
-}
-
-func (s *SituationService) memberEntityIDs(ctx context.Context, situationID uuid.UUID) ([]uuid.UUID, error) {
-	queryMembers := s.db.Client(ctx).SituationSignal.Query().
-		Where(sitsig.SituationID(situationID)).
-		Select(sitsig.FieldKnowledgeEntityID)
-	members, queryErr := queryMembers.All(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("query situation signals: %w", queryErr)
-	}
-	ids := make([]uuid.UUID, len(members))
-	for i, member := range members {
-		ids[i] = member.KnowledgeEntityID
-	}
-	return ids, nil
-}
-
-func (s *SituationService) ListSituationHazardAssessments(ctx context.Context, params rez.ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error) {
-	order := params.GetOrder()
-	query := s.db.Client(ctx).SituationHazardAssessment.Query().
-		Order(sha.ByAssessedAt(order), sha.ByRevision(order), sha.ByID(order))
-	if params.SituationID != uuid.Nil {
-		query = query.Where(sha.SituationID(params.SituationID))
-	}
-	if params.SystemHazardID != uuid.Nil {
-		query = query.Where(sha.SystemHazardID(params.SystemHazardID))
-	}
-	return ent.DoListQuery[ent.SituationHazardAssessment, *ent.SituationHazardAssessmentQuery](ctx, query, params.ListParams)
-}
-
-var validSituationHazardAssessmentStatus = mapset.NewSet(sha.StatusSuspected, sha.StatusConfirmed, sha.StatusDisproven)
-
-func (s *SituationService) AddSituationHazardAssessment(ctx context.Context, params rez.AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error) {
-	if params.SituationID == uuid.Nil || params.SystemHazardID == uuid.Nil {
-		return nil, fmt.Errorf("%w: situation and system hazard IDs are required", errs.ErrInvalidInput)
-	}
-	if (params.UserID == nil) == (params.AgentTurnID == nil) {
-		return nil, fmt.Errorf("%w: exactly one assessor is required", errs.ErrInvalidInput)
-	}
-	if !validSituationHazardAssessmentStatus.Contains(params.Status) {
-		return nil, fmt.Errorf("%w: invalid situation hazard assessment status", errs.ErrInvalidInput)
-	}
-	summary := strings.TrimSpace(params.Summary)
-	if summary == "" {
-		return nil, fmt.Errorf("%w: assessment summary is required", errs.ErrInvalidInput)
-	}
-	assessedAt := params.AssessedAt
-	if assessedAt.IsZero() {
-		assessedAt = s.clock.Now()
-	}
-
-	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SituationHazardAssessment, error) {
-		// The situation's row lock serializes revision numbering for its hazards.
-		if _, lockErr := s.lockSituations(ctx, params.SituationID); lockErr != nil {
-			return nil, lockErr
-		}
-		latestQuery := tx.SituationHazardAssessment.Query().
-			Where(sha.SituationID(params.SituationID), sha.SystemHazardID(params.SystemHazardID)).
-			Order(sha.ByRevision(sql.OrderDesc()))
-		latest, latestErr := latestQuery.First(ctx)
-		nextRevision := 1
-		if latestErr == nil {
-			nextRevision = latest.Revision + 1
-		} else if !ent.IsNotFound(latestErr) {
-			return nil, fmt.Errorf("get latest situation hazard assessment: %w", latestErr)
-		}
-		createAssessment := tx.SituationHazardAssessment.Create().
-			SetSituationID(params.SituationID).
-			SetSystemHazardID(params.SystemHazardID).
-			SetRevision(nextRevision).
-			SetStatus(params.Status).
-			SetSummary(summary).
-			SetAssessedAt(assessedAt).
-			SetNillableUserID(params.UserID).
-			SetNillableAgentTurnID(params.AgentTurnID)
-		return createAssessment.Save(ctx)
-	})
 }

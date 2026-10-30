@@ -16,7 +16,6 @@ import (
 	sit "github.com/rezible/rezible/ent/situation"
 	sitact "github.com/rezible/rezible/ent/situationaction"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/situations"
 )
@@ -46,9 +45,9 @@ func (s *SituationServiceSuite) TestEvaluationClosesFinishedSituations() {
 	h := s.newFixture(tdb)
 
 	// The alert finished at minute 15, before the situation was created at minute 30.
-	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
+	episode := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
 	s.resolve(ctx, tdb, h, "checkout-errors", 5, 10)
-	created := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
+	created := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {episode}})
 	_, raiseErr := h.situations.RaiseSituation(ctx, created.ID, rez.RaiseSituationParams{})
 	s.Require().NoError(raiseErr)
 	closesAt := created.CreatedAt.Add(situations.SituationQuietPeriod)
@@ -70,10 +69,10 @@ func (s *SituationServiceSuite) TestEvaluationClosesFinishedSituations() {
 func (s *SituationServiceSuite) TestEvaluationExpiresCandidates() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
-	watched := s.signal(ctx, tdb, h, "checkout-errors", 5)
-	muted := s.signal(ctx, tdb, h, "payment-errors", 5)
-	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {watched}}, watched)
-	mutedCandidate := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {muted}}, muted)
+	watched := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
+	muted := s.alertEpisode(ctx, tdb, h, "payment-errors", 5)
+	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {watched}})
+	mutedCandidate := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {muted}})
 	_, muteErr := h.situations.SetSituationMute(ctx, mutedCandidate.ID, &rez.SituationMute{Reason: sit.MuteReasonExpected})
 	s.Require().NoError(muteErr)
 
@@ -90,9 +89,9 @@ func (s *SituationServiceSuite) TestEvaluationClosureWaitsForIncidentsHoldsAndAt
 	incidents, management, declare := s.newIncidents(ctx, tdb, h)
 
 	// An unresolved incident holds a situation open until its resolution plus the quiet period.
-	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
+	episode := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
 	s.resolve(ctx, tdb, h, "checkout-errors", 5, 10)
-	linked := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
+	linked := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {episode}})
 	incident := declare(linked.ID)
 	_, deadline := s.evaluate(ctx, h, linked.ID)
 	s.Nil(deadline, "nothing can close it while the incident is unresolved")
@@ -111,9 +110,9 @@ func (s *SituationServiceSuite) TestEvaluationClosureWaitsForIncidentsHoldsAndAt
 	s.True(resolvedAt.Add(situations.SituationQuietPeriod).Equal(*deadline))
 
 	// A hold defers closure; a later attachment defers it again.
-	first := s.signal(ctx, tdb, h, "cart-errors", 5)
+	first := s.alertEpisode(ctx, tdb, h, "cart-errors", 5)
 	s.resolve(ctx, tdb, h, "cart-errors", 5, 10)
-	held := s.create(ctx, h, map[string][]uuid.UUID{"Cart": {first}}, first)
+	held := s.create(ctx, h, map[string][]uuid.UUID{"Cart": {first}})
 	h.clock.Advance(situations.CollectionWindow)
 	holdUntil := h.clock.Now().Add(2 * time.Hour)
 	_, holdErr := h.situations.SetSituationHold(ctx, held.ID, &rez.SituationHold{Until: &holdUntil})
@@ -123,15 +122,13 @@ func (s *SituationServiceSuite) TestEvaluationClosureWaitsForIncidentsHoldsAndAt
 	s.True(holdUntil.Equal(*deadline))
 
 	h.clock.Advance(3 * time.Hour)
-	second := s.signal(ctx, tdb, h, "cart-latency", 5)
+	second := s.alertEpisode(ctx, tdb, h, "cart-latency", 5)
 	s.resolve(ctx, tdb, h, "cart-latency", 5, 10)
-	attach := AttachSituationSignalsParams{
-		SituationID:     held.ID,
-		GroupTitle:      "Cart",
-		SignalEntityIDs: []uuid.UUID{second},
-		MatchKind:       sitsig.MatchKindManual,
+	attach := AttachSituationObservationsParams{
+		SituationID:  held.ID,
+		Observations: episodeRefs(second),
 	}
-	s.Require().NoError(h.situations.AttachSituationSignals(ctx, attach))
+	s.Require().NoError(h.situations.AttachSituationObservations(ctx, attach))
 	open, deadline := s.evaluate(ctx, h, held.ID)
 	s.Nil(open.ClosedAt)
 	s.Require().NotNil(deadline)
@@ -143,46 +140,46 @@ func (s *SituationServiceSuite) TestEvaluationRaisesCandidates() {
 	h := s.newFixture(tdb)
 
 	// A second alert source raises on breadth once the collection window has passed.
-	first := s.signal(ctx, tdb, h, "checkout-errors", 29)
-	second := s.signal(ctx, tdb, h, "checkout-latency", 30)
-	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {first, second}}, first)
+	first := s.alertEpisode(ctx, tdb, h, "checkout-errors", 29)
+	second := s.alertEpisode(ctx, tdb, h, "checkout-latency", 30)
+	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {first, second}})
 	collecting, deadline := s.evaluate(ctx, h, candidate.ID)
 	s.Nil(collecting.RaisedAt, "only a hard reason raises while collecting")
-	s.Nil(collecting.Edges.LatestJudgment)
+	s.Empty(collecting.Edges.Judgments)
 	s.Require().NotNil(deadline)
 	s.True(candidate.CreatedAt.Add(situations.CollectionWindow).Equal(*deadline))
 
 	h.clock.Set(*deadline)
 	raised, _ := s.evaluate(ctx, h, candidate.ID)
 	s.NotNil(raised.RaisedAt)
-	s.NotNil(raised.Edges.Investigation)
-	s.Require().NotNil(raised.Edges.LatestJudgment)
-	s.Equal(sitjudg.OutcomeNeedsDecision, raised.Edges.LatestJudgment.Outcome)
-	s.Equal(sitjudg.DecisionRaise, raised.Edges.LatestJudgment.Decision)
-	s.Equal([]schematypes.SituationRaiseReason{schematypes.SituationRaiseReasonBreadth}, raised.Edges.LatestJudgment.CitedReasons)
-	s.Equal(situations.JudgeRules, raised.Edges.LatestJudgment.Judge)
+	s.NotNil(raised.InvestigationID)
+	s.Require().NotEmpty(raised.Edges.Judgments)
+	s.Equal(sitjudg.OutcomeNeedsDecision, raised.Edges.Judgments[0].Outcome)
+	s.Equal(sitjudg.DecisionRaise, raised.Edges.Judgments[0].Decision)
+	s.Equal([]schematypes.SituationRaiseReason{schematypes.SituationRaiseReasonBreadth}, raised.Edges.Judgments[0].CitedReasons)
+	s.Equal(situations.JudgeRules, raised.Edges.Judgments[0].Judge)
 	s.Equal(sitact.ActionRaised, s.lastAction(raised).Action)
 	s.Nil(s.lastAction(raised).UserID)
 
 	// A hard reason raises before the collection window ends.
 	var wide []uuid.UUID
 	for _, definition := range []string{"cart-a", "cart-b", "cart-c", "cart-d"} {
-		wide = append(wide, s.signal(ctx, tdb, h, definition, 30))
+		wide = append(wide, s.alertEpisode(ctx, tdb, h, definition, 30))
 	}
-	broad := s.create(ctx, h, map[string][]uuid.UUID{"Cart": wide}, wide[0])
+	broad := s.create(ctx, h, map[string][]uuid.UUID{"Cart": wide})
 	hardRaised, _ := s.evaluate(ctx, h, broad.ID)
 	s.NotNil(hardRaised.RaisedAt)
-	s.Equal(sitjudg.OutcomeRaise, hardRaised.Edges.LatestJudgment.Outcome)
+	s.Equal(sitjudg.OutcomeRaise, hardRaised.Edges.Judgments[0].Outcome)
 
 	// Unchanged facts are judged once.
-	lone := s.signal(ctx, tdb, h, "search-errors", 30)
-	held := s.create(ctx, h, map[string][]uuid.UUID{"Search": {lone}}, lone)
+	lone := s.alertEpisode(ctx, tdb, h, "search-errors", 30)
+	held := s.create(ctx, h, map[string][]uuid.UUID{"Search": {lone}})
 	h.clock.Advance(situations.CollectionWindow)
 	judged, _ := s.evaluate(ctx, h, held.ID)
 	rejudged, _ := s.evaluate(ctx, h, held.ID)
 	s.Nil(rejudged.RaisedAt)
-	s.Equal(sitjudg.DecisionHold, rejudged.Edges.LatestJudgment.Decision)
-	s.Equal(judged.Edges.LatestJudgment.ID, rejudged.Edges.LatestJudgment.ID)
+	s.Equal(sitjudg.DecisionHold, rejudged.Edges.Judgments[0].Decision)
+	s.Equal(judged.Edges.Judgments[0].ID, rejudged.Edges.Judgments[0].ID)
 	queryJudgments := tdb.Client(ctx).SituationJudgment.Query().
 		Where(sitjudg.SituationID(held.ID))
 	judgments, countErr := queryJudgments.Count(ctx)
@@ -197,8 +194,8 @@ func (s *SituationServiceSuite) TestEvaluationLimitsAutomaticInvestigations() {
 
 	// An incident link made without a user raises with no user, but is not an automatic raise.
 	_, _, declare := s.newIncidents(ctx, tdb, h)
-	signal := s.signal(ctx, tdb, h, "payment-errors", 25)
-	linked := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {signal}}, signal)
+	episode := s.alertEpisode(ctx, tdb, h, "payment-errors", 25)
+	linked := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {episode}})
 	declare(linked.ID)
 	linkRaised, getErr := h.situations.GetSituation(ctx, sit.ID(linked.ID))
 	s.Require().NoError(getErr)
@@ -206,9 +203,9 @@ func (s *SituationServiceSuite) TestEvaluationLimitsAutomaticInvestigations() {
 	s.Nil(s.lastAction(linkRaised).UserID)
 	var candidates []*ent.Situation
 	for _, name := range []string{"a", "b", "c", "d"} {
-		first := s.signal(ctx, tdb, h, name+"-errors", 25, checkout)
-		second := s.signal(ctx, tdb, h, name+"-latency", 25, checkout)
-		candidates = append(candidates, s.create(ctx, h, map[string][]uuid.UUID{name: {first, second}}, first))
+		first := s.alertEpisode(ctx, tdb, h, name+"-errors", 25, checkout)
+		second := s.alertEpisode(ctx, tdb, h, name+"-latency", 25, checkout)
+		candidates = append(candidates, s.create(ctx, h, map[string][]uuid.UUID{name: {first, second}}))
 	}
 
 	h.clock.Advance(situations.CollectionWindow)
@@ -216,9 +213,9 @@ func (s *SituationServiceSuite) TestEvaluationLimitsAutomaticInvestigations() {
 		raised, _ := s.evaluate(ctx, h, candidate.ID)
 		s.NotNil(raised.RaisedAt)
 		if i < situations.AutoInvestigationLimit {
-			s.NotNil(raised.Edges.Investigation)
+			s.NotNil(raised.InvestigationID)
 		} else {
-			s.Nil(raised.Edges.Investigation, "past the limit it raises without an investigation")
+			s.Nil(raised.InvestigationID, "past the limit it raises without an investigation")
 		}
 	}
 }
@@ -226,24 +223,23 @@ func (s *SituationServiceSuite) TestEvaluationLimitsAutomaticInvestigations() {
 func (s *SituationServiceSuite) TestEvaluationRefreshesInvestigations() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
-	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
+	episode := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
 	params := rez.CreateSituationParams{
-		Title:             "Checkout errors",
-		SeedEntityID:      signal,
-		ObservationGroups: []rez.SituationObservationGroupParams{{Title: "Checkout", SignalEntityIDs: []uuid.UUID{signal}}},
-		Raise:             &rez.RaiseSituationParams{StartInvestigation: true},
+		Title:        "Checkout errors",
+		Observations: episodeRefs(episode),
+		Raise:        &rez.RaiseSituationParams{StartInvestigation: true},
 	}
 	created, createErr := h.situations.CreateSituation(ctx, params)
 	s.Require().NoError(createErr)
 	revisions := func() int {
 		queryRevisions := tdb.Client(ctx).InvestigationEvidenceRevision.Query().
-			Where(inver.InvestigationID(created.Edges.Investigation.InvestigationID))
+			Where(inver.InvestigationID(*created.InvestigationID))
 		count, countErr := queryRevisions.Count(ctx)
 		s.Require().NoError(countErr)
 		return count
 	}
 	remind := func() {
-		s.signal(ctx, tdb, h, "checkout-errors", 5)
+		s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
 	}
 
 	s.evaluate(ctx, h, created.ID)
@@ -274,61 +270,60 @@ func (s *SituationServiceSuite) TestEvaluationCountsPriorOutcomesOfSources() {
 
 	// An episode in a raised situation opened before the lookback, which is not counted.
 	longAgo := -100 * 24 * 60
-	old := s.signal(ctx, tdb, h, "checkout-errors", longAgo)
+	old := s.alertEpisode(ctx, tdb, h, "checkout-errors", longAgo)
 	s.resolve(ctx, tdb, h, "checkout-errors", longAgo, longAgo+1)
-	forgotten := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {old}}, old)
+	forgotten := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {old}})
 	_, raiseErr := h.situations.RaiseSituation(ctx, forgotten.ID, rez.RaiseSituationParams{})
 	s.Require().NoError(raiseErr)
 
 	// Two earlier episodes of the definition in one incident-linked situation, which counts once.
-	first := s.signal(ctx, tdb, h, "checkout-errors", 0)
+	first := s.alertEpisode(ctx, tdb, h, "checkout-errors", 0)
 	s.resolve(ctx, tdb, h, "checkout-errors", 0, 1)
-	second := s.signal(ctx, tdb, h, "checkout-errors", 10)
+	second := s.alertEpisode(ctx, tdb, h, "checkout-errors", 10)
 	s.resolve(ctx, tdb, h, "checkout-errors", 10, 11)
-	linked := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {first, second}}, first)
+	linked := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {first, second}})
 	declare(linked.ID)
 
 	// A third in a situation muted as not noteworthy.
-	third := s.signal(ctx, tdb, h, "checkout-errors", 20)
+	third := s.alertEpisode(ctx, tdb, h, "checkout-errors", 20)
 	s.resolve(ctx, tdb, h, "checkout-errors", 20, 21)
-	muted := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {third}}, third)
+	muted := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {third}})
 	_, muteErr := h.situations.SetSituationMute(ctx, muted.ID, &rez.SituationMute{Reason: sit.MuteReasonNotNoteworthy})
 	s.Require().NoError(muteErr)
 
-	latest := s.signal(ctx, tdb, h, "checkout-errors", 30)
-	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {latest}}, latest)
+	latest := s.alertEpisode(ctx, tdb, h, "checkout-errors", 30)
+	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {latest}})
 	h.clock.Advance(situations.CollectionWindow)
 	judged, _ := s.evaluate(ctx, h, candidate.ID)
 	s.NotNil(judged.RaisedAt)
-	s.Equal([]schematypes.SituationRaiseReason{schematypes.SituationRaiseReasonPastIncident}, judged.Edges.LatestJudgment.CitedReasons)
+	s.Equal([]schematypes.SituationRaiseReason{schematypes.SituationRaiseReasonPastIncident}, judged.Edges.Judgments[0].CitedReasons)
 
-	judgment, judgmentErr := tdb.Client(ctx).SituationJudgment.Get(ctx, judged.Edges.LatestJudgment.ID)
+	judgment, judgmentErr := tdb.Client(ctx).SituationJudgment.Get(ctx, judged.Edges.Judgments[0].ID)
 	s.Require().NoError(judgmentErr)
-	s.Require().Len(judgment.Facts.Signals, 1)
+	s.Require().Len(judgment.Facts.Observations, 1)
 	want := schematypes.SituationPriorOutcomeFacts{Raised: 1, MutedNotNoteworthy: 1, IncidentLinked: 1}
-	s.Equal(&want, judgment.Facts.Signals[0].PriorOutcomes)
+	s.Equal(&want, judgment.Facts.Observations[0].PriorOutcomes)
 }
 
 func (s *SituationServiceSuite) TestEvaluationRefreshesTheTargetInvestigationAfterAMerge() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	investigated := func(definition string) (*ent.Situation, uuid.UUID) {
-		signal := s.signal(ctx, tdb, h, definition, 5)
+		episode := s.alertEpisode(ctx, tdb, h, definition, 5)
 		params := rez.CreateSituationParams{
-			Title:             definition,
-			SeedEntityID:      signal,
-			ObservationGroups: []rez.SituationObservationGroupParams{{Title: definition, SignalEntityIDs: []uuid.UUID{signal}}},
-			Raise:             &rez.RaiseSituationParams{StartInvestigation: true},
+			Title:        definition,
+			Observations: episodeRefs(episode),
+			Raise:        &rez.RaiseSituationParams{StartInvestigation: true},
 		}
 		created, createErr := h.situations.CreateSituation(ctx, params)
 		s.Require().NoError(createErr)
-		return created, signal
+		return created, episode
 	}
 	target, _ := investigated("checkout-errors")
 	source, moved := investigated("payment-errors")
 	revisions := func() int {
 		queryRevisions := tdb.Client(ctx).InvestigationEvidenceRevision.Query().
-			Where(inver.InvestigationID(target.Edges.Investigation.InvestigationID))
+			Where(inver.InvestigationID(*target.InvestigationID))
 		count, countErr := queryRevisions.Count(ctx)
 		s.Require().NoError(countErr)
 		return count
@@ -340,10 +335,10 @@ func (s *SituationServiceSuite) TestEvaluationRefreshesTheTargetInvestigationAft
 	merged, _ := s.evaluate(ctx, h, target.ID)
 	s.Equal(1, revisions(), "the moved evidence reaches the target's investigation")
 
-	signals, loadErr := h.alerts.LoadSignals(ctx, []uuid.UUID{moved}, rez.LoadSituationSignalsOptions{})
+	observations, loadErr := h.alerts.LoadObservations(ctx, episodeRefs(moved), rez.LoadSituationObservationsOptions{})
 	s.Require().NoError(loadErr)
-	s.Require().Len(signals, 1)
-	s.Equal(signals[0].Revision, s.members(merged)[moved].ObservedRevision)
+	s.Require().Len(observations, 1)
+	s.Equal(observations[0].Revision, s.members(merged)[moved].ObservedRevision)
 
 	s.evaluate(ctx, h, target.ID)
 	s.Equal(1, revisions(), "evaluating again records nothing more")

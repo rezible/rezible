@@ -13,9 +13,7 @@ import (
 )
 
 const (
-	actionIdSituationNoticeUseful    = "situation_notice_useful"
-	actionIdSituationNoticeNotUseful = "situation_notice_not_useful"
-	actionIdSituationNoticeOpen      = "situation_notice_open"
+	actionIdSituationNoticeOpen = "situation_notice_open"
 	// The incident buttons open their URLs: declaring an incident in Rezible, or the incident it is part of.
 	actionIdSituationNoticeDeclareIncident = "situation_notice_declare_incident"
 	actionIdSituationNoticeOpenIncident    = "situation_notice_open_incident"
@@ -35,13 +33,6 @@ func (c *noticeContent) stageText() string {
 	situation := c.Situation
 	if situation.ClosedAt != nil {
 		if situation.CloseReason != nil && *situation.CloseReason == sit.CloseReasonMerged {
-			if link := (*integrations.SituationNoticeContent)(c).MergedInto(); link != nil && c.MergedIntoURL != "" {
-				title := "another situation"
-				if linked := link.Edges.LinkedSituation; linked != nil {
-					title = linked.Reference() + " · " + linked.Title
-				}
-				return fmt.Sprintf("Merged into <%s|%s>", c.MergedIntoURL, slackintegration.EscapeText(title))
-			}
 			return "Merged into another situation"
 		}
 		return "Closed: " + c.closeReasonText()
@@ -68,7 +59,7 @@ func (c *noticeContent) closeReasonText() string {
 	case sit.CloseReasonExpired:
 		return "no longer watched"
 	default:
-		return "signals stopped"
+		return "observations stopped"
 	}
 }
 
@@ -161,11 +152,6 @@ func (c *noticeContent) blocks() []slack.Block {
 		declare.URL = c.DeclareIncidentURL
 		actions = append(actions, declare)
 	}
-	useful := slack.NewButtonBlockElement(actionIdSituationNoticeUseful, situationID,
-		slack.NewTextBlockObject(slack.PlainTextType, "Useful", false, false))
-	notUseful := slack.NewButtonBlockElement(actionIdSituationNoticeNotUseful, situationID,
-		slack.NewTextBlockObject(slack.PlainTextType, "Not useful", false, false))
-	actions = append(actions, useful, notUseful)
 	blocks = append(blocks, slack.NewActionBlock("situation_notice_actions", actions...))
 	return blocks
 }

@@ -84,14 +84,10 @@ import (
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
-	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
-	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationnotice"
-	"github.com/rezible/rezible/ent/situationnoticerating"
+	"github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
-	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
@@ -2191,60 +2187,6 @@ func (f TraverseSituationEntity) Traverse(ctx context.Context, q ent.Query) erro
 	return fmt.Errorf("unexpected query type %T. expect *ent.SituationEntityQuery", q)
 }
 
-// The SituationHazardAssessmentFunc type is an adapter to allow the use of ordinary function as a Querier.
-type SituationHazardAssessmentFunc func(context.Context, *ent.SituationHazardAssessmentQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f SituationHazardAssessmentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.SituationHazardAssessmentQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SituationHazardAssessmentQuery", q)
-}
-
-// The TraverseSituationHazardAssessment type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseSituationHazardAssessment func(context.Context, *ent.SituationHazardAssessmentQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseSituationHazardAssessment) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseSituationHazardAssessment) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationHazardAssessmentQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.SituationHazardAssessmentQuery", q)
-}
-
-// The SituationInvestigationFunc type is an adapter to allow the use of ordinary function as a Querier.
-type SituationInvestigationFunc func(context.Context, *ent.SituationInvestigationQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f SituationInvestigationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.SituationInvestigationQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SituationInvestigationQuery", q)
-}
-
-// The TraverseSituationInvestigation type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseSituationInvestigation func(context.Context, *ent.SituationInvestigationQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseSituationInvestigation) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseSituationInvestigation) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationInvestigationQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.SituationInvestigationQuery", q)
-}
-
 // The SituationJudgmentFunc type is an adapter to allow the use of ordinary function as a Querier.
 type SituationJudgmentFunc func(context.Context, *ent.SituationJudgmentQuery) (ent.Value, error)
 
@@ -2270,33 +2212,6 @@ func (f TraverseSituationJudgment) Traverse(ctx context.Context, q ent.Query) er
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.SituationJudgmentQuery", q)
-}
-
-// The SituationLinkFunc type is an adapter to allow the use of ordinary function as a Querier.
-type SituationLinkFunc func(context.Context, *ent.SituationLinkQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f SituationLinkFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.SituationLinkQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SituationLinkQuery", q)
-}
-
-// The TraverseSituationLink type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseSituationLink func(context.Context, *ent.SituationLinkQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseSituationLink) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseSituationLink) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationLinkQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.SituationLinkQuery", q)
 }
 
 // The SituationNoticeFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2326,31 +2241,31 @@ func (f TraverseSituationNotice) Traverse(ctx context.Context, q ent.Query) erro
 	return fmt.Errorf("unexpected query type %T. expect *ent.SituationNoticeQuery", q)
 }
 
-// The SituationNoticeRatingFunc type is an adapter to allow the use of ordinary function as a Querier.
-type SituationNoticeRatingFunc func(context.Context, *ent.SituationNoticeRatingQuery) (ent.Value, error)
+// The SituationObservationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SituationObservationFunc func(context.Context, *ent.SituationObservationQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f SituationNoticeRatingFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.SituationNoticeRatingQuery); ok {
+func (f SituationObservationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SituationObservationQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SituationNoticeRatingQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SituationObservationQuery", q)
 }
 
-// The TraverseSituationNoticeRating type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseSituationNoticeRating func(context.Context, *ent.SituationNoticeRatingQuery) error
+// The TraverseSituationObservation type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSituationObservation func(context.Context, *ent.SituationObservationQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseSituationNoticeRating) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseSituationObservation) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseSituationNoticeRating) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationNoticeRatingQuery); ok {
+func (f TraverseSituationObservation) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SituationObservationQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.SituationNoticeRatingQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.SituationObservationQuery", q)
 }
 
 // The SituationObservationGroupFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2378,33 +2293,6 @@ func (f TraverseSituationObservationGroup) Traverse(ctx context.Context, q ent.Q
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.SituationObservationGroupQuery", q)
-}
-
-// The SituationSignalFunc type is an adapter to allow the use of ordinary function as a Querier.
-type SituationSignalFunc func(context.Context, *ent.SituationSignalQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f SituationSignalFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.SituationSignalQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SituationSignalQuery", q)
-}
-
-// The TraverseSituationSignal type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseSituationSignal func(context.Context, *ent.SituationSignalQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseSituationSignal) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseSituationSignal) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationSignalQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.SituationSignalQuery", q)
 }
 
 // The SituationSignalAttentionFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2992,22 +2880,14 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.SituationActionQuery, predicate.SituationAction, situationaction.OrderOption]{typ: ent.TypeSituationAction, tq: q}, nil
 	case *ent.SituationEntityQuery:
 		return &query[*ent.SituationEntityQuery, predicate.SituationEntity, situationentity.OrderOption]{typ: ent.TypeSituationEntity, tq: q}, nil
-	case *ent.SituationHazardAssessmentQuery:
-		return &query[*ent.SituationHazardAssessmentQuery, predicate.SituationHazardAssessment, situationhazardassessment.OrderOption]{typ: ent.TypeSituationHazardAssessment, tq: q}, nil
-	case *ent.SituationInvestigationQuery:
-		return &query[*ent.SituationInvestigationQuery, predicate.SituationInvestigation, situationinvestigation.OrderOption]{typ: ent.TypeSituationInvestigation, tq: q}, nil
 	case *ent.SituationJudgmentQuery:
 		return &query[*ent.SituationJudgmentQuery, predicate.SituationJudgment, situationjudgment.OrderOption]{typ: ent.TypeSituationJudgment, tq: q}, nil
-	case *ent.SituationLinkQuery:
-		return &query[*ent.SituationLinkQuery, predicate.SituationLink, situationlink.OrderOption]{typ: ent.TypeSituationLink, tq: q}, nil
 	case *ent.SituationNoticeQuery:
 		return &query[*ent.SituationNoticeQuery, predicate.SituationNotice, situationnotice.OrderOption]{typ: ent.TypeSituationNotice, tq: q}, nil
-	case *ent.SituationNoticeRatingQuery:
-		return &query[*ent.SituationNoticeRatingQuery, predicate.SituationNoticeRating, situationnoticerating.OrderOption]{typ: ent.TypeSituationNoticeRating, tq: q}, nil
+	case *ent.SituationObservationQuery:
+		return &query[*ent.SituationObservationQuery, predicate.SituationObservation, situationobservation.OrderOption]{typ: ent.TypeSituationObservation, tq: q}, nil
 	case *ent.SituationObservationGroupQuery:
 		return &query[*ent.SituationObservationGroupQuery, predicate.SituationObservationGroup, situationobservationgroup.OrderOption]{typ: ent.TypeSituationObservationGroup, tq: q}, nil
-	case *ent.SituationSignalQuery:
-		return &query[*ent.SituationSignalQuery, predicate.SituationSignal, situationsignal.OrderOption]{typ: ent.TypeSituationSignal, tq: q}, nil
 	case *ent.SituationSignalAttentionQuery:
 		return &query[*ent.SituationSignalAttentionQuery, predicate.SituationSignalAttention, situationsignalattention.OrderOption]{typ: ent.TypeSituationSignalAttention, tq: q}, nil
 	case *ent.SystemAnalysisQuery:

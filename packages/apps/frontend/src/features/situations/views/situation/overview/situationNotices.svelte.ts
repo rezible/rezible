@@ -3,7 +3,7 @@ import type { Getter } from "runed";
 import { toast } from "svelte-sonner";
 
 import { errorDisplay, retrySituationNoticeMutation, type Situation } from "$lib/api";
-import { type NoticeLine, noticeLines, noticeRatingsText } from "$features/situations/lib/notices";
+import { type NoticeLine, noticeLines } from "$features/situations/lib/notices";
 
 /** The situation's chat notices, and retrying the ones that failed. */
 export class SituationNoticesController {
@@ -17,11 +17,9 @@ export class SituationNoticesController {
 		this.situation = situation;
 		this.applySituation = applySituation;
 		this.lines = $derived(noticeLines(situation()?.attributes.notices));
-		this.ratings = $derived(noticeRatingsText(situation()?.attributes.noticeRatings));
 	}
 
 	lines: NoticeLine[];
-	ratings: string | undefined;
 
 	retryMutation = createMutation(() => ({
 		...retrySituationNoticeMutation(),

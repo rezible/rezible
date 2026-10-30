@@ -61,13 +61,13 @@ func (s *AlertServiceSuite) newFixture(tdb rez.Database) *alertServiceFixture {
 			case jobs.SettleAlertEpisode:
 				s.True(args.DueAt.Equal(opts.ScheduledAt), "a settlement is scheduled at its due time")
 				h.settlements = append(h.settlements, args)
-			case jobs.ProcessSituationSignal:
-				h.notified = append(h.notified, args.SignalEntityID)
+			case jobs.ProcessSituationObservation:
+				h.notified = append(h.notified, args.Ref.AlertEpisodeID)
 			}
 			return &rivertype.JobInsertResult{Job: &rivertype.JobRow{}}, nil
 		}).
 		Maybe()
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationSignalService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationObservationService(jobService))
 	s.Require().NoError(alertsErr)
 	h.alerts = alerts
 	return h
@@ -263,7 +263,7 @@ func (s *AlertServiceSuite) TestSignalChangeNotifications() {
 	h := s.newFixture(tdb)
 
 	definition := s.record(ctx, tdb, h, testAlert{key: "a", timeout: new(600)})
-	signal := *s.episodes(ctx, tdb)[0].KnowledgeEntityID
+	signal := s.episodes(ctx, tdb)[0].ID
 	s.Equal([]uuid.UUID{signal}, h.notified, "recording notifies")
 
 	h.clock.Set(h.settlements[0].DueAt)
@@ -414,7 +414,7 @@ func (s *AlertServiceSuite) TestIdentityGroupLabelsPreserveReturnedAttention() {
 	}
 }
 
-func (s *AlertServiceSuite) TestLoadSignals() {
+func (s *AlertServiceSuite) TestLoadObservations() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	h.clock.Set(alertTestStart.Add(20 * time.Minute))
@@ -426,13 +426,12 @@ func (s *AlertServiceSuite) TestLoadSignals() {
 
 	episodes := s.episodes(ctx, tdb)
 	s.Require().Len(episodes, 2)
-	entityIDs := []uuid.UUID{*episodes[0].KnowledgeEntityID, *episodes[1].KnowledgeEntityID}
-	signals, loadErr := h.alerts.LoadSignals(ctx, entityIDs, rez.LoadSituationSignalsOptions{})
+	episodeIDs := []uuid.UUID{episodes[0].ID, episodes[1].ID}
+	signals, loadErr := h.alerts.LoadObservations(ctx, episodeRefs(episodeIDs...), rez.LoadSituationObservationsOptions{})
 	s.Require().NoError(loadErr)
 	s.Require().Len(signals, 2)
 
-	latency := signals[slices.IndexFunc(signals, func(signal rez.SituationSignal) bool { return signal.Active })]
-	s.Equal(rez.SignalKindAlertEpisode, latency.Kind)
+	latency := signals[slices.IndexFunc(signals, func(signal rez.SituationObservation) bool { return signal.Active })]
 	s.Equal(schematypes.SignalSeverityCritical, latency.Severity)
 	s.Equal(ssa.LevelDefault, latency.SignalAttention)
 	s.Nil(latency.FinishedAt)
@@ -445,12 +444,12 @@ func (s *AlertServiceSuite) TestLoadSignals() {
 	s.Require().Len(latency.Alert.ActiveInstances, 1)
 	s.Equal("a", latency.Alert.ActiveInstances[0].Labels["pod"])
 
-	finished := signals[slices.IndexFunc(signals, func(signal rez.SituationSignal) bool { return !signal.Active })]
+	finished := signals[slices.IndexFunc(signals, func(signal rez.SituationObservation) bool { return !signal.Active })]
 	s.Require().NotNil(finished.FinishedAt, "a resolved episode closes once the grace has passed")
 	s.Equal(1, finished.Revision)
 }
 
-func (s *AlertServiceSuite) TestLoadSignalsBaseline() {
+func (s *AlertServiceSuite) TestLoadObservationsBaseline() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	h.clock.Set(alertTestStart.Add(20 * time.Minute))
@@ -469,7 +468,7 @@ func (s *AlertServiceSuite) TestLoadSignalsBaseline() {
 
 	episodes := s.episodes(ctx, tdb)
 	s.Require().Len(episodes, 5)
-	signals, loadErr := h.alerts.LoadSignals(ctx, []uuid.UUID{*episodes[4].KnowledgeEntityID}, rez.LoadSituationSignalsOptions{History: true})
+	signals, loadErr := h.alerts.LoadObservations(ctx, episodeRefs(episodes[4].ID), rez.LoadSituationObservationsOptions{History: true})
 	s.Require().NoError(loadErr)
 	s.Require().Len(signals, 1)
 

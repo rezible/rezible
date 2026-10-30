@@ -1899,54 +1899,6 @@ func (f SituationEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationEntityMutation", m)
 }
 
-// The SituationHazardAssessmentQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SituationHazardAssessmentQueryRuleFunc func(context.Context, *ent.SituationHazardAssessmentQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SituationHazardAssessmentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationHazardAssessmentQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SituationHazardAssessmentQuery", q)
-}
-
-// The SituationHazardAssessmentMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SituationHazardAssessmentMutationRuleFunc func(context.Context, *ent.SituationHazardAssessmentMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SituationHazardAssessmentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SituationHazardAssessmentMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationHazardAssessmentMutation", m)
-}
-
-// The SituationInvestigationQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SituationInvestigationQueryRuleFunc func(context.Context, *ent.SituationInvestigationQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SituationInvestigationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationInvestigationQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SituationInvestigationQuery", q)
-}
-
-// The SituationInvestigationMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SituationInvestigationMutationRuleFunc func(context.Context, *ent.SituationInvestigationMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SituationInvestigationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SituationInvestigationMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationInvestigationMutation", m)
-}
-
 // The SituationJudgmentQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type SituationJudgmentQueryRuleFunc func(context.Context, *ent.SituationJudgmentQuery) error
@@ -1969,30 +1921,6 @@ func (f SituationJudgmentMutationRuleFunc) EvalMutation(ctx context.Context, m e
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationJudgmentMutation", m)
-}
-
-// The SituationLinkQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SituationLinkQueryRuleFunc func(context.Context, *ent.SituationLinkQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SituationLinkQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationLinkQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SituationLinkQuery", q)
-}
-
-// The SituationLinkMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SituationLinkMutationRuleFunc func(context.Context, *ent.SituationLinkMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SituationLinkMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SituationLinkMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationLinkMutation", m)
 }
 
 // The SituationNoticeQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -2019,28 +1947,28 @@ func (f SituationNoticeMutationRuleFunc) EvalMutation(ctx context.Context, m ent
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationNoticeMutation", m)
 }
 
-// The SituationNoticeRatingQueryRuleFunc type is an adapter to allow the use of ordinary
+// The SituationObservationQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type SituationNoticeRatingQueryRuleFunc func(context.Context, *ent.SituationNoticeRatingQuery) error
+type SituationObservationQueryRuleFunc func(context.Context, *ent.SituationObservationQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f SituationNoticeRatingQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationNoticeRatingQuery); ok {
+func (f SituationObservationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SituationObservationQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SituationNoticeRatingQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SituationObservationQuery", q)
 }
 
-// The SituationNoticeRatingMutationRuleFunc type is an adapter to allow the use of ordinary
+// The SituationObservationMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type SituationNoticeRatingMutationRuleFunc func(context.Context, *ent.SituationNoticeRatingMutation) error
+type SituationObservationMutationRuleFunc func(context.Context, *ent.SituationObservationMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f SituationNoticeRatingMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SituationNoticeRatingMutation); ok {
+func (f SituationObservationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SituationObservationMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationNoticeRatingMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationObservationMutation", m)
 }
 
 // The SituationObservationGroupQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -2065,30 +1993,6 @@ func (f SituationObservationGroupMutationRuleFunc) EvalMutation(ctx context.Cont
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationObservationGroupMutation", m)
-}
-
-// The SituationSignalQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SituationSignalQueryRuleFunc func(context.Context, *ent.SituationSignalQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SituationSignalQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationSignalQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SituationSignalQuery", q)
-}
-
-// The SituationSignalMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SituationSignalMutationRuleFunc func(context.Context, *ent.SituationSignalMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SituationSignalMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SituationSignalMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationSignalMutation", m)
 }
 
 // The SituationSignalAttentionQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -2660,21 +2564,13 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.SituationEntityQuery:
 		return q.Filter(), nil
-	case *ent.SituationHazardAssessmentQuery:
-		return q.Filter(), nil
-	case *ent.SituationInvestigationQuery:
-		return q.Filter(), nil
 	case *ent.SituationJudgmentQuery:
-		return q.Filter(), nil
-	case *ent.SituationLinkQuery:
 		return q.Filter(), nil
 	case *ent.SituationNoticeQuery:
 		return q.Filter(), nil
-	case *ent.SituationNoticeRatingQuery:
+	case *ent.SituationObservationQuery:
 		return q.Filter(), nil
 	case *ent.SituationObservationGroupQuery:
-		return q.Filter(), nil
-	case *ent.SituationSignalQuery:
 		return q.Filter(), nil
 	case *ent.SituationSignalAttentionQuery:
 		return q.Filter(), nil
@@ -2863,21 +2759,13 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.SituationEntityMutation:
 		return m.Filter(), nil
-	case *ent.SituationHazardAssessmentMutation:
-		return m.Filter(), nil
-	case *ent.SituationInvestigationMutation:
-		return m.Filter(), nil
 	case *ent.SituationJudgmentMutation:
-		return m.Filter(), nil
-	case *ent.SituationLinkMutation:
 		return m.Filter(), nil
 	case *ent.SituationNoticeMutation:
 		return m.Filter(), nil
-	case *ent.SituationNoticeRatingMutation:
+	case *ent.SituationObservationMutation:
 		return m.Filter(), nil
 	case *ent.SituationObservationGroupMutation:
-		return m.Filter(), nil
-	case *ent.SituationSignalMutation:
 		return m.Filter(), nil
 	case *ent.SituationSignalAttentionMutation:
 		return m.Filter(), nil

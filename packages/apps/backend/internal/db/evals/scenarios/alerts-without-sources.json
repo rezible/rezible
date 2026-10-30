@@ -28,7 +28,7 @@
       }
     }
   ],
-  "setup": {"situation": {"title": "Checkout errors", "signals": ["error-rate"]}},
+  "setup": {"situation": {"title": "Checkout errors", "observations": ["error-rate"]}},
   "phases": [
     {
       "check": [

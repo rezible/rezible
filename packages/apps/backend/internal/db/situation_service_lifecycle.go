@@ -13,7 +13,6 @@ import (
 	inc "github.com/rezible/rezible/ent/incident"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitact "github.com/rezible/rezible/ent/situationaction"
-	siti "github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/situations"
 )
@@ -72,13 +71,7 @@ func (s *SituationService) raiseLocked(ctx context.Context, situation *ent.Situa
 	if !params.StartInvestigation {
 		return nil
 	}
-	queryInvestigation := s.db.Client(ctx).SituationInvestigation.Query().
-		Where(siti.SituationID(situation.ID))
-	hasInvestigation, queryErr := queryInvestigation.Exist(ctx)
-	if queryErr != nil {
-		return fmt.Errorf("check situation investigation: %w", queryErr)
-	}
-	if hasInvestigation {
+	if situation.InvestigationID != nil {
 		return nil
 	}
 	return s.createInvestigation(ctx, situation.ID)

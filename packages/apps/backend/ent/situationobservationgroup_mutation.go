@@ -19,24 +19,24 @@ import (
 // SituationObservationGroupMutation represents an operation that mutates the SituationObservationGroup nodes in the graph.
 type SituationObservationGroupMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	created_at       *time.Time
-	updated_at       *time.Time
-	title            *string
-	body             *string
-	clearedFields    map[string]struct{}
-	tenant           *int
-	clearedtenant    bool
-	situation        *uuid.UUID
-	clearedsituation bool
-	signals          map[uuid.UUID]struct{}
-	removedsignals   map[uuid.UUID]struct{}
-	clearedsignals   bool
-	done             bool
-	oldValue         func(context.Context) (*SituationObservationGroup, error)
-	predicates       []predicate.SituationObservationGroup
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	created_at          *time.Time
+	updated_at          *time.Time
+	title               *string
+	body                *string
+	clearedFields       map[string]struct{}
+	tenant              *int
+	clearedtenant       bool
+	situation           *uuid.UUID
+	clearedsituation    bool
+	observations        map[uuid.UUID]struct{}
+	removedobservations map[uuid.UUID]struct{}
+	clearedobservations bool
+	done                bool
+	oldValue            func(context.Context) (*SituationObservationGroup, error)
+	predicates          []predicate.SituationObservationGroup
 }
 
 var _ ent.Mutation = (*SituationObservationGroupMutation)(nil)
@@ -426,58 +426,58 @@ func (m *SituationObservationGroupMutation) ResetSituation() {
 	m.clearedsituation = false
 }
 
-// AddSignalIDs adds the "signals" edge to the SituationSignal entity by ids.
-func (m *SituationObservationGroupMutation) AddSignalIDs(ids ...uuid.UUID) {
-	if m.signals == nil {
-		m.signals = make(map[uuid.UUID]struct{})
+// AddObservationIDs adds the "observations" edge to the SituationObservation entity by ids.
+func (m *SituationObservationGroupMutation) AddObservationIDs(ids ...uuid.UUID) {
+	if m.observations == nil {
+		m.observations = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.signals[ids[i]] = struct{}{}
+		m.observations[ids[i]] = struct{}{}
 	}
 }
 
-// ClearSignals clears the "signals" edge to the SituationSignal entity.
-func (m *SituationObservationGroupMutation) ClearSignals() {
-	m.clearedsignals = true
+// ClearObservations clears the "observations" edge to the SituationObservation entity.
+func (m *SituationObservationGroupMutation) ClearObservations() {
+	m.clearedobservations = true
 }
 
-// SignalsCleared reports if the "signals" edge to the SituationSignal entity was cleared.
-func (m *SituationObservationGroupMutation) SignalsCleared() bool {
-	return m.clearedsignals
+// ObservationsCleared reports if the "observations" edge to the SituationObservation entity was cleared.
+func (m *SituationObservationGroupMutation) ObservationsCleared() bool {
+	return m.clearedobservations
 }
 
-// RemoveSignalIDs removes the "signals" edge to the SituationSignal entity by IDs.
-func (m *SituationObservationGroupMutation) RemoveSignalIDs(ids ...uuid.UUID) {
-	if m.removedsignals == nil {
-		m.removedsignals = make(map[uuid.UUID]struct{})
+// RemoveObservationIDs removes the "observations" edge to the SituationObservation entity by IDs.
+func (m *SituationObservationGroupMutation) RemoveObservationIDs(ids ...uuid.UUID) {
+	if m.removedobservations == nil {
+		m.removedobservations = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.signals, ids[i])
-		m.removedsignals[ids[i]] = struct{}{}
+		delete(m.observations, ids[i])
+		m.removedobservations[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedSignals returns the removed IDs of the "signals" edge to the SituationSignal entity.
-func (m *SituationObservationGroupMutation) RemovedSignalsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsignals {
+// RemovedObservations returns the removed IDs of the "observations" edge to the SituationObservation entity.
+func (m *SituationObservationGroupMutation) RemovedObservationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedobservations {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// SignalsIDs returns the "signals" edge IDs in the mutation.
-func (m *SituationObservationGroupMutation) SignalsIDs() (ids []uuid.UUID) {
-	for id := range m.signals {
+// ObservationsIDs returns the "observations" edge IDs in the mutation.
+func (m *SituationObservationGroupMutation) ObservationsIDs() (ids []uuid.UUID) {
+	for id := range m.observations {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetSignals resets all changes to the "signals" edge.
-func (m *SituationObservationGroupMutation) ResetSignals() {
-	m.signals = nil
-	m.clearedsignals = false
-	m.removedsignals = nil
+// ResetObservations resets all changes to the "observations" edge.
+func (m *SituationObservationGroupMutation) ResetObservations() {
+	m.observations = nil
+	m.clearedobservations = false
+	m.removedobservations = nil
 }
 
 // Where appends a list predicates to the SituationObservationGroupMutation builder.
@@ -717,8 +717,8 @@ func (m *SituationObservationGroupMutation) AddedEdges() []string {
 	if m.situation != nil {
 		edges = append(edges, situationobservationgroup.EdgeSituation)
 	}
-	if m.signals != nil {
-		edges = append(edges, situationobservationgroup.EdgeSignals)
+	if m.observations != nil {
+		edges = append(edges, situationobservationgroup.EdgeObservations)
 	}
 	return edges
 }
@@ -735,9 +735,9 @@ func (m *SituationObservationGroupMutation) AddedIDs(name string) []ent.Value {
 		if id := m.situation; id != nil {
 			return []ent.Value{*id}
 		}
-	case situationobservationgroup.EdgeSignals:
-		ids := make([]ent.Value, 0, len(m.signals))
-		for id := range m.signals {
+	case situationobservationgroup.EdgeObservations:
+		ids := make([]ent.Value, 0, len(m.observations))
+		for id := range m.observations {
 			ids = append(ids, id)
 		}
 		return ids
@@ -748,8 +748,8 @@ func (m *SituationObservationGroupMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationObservationGroupMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.removedsignals != nil {
-		edges = append(edges, situationobservationgroup.EdgeSignals)
+	if m.removedobservations != nil {
+		edges = append(edges, situationobservationgroup.EdgeObservations)
 	}
 	return edges
 }
@@ -758,9 +758,9 @@ func (m *SituationObservationGroupMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *SituationObservationGroupMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case situationobservationgroup.EdgeSignals:
-		ids := make([]ent.Value, 0, len(m.removedsignals))
-		for id := range m.removedsignals {
+	case situationobservationgroup.EdgeObservations:
+		ids := make([]ent.Value, 0, len(m.removedobservations))
+		for id := range m.removedobservations {
 			ids = append(ids, id)
 		}
 		return ids
@@ -777,8 +777,8 @@ func (m *SituationObservationGroupMutation) ClearedEdges() []string {
 	if m.clearedsituation {
 		edges = append(edges, situationobservationgroup.EdgeSituation)
 	}
-	if m.clearedsignals {
-		edges = append(edges, situationobservationgroup.EdgeSignals)
+	if m.clearedobservations {
+		edges = append(edges, situationobservationgroup.EdgeObservations)
 	}
 	return edges
 }
@@ -791,8 +791,8 @@ func (m *SituationObservationGroupMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case situationobservationgroup.EdgeSituation:
 		return m.clearedsituation
-	case situationobservationgroup.EdgeSignals:
-		return m.clearedsignals
+	case situationobservationgroup.EdgeObservations:
+		return m.clearedobservations
 	}
 	return false
 }
@@ -821,8 +821,8 @@ func (m *SituationObservationGroupMutation) ResetEdge(name string) error {
 	case situationobservationgroup.EdgeSituation:
 		m.ResetSituation()
 		return nil
-	case situationobservationgroup.EdgeSignals:
-		m.ResetSignals()
+	case situationobservationgroup.EdgeObservations:
+		m.ResetObservations()
 		return nil
 	}
 	return fmt.Errorf("unknown SituationObservationGroup edge %s", name)

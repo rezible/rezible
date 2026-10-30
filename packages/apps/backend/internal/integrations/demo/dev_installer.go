@@ -18,15 +18,16 @@ import (
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situationsignal"
+	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationobservation"
 	sae "github.com/rezible/rezible/ent/systemanalysisentity"
 	"github.com/rezible/rezible/pkg/execution"
 )
 
-// SignalProcessor places a recorded signal into situations, as the process-situation-signal job does.
-// Processing a signal again is safe.
-type SignalProcessor interface {
-	ProcessSignal(ctx context.Context, signalEntityID uuid.UUID) error
+// ObservationProcessor places a recorded observation into situations, as the process-situation-observation
+// job does. Processing an observation again is safe.
+type ObservationProcessor interface {
+	ProcessObservation(ctx context.Context, ref rez.SituationObservationRef) error
 }
 
 func SeedDemoData(
@@ -40,7 +41,7 @@ func SeedDemoData(
 	systemAnalysis rez.SystemAnalysisService,
 	events rez.EventsService,
 	situations rez.SituationService,
-	signals SignalProcessor,
+	observations ObservationProcessor,
 	ingester rez.ProviderEventIngester,
 	installation *ent.Integration,
 ) error {
@@ -56,7 +57,7 @@ func SeedDemoData(
 		systemAnalysis: systemAnalysis,
 		events:         events,
 		situations:     situations,
-		signals:        signals,
+		observations:   observations,
 	}
 	return s.seedData(ctx)
 }
@@ -73,7 +74,7 @@ type dataSeeder struct {
 	systemAnalysis rez.SystemAnalysisService
 	events         rez.EventsService
 	situations     rez.SituationService
-	signals        SignalProcessor
+	observations   ObservationProcessor
 }
 
 func (d *dataSeeder) seedData(ctx context.Context) error {
@@ -327,39 +328,39 @@ func (d *dataSeeder) createImpacts(ctx context.Context, inc *ent.Incident) error
 	return nil
 }
 
-// linkSituation places the demo incident's alerts into situations, as signal processing does, and links the
-// incident to the situation holding its search latency alert. Background signal processing may already have
+// linkSituation places the demo incident's alerts into situations, as observation processing does, and links
+// the incident to the situation holding its search latency alert. Background processing may already have
 // placed them; processing again changes nothing.
 func (d *dataSeeder) linkSituation(ctx context.Context, inc *ent.Incident) error {
-	var latencyEntityID uuid.UUID
+	var latencyEpisodeID uuid.UUID
 	for _, firing := range []alertObservedPayload{demoSearchLatencyFiring, demoElasticsearchCPUFiring} {
-		entityID, episodeErr := d.alertEpisodeEntity(ctx, firing.eventRef())
+		episodeID, episodeErr := d.alertEpisode(ctx, firing.eventRef())
 		if episodeErr != nil {
 			return episodeErr
 		}
-		if processErr := d.signals.ProcessSignal(ctx, entityID); processErr != nil {
+		if processErr := d.observations.ProcessObservation(ctx, rez.SituationObservationRef{AlertEpisodeID: episodeID}); processErr != nil {
 			return fmt.Errorf("place demo alert %s: %w", firing.DefinitionRef, processErr)
 		}
 		if firing.DefinitionRef == demoSearchLatencyFiring.DefinitionRef {
-			latencyEntityID = entityID
+			latencyEpisodeID = episodeID
 		}
 	}
 
-	queryMembership := d.db.Client(ctx).SituationSignal.Query().
-		Where(situationsignal.KnowledgeEntityID(latencyEntityID))
-	membership, membershipErr := queryMembership.Only(ctx)
-	if membershipErr != nil {
-		return fmt.Errorf("find demo incident situation: %w", membershipErr)
+	querySituation := d.db.Client(ctx).Situation.Query().
+		Where(situation.HasObservationsWith(situationobservation.AlertEpisodeID(latencyEpisodeID)))
+	situationID, situationErr := querySituation.OnlyID(ctx)
+	if situationErr != nil {
+		return fmt.Errorf("find demo incident situation: %w", situationErr)
 	}
-	links := rez.IncidentSituationLinkChanges{Added: []uuid.UUID{membership.SituationID}}
+	links := rez.IncidentSituationLinkChanges{Added: []uuid.UUID{situationID}}
 	if linkErr := d.situations.SyncIncidentLinks(ctx, inc.ID, links); linkErr != nil {
 		return fmt.Errorf("link demo incident to situation: %w", linkErr)
 	}
 	return nil
 }
 
-// alertEpisodeEntity returns the knowledge entity of the alert episode holding the notification.
-func (d *dataSeeder) alertEpisodeEntity(ctx context.Context, eventRef string) (uuid.UUID, error) {
+// alertEpisode returns the alert episode holding the notification.
+func (d *dataSeeder) alertEpisode(ctx context.Context, eventRef string) (uuid.UUID, error) {
 	eventParams := rez.ListEventsParams{
 		PageSize:   1,
 		Predicates: []predicate.NormalizedEvent{normalizedevent.ProviderEventRef(eventRef)},
@@ -377,7 +378,7 @@ func (d *dataSeeder) alertEpisodeEntity(ctx context.Context, eventRef string) (u
 	if episodeErr != nil {
 		return uuid.Nil, fmt.Errorf("find demo alert episode %s: %w", eventRef, episodeErr)
 	}
-	return *episode.KnowledgeEntityID, nil
+	return episode.ID, nil
 }
 
 func (d *dataSeeder) createRetrospective(ctx context.Context, inc *ent.Incident) error {

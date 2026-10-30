@@ -2,7 +2,7 @@ import { describe, expect, mock, test } from "bun:test";
 import { compileModule } from "svelte/compiler";
 
 import type { Situation, SituationNotice } from "$lib/api";
-import { noticeLines, noticeRatingsText } from "$features/situations/lib/notices";
+import { noticeLines } from "$features/situations/lib/notices";
 
 import type { SituationNoticesController } from "./situationNotices.svelte.ts";
 
@@ -50,9 +50,8 @@ function setup(situation: Situation | undefined) {
 		"toast",
 		"retrySituationNoticeMutation",
 		"noticeLines",
-		"noticeRatingsText",
 		`${controllerCode}\nreturn SituationNoticesController;`
-	)(runtime, createMutation, toast, retrySituationNoticeMutation, noticeLines, noticeRatingsText) as new (
+	)(runtime, createMutation, toast, retrySituationNoticeMutation, noticeLines) as new (
 		...args: ConstructorParameters<typeof SituationNoticesController>
 	) => SituationNoticesController;
 
@@ -67,7 +66,7 @@ describe("situation notices", () => {
 	test("retry asks the situation's notices to be delivered again and shows the result", async () => {
 		const situation = {
 			id: "situation-1",
-			attributes: { notices: [failedNotice], noticeRatings: { useful: 0, notUseful: 0 } },
+			attributes: { notices: [failedNotice] },
 		} as unknown as Situation;
 		const { controller, mutate, applySituation, retried } = setup(situation);
 

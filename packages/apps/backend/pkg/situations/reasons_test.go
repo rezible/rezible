@@ -15,13 +15,14 @@ import (
 
 // activeAlert is a default-attention seeding alert from its own source, active for the given time, with
 // three weeks of observed history and no earlier occurrences.
-func activeAlert(ref string, active time.Duration) schematypes.SituationSignalFacts {
-	return schematypes.SituationSignalFacts{
-		Ref:            ref,
-		EntityID:       uuid.New(),
-		SourceEntityID: new(uuid.New()),
-		Seeding:        true,
-		Attention:      string(ssa.LevelDefault),
+func activeAlert(ref string, active time.Duration) schematypes.SituationObservationFacts {
+	return schematypes.SituationObservationFacts{
+		Ref:                     ref,
+		SituationObservationRef: schematypes.SituationObservationRef{AlertEpisodeID: uuid.New()},
+		Kind:                    schematypes.SituationObservationKindAlertEpisode,
+		SourceID:                uuid.New(),
+		Seeding:                 true,
+		Attention:               string(ssa.LevelDefault),
 		Alert: &schematypes.SituationAlertFacts{
 			Active:              true,
 			ActiveGroupCount:    1,
@@ -36,22 +37,22 @@ func activeAlert(ref string, active time.Duration) schematypes.SituationSignalFa
 	}
 }
 
-// withAlert is the signal with a copy of its alert facts changed by edit.
-func withAlert(signal schematypes.SituationSignalFacts, edit func(*schematypes.SituationAlertFacts)) schematypes.SituationSignalFacts {
-	alert := *signal.Alert
+// withAlert is the observation with a copy of its alert facts changed by edit.
+func withAlert(observation schematypes.SituationObservationFacts, edit func(*schematypes.SituationAlertFacts)) schematypes.SituationObservationFacts {
+	alert := *observation.Alert
 	edit(&alert)
-	signal.Alert = &alert
-	return signal
+	observation.Alert = &alert
+	return observation
 }
 
-func withAttention(signal schematypes.SituationSignalFacts, level ssa.Level) schematypes.SituationSignalFacts {
-	signal.Attention = string(level)
-	return signal
+func withAttention(observation schematypes.SituationObservationFacts, level ssa.Level) schematypes.SituationObservationFacts {
+	observation.Attention = string(level)
+	return observation
 }
 
-func withPastIncident(signal schematypes.SituationSignalFacts) schematypes.SituationSignalFacts {
-	signal.PriorOutcomes = &schematypes.SituationPriorOutcomeFacts{IncidentLinked: 1}
-	return signal
+func withPastIncident(observation schematypes.SituationObservationFacts) schematypes.SituationObservationFacts {
+	observation.PriorOutcomes = &schematypes.SituationPriorOutcomeFacts{IncidentLinked: 1}
+	return observation
 }
 
 func reason(t *testing.T, reasons Reasons, name schematypes.SituationRaiseReason) schematypes.SituationReasonResult {
@@ -72,43 +73,43 @@ func TestCheckReasons(t *testing.T) {
 	seenTwice := func(alert *schematypes.SituationAlertFacts) { alert.Baseline.Occurrences = 2 }
 	fiveMinuteMedian := func(alert *schematypes.SituationAlertFacts) { alert.Baseline.MedianDurationSeconds = new(int64(300)) }
 	cases := []struct {
-		name      string
-		signals   []schematypes.SituationSignalFacts
-		incidents int
-		expect    map[schematypes.SituationRaiseReason]expectation
+		name         string
+		observations []schematypes.SituationObservationFacts
+		incidents    int
+		expect       map[schematypes.SituationRaiseReason]expectation
 	}{
 		{
-			name:      "a linked incident is hard",
-			signals:   []schematypes.SituationSignalFacts{activeAlert("s1", time.Minute)},
-			incidents: 1,
-			expect:    map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonLinkedIncident: {met: true, hard: true}},
+			name:         "a linked incident is hard",
+			observations: []schematypes.SituationObservationFacts{activeAlert("o1", time.Minute)},
+			incidents:    1,
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonLinkedIncident: {met: true, hard: true}},
 		},
 		{
-			name:    "two sources are breadth",
-			signals: []schematypes.SituationSignalFacts{activeAlert("s1", time.Minute), activeAlert("s2", time.Minute)},
-			expect:  map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonBreadth: {met: true}},
+			name:         "two sources are breadth",
+			observations: []schematypes.SituationObservationFacts{activeAlert("o1", time.Minute), activeAlert("o2", time.Minute)},
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonBreadth: {met: true}},
 		},
 		{
 			name: "four sources are hard breadth",
-			signals: []schematypes.SituationSignalFacts{
-				activeAlert("s1", time.Minute),
-				activeAlert("s2", time.Minute),
-				activeAlert("s3", time.Minute),
-				activeAlert("s4", time.Minute),
+			observations: []schematypes.SituationObservationFacts{
+				activeAlert("o1", time.Minute),
+				activeAlert("o2", time.Minute),
+				activeAlert("o3", time.Minute),
+				activeAlert("o4", time.Minute),
 			},
 			expect: map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonBreadth: {met: true, hard: true}},
 		},
 		{
 			name: "three active groups of one alert are breadth",
-			signals: []schematypes.SituationSignalFacts{
-				withAlert(activeAlert("s1", time.Minute), func(alert *schematypes.SituationAlertFacts) { alert.ActiveGroupCount = 3 }),
+			observations: []schematypes.SituationObservationFacts{
+				withAlert(activeAlert("o1", time.Minute), func(alert *schematypes.SituationAlertFacts) { alert.ActiveGroupCount = 3 }),
 			},
 			expect: map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonBreadth: {met: true}},
 		},
 		{
 			name: "grouped instances count once",
-			signals: []schematypes.SituationSignalFacts{
-				withAlert(activeAlert("s1", time.Minute), func(alert *schematypes.SituationAlertFacts) {
+			observations: []schematypes.SituationObservationFacts{
+				withAlert(activeAlert("o1", time.Minute), func(alert *schematypes.SituationAlertFacts) {
 					alert.ActiveInstanceCount = 6
 					alert.ActiveGroupCount = 2
 				}),
@@ -116,63 +117,63 @@ func TestCheckReasons(t *testing.T) {
 			expect: map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonBreadth: {}},
 		},
 		{
-			name:    "a rare alert active long enough is novel",
-			signals: []schematypes.SituationSignalFacts{activeAlert("s1", 6*time.Minute)},
-			expect:  map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonNovelty: {met: true}},
+			name:         "a rare alert active long enough is novel",
+			observations: []schematypes.SituationObservationFacts{activeAlert("o1", 6*time.Minute)},
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonNovelty: {met: true}},
 		},
 		{
-			name:    "a rare alert not yet active long enough is not novel",
-			signals: []schematypes.SituationSignalFacts{activeAlert("s1", 4*time.Minute)},
-			expect:  map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonNovelty: {}},
+			name:         "a rare alert not yet active long enough is not novel",
+			observations: []schematypes.SituationObservationFacts{activeAlert("o1", 4*time.Minute)},
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonNovelty: {}},
 		},
 		{
-			name:    "a frequent alert is not novel",
-			signals: []schematypes.SituationSignalFacts{withAlert(activeAlert("s1", time.Hour), seenTwice)},
-			expect:  map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonNovelty: {}},
+			name:         "a frequent alert is not novel",
+			observations: []schematypes.SituationObservationFacts{withAlert(activeAlert("o1", time.Hour), seenTwice)},
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonNovelty: {}},
 		},
 		{
-			name:    "persistence without a baseline at its fixed time",
-			signals: []schematypes.SituationSignalFacts{activeAlert("s1", PersistenceNoBaseline)},
-			expect:  map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPersistence: {met: true}},
+			name:         "persistence without a baseline at its fixed time",
+			observations: []schematypes.SituationObservationFacts{activeAlert("o1", PersistenceNoBaseline)},
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPersistence: {met: true}},
 		},
 		{
-			name:    "persistence with a baseline at a multiple of the median",
-			signals: []schematypes.SituationSignalFacts{withAlert(activeAlert("s1", 15*time.Minute), fiveMinuteMedian)},
-			expect:  map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPersistence: {met: true}},
+			name:         "persistence with a baseline at a multiple of the median",
+			observations: []schematypes.SituationObservationFacts{withAlert(activeAlert("o1", 15*time.Minute), fiveMinuteMedian)},
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPersistence: {met: true}},
 		},
 		{
-			name:    "no persistence below the baseline threshold",
-			signals: []schematypes.SituationSignalFacts{withAlert(activeAlert("s1", 14*time.Minute), fiveMinuteMedian)},
-			expect:  map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPersistence: {}},
+			name:         "no persistence below the baseline threshold",
+			observations: []schematypes.SituationObservationFacts{withAlert(activeAlert("o1", 14*time.Minute), fiveMinuteMedian)},
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPersistence: {}},
 		},
 		{
-			name:    "a source with an earlier incident",
-			signals: []schematypes.SituationSignalFacts{withPastIncident(activeAlert("s1", time.Minute))},
-			expect:  map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPastIncident: {met: true}},
+			name:         "a source with an earlier incident",
+			observations: []schematypes.SituationObservationFacts{withPastIncident(activeAlert("o1", time.Minute))},
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPastIncident: {met: true}},
 		},
 		{
-			name:    "the watch-only gate leaves a lone watch-only source unmet",
-			signals: []schematypes.SituationSignalFacts{withAttention(withPastIncident(activeAlert("s1", time.Minute)), ssa.LevelWatchOnly)},
-			expect:  map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPastIncident: {}},
+			name:         "the watch-only gate leaves a lone watch-only source unmet",
+			observations: []schematypes.SituationObservationFacts{withAttention(withPastIncident(activeAlert("o1", time.Minute)), ssa.LevelWatchOnly)},
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonPastIncident: {}},
 		},
 		{
 			name: "two watch-only sources pass the gate",
-			signals: []schematypes.SituationSignalFacts{
-				withAttention(activeAlert("s1", time.Minute), ssa.LevelWatchOnly),
-				withAttention(activeAlert("s2", time.Minute), ssa.LevelWatchOnly),
+			observations: []schematypes.SituationObservationFacts{
+				withAttention(activeAlert("o1", time.Minute), ssa.LevelWatchOnly),
+				withAttention(activeAlert("o2", time.Minute), ssa.LevelWatchOnly),
 			},
 			expect: map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonBreadth: {met: true}},
 		},
 		{
-			name:      "the watch-only gate keeps a linked incident",
-			signals:   []schematypes.SituationSignalFacts{withAttention(activeAlert("s1", time.Minute), ssa.LevelWatchOnly)},
-			incidents: 1,
-			expect:    map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonLinkedIncident: {met: true, hard: true}},
+			name:         "the watch-only gate keeps a linked incident",
+			observations: []schematypes.SituationObservationFacts{withAttention(activeAlert("o1", time.Minute), ssa.LevelWatchOnly)},
+			incidents:    1,
+			expect:       map[schematypes.SituationRaiseReason]expectation{schematypes.SituationRaiseReasonLinkedIncident: {met: true, hard: true}},
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			facts := schematypes.SituationFacts{Signals: tc.signals}
+			facts := schematypes.SituationFacts{Observations: tc.observations}
 			for range tc.incidents {
 				facts.LinkedIncidents = append(facts.LinkedIncidents, schematypes.SituationIncidentFacts{ID: uuid.New()})
 			}
@@ -237,7 +238,7 @@ func TestFingerprint(t *testing.T) {
 	}
 	base := schematypes.SituationFacts{
 		AsOf:            evaluationNow,
-		Signals:         []schematypes.SituationSignalFacts{activeAlert("s1", time.Minute), activeAlert("s2", time.Minute)},
+		Observations:    []schematypes.SituationObservationFacts{activeAlert("o1", time.Minute), activeAlert("o2", time.Minute)},
 		LinkedIncidents: []schematypes.SituationIncidentFacts{incident},
 		Entities:        []schematypes.SituationEntityFacts{{ID: uuid.New(), DisplayName: "checkout", Matching: true}},
 	}
@@ -255,21 +256,21 @@ func TestFingerprint(t *testing.T) {
 	}{
 		{"a later capture time", func(facts *schematypes.SituationFacts) { facts.AsOf = facts.AsOf.Add(time.Hour) }, false},
 		{"growing active time below a threshold", func(facts *schematypes.SituationFacts) {
-			facts.Signals[0] = withAlert(facts.Signals[0], func(alert *schematypes.SituationAlertFacts) { alert.ActiveSeconds = 120 })
+			facts.Observations[0] = withAlert(facts.Observations[0], func(alert *schematypes.SituationAlertFacts) { alert.ActiveSeconds = 120 })
 		}, false},
-		{"other display refs", func(facts *schematypes.SituationFacts) { facts.Signals[0].Ref = "s9" }, false},
-		{"a signal title", func(facts *schematypes.SituationFacts) { facts.Signals[0].Title = "Checkout errors" }, false},
+		{"other display refs", func(facts *schematypes.SituationFacts) { facts.Observations[0].Ref = "o9" }, false},
+		{"an observation title", func(facts *schematypes.SituationFacts) { facts.Observations[0].Title = "Checkout errors" }, false},
 		{"an alert description and definition", func(facts *schematypes.SituationFacts) {
-			facts.Signals[0] = withAlert(facts.Signals[0], func(alert *schematypes.SituationAlertFacts) {
+			facts.Observations[0] = withAlert(facts.Observations[0], func(alert *schematypes.SituationAlertFacts) {
 				alert.Description = "Errors are high."
 				alert.Definition = "errors > 5"
 			})
 		}, false},
 		{"an incident title", func(facts *schematypes.SituationFacts) { facts.LinkedIncidents[0].Title = "Renamed" }, false},
 		{"an incident resolution", func(facts *schematypes.SituationFacts) { facts.LinkedIncidents[0].ResolvedAt = new(evaluationNow) }, true},
-		{"a finished signal", func(facts *schematypes.SituationFacts) { facts.Signals[0].FinishedAt = new(evaluationNow) }, true},
+		{"a finished observation", func(facts *schematypes.SituationFacts) { facts.Observations[0].FinishedAt = new(evaluationNow) }, true},
 		{"a changed attention level", func(facts *schematypes.SituationFacts) {
-			facts.Signals[1] = withAttention(facts.Signals[1], ssa.LevelWatchOnly)
+			facts.Observations[1] = withAttention(facts.Observations[1], ssa.LevelWatchOnly)
 		}, true},
 		{"another linked incident", func(facts *schematypes.SituationFacts) {
 			facts.LinkedIncidents = append(facts.LinkedIncidents, schematypes.SituationIncidentFacts{ID: uuid.New()})
@@ -278,14 +279,11 @@ func TestFingerprint(t *testing.T) {
 		{"a new relationship", func(facts *schematypes.SituationFacts) {
 			facts.Relationships = []schematypes.SituationRelationshipFacts{{SourceID: facts.Entities[0].ID, Predicate: "calls", TargetID: uuid.New()}}
 		}, true},
-		{"an earlier situation's outcome", func(facts *schematypes.SituationFacts) {
-			facts.Earlier = []schematypes.SituationEarlierFacts{{SituationID: uuid.New(), WasRaised: true}}
-		}, true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			facts := base
-			facts.Signals = append([]schematypes.SituationSignalFacts{}, base.Signals...)
+			facts.Observations = append([]schematypes.SituationObservationFacts{}, base.Observations...)
 			facts.LinkedIncidents = append([]schematypes.SituationIncidentFacts{}, base.LinkedIncidents...)
 			facts.Entities = append([]schematypes.SituationEntityFacts{}, base.Entities...)
 			tc.edit(&facts)

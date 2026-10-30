@@ -18,22 +18,22 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
-	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SituationObservationGroupQuery is the builder for querying SituationObservationGroup entities.
 type SituationObservationGroupQuery struct {
 	config
-	ctx           *QueryContext
-	order         []situationobservationgroup.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.SituationObservationGroup
-	withTenant    *TenantQuery
-	withSituation *SituationQuery
-	withSignals   *SituationSignalQuery
-	modifiers     []func(*sql.Selector)
+	ctx              *QueryContext
+	order            []situationobservationgroup.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.SituationObservationGroup
+	withTenant       *TenantQuery
+	withSituation    *SituationQuery
+	withObservations *SituationObservationQuery
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -120,9 +120,9 @@ func (_q *SituationObservationGroupQuery) QuerySituation() *SituationQuery {
 	return query
 }
 
-// QuerySignals chains the current query on the "signals" edge.
-func (_q *SituationObservationGroupQuery) QuerySignals() *SituationSignalQuery {
-	query := (&SituationSignalClient{config: _q.config}).Query()
+// QueryObservations chains the current query on the "observations" edge.
+func (_q *SituationObservationGroupQuery) QueryObservations() *SituationObservationQuery {
+	query := (&SituationObservationClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -133,12 +133,12 @@ func (_q *SituationObservationGroupQuery) QuerySignals() *SituationSignalQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(situationobservationgroup.Table, situationobservationgroup.FieldID, selector),
-			sqlgraph.To(situationsignal.Table, situationsignal.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, situationobservationgroup.SignalsTable, situationobservationgroup.SignalsColumn),
+			sqlgraph.To(situationobservation.Table, situationobservation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, situationobservationgroup.ObservationsTable, situationobservationgroup.ObservationsColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SituationSignal
-		step.Edge.Schema = schemaConfig.SituationSignal
+		step.To.Schema = schemaConfig.SituationObservation
+		step.Edge.Schema = schemaConfig.SituationObservation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -332,14 +332,14 @@ func (_q *SituationObservationGroupQuery) Clone() *SituationObservationGroupQuer
 		return nil
 	}
 	return &SituationObservationGroupQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]situationobservationgroup.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.SituationObservationGroup{}, _q.predicates...),
-		withTenant:    _q.withTenant.Clone(),
-		withSituation: _q.withSituation.Clone(),
-		withSignals:   _q.withSignals.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]situationobservationgroup.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.SituationObservationGroup{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withSituation:    _q.withSituation.Clone(),
+		withObservations: _q.withObservations.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -368,14 +368,14 @@ func (_q *SituationObservationGroupQuery) WithSituation(opts ...func(*SituationQ
 	return _q
 }
 
-// WithSignals tells the query-builder to eager-load the nodes that are connected to
-// the "signals" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationObservationGroupQuery) WithSignals(opts ...func(*SituationSignalQuery)) *SituationObservationGroupQuery {
-	query := (&SituationSignalClient{config: _q.config}).Query()
+// WithObservations tells the query-builder to eager-load the nodes that are connected to
+// the "observations" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationObservationGroupQuery) WithObservations(opts ...func(*SituationObservationQuery)) *SituationObservationGroupQuery {
+	query := (&SituationObservationClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withSignals = query
+	_q.withObservations = query
 	return _q
 }
 
@@ -466,7 +466,7 @@ func (_q *SituationObservationGroupQuery) sqlAll(ctx context.Context, hooks ...q
 		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withSituation != nil,
-			_q.withSignals != nil,
+			_q.withObservations != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -504,10 +504,12 @@ func (_q *SituationObservationGroupQuery) sqlAll(ctx context.Context, hooks ...q
 			return nil, err
 		}
 	}
-	if query := _q.withSignals; query != nil {
-		if err := _q.loadSignals(ctx, query, nodes,
-			func(n *SituationObservationGroup) { n.Edges.Signals = []*SituationSignal{} },
-			func(n *SituationObservationGroup, e *SituationSignal) { n.Edges.Signals = append(n.Edges.Signals, e) }); err != nil {
+	if query := _q.withObservations; query != nil {
+		if err := _q.loadObservations(ctx, query, nodes,
+			func(n *SituationObservationGroup) { n.Edges.Observations = []*SituationObservation{} },
+			func(n *SituationObservationGroup, e *SituationObservation) {
+				n.Edges.Observations = append(n.Edges.Observations, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -572,7 +574,7 @@ func (_q *SituationObservationGroupQuery) loadSituation(ctx context.Context, que
 	}
 	return nil
 }
-func (_q *SituationObservationGroupQuery) loadSignals(ctx context.Context, query *SituationSignalQuery, nodes []*SituationObservationGroup, init func(*SituationObservationGroup), assign func(*SituationObservationGroup, *SituationSignal)) error {
+func (_q *SituationObservationGroupQuery) loadObservations(ctx context.Context, query *SituationObservationQuery, nodes []*SituationObservationGroup, init func(*SituationObservationGroup), assign func(*SituationObservationGroup, *SituationObservation)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SituationObservationGroup)
 	for i := range nodes {
@@ -583,10 +585,10 @@ func (_q *SituationObservationGroupQuery) loadSignals(ctx context.Context, query
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(situationsignal.FieldObservationGroupID)
+		query.ctx.AppendFieldOnce(situationobservation.FieldObservationGroupID)
 	}
-	query.Where(predicate.SituationSignal(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(situationobservationgroup.SignalsColumn), fks...))
+	query.Where(predicate.SituationObservation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(situationobservationgroup.ObservationsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -594,9 +596,12 @@ func (_q *SituationObservationGroupQuery) loadSignals(ctx context.Context, query
 	}
 	for _, n := range neighbors {
 		fk := n.ObservationGroupID
-		node, ok := nodeids[fk]
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "observation_group_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "observation_group_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "observation_group_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -14,8 +14,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/situation"
+	"github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
-	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -111,19 +111,19 @@ func (_c *SituationObservationGroupCreate) SetSituation(v *Situation) *Situation
 	return _c.SetSituationID(v.ID)
 }
 
-// AddSignalIDs adds the "signals" edge to the SituationSignal entity by IDs.
-func (_c *SituationObservationGroupCreate) AddSignalIDs(ids ...uuid.UUID) *SituationObservationGroupCreate {
-	_c.mutation.AddSignalIDs(ids...)
+// AddObservationIDs adds the "observations" edge to the SituationObservation entity by IDs.
+func (_c *SituationObservationGroupCreate) AddObservationIDs(ids ...uuid.UUID) *SituationObservationGroupCreate {
+	_c.mutation.AddObservationIDs(ids...)
 	return _c
 }
 
-// AddSignals adds the "signals" edges to the SituationSignal entity.
-func (_c *SituationObservationGroupCreate) AddSignals(v ...*SituationSignal) *SituationObservationGroupCreate {
+// AddObservations adds the "observations" edges to the SituationObservation entity.
+func (_c *SituationObservationGroupCreate) AddObservations(v ...*SituationObservation) *SituationObservationGroupCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddSignalIDs(ids...)
+	return _c.AddObservationIDs(ids...)
 }
 
 // Mutation returns the SituationObservationGroupMutation object of the builder.
@@ -304,18 +304,18 @@ func (_c *SituationObservationGroupCreate) createSpec() (*SituationObservationGr
 		_node.SituationID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SignalsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ObservationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   situationobservationgroup.SignalsTable,
-			Columns: []string{situationobservationgroup.SignalsColumn},
+			Table:   situationobservationgroup.ObservationsTable,
+			Columns: []string{situationobservationgroup.ObservationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationsignal.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(situationobservation.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SituationSignal
+		edge.Schema = _c.schemaConfig.SituationObservation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

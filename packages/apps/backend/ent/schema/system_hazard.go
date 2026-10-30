@@ -36,7 +36,6 @@ func (SystemHazard) Fields() []ent.Field {
 func (SystemHazard) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("risk_assessments", SystemHazardRiskAssessment.Type),
-		edge.To("situation_assessments", SituationHazardAssessment.Type),
 	}
 }
 

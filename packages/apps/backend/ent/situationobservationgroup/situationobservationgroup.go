@@ -32,8 +32,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeSituation holds the string denoting the situation edge name in mutations.
 	EdgeSituation = "situation"
-	// EdgeSignals holds the string denoting the signals edge name in mutations.
-	EdgeSignals = "signals"
+	// EdgeObservations holds the string denoting the observations edge name in mutations.
+	EdgeObservations = "observations"
 	// Table holds the table name of the situationobservationgroup in the database.
 	Table = "situation_observation_groups"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -50,13 +50,13 @@ const (
 	SituationInverseTable = "situations"
 	// SituationColumn is the table column denoting the situation relation/edge.
 	SituationColumn = "situation_id"
-	// SignalsTable is the table that holds the signals relation/edge.
-	SignalsTable = "situation_signals"
-	// SignalsInverseTable is the table name for the SituationSignal entity.
-	// It exists in this package in order to avoid circular dependency with the "situationsignal" package.
-	SignalsInverseTable = "situation_signals"
-	// SignalsColumn is the table column denoting the signals relation/edge.
-	SignalsColumn = "observation_group_id"
+	// ObservationsTable is the table that holds the observations relation/edge.
+	ObservationsTable = "situation_observations"
+	// ObservationsInverseTable is the table name for the SituationObservation entity.
+	// It exists in this package in order to avoid circular dependency with the "situationobservation" package.
+	ObservationsInverseTable = "situation_observations"
+	// ObservationsColumn is the table column denoting the observations relation/edge.
+	ObservationsColumn = "observation_group_id"
 )
 
 // Columns holds all SQL columns for situationobservationgroup fields.
@@ -152,17 +152,17 @@ func BySituationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// BySignalsCount orders the results by signals count.
-func BySignalsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByObservationsCount orders the results by observations count.
+func ByObservationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSignalsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newObservationsStep(), opts...)
 	}
 }
 
-// BySignals orders the results by signals terms.
-func BySignals(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByObservations orders the results by observations terms.
+func ByObservations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSignalsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newObservationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -179,10 +179,10 @@ func newSituationStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, SituationTable, SituationColumn),
 	)
 }
-func newSignalsStep() *sqlgraph.Step {
+func newObservationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SignalsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SignalsTable, SignalsColumn),
+		sqlgraph.To(ObservationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ObservationsTable, ObservationsColumn),
 	)
 }

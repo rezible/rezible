@@ -107,16 +107,16 @@ func UnavailableJudgment() Judgment {
 }
 
 // JudgeFacts cuts the facts to the model judge's limits and names every list it cut: it keeps the
-// JudgeMaxSignals most recently attached signals and JudgeMaxEntities entities, matching first, then by ID,
-// and restricts relationships and signal entity references to the kept entities. It also names each alert
-// whose facts sample its active instances. Lists are never nil. Reasons and stored judgments use the full
-// facts.
+// JudgeMaxObservations most recently attached observations and JudgeMaxEntities entities, matching first,
+// then by ID, and restricts relationships and observation entity references to the kept entities. It also
+// names each alert whose facts sample its active instances. Lists are never nil. Reasons and stored judgments
+// use the full facts.
 func JudgeFacts(facts schematypes.SituationFacts) (schematypes.SituationFacts, []string) {
 	truncated := []string{}
-	signals := facts.Signals
-	if count := len(signals); count > JudgeMaxSignals {
-		truncated = append(truncated, fmt.Sprintf("signals: kept the %d most recently attached of %d", JudgeMaxSignals, count))
-		signals = signals[count-JudgeMaxSignals:]
+	observations := facts.Observations
+	if count := len(observations); count > JudgeMaxObservations {
+		truncated = append(truncated, fmt.Sprintf("observations: kept the %d most recently attached of %d", JudgeMaxObservations, count))
+		observations = observations[count-JudgeMaxObservations:]
 	}
 	entities := facts.Entities
 	if count := len(entities); count > JudgeMaxEntities {
@@ -140,31 +140,30 @@ func JudgeFacts(facts schematypes.SituationFacts) (schematypes.SituationFacts, [
 
 	restricted := false
 	var sampled []string
-	keptSignals := make([]schematypes.SituationSignalFacts, 0, len(signals))
-	for _, signal := range signals {
-		if alert := signal.Alert; alert != nil && len(alert.ActiveInstances) < alert.ActiveInstanceCount {
+	keptObservations := make([]schematypes.SituationObservationFacts, 0, len(observations))
+	for _, observation := range observations {
+		if alert := observation.Alert; alert != nil && len(alert.ActiveInstances) < alert.ActiveInstanceCount {
 			sampled = append(sampled, fmt.Sprintf("%s alert active_instances: kept %d of %d, by instance key",
-				signal.Ref, len(alert.ActiveInstances), alert.ActiveInstanceCount))
+				observation.Ref, len(alert.ActiveInstances), alert.ActiveInstanceCount))
 		}
-		entityIDs := make([]uuid.UUID, 0, len(signal.EntityIDs))
-		for _, entityID := range signal.EntityIDs {
+		entityIDs := make([]uuid.UUID, 0, len(observation.EntityIDs))
+		for _, entityID := range observation.EntityIDs {
 			if kept.Contains(entityID) {
 				entityIDs = append(entityIDs, entityID)
 			}
 		}
-		restricted = restricted || len(entityIDs) < len(signal.EntityIDs)
-		signal.EntityIDs = entityIDs
-		keptSignals = append(keptSignals, signal)
+		restricted = restricted || len(entityIDs) < len(observation.EntityIDs)
+		observation.EntityIDs = entityIDs
+		keptObservations = append(keptObservations, observation)
 	}
 	if restricted {
-		truncated = append(truncated, "signal entity_ids: restricted to kept entities")
+		truncated = append(truncated, "observation entity_ids: restricted to kept entities")
 	}
 	truncated = append(truncated, sampled...)
 
-	facts.Signals = keptSignals
+	facts.Observations = keptObservations
 	facts.Entities = append([]schematypes.SituationEntityFacts{}, entities...)
 	facts.Relationships = relationships
 	facts.LinkedIncidents = append([]schematypes.SituationIncidentFacts{}, facts.LinkedIncidents...)
-	facts.Earlier = append([]schematypes.SituationEarlierFacts{}, facts.Earlier...)
 	return facts, truncated
 }

@@ -87,37 +87,6 @@ func (h *situationsHandler) RaiseSituation(ctx context.Context, request *oapi.Ra
 	return &response, nil
 }
 
-func (h *situationsHandler) ListSituationHazardAssessments(ctx context.Context, request *oapi.ListSituationHazardAssessmentsRequest) (*oapi.ListSituationHazardAssessmentsResponse, error) {
-	var response oapi.ListSituationHazardAssessmentsResponse
-	result, listErr := h.situations.ListSituationHazardAssessments(ctx, rez.ListSituationHazardAssessmentsParams{
-		ListParams:  request.ListParams(),
-		SituationID: request.Id,
-	})
-	if listErr != nil {
-		return nil, oapi.Error(ctx, "failed to list situation hazard assessments", listErr)
-	}
-	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.SituationHazardAssessmentFromEnt)
-	return &response, nil
-}
-
-func (h *situationsHandler) AddSituationHazardAssessment(ctx context.Context, request *oapi.AddSituationHazardAssessmentRequest) (*oapi.AddSituationHazardAssessmentResponse, error) {
-	var response oapi.AddSituationHazardAssessmentResponse
-
-	attrs := request.Body.Attributes
-	assessment, addErr := h.situations.AddSituationHazardAssessment(ctx, rez.AddSituationHazardAssessmentParams{
-		SituationID:    request.Id,
-		SystemHazardID: attrs.SystemHazardId,
-		Status:         attrs.Status,
-		Summary:        attrs.Summary,
-		UserID:         new(h.mustUserID(ctx)),
-	})
-	if addErr != nil {
-		return nil, oapi.Error(ctx, "failed to add situation hazard assessment", addErr)
-	}
-	response.Body.Data = oapi.SituationHazardAssessmentFromEnt(assessment)
-	return &response, nil
-}
-
 func (h *situationsHandler) SetSituationMute(ctx context.Context, request *oapi.SetSituationMuteRequest) (*oapi.SetSituationMuteResponse, error) {
 	updated, changeErr := h.situations.SetSituationMute(ctx, request.Id, &rez.SituationMute{Reason: request.Body.Attributes.Reason})
 	if changeErr != nil {

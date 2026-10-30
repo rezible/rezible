@@ -54,8 +54,8 @@ var agentEvaluationProfile = do.Package(
 	override(func(i do.Injector) (*evals.Integration, error) {
 		return evals.NewIntegration(do.MustInvoke[rez.Clock](i), true), nil
 	}),
-	override(func(i do.Injector) (rez.SituationSignalService, error) {
-		return evals.NewSetupSignals(do.MustInvoke[*db.SituationSignalService](i)), nil
+	override(func(i do.Injector) (rez.SituationObservationService, error) {
+		return evals.NewSetupObservations(do.MustInvoke[*db.SituationObservationService](i)), nil
 	}),
 	override(func(i do.Injector) (rez.SituationsConfig, error) {
 		situations := do.MustInvoke[rez.Config](i).Situations

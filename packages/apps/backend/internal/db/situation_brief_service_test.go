@@ -30,7 +30,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
+	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/projections"
@@ -156,7 +156,7 @@ func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture 
 	s.Require().NoError(knowledgeErr)
 	analyses, analysesErr := NewSystemAnalysisService(tdb, knowledgeQuery)
 	s.Require().NoError(analysesErr)
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationSignalService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationObservationService(jobService))
 	s.Require().NoError(alertsErr)
 	agentSessions := &AiAgentSessionService{db: tdb, jobs: jobService}
 	messageQueue := mocks.NewMockMessageQueue(s.T())
@@ -266,11 +266,9 @@ func (s *SituationBriefServiceSuite) openSituation(ctx context.Context, h *brief
 	episode, episodeErr := queryEpisode.Only(ctx)
 	s.Require().NoError(episodeErr)
 
-	signal := *episode.KnowledgeEntityID
 	params := rez.CreateSituationParams{
-		Title:             "Checkout errors",
-		SeedEntityID:      signal,
-		ObservationGroups: []rez.SituationObservationGroupParams{{Title: "Checkout", SignalEntityIDs: []uuid.UUID{signal}}},
+		Title:        "Checkout errors",
+		Observations: episodeRefs(episode.ID),
 	}
 	created, createErr := h.situations.CreateSituation(ctx, params)
 	s.Require().NoError(createErr)
@@ -623,13 +621,13 @@ func (s *SituationBriefServiceSuite) TestReadersAfterServiceMerge() {
 	proposal := client.KnowledgeProposal.Query().OnlyX(ctx)
 
 	// A judgment of the merged-away service's situation, citing it in its facts.
-	mergedMembers := client.SituationSignal.Query().Where(sitsig.SituationID(mergedSituation.ID)).AllX(ctx)
+	mergedMembers := client.SituationObservation.Query().Where(sitobs.SituationID(mergedSituation.ID)).AllX(ctx)
 	s.Require().Len(mergedMembers, 1)
 	facts := schematypes.SituationFacts{
 		AsOf:     h.clock.Now(),
 		OpenedAt: briefOpenedAt,
-		Signals: []schematypes.SituationSignalFacts{
-			{Ref: "s1", EntityID: mergedMembers[0].KnowledgeEntityID, EntityIDs: []uuid.UUID{otherID}},
+		Observations: []schematypes.SituationObservationFacts{
+			{Ref: "o1", SituationObservationRef: mergedMembers[0].Ref(), EntityIDs: []uuid.UUID{otherID}},
 		},
 		Entities: []schematypes.SituationEntityFacts{{ID: otherID, Category: "container", Kind: "service"}},
 	}
@@ -645,7 +643,6 @@ func (s *SituationBriefServiceSuite) TestReadersAfterServiceMerge() {
 		SetJudge("model").
 		SetFingerprint("before-the-merge")
 	judgment := createJudgment.SaveX(ctx)
-	client.Situation.UpdateOneID(mergedSituation.ID).SetLatestJudgmentID(judgment.ID).ExecX(ctx)
 
 	// An agent turn that read the merged-away service's logs, through a tool call naming it.
 	createSession := client.AgentSession.Create().
@@ -708,18 +705,18 @@ func (s *SituationBriefServiceSuite) TestReadersAfterServiceMerge() {
 		s.Empty(matches)
 	})
 
-	s.Run("the investigation's introduction reads the situation and its signals", func() {
+	s.Run("the investigation's introduction reads the situation and its observations", func() {
 		listed, listErr := h.situations.ListSituations(ctx, rez.ListSituationsParams{})
 		s.Require().NoError(listErr)
 		s.Len(listed.Data, 2)
-		_, signalsErr := h.situations.LoadSignals(ctx, []uuid.UUID{mergedMembers[0].KnowledgeEntityID}, rez.LoadSituationSignalsOptions{})
-		s.Require().NoError(signalsErr)
+		_, observationsErr := h.situations.LoadObservations(ctx, episodeRefs(*mergedMembers[0].AlertEpisodeID), rez.LoadSituationObservationsOptions{})
+		s.Require().NoError(observationsErr)
 	})
 
 	s.Run("a judgment citing the old service does not stop evaluation", func() {
 		s.Require().NoError(h.situations.EvaluateSituation(ctx, mergedSituation.ID))
 		stored := client.SituationJudgment.GetX(ctx, judgment.ID)
-		s.Equal([]uuid.UUID{otherID}, stored.Facts.Signals[0].EntityIDs, "facts are history and keep the old ID")
+		s.Equal([]uuid.UUID{otherID}, stored.Facts.Observations[0].EntityIDs, "facts are history and keep the old ID")
 	})
 
 	s.Run("the provider read names the survivor and keeps its input", func() {

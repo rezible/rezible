@@ -31,7 +31,7 @@ func TestParseScenarioRejectsInvalidScenarios(t *testing.T) {
 			"events": []any{map[string]any{
 				"ref": "first", "kind": "alert_instance", "resource_ref": "alert:first", "attributes": map[string]any{},
 			}},
-			"setup":  map[string]any{"situation": map[string]any{"title": "First", "signals": []any{"first"}}},
+			"setup":  map[string]any{"situation": map[string]any{"title": "First", "observations": []any{"first"}}},
 			"phases": []any{map[string]any{"check": []any{map[string]any{"kind": "report_published"}}}},
 		}
 	}
@@ -46,7 +46,7 @@ func TestParseScenarioRejectsInvalidScenarios(t *testing.T) {
 		{"an agent with no harness", func(s map[string]any) { s["agent"] = "chat" }, `agent "chat"`},
 		{"an event without a kind", func(s map[string]any) { delete(s["events"].([]any)[0].(map[string]any), "kind") }, "no kind"},
 		{"a setup naming no setup event", func(s map[string]any) {
-			s["setup"] = map[string]any{"situation": map[string]any{"title": "First", "signals": []any{"later"}}}
+			s["setup"] = map[string]any{"situation": map[string]any{"title": "First", "observations": []any{"later"}}}
 		}, `names "later"`},
 		{"an unknown check kind", func(s map[string]any) { checks(s)[0] = map[string]any{"kind": "report_is_good"} }, `no check kind "report_is_good"`},
 		{"a count with no bound", func(s map[string]any) { checks(s)[0] = map[string]any{"kind": "provider_reads"} }, "no min or max"},

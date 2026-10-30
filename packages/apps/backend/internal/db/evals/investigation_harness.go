@@ -23,7 +23,6 @@ import (
 	kev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
-	siti "github.com/rezible/rezible/ent/situationinvestigation"
 )
 
 // investigationHarness evaluates the investigation agent. Its session starts when a situation is raised with
@@ -46,11 +45,12 @@ func (h *investigationHarness) CheckKinds() []string {
 	return investigationCheckKinds
 }
 
-// investigationSetup is the situation the investigation starts on: a title and the setup events whose signals it holds.
+// investigationSetup is the situation the investigation starts on: a title and the setup events whose
+// observations it holds.
 type investigationSetup struct {
 	Situation struct {
-		Title   string   `json:"title"`
-		Signals []string `json:"signals"`
+		Title        string   `json:"title"`
+		Observations []string `json:"observations"`
 	} `json:"situation"`
 }
 
@@ -62,10 +62,10 @@ func (h *investigationHarness) decodeSetup(raw json.RawMessage, setupEventRefs m
 	if strings.TrimSpace(setup.Situation.Title) == "" {
 		return nil, fmt.Errorf("the situation has no title")
 	}
-	if len(setup.Situation.Signals) == 0 {
-		return nil, fmt.Errorf("the situation has no signals")
+	if len(setup.Situation.Observations) == 0 {
+		return nil, fmt.Errorf("the situation has no observations")
 	}
-	for _, ref := range setup.Situation.Signals {
+	for _, ref := range setup.Situation.Observations {
 		if !setupEventRefs.Contains(ref) {
 			return nil, fmt.Errorf("the situation names %q, which is not a setup event", ref)
 		}
@@ -79,42 +79,39 @@ func (h *investigationHarness) ValidateSetup(raw json.RawMessage, setupEventRefs
 }
 
 // Setup creates the situation raised with an investigation, and returns the investigation's session.
-func (h *investigationHarness) Setup(ctx context.Context, raw json.RawMessage, signals map[string][]uuid.UUID) (uuid.UUID, error) {
+func (h *investigationHarness) Setup(ctx context.Context, raw json.RawMessage, observations map[string][]rez.SituationObservationRef) (uuid.UUID, error) {
 	refs := mapset.NewSet[string]()
-	for ref := range signals {
+	for ref := range observations {
 		refs.Add(ref)
 	}
 	setup, decodeErr := h.decodeSetup(raw, refs)
 	if decodeErr != nil {
 		return uuid.Nil, decodeErr
 	}
-	var signalIDs []uuid.UUID
-	for _, ref := range setup.Situation.Signals {
-		if len(signals[ref]) == 0 {
-			return uuid.Nil, fmt.Errorf("event %s produced no signal", ref)
+	var situationObservations []rez.SituationObservationRef
+	for _, ref := range setup.Situation.Observations {
+		if len(observations[ref]) == 0 {
+			return uuid.Nil, fmt.Errorf("event %s produced no observation", ref)
 		}
-		signalIDs = append(signalIDs, signals[ref]...)
+		situationObservations = append(situationObservations, observations[ref]...)
 	}
 	params := rez.CreateSituationParams{
 		Title:        setup.Situation.Title,
-		SeedEntityID: signalIDs[0],
-		ObservationGroups: []rez.SituationObservationGroupParams{
-			{Title: setup.Situation.Title, SignalEntityIDs: signalIDs},
-		},
-		Raise: &rez.RaiseSituationParams{StartInvestigation: true, Reason: "Raised by an evaluation scenario"},
+		Observations: situationObservations,
+		Raise:        &rez.RaiseSituationParams{StartInvestigation: true, Reason: "Raised by an evaluation scenario"},
 	}
 	situation, createErr := h.situations.CreateSituation(ctx, params)
 	if createErr != nil {
 		return uuid.Nil, fmt.Errorf("create the situation: %w", createErr)
 	}
-	queryInvestigation := h.db.Client(ctx).SituationInvestigation.Query().
-		Where(siti.SituationID(situation.ID)).
-		WithInvestigation()
-	link, linkErr := queryInvestigation.Only(ctx)
-	if linkErr != nil {
-		return uuid.Nil, fmt.Errorf("find the situation's investigation: %w", linkErr)
+	if situation.InvestigationID == nil {
+		return uuid.Nil, fmt.Errorf("the situation has no investigation")
 	}
-	return link.Edges.Investigation.AgentSessionID, nil
+	investigation, queryErr := h.db.Client(ctx).Investigation.Get(ctx, *situation.InvestigationID)
+	if queryErr != nil {
+		return uuid.Nil, fmt.Errorf("find the situation's investigation: %w", queryErr)
+	}
+	return investigation.AgentSessionID, nil
 }
 
 func (h *investigationHarness) investigation(ctx context.Context, sessionID uuid.UUID) (*ent.Investigation, error) {

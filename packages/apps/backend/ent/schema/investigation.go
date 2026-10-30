@@ -52,7 +52,7 @@ func (Investigation) Edges() []ent.Edge {
 			Immutable().
 			Field("system_analysis_id"),
 
-		edge.To("situations", SituationInvestigation.Type),
+		edge.From("situations", Situation.Type).Ref("investigation"),
 
 		edge.To("user_inputs", InvestigationUserInput.Type),
 		edge.To("evidence_revisions", InvestigationEvidenceRevision.Type),

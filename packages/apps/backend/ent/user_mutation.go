@@ -18,69 +18,66 @@ import (
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                                  Op
-	typ                                 string
-	id                                  *uuid.UUID
-	email                               *string
-	name                                *string
-	chat_id                             *string
-	timezone                            *string
-	notification_preferences            *map[string]bool
-	auth_provider_id                    *string
-	role                                *user.Role
-	clearedFields                       map[string]struct{}
-	tenant                              *int
-	clearedtenant                       bool
-	knowledge_entity                    *uuid.UUID
-	clearedknowledge_entity             bool
-	teams                               map[uuid.UUID]struct{}
-	removedteams                        map[uuid.UUID]struct{}
-	clearedteams                        bool
-	watched_oncall_rosters              map[uuid.UUID]struct{}
-	removedwatched_oncall_rosters       map[uuid.UUID]struct{}
-	clearedwatched_oncall_rosters       bool
-	oncall_schedules                    map[uuid.UUID]struct{}
-	removedoncall_schedules             map[uuid.UUID]struct{}
-	clearedoncall_schedules             bool
-	oncall_shifts                       map[uuid.UUID]struct{}
-	removedoncall_shifts                map[uuid.UUID]struct{}
-	clearedoncall_shifts                bool
-	event_annotations                   map[uuid.UUID]struct{}
-	removedevent_annotations            map[uuid.UUID]struct{}
-	clearedevent_annotations            bool
-	situation_hazard_assessments        map[uuid.UUID]struct{}
-	removedsituation_hazard_assessments map[uuid.UUID]struct{}
-	clearedsituation_hazard_assessments bool
-	integration_oauth_states            map[uuid.UUID]struct{}
-	removedintegration_oauth_states     map[uuid.UUID]struct{}
-	clearedintegration_oauth_states     bool
-	incident_milestones                 map[uuid.UUID]struct{}
-	removedincident_milestones          map[uuid.UUID]struct{}
-	clearedincident_milestones          bool
-	incident_debriefs                   map[uuid.UUID]struct{}
-	removedincident_debriefs            map[uuid.UUID]struct{}
-	clearedincident_debriefs            bool
-	review_requests                     map[uuid.UUID]struct{}
-	removedreview_requests              map[uuid.UUID]struct{}
-	clearedreview_requests              bool
-	review_responses                    map[uuid.UUID]struct{}
-	removedreview_responses             map[uuid.UUID]struct{}
-	clearedreview_responses             bool
-	discussion_threads                  map[uuid.UUID]struct{}
-	removeddiscussion_threads           map[uuid.UUID]struct{}
-	cleareddiscussion_threads           bool
-	discussion_comments                 map[uuid.UUID]struct{}
-	removeddiscussion_comments          map[uuid.UUID]struct{}
-	cleareddiscussion_comments          bool
-	document_accesses                   map[uuid.UUID]struct{}
-	removeddocument_accesses            map[uuid.UUID]struct{}
-	cleareddocument_accesses            bool
-	team_memberships                    map[uuid.UUID]struct{}
-	removedteam_memberships             map[uuid.UUID]struct{}
-	clearedteam_memberships             bool
-	done                                bool
-	oldValue                            func(context.Context) (*User, error)
-	predicates                          []predicate.User
+	op                              Op
+	typ                             string
+	id                              *uuid.UUID
+	email                           *string
+	name                            *string
+	chat_id                         *string
+	timezone                        *string
+	notification_preferences        *map[string]bool
+	auth_provider_id                *string
+	role                            *user.Role
+	clearedFields                   map[string]struct{}
+	tenant                          *int
+	clearedtenant                   bool
+	knowledge_entity                *uuid.UUID
+	clearedknowledge_entity         bool
+	teams                           map[uuid.UUID]struct{}
+	removedteams                    map[uuid.UUID]struct{}
+	clearedteams                    bool
+	watched_oncall_rosters          map[uuid.UUID]struct{}
+	removedwatched_oncall_rosters   map[uuid.UUID]struct{}
+	clearedwatched_oncall_rosters   bool
+	oncall_schedules                map[uuid.UUID]struct{}
+	removedoncall_schedules         map[uuid.UUID]struct{}
+	clearedoncall_schedules         bool
+	oncall_shifts                   map[uuid.UUID]struct{}
+	removedoncall_shifts            map[uuid.UUID]struct{}
+	clearedoncall_shifts            bool
+	event_annotations               map[uuid.UUID]struct{}
+	removedevent_annotations        map[uuid.UUID]struct{}
+	clearedevent_annotations        bool
+	integration_oauth_states        map[uuid.UUID]struct{}
+	removedintegration_oauth_states map[uuid.UUID]struct{}
+	clearedintegration_oauth_states bool
+	incident_milestones             map[uuid.UUID]struct{}
+	removedincident_milestones      map[uuid.UUID]struct{}
+	clearedincident_milestones      bool
+	incident_debriefs               map[uuid.UUID]struct{}
+	removedincident_debriefs        map[uuid.UUID]struct{}
+	clearedincident_debriefs        bool
+	review_requests                 map[uuid.UUID]struct{}
+	removedreview_requests          map[uuid.UUID]struct{}
+	clearedreview_requests          bool
+	review_responses                map[uuid.UUID]struct{}
+	removedreview_responses         map[uuid.UUID]struct{}
+	clearedreview_responses         bool
+	discussion_threads              map[uuid.UUID]struct{}
+	removeddiscussion_threads       map[uuid.UUID]struct{}
+	cleareddiscussion_threads       bool
+	discussion_comments             map[uuid.UUID]struct{}
+	removeddiscussion_comments      map[uuid.UUID]struct{}
+	cleareddiscussion_comments      bool
+	document_accesses               map[uuid.UUID]struct{}
+	removeddocument_accesses        map[uuid.UUID]struct{}
+	cleareddocument_accesses        bool
+	team_memberships                map[uuid.UUID]struct{}
+	removedteam_memberships         map[uuid.UUID]struct{}
+	clearedteam_memberships         bool
+	done                            bool
+	oldValue                        func(context.Context) (*User, error)
+	predicates                      []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -900,60 +897,6 @@ func (m *UserMutation) ResetEventAnnotations() {
 	m.removedevent_annotations = nil
 }
 
-// AddSituationHazardAssessmentIDs adds the "situation_hazard_assessments" edge to the SituationHazardAssessment entity by ids.
-func (m *UserMutation) AddSituationHazardAssessmentIDs(ids ...uuid.UUID) {
-	if m.situation_hazard_assessments == nil {
-		m.situation_hazard_assessments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.situation_hazard_assessments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSituationHazardAssessments clears the "situation_hazard_assessments" edge to the SituationHazardAssessment entity.
-func (m *UserMutation) ClearSituationHazardAssessments() {
-	m.clearedsituation_hazard_assessments = true
-}
-
-// SituationHazardAssessmentsCleared reports if the "situation_hazard_assessments" edge to the SituationHazardAssessment entity was cleared.
-func (m *UserMutation) SituationHazardAssessmentsCleared() bool {
-	return m.clearedsituation_hazard_assessments
-}
-
-// RemoveSituationHazardAssessmentIDs removes the "situation_hazard_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (m *UserMutation) RemoveSituationHazardAssessmentIDs(ids ...uuid.UUID) {
-	if m.removedsituation_hazard_assessments == nil {
-		m.removedsituation_hazard_assessments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.situation_hazard_assessments, ids[i])
-		m.removedsituation_hazard_assessments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSituationHazardAssessments returns the removed IDs of the "situation_hazard_assessments" edge to the SituationHazardAssessment entity.
-func (m *UserMutation) RemovedSituationHazardAssessmentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsituation_hazard_assessments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SituationHazardAssessmentsIDs returns the "situation_hazard_assessments" edge IDs in the mutation.
-func (m *UserMutation) SituationHazardAssessmentsIDs() (ids []uuid.UUID) {
-	for id := range m.situation_hazard_assessments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSituationHazardAssessments resets all changes to the "situation_hazard_assessments" edge.
-func (m *UserMutation) ResetSituationHazardAssessments() {
-	m.situation_hazard_assessments = nil
-	m.clearedsituation_hazard_assessments = false
-	m.removedsituation_hazard_assessments = nil
-}
-
 // AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationUserInstallState entity by ids.
 func (m *UserMutation) AddIntegrationOauthStateIDs(ids ...uuid.UUID) {
 	if m.integration_oauth_states == nil {
@@ -1745,7 +1688,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 16)
 	if m.tenant != nil {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -1766,9 +1709,6 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.event_annotations != nil {
 		edges = append(edges, user.EdgeEventAnnotations)
-	}
-	if m.situation_hazard_assessments != nil {
-		edges = append(edges, user.EdgeSituationHazardAssessments)
 	}
 	if m.integration_oauth_states != nil {
 		edges = append(edges, user.EdgeIntegrationOauthStates)
@@ -1842,12 +1782,6 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeSituationHazardAssessments:
-		ids := make([]ent.Value, 0, len(m.situation_hazard_assessments))
-		for id := range m.situation_hazard_assessments {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeIntegrationOauthStates:
 		ids := make([]ent.Value, 0, len(m.integration_oauth_states))
 		for id := range m.integration_oauth_states {
@@ -1908,7 +1842,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 16)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -1923,9 +1857,6 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedevent_annotations != nil {
 		edges = append(edges, user.EdgeEventAnnotations)
-	}
-	if m.removedsituation_hazard_assessments != nil {
-		edges = append(edges, user.EdgeSituationHazardAssessments)
 	}
 	if m.removedintegration_oauth_states != nil {
 		edges = append(edges, user.EdgeIntegrationOauthStates)
@@ -1991,12 +1922,6 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeSituationHazardAssessments:
-		ids := make([]ent.Value, 0, len(m.removedsituation_hazard_assessments))
-		for id := range m.removedsituation_hazard_assessments {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeIntegrationOauthStates:
 		ids := make([]ent.Value, 0, len(m.removedintegration_oauth_states))
 		for id := range m.removedintegration_oauth_states {
@@ -2057,7 +1982,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 16)
 	if m.clearedtenant {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -2078,9 +2003,6 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedevent_annotations {
 		edges = append(edges, user.EdgeEventAnnotations)
-	}
-	if m.clearedsituation_hazard_assessments {
-		edges = append(edges, user.EdgeSituationHazardAssessments)
 	}
 	if m.clearedintegration_oauth_states {
 		edges = append(edges, user.EdgeIntegrationOauthStates)
@@ -2130,8 +2052,6 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedoncall_shifts
 	case user.EdgeEventAnnotations:
 		return m.clearedevent_annotations
-	case user.EdgeSituationHazardAssessments:
-		return m.clearedsituation_hazard_assessments
 	case user.EdgeIntegrationOauthStates:
 		return m.clearedintegration_oauth_states
 	case user.EdgeIncidentMilestones:
@@ -2192,9 +2112,6 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeEventAnnotations:
 		m.ResetEventAnnotations()
-		return nil
-	case user.EdgeSituationHazardAssessments:
-		m.ResetSituationHazardAssessments()
 		return nil
 	case user.EdgeIntegrationOauthStates:
 		m.ResetIntegrationOauthStates()

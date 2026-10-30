@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	invfvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/sequencecounter"
 	vc "github.com/rezible/rezible/ent/videoconference"
 )
@@ -30,6 +31,15 @@ func (ims IncidentMilestones) GetLatest(kinds ...incidentmilestone.Kind) *Incide
 		}
 	}
 	return latest
+}
+
+// Ref is the reference of what the observation observes. Each observation kind sets its own edge field.
+func (so *SituationObservation) Ref() schematypes.SituationObservationRef {
+	var ref schematypes.SituationObservationRef
+	if so.AlertEpisodeID != nil {
+		ref.AlertEpisodeID = *so.AlertEpisodeID
+	}
+	return ref
 }
 
 func (vcs VideoConferences) GetPrimary() *VideoConference {

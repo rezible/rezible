@@ -24,7 +24,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/review"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
@@ -238,21 +237,6 @@ func (_c *UserCreate) AddEventAnnotations(v ...*EventAnnotation) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddEventAnnotationIDs(ids...)
-}
-
-// AddSituationHazardAssessmentIDs adds the "situation_hazard_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (_c *UserCreate) AddSituationHazardAssessmentIDs(ids ...uuid.UUID) *UserCreate {
-	_c.mutation.AddSituationHazardAssessmentIDs(ids...)
-	return _c
-}
-
-// AddSituationHazardAssessments adds the "situation_hazard_assessments" edges to the SituationHazardAssessment entity.
-func (_c *UserCreate) AddSituationHazardAssessments(v ...*SituationHazardAssessment) *UserCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddSituationHazardAssessmentIDs(ids...)
 }
 
 // AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationUserInstallState entity by IDs.
@@ -655,23 +639,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.EventAnnotation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.SituationHazardAssessmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SituationHazardAssessmentsTable,
-			Columns: []string{user.SituationHazardAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SituationHazardAssessment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

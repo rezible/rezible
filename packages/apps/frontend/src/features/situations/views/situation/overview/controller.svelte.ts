@@ -3,20 +3,12 @@ import type { StatusPresentation } from "$components/common/status-badge/status"
 import { isValidTime } from "$lib/time";
 import type { TimelineEntry } from "$components/common/timeline/Timeline.svelte";
 import { useSituationController } from "../controller.svelte";
-import {
-	observationGroups,
-	situationLinkKindLabel,
-	situationSourceCount,
-	type ReportState,
-	type SourceRecord,
-} from "$features/situations/lib/model";
-import { situationHref } from "$features/situations/lib/routes";
+import { observationGroups, type ReportState, type SourceRecord } from "$features/situations/lib/model";
 import {
 	closeReasonLabel,
-	FIRST_SIGNAL_LABEL,
+	FIRST_OBSERVATION_LABEL,
 	muteReasonLabel,
 	RAISED_LABEL,
-	situationStageStatus,
 	WATCHING_SINCE_LABEL,
 } from "$features/situations/lib/status";
 import { SourceInspection } from "$features/situations/lib/sourceInspection.svelte";
@@ -45,14 +37,6 @@ export type UnderstandingState =
 
 export type HeaderFact = { key: string; label: string; at: string; detail?: string };
 
-export type RelatedSituation = {
-	key: string;
-	kindLabel: string;
-	title: string;
-	href: string;
-	status: StatusPresentation;
-};
-
 export class SituationOverviewController {
 	private pageController = useSituationController();
 
@@ -64,12 +48,7 @@ export class SituationOverviewController {
 
 	situationAttributes = $derived(this.pageController.situation?.attributes);
 	headerFacts = $derived(this.getHeaderFacts());
-	why = $derived(
-		this.situationAttributes
-			? whyPanelState(this.situationAttributes, this.pageController.origin)
-			: undefined
-	);
-	relatedSituations = $derived(this.getRelatedSituations());
+	why = $derived(this.situationAttributes ? whyPanelState(this.situationAttributes) : undefined);
 
 	understanding = $derived(this.getUnderstanding());
 
@@ -77,12 +56,13 @@ export class SituationOverviewController {
 
 	observations = $derived(
 		observationGroups(
+			this.situationAttributes?.observations ?? [],
 			this.situationAttributes?.observationGroups ?? [],
-			this.pageController.episodesByEntity
+			this.pageController.episodesById
 		)
 	);
-	sourceCount = $derived(this.situationAttributes ? situationSourceCount(this.situationAttributes) : 0);
-	private initialGroupId = $derived(this.situationAttributes?.observationGroups[0]?.id);
+	observationCount = $derived(this.situationAttributes?.observations.length ?? 0);
+	private initialGroupId = $derived(this.observations[0]?.id);
 	private groupChoices = $state<Record<string, boolean>>({});
 
 	timeline = $derived(this.getTimeline());
@@ -103,10 +83,6 @@ export class SituationOverviewController {
 
 	get situationUnavailable() {
 		return this.pageController.situationUnavailable;
-	}
-
-	get originLoading() {
-		return this.pageController.originLoading;
 	}
 
 	get longRunning() {
@@ -193,7 +169,7 @@ export class SituationOverviewController {
 		}
 
 		const facts: HeaderFact[] = [
-			{ key: "first-signal", label: FIRST_SIGNAL_LABEL, at: attributes.openedAt },
+			{ key: "first-observation", label: FIRST_OBSERVATION_LABEL, at: attributes.openedAt },
 		];
 		facts.push({ key: "watching", label: WATCHING_SINCE_LABEL, at: attributes.createdAt });
 		if (attributes.raisedAt) {
@@ -219,17 +195,6 @@ export class SituationOverviewController {
 			});
 		}
 		return facts.filter((fact) => isValidTime(fact.at));
-	}
-
-	private getRelatedSituations() {
-		const links = this.situationAttributes?.links ?? [];
-		return links.map((link): RelatedSituation => ({
-			key: `${link.kind}:${link.situationId}`,
-			kindLabel: situationLinkKindLabel(link.kind),
-			title: link.title,
-			href: situationHref(link.situationReference),
-			status: situationStageStatus(link.stage),
-		}));
 	}
 
 	private getUnderstanding(): UnderstandingState {
@@ -278,7 +243,7 @@ export class SituationOverviewController {
 		const candidates: TimelineEntry[] = [];
 
 		if (attributes) {
-			candidates.push({ key: "opened", label: FIRST_SIGNAL_LABEL, at: attributes.openedAt });
+			candidates.push({ key: "opened", label: FIRST_OBSERVATION_LABEL, at: attributes.openedAt });
 		}
 		if (attributes?.raisedAt) {
 			candidates.push({ key: "raised", label: "Situation raised", at: attributes.raisedAt });

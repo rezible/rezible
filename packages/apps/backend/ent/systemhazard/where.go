@@ -544,35 +544,6 @@ func HasRiskAssessmentsWith(preds ...predicate.SystemHazardRiskAssessment) predi
 	})
 }
 
-// HasSituationAssessments applies the HasEdge predicate on the "situation_assessments" edge.
-func HasSituationAssessments() predicate.SystemHazard {
-	return predicate.SystemHazard(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SituationAssessmentsTable, SituationAssessmentsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationHazardAssessment
-		step.Edge.Schema = schemaConfig.SituationHazardAssessment
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSituationAssessmentsWith applies the HasEdge predicate on the "situation_assessments" edge with a given conditions (other predicates).
-func HasSituationAssessmentsWith(preds ...predicate.SituationHazardAssessment) predicate.SystemHazard {
-	return predicate.SystemHazard(func(s *sql.Selector) {
-		step := newSituationAssessmentsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationHazardAssessment
-		step.Edge.Schema = schemaConfig.SituationHazardAssessment
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.SystemHazard) predicate.SystemHazard {
 	return predicate.SystemHazard(sql.AndPredicates(predicates...))

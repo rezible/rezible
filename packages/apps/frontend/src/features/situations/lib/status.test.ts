@@ -42,12 +42,7 @@ test("situationStatus precedence: closed, muted, raised, watching", () => {
 		[{ stage: "candidate", mutedAt: at, muteReason: "expected" }, "Muted", "neutral", "Expected"],
 		[{ stage: "raised", raisedAt: at }, "Raised", "warning", undefined],
 		[{ stage: "candidate" }, "Watching", "neutral", undefined],
-		[
-			{ stage: "candidate", investigation: { investigation: { id: "inv" } } },
-			"Watching",
-			"neutral",
-			undefined,
-		],
+		[{ stage: "candidate", investigationId: "inv" }, "Watching", "neutral", undefined],
 	];
 	for (const [attributes, label, tone, description] of cases) {
 		const status = situationStatus(situation(attributes));
@@ -84,7 +79,7 @@ test("activeHoldUntil protects only before the deadline", () => {
 	expect(activeHoldUntil(situation({ holdUntil: later, closedAt: at }), now)).toBeUndefined();
 });
 
-test("situationSummaryTimes: first signal, then closed, muted, raised or watching", () => {
+test("situationSummaryTimes: first observation, then closed, muted, raised or watching", () => {
 	const cases: [Partial<SituationAttributes>, string][] = [
 		[{ closedAt: at, mutedAt: at, raisedAt: at }, "closed"],
 		[{ mutedAt: at, raisedAt: at }, "muted"],
@@ -93,7 +88,7 @@ test("situationSummaryTimes: first signal, then closed, muted, raised or watchin
 	];
 	for (const [attributes, state] of cases) {
 		const times = situationSummaryTimes(situation({ openedAt: at, createdAt: at, ...attributes }));
-		expect(times.map((time) => time.key)).toEqual(["first-signal", state]);
+		expect(times.map((time) => time.key)).toEqual(["first-observation", state]);
 	}
 });
 

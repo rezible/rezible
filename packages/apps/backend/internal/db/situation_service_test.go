@@ -23,10 +23,7 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitact "github.com/rezible/rezible/ent/situationaction"
-	sitha "github.com/rezible/rezible/ent/situationhazardassessment"
-	sitlink "github.com/rezible/rezible/ent/situationlink"
 	sitnot "github.com/rezible/rezible/ent/situationnotice"
-	sitsig "github.com/rezible/rezible/ent/situationsignal"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	saes "github.com/rezible/rezible/ent/systemanalysisentrysubject"
 	"github.com/rezible/rezible/pkg/errs"
@@ -54,7 +51,7 @@ type situationServiceFixture struct {
 	knowledge  *KnowledgeGraphIngestionService
 	alerts     *AlertService
 	situations *SituationService
-	// notified are the signals captured from inserted process-situation-signal jobs, not yet processed.
+	// notified are the observations captured from inserted process-situation-observation jobs, not yet processed.
 	notified []uuid.UUID
 	// evaluations are the captured evaluate-situation jobs, in order.
 	evaluations []jobs.EvaluateSituation
@@ -69,8 +66,8 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 		Insert(mock.Anything, mock.Anything, mock.Anything).
 		RunAndReturn(func(_ context.Context, args river.JobArgs, opts *river.InsertOpts) (*rivertype.JobInsertResult, error) {
 			switch args := args.(type) {
-			case jobs.ProcessSituationSignal:
-				h.notified = append(h.notified, args.SignalEntityID)
+			case jobs.ProcessSituationObservation:
+				h.notified = append(h.notified, args.Ref.AlertEpisodeID)
 			case jobs.EvaluateSituation:
 				if args.DueAt != nil {
 					s.True(args.DueAt.Equal(opts.ScheduledAt), "an evaluation is scheduled at its due time")
@@ -92,7 +89,7 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 	s.Require().NoError(analysisServiceErr)
 
 	h.knowledge = knowledge
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationSignalService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationObservationService(jobService))
 	s.Require().NoError(alertsErr)
 	messageQueue := mocks.NewMockMessageQueue(s.T())
 	messageQueue.EXPECT().
@@ -159,13 +156,13 @@ func (s *SituationServiceSuite) ingestRelationship(ctx context.Context, tdb rez.
 	s.Require().NoError(h.knowledge.IngestEvidence(ctx, event, evidence...))
 }
 
-// signal records a firing critical alert of its own definition, starting `start` minutes after
-// situationTestStart, whose notification observed the entities. It returns the episode's knowledge entity.
-func (s *SituationServiceSuite) signal(ctx context.Context, tdb rez.Database, h *situationServiceFixture, definition string, start int, entities ...rez.KnowledgeEntityRef) uuid.UUID {
-	return s.signalWithSeverity(ctx, tdb, h, definition, schematypes.SignalSeverityCritical, start, entities...)
+// alertEpisode records a firing critical alert of its own definition, starting `start` minutes after
+// situationTestStart, whose notification observed the entities. It returns the episode.
+func (s *SituationServiceSuite) alertEpisode(ctx context.Context, tdb rez.Database, h *situationServiceFixture, definition string, start int, entities ...rez.KnowledgeEntityRef) uuid.UUID {
+	return s.alertEpisodeWithSeverity(ctx, tdb, h, definition, schematypes.SignalSeverityCritical, start, entities...)
 }
 
-func (s *SituationServiceSuite) signalWithSeverity(ctx context.Context, tdb rez.Database, h *situationServiceFixture, definition string, severity schematypes.SignalSeverity, start int, entities ...rez.KnowledgeEntityRef) uuid.UUID {
+func (s *SituationServiceSuite) alertEpisodeWithSeverity(ctx context.Context, tdb rez.Database, h *situationServiceFixture, definition string, severity schematypes.SignalSeverity, start int, entities ...rez.KnowledgeEntityRef) uuid.UUID {
 	startedAt := situationTestStart.Add(time.Duration(start) * time.Minute)
 	event := s.testEvent(ctx, tdb, definition, startedAt)
 	definitionRef := s.entityRef(kne.CategorySignal, definition)
@@ -193,14 +190,23 @@ func (s *SituationServiceSuite) signalWithSeverity(ctx context.Context, tdb rez.
 		Where(ale.HasInstancesWith(ali.HasEventsWith(aie.EventID(event.ID))))
 	episode, episodeErr := queryEpisode.Only(ctx)
 	s.Require().NoError(episodeErr)
-	return *episode.KnowledgeEntityID
+	return episode.ID
 }
 
-// create creates a candidate seeded by the first signal, with one group per title.
-func (s *SituationServiceSuite) create(ctx context.Context, h *situationServiceFixture, groups map[string][]uuid.UUID, seed uuid.UUID) *ent.Situation {
-	params := rez.CreateSituationParams{Title: "Checkout degradation", SeedEntityID: seed}
-	for title, signalIDs := range groups {
-		group := rez.SituationObservationGroupParams{Title: title, SignalEntityIDs: signalIDs}
+// episodeRefs references the alert episodes.
+func episodeRefs(ids ...uuid.UUID) []rez.SituationObservationRef {
+	refs := make([]rez.SituationObservationRef, len(ids))
+	for i, id := range ids {
+		refs[i] = rez.SituationObservationRef{AlertEpisodeID: id}
+	}
+	return refs
+}
+
+// create creates a candidate with one group per title.
+func (s *SituationServiceSuite) create(ctx context.Context, h *situationServiceFixture, groups map[string][]uuid.UUID) *ent.Situation {
+	params := rez.CreateSituationParams{Title: "Checkout degradation"}
+	for title, episodeIDs := range groups {
+		group := rez.SituationObservationGroupParams{Title: title, Observations: episodeRefs(episodeIDs...)}
 		params.ObservationGroups = append(params.ObservationGroups, group)
 	}
 	created, createErr := h.situations.CreateSituation(ctx, params)
@@ -216,12 +222,10 @@ func (s *SituationServiceSuite) entities(situation *ent.Situation) map[uuid.UUID
 	return matching
 }
 
-func (s *SituationServiceSuite) members(situation *ent.Situation) map[uuid.UUID]*ent.SituationSignal {
-	members := make(map[uuid.UUID]*ent.SituationSignal)
-	for _, group := range situation.Edges.ObservationGroups {
-		for _, member := range group.Edges.Signals {
-			members[member.KnowledgeEntityID] = member
-		}
+func (s *SituationServiceSuite) members(situation *ent.Situation) map[uuid.UUID]*ent.SituationObservation {
+	members := make(map[uuid.UUID]*ent.SituationObservation)
+	for _, member := range situation.Edges.Observations {
+		members[*member.AlertEpisodeID] = member
 	}
 	return members
 }
@@ -243,49 +247,50 @@ func (s *SituationServiceSuite) TestCreateAndAttach() {
 		fleet = append(fleet, s.entityRef(kne.CategoryContainer, "fleet-"+name))
 	}
 
-	seed := s.signal(ctx, tdb, h, "checkout-errors", 5, handler)
-	broad := s.signal(ctx, tdb, h, "fleet-errors", 6, fleet...)
-	created := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {seed}, "Fleet": {broad}}, seed)
+	seed := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5, handler)
+	broad := s.alertEpisode(ctx, tdb, h, "fleet-errors", 6, fleet...)
+	created := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {seed}, "Fleet": {broad}})
 
 	s.Nil(created.RaisedAt, "a new situation is a candidate")
 	s.True(situationTestStart.Add(5 * time.Minute).Equal(created.OpenedAt))
 	s.True(h.clock.Now().Equal(created.CreatedAt))
-	members := s.members(created)
-	s.Equal(sitsig.MatchKindSeed, members[seed].MatchKind)
-	s.Equal(sitsig.MatchKindManual, members[broad].MatchKind)
+	s.Len(s.members(created), 2)
 	entities := s.entities(created)
 	s.Len(entities, 6)
 	s.True(entities[s.entityID(ctx, h, checkout)], "a component resolves to its container")
-	s.False(entities[s.entityID(ctx, h, fleet[0])], "a broad signal's entities do not match")
+	s.False(entities[s.entityID(ctx, h, fleet[0])], "a broad observation's entities do not match")
 
-	_, conflictErr := h.situations.CreateSituation(ctx, rez.CreateSituationParams{
-		Title:             "Duplicate",
-		SeedEntityID:      seed,
-		ObservationGroups: []rez.SituationObservationGroupParams{{Title: "Checkout", SignalEntityIDs: []uuid.UUID{seed}}},
+	shared, sharedErr := h.situations.CreateSituation(ctx, rez.CreateSituationParams{
+		Title:        "Shared",
+		Observations: episodeRefs(seed),
 	})
-	s.ErrorIs(conflictErr, errs.ErrConflict)
-	containerID := s.entityID(ctx, h, checkout)
-	_, kindErr := h.situations.CreateSituation(ctx, rez.CreateSituationParams{
-		Title:             "Not a signal",
-		SeedEntityID:      containerID,
-		ObservationGroups: []rez.SituationObservationGroupParams{{Title: "Checkout", SignalEntityIDs: []uuid.UUID{containerID}}},
+	s.Require().NoError(sharedErr, "another situation may observe the same episode")
+	s.Empty(shared.Edges.ObservationGroups)
+	s.Nil(shared.Edges.Observations[0].ObservationGroupID)
+	_, unknownErr := h.situations.CreateSituation(ctx, rez.CreateSituationParams{
+		Title:        "Not an episode",
+		Observations: episodeRefs(s.entityID(ctx, h, checkout)),
 	})
-	s.ErrorIs(kindErr, errs.ErrInvalidInput)
+	s.ErrorIs(unknownErr, errs.ErrInvalidInput)
 
-	earlier := s.signal(ctx, tdb, h, "checkout-latency", 1, checkout)
-	attach := AttachSituationSignalsParams{
-		SituationID:     created.ID,
-		GroupTitle:      "Checkout",
-		SignalEntityIDs: []uuid.UUID{earlier, seed},
-		MatchKind:       sitsig.MatchKindSharedEntity,
+	earlier := s.alertEpisode(ctx, tdb, h, "checkout-latency", 1, checkout)
+	groupID := created.Edges.ObservationGroups[0].ID
+	foreignGroup := AttachSituationObservationsParams{
+		SituationID:  shared.ID,
+		GroupID:      &groupID,
+		Observations: episodeRefs(earlier),
 	}
-	s.Require().NoError(h.situations.AttachSituationSignals(ctx, attach))
+	s.ErrorIs(h.situations.AttachSituationObservations(ctx, foreignGroup), errs.ErrInvalidInput, "a group must be the situation's own")
+	attach := AttachSituationObservationsParams{
+		SituationID:  created.ID,
+		Observations: episodeRefs(earlier, seed),
+	}
+	s.Require().NoError(h.situations.AttachSituationObservations(ctx, attach))
 	attached, getErr := h.situations.GetSituation(ctx, sit.ID(created.ID))
 	s.Require().NoError(getErr)
-	s.Len(attached.Edges.ObservationGroups, 2, "the group with the same title is reused")
-	s.Len(s.members(attached), 3)
-	s.Equal(sitsig.MatchKindSeed, s.members(attached)[seed].MatchKind, "a signal already held is skipped")
-	s.True(situationTestStart.Add(time.Minute).Equal(attached.OpenedAt), "an earlier signal lowers the opening")
+	s.Len(s.members(attached), 3, "an episode already observed is skipped")
+	s.Nil(s.members(attached)[earlier].ObservationGroupID)
+	s.True(situationTestStart.Add(time.Minute).Equal(attached.OpenedAt), "an earlier observation lowers the opening")
 	s.Len(s.entities(attached), 6)
 }
 
@@ -294,11 +299,11 @@ func (s *SituationServiceSuite) TestMerge() {
 	h := s.newFixture(tdb)
 	checkout := s.entityRef(kne.CategoryContainer, "checkout")
 	payments := s.entityRef(kne.CategoryContainer, "payments")
-	first := s.signal(ctx, tdb, h, "checkout-errors", 5, checkout)
-	second := s.signal(ctx, tdb, h, "checkout-latency", 2, checkout)
-	third := s.signal(ctx, tdb, h, "payment-errors", 3, payments)
-	target := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {first}}, first)
-	source := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {second}, "Payments": {third}}, second)
+	first := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5, checkout)
+	second := s.alertEpisode(ctx, tdb, h, "checkout-latency", 2, checkout)
+	third := s.alertEpisode(ctx, tdb, h, "payment-errors", 3, payments)
+	target := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {first}})
+	source := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {second}, "Payments": {third}})
 
 	h.clock.Advance(time.Minute)
 	params := rez.MergeSituationsParams{SourceID: source.ID, TargetID: target.ID, Explanation: "same outage"}
@@ -308,7 +313,6 @@ func (s *SituationServiceSuite) TestMerge() {
 	s.Len(merged.Edges.ObservationGroups, 2, "same-title groups join; others move")
 	members := s.members(merged)
 	s.Len(members, 3)
-	s.Equal(sitsig.MatchKindManual, members[third].MatchKind)
 	s.Equal("same outage", members[third].MatchExplanation)
 	s.True(h.clock.Now().Equal(members[second].AttachedAt), "a merge resets attachment time")
 	s.True(situationTestStart.Add(2 * time.Minute).Equal(merged.OpenedAt))
@@ -317,11 +321,8 @@ func (s *SituationServiceSuite) TestMerge() {
 	closed, getErr := h.situations.GetSituation(ctx, sit.ID(source.ID))
 	s.Require().NoError(getErr)
 	s.Equal(sit.CloseReasonMerged, *closed.CloseReason)
-	s.Equal(source.SeedEntityID, closed.SeedEntityID)
 	s.Empty(closed.Edges.Entities)
-	s.Require().Len(closed.Edges.Links, 1)
-	s.Equal(sitlink.KindMergedInto, closed.Edges.Links[0].Kind)
-	s.Equal(target.ID, closed.Edges.Links[0].LinkedSituationID)
+	s.Empty(closed.Edges.Observations)
 	s.Equal(sitact.ActionMerged, closed.Edges.Actions[len(closed.Edges.Actions)-1].Action)
 
 	_, closedErr := h.situations.MergeSituations(ctx, params)
@@ -332,8 +333,8 @@ func (s *SituationServiceSuite) TestLifecycleVerbs() {
 	_, tdb := s.SetupTestDatabase()
 	ctx, identity := s.NewIdentity(tdb, "responder")
 	h := s.newFixture(tdb)
-	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
-	created := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
+	episode := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
+	created := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {episode}})
 	actionCount := func(situation *ent.Situation) int { return len(situation.Edges.Actions) }
 
 	muted, muteErr := h.situations.SetSituationMute(ctx, created.ID, &rez.SituationMute{Reason: sit.MuteReasonNotNoteworthy})
@@ -368,8 +369,8 @@ func (s *SituationServiceSuite) TestLifecycleVerbs() {
 	_, closedMuteErr := h.situations.SetSituationMute(ctx, created.ID, nil)
 	s.ErrorIs(closedMuteErr, errs.ErrConflict)
 
-	other := s.signal(ctx, tdb, h, "payment-errors", 5)
-	dismissed := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {other}}, other)
+	other := s.alertEpisode(ctx, tdb, h, "payment-errors", 5)
+	dismissed := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {other}})
 	_, _ = h.situations.SetSituationMute(ctx, dismissed.ID, &rez.SituationMute{Reason: sit.MuteReasonExpected})
 	closedMuted, _ := h.situations.CloseSituation(ctx, dismissed.ID, rez.CloseSituationParams{})
 	s.Equal(sit.CloseReasonDismissed, *closedMuted.CloseReason)
@@ -433,13 +434,13 @@ func (s *SituationServiceSuite) TestIncidentLinks() {
 	h := s.newFixture(tdb)
 	incidents, _, declare := s.newIncidents(ctx, tdb, h)
 
-	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
-	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
+	episode := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
+	candidate := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {episode}})
 	linked := declare(candidate.ID)
 	raised, getErr := h.situations.GetSituation(ctx, sit.ID(candidate.ID))
 	s.Require().NoError(getErr)
 	s.NotNil(raised.RaisedAt)
-	s.NotNil(raised.Edges.Investigation, "linking an incident starts the investigation")
+	s.NotNil(raised.InvestigationID, "linking an incident starts the investigation")
 	s.Equal(linked.ID, raised.Edges.Incidents[0].ID)
 
 	s.Require().NoError(incidents.UnlinkSituation(ctx, linked.ID, candidate.ID))
@@ -454,8 +455,8 @@ func (s *SituationServiceSuite) TestLinkingAClosedSituationRecordsTheLinkOnly() 
 	h := s.newFixture(tdb)
 	incidents, _, declare := s.newIncidents(ctx, tdb, h)
 
-	signal := s.signal(ctx, tdb, h, "payment-errors", 5)
-	closed := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {signal}}, signal)
+	episode := s.alertEpisode(ctx, tdb, h, "payment-errors", 5)
+	closed := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {episode}})
 	before, closeErr := h.situations.CloseSituation(ctx, closed.ID, rez.CloseSituationParams{})
 	s.Require().NoError(closeErr)
 	linked := declare()
@@ -468,7 +469,7 @@ func (s *SituationServiceSuite) TestLinkingAClosedSituationRecordsTheLinkOnly() 
 	s.Nil(after.RaisedAt)
 	s.Equal(before.CloseReason, after.CloseReason)
 	s.True(before.ClosedAt.Equal(*after.ClosedAt))
-	s.Nil(after.Edges.Investigation)
+	s.Nil(after.InvestigationID)
 	s.Equal(s.actions(before), s.actions(after))
 }
 
@@ -477,8 +478,8 @@ func (s *SituationServiceSuite) TestArchivingAnIncidentUnlinksItsSituations() {
 	h := s.newFixture(tdb)
 	incidents, _, declare := s.newIncidents(ctx, tdb, h)
 
-	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
-	situation := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
+	episode := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
+	situation := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {episode}})
 	archived := declare(situation.ID)
 	kept := declare()
 
@@ -532,8 +533,8 @@ func (s *SituationServiceSuite) TestIncidentChangesSyncSituationNotices() {
 		syncs = nil
 	}
 	noticed := func(name string) *ent.Situation {
-		signal := s.signal(ctx, tdb, h, name, 5)
-		situation := s.create(ctx, h, map[string][]uuid.UUID{name: {signal}}, signal)
+		episode := s.alertEpisode(ctx, tdb, h, name, 5)
+		situation := s.create(ctx, h, map[string][]uuid.UUID{name: {episode}})
 		raised, raiseErr := h.situations.RaiseSituation(ctx, situation.ID, rez.RaiseSituationParams{})
 		s.Require().NoError(raiseErr)
 		client := tdb.Client(ctx)
@@ -604,19 +605,19 @@ func (r *recordingNoticeSender) UpdateSituationNotice(_ context.Context, _, _ st
 func (s *SituationServiceSuite) TestListAlertEpisodesOfASituation() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
-	first := s.signal(ctx, tdb, h, "checkout-errors", 5)
-	second := s.signal(ctx, tdb, h, "checkout-latency", 6)
-	other := s.signal(ctx, tdb, h, "payment-errors", 5)
-	situation := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {first, second}}, first)
-	s.create(ctx, h, map[string][]uuid.UUID{"Payments": {other}}, other)
+	first := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
+	second := s.alertEpisode(ctx, tdb, h, "checkout-latency", 6)
+	other := s.alertEpisode(ctx, tdb, h, "payment-errors", 5)
+	situation := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {first, second}})
+	s.create(ctx, h, map[string][]uuid.UUID{"Payments": {other}})
 
 	episodes, listErr := h.alerts.ListAlertEpisodes(ctx, rez.ListAlertEpisodesParams{SituationID: situation.ID})
 	s.Require().NoError(listErr)
-	var entityIDs []uuid.UUID
+	var episodeIDs []uuid.UUID
 	for _, episode := range episodes.Data {
-		entityIDs = append(entityIDs, *episode.KnowledgeEntityID)
+		episodeIDs = append(episodeIDs, episode.ID)
 	}
-	s.ElementsMatch([]uuid.UUID{first, second}, entityIDs)
+	s.ElementsMatch([]uuid.UUID{first, second}, episodeIDs)
 }
 
 func (s *SituationServiceSuite) TestListSituationsByStageAndMute() {
@@ -624,8 +625,8 @@ func (s *SituationServiceSuite) TestListSituationsByStageAndMute() {
 	h := s.newFixture(tdb)
 	ids := make(map[string]uuid.UUID)
 	for _, name := range []string{"candidate", "raised", "muted", "closed"} {
-		signal := s.signal(ctx, tdb, h, name, 5)
-		ids[name] = s.create(ctx, h, map[string][]uuid.UUID{name: {signal}}, signal).ID
+		episode := s.alertEpisode(ctx, tdb, h, name, 5)
+		ids[name] = s.create(ctx, h, map[string][]uuid.UUID{name: {episode}}).ID
 	}
 	_, raiseErr := h.situations.RaiseSituation(ctx, ids["raised"], rez.RaiseSituationParams{})
 	s.Require().NoError(raiseErr)
@@ -653,10 +654,10 @@ func (s *SituationServiceSuite) TestListSituationsByStageAndMute() {
 func (s *SituationServiceSuite) TestSituationsAreNumberedAndSearchableByReference() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
-	firstSignal := s.signal(ctx, tdb, h, "checkout-errors", 5)
-	secondSignal := s.signal(ctx, tdb, h, "payment-errors", 5)
-	first := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {firstSignal}}, firstSignal)
-	second := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {secondSignal}}, secondSignal)
+	firstEpisode := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
+	secondEpisode := s.alertEpisode(ctx, tdb, h, "payment-errors", 5)
+	first := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {firstEpisode}})
+	second := s.create(ctx, h, map[string][]uuid.UUID{"Payments": {secondEpisode}})
 	s.Equal("SIT-1", first.Reference())
 	s.Equal("SIT-2", second.Reference())
 
@@ -669,46 +670,38 @@ func (s *SituationServiceSuite) TestSituationsAreNumberedAndSearchableByReferenc
 func (s *SituationServiceSuite) TestInvestigationReadsItsSituation() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
-	first := s.signal(ctx, tdb, h, "checkout-errors", 5)
-	second := s.signal(ctx, tdb, h, "checkout-latency", 6)
-	other := s.signal(ctx, tdb, h, "payment-errors", 5)
-	s.create(ctx, h, map[string][]uuid.UUID{"Payments": {other}}, other)
+	first := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5)
+	second := s.alertEpisode(ctx, tdb, h, "checkout-latency", 6)
+	other := s.alertEpisode(ctx, tdb, h, "payment-errors", 5)
+	s.create(ctx, h, map[string][]uuid.UUID{"Payments": {other}})
 	params := rez.CreateSituationParams{
-		Title:             "Checkout degradation",
-		SeedEntityID:      first,
-		ObservationGroups: []rez.SituationObservationGroupParams{{Title: "Checkout", SignalEntityIDs: []uuid.UUID{first, second}}},
-		Raise:             &rez.RaiseSituationParams{StartInvestigation: true},
+		Title:        "Checkout degradation",
+		Observations: episodeRefs(first, second),
+		Raise:        &rez.RaiseSituationParams{StartInvestigation: true},
 	}
 	created, createErr := h.situations.CreateSituation(ctx, params)
 	s.Require().NoError(createErr)
-	s.Require().NotNil(created.Edges.Investigation)
+	s.Require().NotNil(created.InvestigationID)
 
-	listParams := rez.ListSituationsParams{InvestigationID: created.Edges.Investigation.InvestigationID}
+	listParams := rez.ListSituationsParams{InvestigationID: *created.InvestigationID}
 	listed, listErr := h.situations.ListSituations(ctx, listParams)
 	s.Require().NoError(listErr)
 	s.Require().Len(listed.Data, 1)
 	s.Equal(created.ID, listed.Data[0].ID)
-
-	signals, signalsErr := h.situations.LoadSignals(ctx, []uuid.UUID{second, first}, rez.LoadSituationSignalsOptions{})
-	s.Require().NoError(signalsErr)
-	s.Require().Len(signals, 2)
-	s.Equal(second, signals[0].EntityID, "signals keep the requested order")
-	s.Equal(first, signals[1].EntityID)
 }
 
 func (s *SituationServiceSuite) TestInvestigationAnalysisDeduplicatesSubjects() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
-	signal := s.signal(ctx, tdb, h, "checkout-errors", 5, s.entityRef(kne.CategoryContainer, "checkout"))
+	episode := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5, s.entityRef(kne.CategoryContainer, "checkout"))
 	params := rez.CreateSituationParams{
-		Title:             "Checkout degradation",
-		SeedEntityID:      signal,
-		ObservationGroups: []rez.SituationObservationGroupParams{{Title: "Checkout", SignalEntityIDs: []uuid.UUID{signal}}},
-		Raise:             &rez.RaiseSituationParams{StartInvestigation: true},
+		Title:        "Checkout degradation",
+		Observations: episodeRefs(episode),
+		Raise:        &rez.RaiseSituationParams{StartInvestigation: true},
 	}
 	created, createErr := h.situations.CreateSituation(ctx, params)
 	s.Require().NoError(createErr)
-	s.Require().NotNil(created.Edges.Investigation)
+	s.Require().NotNil(created.InvestigationID)
 	queryInvestigation := tdb.Client(ctx).Investigation.Query()
 	investigation, investigationErr := queryInvestigation.Only(ctx)
 	s.Require().NoError(investigationErr)
@@ -785,76 +778,4 @@ func (s *SituationServiceSuite) TestSystemHazardRetirementAndRiskAssessmentRevis
 	retired, retireErr := hazards.RetireSystemHazard(ctx, hazard.ID)
 	s.Require().NoError(retireErr)
 	s.Equal("retired", string(retired.Status))
-}
-
-func (s *SituationServiceSuite) TestSituationHazardAssessmentRevisionsAndAssessorConstraint() {
-	ctx, tdb := s.SetupTestDatabase()
-
-	knowledge, knowledgeServiceErr := NewKnowledgeGraphIngestionService(tdb)
-	s.Require().NoError(knowledgeServiceErr)
-
-	hazards, hazardServiceErr := NewSystemHazardService(tdb, knowledge)
-	s.Require().NoError(hazardServiceErr)
-
-	h := s.newFixture(tdb)
-
-	hazardParams := rez.CreateSystemHazardParams{
-		Title: "Checkout unavailable",
-	}
-
-	hazard, hazardErr := hazards.CreateSystemHazard(ctx, hazardParams)
-	s.Require().NoError(hazardErr)
-
-	signal := s.signal(ctx, tdb, h, "checkout-errors", 5)
-	situation := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {signal}}, signal)
-	userId, userIdErr := tdb.Client(ctx).User.Query().FirstID(ctx)
-	s.Require().NoError(userIdErr)
-
-	firstParams := rez.AddSituationHazardAssessmentParams{
-		SituationID:    situation.ID,
-		SystemHazardID: hazard.ID,
-		Status:         sitha.StatusSuspected,
-		Summary:        "The observed symptoms may represent this hazard.",
-		UserID:         &userId,
-		AssessedAt:     time.Now().UTC(),
-	}
-
-	first, firstErr := h.situations.AddSituationHazardAssessment(ctx, firstParams)
-	s.Require().NoError(firstErr)
-
-	secondParams := rez.AddSituationHazardAssessmentParams{
-		SituationID:    situation.ID,
-		SystemHazardID: hazard.ID,
-		Status:         sitha.StatusDisproven,
-		Summary:        "The symptoms do not match the hazard after review.",
-		UserID:         &userId,
-		AssessedAt:     time.Now().UTC().Add(time.Minute),
-	}
-
-	second, secondErr := h.situations.AddSituationHazardAssessment(ctx, secondParams)
-	s.Require().NoError(secondErr)
-	s.Equal(1, first.Revision)
-	s.Equal(2, second.Revision)
-
-	noAssessorParams := rez.AddSituationHazardAssessmentParams{
-		SituationID:    situation.ID,
-		SystemHazardID: hazard.ID,
-		Status:         sitha.StatusConfirmed,
-		Summary:        "Missing provenance.",
-	}
-
-	_, noAssessorErr := h.situations.AddSituationHazardAssessment(ctx, noAssessorParams)
-	s.ErrorIs(noAssessorErr, errs.ErrInvalidInput)
-
-	twoAssessorsParams := rez.AddSituationHazardAssessmentParams{
-		SituationID:    situation.ID,
-		SystemHazardID: hazard.ID,
-		Status:         sitha.StatusConfirmed,
-		Summary:        "Two provenance sources are not supported.",
-		UserID:         &userId,
-		AgentTurnID:    new(uuid.New()),
-	}
-
-	_, twoAssessorsErr := h.situations.AddSituationHazardAssessment(ctx, twoAssessorsParams)
-	s.ErrorIs(twoAssessorsErr, errs.ErrInvalidInput)
 }

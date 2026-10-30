@@ -58,7 +58,6 @@ func (s *BackendSuite) TestInvestigation() {
 		WithAlertDefinition()
 	episode, episodeErr := queryEpisode.Only(ctx)
 	s.Require().NoError(episodeErr, "read the alert's episode")
-	episodeEntityID := *episode.KnowledgeEntityID
 	alertEntityID := *episode.Edges.AlertDefinition.KnowledgeEntityID
 	queryObserves := client.KnowledgeRelationship.Query().
 		Where(knr.PredicateEQ(knr.PredicateObserves))
@@ -67,14 +66,9 @@ func (s *BackendSuite) TestInvestigation() {
 	model.alertEntityID = alertEntityID
 	model.relationshipID = observes.ID
 
-	observationGroup := rez.SituationObservationGroupParams{
-		Title:           "Checkout errors",
-		SignalEntityIDs: []uuid.UUID{episodeEntityID},
-	}
 	params := rez.CreateSituationParams{
-		Title:             "Checkout errors",
-		SeedEntityID:      episodeEntityID,
-		ObservationGroups: []rez.SituationObservationGroupParams{observationGroup},
+		Title:        "Checkout errors",
+		Observations: []rez.SituationObservationRef{{AlertEpisodeID: episode.ID}},
 	}
 	situation, situationErr := situations.CreateSituation(ctx, params)
 	s.Require().NoError(situationErr, "create checkout situation")
@@ -86,8 +80,8 @@ func (s *BackendSuite) TestInvestigation() {
 	](oapiv1.RaiseSituation)
 	startRequest := oapiv1.RaiseSituationRequest{Id: situation.ID}
 	startResponse := startInvestigation.Call(requestCtx, startRequest)
-	s.Require().NotNil(startResponse.Body.Data.Attributes.Investigation)
-	investigationID := startResponse.Body.Data.Attributes.Investigation.Investigation.Id
+	s.Require().NotNil(startResponse.Body.Data.Attributes.InvestigationId)
+	investigationID := *startResponse.Body.Data.Attributes.InvestigationId
 	s.Require().NotEqual(uuid.Nil, investigationID)
 
 	getInvestigation := aliceAPI.Operation[
@@ -122,8 +116,8 @@ func (s *BackendSuite) TestInvestigation() {
 
 	// Repeating start preserves the investigation, analysis, session, and first turn.
 	repeatedStartResponse := startInvestigation.Call(requestCtx, startRequest)
-	s.Require().NotNil(repeatedStartResponse.Body.Data.Attributes.Investigation)
-	s.Equal(investigationID, repeatedStartResponse.Body.Data.Attributes.Investigation.Investigation.Id)
+	s.Require().NotNil(repeatedStartResponse.Body.Data.Attributes.InvestigationId)
+	s.Equal(investigationID, *repeatedStartResponse.Body.Data.Attributes.InvestigationId)
 	repeatedDetailResponse := getInvestigation.Call(requestCtx, detailRequest)
 	s.Equal(sessionID, repeatedDetailResponse.Body.Data.Attributes.SessionId)
 	s.Equal(analysisID, repeatedDetailResponse.Body.Data.Attributes.AnalysisId)
@@ -269,8 +263,8 @@ type investigationModel struct {
 	mu   sync.Mutex
 	step int
 
-	// alertEntityID is the situation's signal ref and relationshipID a ref that is not an entity, both set
-	// before the investigation starts.
+	// alertEntityID is the ref of the situation's observation source and relationshipID a ref that is not an
+	// entity, both set before the investigation starts.
 	alertEntityID  uuid.UUID
 	relationshipID uuid.UUID
 	reportRef      string
@@ -330,8 +324,8 @@ func (m *investigationModel) generate(
 		if situation == nil || situation.Title != "Checkout errors" {
 			return nil, fmt.Errorf("step 1: introduction situation=%+v, want the checkout situation", situation)
 		}
-		if len(situation.Signals) != 1 || situation.Signals[0].Ref != m.alertEntityID.String() {
-			return nil, fmt.Errorf("step 1: introduction signals=%+v, want the alert entity as ref", situation.Signals)
+		if len(situation.Observations) != 1 || situation.Observations[0].Ref != m.alertEntityID.String() {
+			return nil, fmt.Errorf("step 1: introduction observations=%+v, want the alert entity as ref", situation.Observations)
 		}
 		if len(situation.Entities) != 1 || situation.Entities[0].Name != "Checkout" {
 			return nil, fmt.Errorf("step 1: introduction entities=%+v, want Checkout", situation.Entities)

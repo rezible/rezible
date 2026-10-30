@@ -21,9 +21,6 @@ const rulesJudge = "rules";
 const rejectedJudgeSuffix = ":rejected";
 const modelJudgePrefix = "llm:";
 
-/** The seed signal's details, from the situation's alert episodes. */
-export type WhyOrigin = { title: string; startedAt: string };
-
 /** One reason as recorded in the judgment, not a current checklist. */
 export type WhyReason = { key: ReasonKey; label: string; met: boolean; cited: boolean; detail: string };
 
@@ -54,11 +51,9 @@ export type WhyRaise = {
 export type WhyClosure = {
 	at: string;
 	reasonLabel?: string;
-	/** The `merged_into` target of a merged source; its signals moved there. */
-	mergedInto?: { reference: string; title: string };
 };
 
-type WhyBase = { heading: string; origin?: WhyOrigin };
+type WhyBase = { heading: string };
 
 export type WhyPanelState =
 	| (WhyBase & { kind: "pending" })
@@ -80,7 +75,7 @@ const rejectedVerdict: StatusPresentation = { label: "Answer rejected", tone: "w
  * The "why" panel's state, from the stored latest judgment and the first raised action.
  * Precedence: closed, then muted, then raised, otherwise watching. Performs no reads.
  */
-export function whyPanelState(attributes: SituationAttributes, origin?: WhyOrigin): WhyPanelState {
+export function whyPanelState(attributes: SituationAttributes): WhyPanelState {
 	const judgment = attributes.latestJudgment;
 	const raise = whyRaise(attributes);
 
@@ -88,17 +83,16 @@ export function whyPanelState(attributes: SituationAttributes, origin?: WhyOrigi
 		const closure = whyClosure(attributes, attributes.closedAt);
 		const heading = "Why Rezible watched this";
 		if (!judgment) {
-			return { kind: "closed-unassessed", heading, origin, closure, raise };
+			return { kind: "closed-unassessed", heading, closure, raise };
 		}
 		const assessment = whyAssessment(judgment, assessmentTitle(raise), "closed");
-		return { kind: "assessed", heading, origin, assessment, raise, closure };
+		return { kind: "assessed", heading, assessment, raise, closure };
 	}
 
 	if (attributes.mutedAt) {
 		return {
 			kind: "muted",
 			heading: "Muted",
-			origin,
 			mutedAt: attributes.mutedAt,
 			reasonLabel: muteReasonLabel(attributes.muteReason),
 			lastAssessedAt: judgment?.judgedAt,
@@ -108,7 +102,7 @@ export function whyPanelState(attributes: SituationAttributes, origin?: WhyOrigi
 	if (raise) {
 		if (raise.by === "rezible" && judgment) {
 			const assessment = whyAssessment(judgment, "Assessment", "raised");
-			return { kind: "assessed", heading: "Why this was raised", origin, assessment, raise };
+			return { kind: "assessed", heading: "Why this was raised", assessment, raise };
 		}
 
 		let earlierAssessment: WhyAssessment | undefined;
@@ -119,15 +113,15 @@ export function whyPanelState(attributes: SituationAttributes, origin?: WhyOrigi
 		if (raise.by === "person") {
 			heading = "Raised by a person";
 		}
-		return { kind: "raised", heading, origin, raise, earlierAssessment };
+		return { kind: "raised", heading, raise, earlierAssessment };
 	}
 
 	const heading = "Why Rezible is watching this";
 	if (!judgment) {
-		return { kind: "pending", heading, origin };
+		return { kind: "pending", heading };
 	}
 	const assessment = whyAssessment(judgment, "Assessment", "candidate");
-	return { kind: "assessed", heading, origin, assessment };
+	return { kind: "assessed", heading, assessment };
 }
 
 /**
@@ -152,14 +146,7 @@ function whyRaise(attributes: SituationAttributes): WhyRaise | undefined {
 }
 
 function whyClosure(attributes: SituationAttributes, closedAt: string): WhyClosure {
-	const closure: WhyClosure = { at: closedAt, reasonLabel: closeReasonLabel(attributes.closeReason) };
-	if (attributes.closeReason === "merged") {
-		const target = attributes.links.find((link) => link.kind === "merged_into");
-		if (target) {
-			closure.mergedInto = { reference: target.situationReference, title: target.title };
-		}
-	}
-	return closure;
+	return { at: closedAt, reasonLabel: closeReasonLabel(attributes.closeReason) };
 }
 
 /** A judgment that did not raise the situation is never presented as the cause of a raise. */

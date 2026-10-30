@@ -75,7 +75,7 @@
 		{#each controller.sections as section (section.kind)}
 			{#if section.kind === "interpretation"}
 				<UnderstandingPanel nextChecks={section.nextChecks} />
-			{:else if section.kind === "signals"}
+			{:else if section.kind === "observations"}
 				<ObservationsSection />
 			{:else if section.kind === "changes"}
 				<ChangesSection state={section.state} />

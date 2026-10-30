@@ -19,29 +19,26 @@ import (
 // SystemHazardMutation represents an operation that mutates the SystemHazard nodes in the graph.
 type SystemHazardMutation struct {
 	config
-	op                           Op
-	typ                          string
-	id                           *uuid.UUID
-	created_at                   *time.Time
-	updated_at                   *time.Time
-	title                        *string
-	description                  *string
-	potential_consequences       *string
-	status                       *systemhazard.Status
-	clearedFields                map[string]struct{}
-	tenant                       *int
-	clearedtenant                bool
-	knowledge_entity             *uuid.UUID
-	clearedknowledge_entity      bool
-	risk_assessments             map[uuid.UUID]struct{}
-	removedrisk_assessments      map[uuid.UUID]struct{}
-	clearedrisk_assessments      bool
-	situation_assessments        map[uuid.UUID]struct{}
-	removedsituation_assessments map[uuid.UUID]struct{}
-	clearedsituation_assessments bool
-	done                         bool
-	oldValue                     func(context.Context) (*SystemHazard, error)
-	predicates                   []predicate.SystemHazard
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	created_at              *time.Time
+	updated_at              *time.Time
+	title                   *string
+	description             *string
+	potential_consequences  *string
+	status                  *systemhazard.Status
+	clearedFields           map[string]struct{}
+	tenant                  *int
+	clearedtenant           bool
+	knowledge_entity        *uuid.UUID
+	clearedknowledge_entity bool
+	risk_assessments        map[uuid.UUID]struct{}
+	removedrisk_assessments map[uuid.UUID]struct{}
+	clearedrisk_assessments bool
+	done                    bool
+	oldValue                func(context.Context) (*SystemHazard, error)
+	predicates              []predicate.SystemHazard
 }
 
 var _ ent.Mutation = (*SystemHazardMutation)(nil)
@@ -583,60 +580,6 @@ func (m *SystemHazardMutation) ResetRiskAssessments() {
 	m.removedrisk_assessments = nil
 }
 
-// AddSituationAssessmentIDs adds the "situation_assessments" edge to the SituationHazardAssessment entity by ids.
-func (m *SystemHazardMutation) AddSituationAssessmentIDs(ids ...uuid.UUID) {
-	if m.situation_assessments == nil {
-		m.situation_assessments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.situation_assessments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSituationAssessments clears the "situation_assessments" edge to the SituationHazardAssessment entity.
-func (m *SystemHazardMutation) ClearSituationAssessments() {
-	m.clearedsituation_assessments = true
-}
-
-// SituationAssessmentsCleared reports if the "situation_assessments" edge to the SituationHazardAssessment entity was cleared.
-func (m *SystemHazardMutation) SituationAssessmentsCleared() bool {
-	return m.clearedsituation_assessments
-}
-
-// RemoveSituationAssessmentIDs removes the "situation_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (m *SystemHazardMutation) RemoveSituationAssessmentIDs(ids ...uuid.UUID) {
-	if m.removedsituation_assessments == nil {
-		m.removedsituation_assessments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.situation_assessments, ids[i])
-		m.removedsituation_assessments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSituationAssessments returns the removed IDs of the "situation_assessments" edge to the SituationHazardAssessment entity.
-func (m *SystemHazardMutation) RemovedSituationAssessmentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsituation_assessments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SituationAssessmentsIDs returns the "situation_assessments" edge IDs in the mutation.
-func (m *SystemHazardMutation) SituationAssessmentsIDs() (ids []uuid.UUID) {
-	for id := range m.situation_assessments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSituationAssessments resets all changes to the "situation_assessments" edge.
-func (m *SystemHazardMutation) ResetSituationAssessments() {
-	m.situation_assessments = nil
-	m.clearedsituation_assessments = false
-	m.removedsituation_assessments = nil
-}
-
 // Where appends a list predicates to the SystemHazardMutation builder.
 func (m *SystemHazardMutation) Where(ps ...predicate.SystemHazard) {
 	m.predicates = append(m.predicates, ps...)
@@ -913,7 +856,7 @@ func (m *SystemHazardMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemHazardMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, systemhazard.EdgeTenant)
 	}
@@ -922,9 +865,6 @@ func (m *SystemHazardMutation) AddedEdges() []string {
 	}
 	if m.risk_assessments != nil {
 		edges = append(edges, systemhazard.EdgeRiskAssessments)
-	}
-	if m.situation_assessments != nil {
-		edges = append(edges, systemhazard.EdgeSituationAssessments)
 	}
 	return edges
 }
@@ -947,24 +887,15 @@ func (m *SystemHazardMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case systemhazard.EdgeSituationAssessments:
-		ids := make([]ent.Value, 0, len(m.situation_assessments))
-		for id := range m.situation_assessments {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemHazardMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.removedrisk_assessments != nil {
 		edges = append(edges, systemhazard.EdgeRiskAssessments)
-	}
-	if m.removedsituation_assessments != nil {
-		edges = append(edges, systemhazard.EdgeSituationAssessments)
 	}
 	return edges
 }
@@ -979,19 +910,13 @@ func (m *SystemHazardMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case systemhazard.EdgeSituationAssessments:
-		ids := make([]ent.Value, 0, len(m.removedsituation_assessments))
-		for id := range m.removedsituation_assessments {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemHazardMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, systemhazard.EdgeTenant)
 	}
@@ -1000,9 +925,6 @@ func (m *SystemHazardMutation) ClearedEdges() []string {
 	}
 	if m.clearedrisk_assessments {
 		edges = append(edges, systemhazard.EdgeRiskAssessments)
-	}
-	if m.clearedsituation_assessments {
-		edges = append(edges, systemhazard.EdgeSituationAssessments)
 	}
 	return edges
 }
@@ -1017,8 +939,6 @@ func (m *SystemHazardMutation) EdgeCleared(name string) bool {
 		return m.clearedknowledge_entity
 	case systemhazard.EdgeRiskAssessments:
 		return m.clearedrisk_assessments
-	case systemhazard.EdgeSituationAssessments:
-		return m.clearedsituation_assessments
 	}
 	return false
 }
@@ -1049,9 +969,6 @@ func (m *SystemHazardMutation) ResetEdge(name string) error {
 		return nil
 	case systemhazard.EdgeRiskAssessments:
 		m.ResetRiskAssessments()
-		return nil
-	case systemhazard.EdgeSituationAssessments:
-		m.ResetSituationAssessments()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemHazard edge %s", name)

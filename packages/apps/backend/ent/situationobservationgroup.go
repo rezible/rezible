@@ -44,8 +44,8 @@ type SituationObservationGroupEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Situation holds the value of the situation edge.
 	Situation *Situation `json:"situation,omitempty"`
-	// Signals holds the value of the signals edge.
-	Signals []*SituationSignal `json:"signals,omitempty"`
+	// Observations holds the value of the observations edge.
+	Observations []*SituationObservation `json:"observations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -73,13 +73,13 @@ func (e SituationObservationGroupEdges) SituationOrErr() (*Situation, error) {
 	return nil, &NotLoadedError{edge: "situation"}
 }
 
-// SignalsOrErr returns the Signals value or an error if the edge
+// ObservationsOrErr returns the Observations value or an error if the edge
 // was not loaded in eager-loading.
-func (e SituationObservationGroupEdges) SignalsOrErr() ([]*SituationSignal, error) {
+func (e SituationObservationGroupEdges) ObservationsOrErr() ([]*SituationObservation, error) {
 	if e.loadedTypes[2] {
-		return e.Signals, nil
+		return e.Observations, nil
 	}
-	return nil, &NotLoadedError{edge: "signals"}
+	return nil, &NotLoadedError{edge: "observations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -175,9 +175,9 @@ func (_m *SituationObservationGroup) QuerySituation() *SituationQuery {
 	return NewSituationObservationGroupClient(_m.config).QuerySituation(_m)
 }
 
-// QuerySignals queries the "signals" edge of the SituationObservationGroup entity.
-func (_m *SituationObservationGroup) QuerySignals() *SituationSignalQuery {
-	return NewSituationObservationGroupClient(_m.config).QuerySignals(_m)
+// QueryObservations queries the "observations" edge of the SituationObservationGroup entity.
+func (_m *SituationObservationGroup) QueryObservations() *SituationObservationQuery {
+	return NewSituationObservationGroupClient(_m.config).QueryObservations(_m)
 }
 
 // Update returns a builder for updating this SituationObservationGroup.

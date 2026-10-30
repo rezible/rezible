@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/internal/db"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/execution"
@@ -111,8 +110,7 @@ func (s *IncidentsHandlerSuite) TestReferencesToAnotherTenantAreNotFound() {
 
 	otherInc := s.createResolvedIncident(otherCtx, otherClient)
 	otherSeverity := otherClient.IncidentSeverity.Create().SetName("SEV-2").SetRank(2).SaveX(otherCtx)
-	seed := otherClient.KnowledgeEntity.Create().SetCategory(knowledgeentity.CategoryContainer).SetKind("service").SaveX(otherCtx)
-	otherSituation := otherClient.Situation.Create().SetNumber(1).SetTitle("errors").SetOpenedAt(time.Now()).SetSeedEntityID(seed.ID).SaveX(otherCtx)
+	otherSituation := otherClient.Situation.Create().SetNumber(1).SetTitle("errors").SetOpenedAt(time.Now()).SaveX(otherCtx)
 	otherUserID := otherIdentity.Session.UserID
 
 	_, api := humatest.New(s.T())

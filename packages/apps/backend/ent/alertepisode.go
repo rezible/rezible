@@ -57,9 +57,11 @@ type AlertEpisodeEdges struct {
 	AlertDefinition *AlertDefinition `json:"alert_definition,omitempty"`
 	// Instances holds the value of the instances edge.
 	Instances []*AlertInstance `json:"instances,omitempty"`
+	// SituationObservations holds the value of the situation_observations edge.
+	SituationObservations []*SituationObservation `json:"situation_observations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -102,6 +104,15 @@ func (e AlertEpisodeEdges) InstancesOrErr() ([]*AlertInstance, error) {
 		return e.Instances, nil
 	}
 	return nil, &NotLoadedError{edge: "instances"}
+}
+
+// SituationObservationsOrErr returns the SituationObservations value or an error if the edge
+// was not loaded in eager-loading.
+func (e AlertEpisodeEdges) SituationObservationsOrErr() ([]*SituationObservation, error) {
+	if e.loadedTypes[4] {
+		return e.SituationObservations, nil
+	}
+	return nil, &NotLoadedError{edge: "situation_observations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -231,6 +242,11 @@ func (_m *AlertEpisode) QueryAlertDefinition() *AlertDefinitionQuery {
 // QueryInstances queries the "instances" edge of the AlertEpisode entity.
 func (_m *AlertEpisode) QueryInstances() *AlertInstanceQuery {
 	return NewAlertEpisodeClient(_m.config).QueryInstances(_m)
+}
+
+// QuerySituationObservations queries the "situation_observations" edge of the AlertEpisode entity.
+func (_m *AlertEpisode) QuerySituationObservations() *SituationObservationQuery {
+	return NewAlertEpisodeClient(_m.config).QuerySituationObservations(_m)
 }
 
 // Update returns a builder for updating this AlertEpisode.

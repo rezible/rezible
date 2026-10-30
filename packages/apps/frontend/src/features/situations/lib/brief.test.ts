@@ -64,12 +64,12 @@ const report = (overrides: Partial<InvestigationReportAttributes> = {}) =>
 		...overrides,
 	}) as InvestigationReportAttributes;
 
-test("briefSections lists the interpretation, signals, changes, what was checked and what cannot be seen, in order", () => {
+test("briefSections lists the interpretation, observations, changes, what was checked and what cannot be seen, in order", () => {
 	const sections = briefSections({ kind: "loading" }, undefined);
 
 	expect(sections.map((section) => section.kind)).toEqual([
 		"interpretation",
-		"signals",
+		"observations",
 		"changes",
 		"checked",
 		"unseen",

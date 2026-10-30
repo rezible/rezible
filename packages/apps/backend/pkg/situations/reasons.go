@@ -1,7 +1,7 @@
 package situations
 
 import (
-	"bytes"
+	"cmp"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -29,9 +29,9 @@ type Reasons []schematypes.SituationReasonResult
 // give the same reasons.
 func CheckReasons(facts schematypes.SituationFacts) Reasons {
 	rules := raiseRules{facts: facts}
-	for _, signal := range facts.Signals {
-		if signal.Seeding {
-			rules.seeding = append(rules.seeding, signal)
+	for _, observation := range facts.Observations {
+		if observation.Seeding {
+			rules.seeding = append(rules.seeding, observation)
 		}
 	}
 	results := Reasons{
@@ -59,19 +59,15 @@ func CheckReasons(facts schematypes.SituationFacts) Reasons {
 // raiseRules are the raise reasons over one snapshot of facts.
 type raiseRules struct {
 	facts schematypes.SituationFacts
-	// seeding are the signals that count toward reasons.
-	seeding []schematypes.SituationSignalFacts
+	// seeding are the observations that count toward reasons.
+	seeding []schematypes.SituationObservationFacts
 }
 
-// distinctSources counts the seeding signals' sources; a signal without a source is its own source.
+// distinctSources counts the seeding observations' sources.
 func (r raiseRules) distinctSources() int {
 	sources := mapset.NewSet[uuid.UUID]()
-	for _, signal := range r.seeding {
-		if signal.SourceEntityID != nil {
-			sources.Add(*signal.SourceEntityID)
-		} else {
-			sources.Add(signal.EntityID)
-		}
+	for _, observation := range r.seeding {
+		sources.Add(observation.SourceID)
 	}
 	return sources.Cardinality()
 }
@@ -81,20 +77,20 @@ func (r raiseRules) watchOnlyAlone() bool {
 	if len(r.seeding) == 0 {
 		return false
 	}
-	for _, signal := range r.seeding {
-		if signal.Attention != string(ssa.LevelWatchOnly) {
+	for _, observation := range r.seeding {
+		if observation.Attention != string(ssa.LevelWatchOnly) {
 			return false
 		}
 	}
 	return r.distinctSources() < 2
 }
 
-// defaultAlert is the alert facts of a default-attention seeding signal, or nil.
-func (r raiseRules) defaultAlert(signal schematypes.SituationSignalFacts) *schematypes.SituationAlertFacts {
-	if signal.Attention != string(ssa.LevelDefault) {
+// defaultAlert is the alert facts of a default-attention seeding observation, or nil.
+func (r raiseRules) defaultAlert(observation schematypes.SituationObservationFacts) *schematypes.SituationAlertFacts {
+	if observation.Attention != string(ssa.LevelDefault) {
 		return nil
 	}
-	return signal.Alert
+	return observation.Alert
 }
 
 func (r raiseRules) linkedIncident() schematypes.SituationReasonResult {
@@ -114,9 +110,9 @@ func (r raiseRules) breadth() schematypes.SituationReasonResult {
 	sources := r.distinctSources()
 	// The widest is the default-attention seeding alert with the most distinct active groups.
 	widestRef, widestCount := "", 0
-	for _, signal := range r.seeding {
-		if alert := r.defaultAlert(signal); alert != nil && alert.ActiveGroupCount > widestCount {
-			widestRef, widestCount = signal.Ref, alert.ActiveGroupCount
+	for _, observation := range r.seeding {
+		if alert := r.defaultAlert(observation); alert != nil && alert.ActiveGroupCount > widestCount {
+			widestRef, widestCount = observation.Ref, alert.ActiveGroupCount
 		}
 	}
 	result := schematypes.SituationReasonResult{Reason: schematypes.SituationRaiseReasonBreadth}
@@ -124,12 +120,12 @@ func (r raiseRules) breadth() schematypes.SituationReasonResult {
 	case sources >= BreadthSources:
 		result.Met = true
 		result.Hard = sources >= HardBreadthSources
-		result.Detail = fmt.Sprintf("Signals from %d different sources.", sources)
+		result.Detail = fmt.Sprintf("Observations from %d different sources.", sources)
 	case widestCount >= BreadthActiveCount:
 		result.Met = true
 		result.Detail = fmt.Sprintf("%s covers %d distinct active groups.", widestRef, widestCount)
 	default:
-		result.Detail = fmt.Sprintf("Signals from %s; %d needed, or one alert covering %d distinct active groups.",
+		result.Detail = fmt.Sprintf("Observations from %s; %d needed, or one alert covering %d distinct active groups.",
 			plural(sources, "source"), BreadthSources, BreadthActiveCount)
 	}
 	return result
@@ -140,19 +136,19 @@ func (r raiseRules) novelty() schematypes.SituationReasonResult {
 		Reason: schematypes.SituationRaiseReasonNovelty,
 		Detail: "No active default-attention alert is rare in observed history.",
 	}
-	for _, signal := range r.seeding {
-		alert := r.defaultAlert(signal)
+	for _, observation := range r.seeding {
+		alert := r.defaultAlert(observation)
 		if alert == nil || !alert.Active || !alert.Baseline.HasSufficientHistory || alert.Baseline.Occurrences > NoveltyMaxOccurrences {
 			continue
 		}
 		if active := time.Duration(alert.ActiveSeconds) * time.Second; active < NoveltyMinActive {
 			result.Detail = fmt.Sprintf("%s is rare in observed history but has been active %s of %s.",
-				signal.Ref, active, NoveltyMinActive)
+				observation.Ref, active, NoveltyMinActive)
 			continue
 		}
 		result.Met = true
 		result.Detail = fmt.Sprintf("%s is rare in observed history: its source fired %s in the last %d days.",
-			signal.Ref, plural(alert.Baseline.Occurrences, "time"), NoveltyWindow/(24*time.Hour))
+			observation.Ref, plural(alert.Baseline.Occurrences, "time"), NoveltyWindow/(24*time.Hour))
 		return result
 	}
 	return result
@@ -163,8 +159,8 @@ func (r raiseRules) persistence() schematypes.SituationReasonResult {
 		Reason: schematypes.SituationRaiseReasonPersistence,
 		Detail: "No default-attention seeding alert is active.",
 	}
-	for _, signal := range r.seeding {
-		alert := r.defaultAlert(signal)
+	for _, observation := range r.seeding {
+		alert := r.defaultAlert(observation)
 		if alert == nil || !alert.Active {
 			continue
 		}
@@ -172,10 +168,10 @@ func (r raiseRules) persistence() schematypes.SituationReasonResult {
 		threshold := persistenceThreshold(alert)
 		if active >= threshold {
 			result.Met = true
-			result.Detail = fmt.Sprintf("%s has been active %s, at least %s.", signal.Ref, active, threshold)
+			result.Detail = fmt.Sprintf("%s has been active %s, at least %s.", observation.Ref, active, threshold)
 			return result
 		}
-		result.Detail = fmt.Sprintf("%s has been active %s; it persists at %s.", signal.Ref, active, threshold)
+		result.Detail = fmt.Sprintf("%s has been active %s; it persists at %s.", observation.Ref, active, threshold)
 	}
 	return result
 }
@@ -183,16 +179,16 @@ func (r raiseRules) persistence() schematypes.SituationReasonResult {
 func (r raiseRules) pastIncident() schematypes.SituationReasonResult {
 	result := schematypes.SituationReasonResult{
 		Reason: schematypes.SituationRaiseReasonPastIncident,
-		Detail: fmt.Sprintf("No other situation with a seeding signal's source led to an incident in the last %d days.",
+		Detail: fmt.Sprintf("No other situation with a seeding observation's source led to an incident in the last %d days.",
 			PastIncidentLookback/(24*time.Hour)),
 	}
-	for _, signal := range r.seeding {
-		if signal.PriorOutcomes == nil || signal.PriorOutcomes.IncidentLinked == 0 {
+	for _, observation := range r.seeding {
+		if observation.PriorOutcomes == nil || observation.PriorOutcomes.IncidentLinked == 0 {
 			continue
 		}
 		result.Met = true
 		result.Detail = fmt.Sprintf("%s with %s's source led to an incident.",
-			plural(signal.PriorOutcomes.IncidentLinked, "other situation"), signal.Ref)
+			plural(observation.PriorOutcomes.IncidentLinked, "other situation"), observation.Ref)
 		return result
 	}
 	return result
@@ -249,33 +245,30 @@ func (r Reasons) JudgeByRules() Judgment {
 
 // Fingerprint identifies the decision the facts and reasons call for: a SHA-256 over an explicit projection
 // of the inputs that can change it, including the model judge's context when the facts have it: entities with
-// their names and properties, relationships and earlier situations. It leaves out the capture time, display
+// their names and properties, relationships. It leaves out the capture time, display
 // refs, prose (titles, alert descriptions and definitions), attention set times, and the continuously growing
 // active time and history age, whose threshold crossings the reasons already carry. A judgment with the same
 // fingerprint stands.
 func (r Reasons) Fingerprint(facts schematypes.SituationFacts) (string, error) {
 	inputs := decisionInputs{
-		Signals:         make([]decisionSignal, 0, len(facts.Signals)),
+		Observations:    make([]decisionObservation, 0, len(facts.Observations)),
 		LinkedIncidents: make([]decisionIncident, 0, len(facts.LinkedIncidents)),
 		Reasons:         make([]decisionReason, 0, len(r)),
 		Entities:        facts.Entities,
 		Relationships:   facts.Relationships,
-		Earlier:         facts.Earlier,
 	}
-	for _, signal := range facts.Signals {
-		selected := decisionSignal{
-			EntityID:       signal.EntityID,
-			Kind:           signal.Kind,
-			SourceEntityID: signal.SourceEntityID,
-			Seeding:        signal.Seeding,
-			Attention:      signal.Attention,
-			MatchKind:      signal.MatchKind,
-			StartedAt:      signal.StartedAt,
-			FinishedAt:     signal.FinishedAt,
-			PriorOutcomes:  signal.PriorOutcomes,
-			EntityIDs:      signal.EntityIDs,
+	for _, observation := range facts.Observations {
+		selected := decisionObservation{
+			SituationObservationRef: observation.SituationObservationRef,
+			SourceID:                observation.SourceID,
+			Seeding:                 observation.Seeding,
+			Attention:               observation.Attention,
+			StartedAt:               observation.StartedAt,
+			FinishedAt:              observation.FinishedAt,
+			PriorOutcomes:           observation.PriorOutcomes,
+			EntityIDs:               observation.EntityIDs,
 		}
-		if alert := signal.Alert; alert != nil {
+		if alert := observation.Alert; alert != nil {
 			selected.Alert = &decisionAlert{
 				Severity:              alert.Severity,
 				Active:                alert.Active,
@@ -291,13 +284,13 @@ func (r Reasons) Fingerprint(facts schematypes.SituationFacts) (string, error) {
 				MedianDurationSeconds: alert.Baseline.MedianDurationSeconds,
 			}
 		}
-		inputs.Signals = append(inputs.Signals, selected)
+		inputs.Observations = append(inputs.Observations, selected)
 	}
 	for _, incident := range facts.LinkedIncidents {
 		inputs.LinkedIncidents = append(inputs.LinkedIncidents, decisionIncident{ID: incident.ID, ResolvedAt: incident.ResolvedAt})
 	}
-	slices.SortFunc(inputs.Signals, func(a, b decisionSignal) int {
-		return bytes.Compare(a.EntityID[:], b.EntityID[:])
+	slices.SortFunc(inputs.Observations, func(a, b decisionObservation) int {
+		return cmp.Compare(a.String(), b.String())
 	})
 	for _, reason := range r {
 		inputs.Reasons = append(inputs.Reasons, decisionReason{Reason: reason.Reason, Met: reason.Met, Hard: reason.Hard})
@@ -311,26 +304,23 @@ func (r Reasons) Fingerprint(facts schematypes.SituationFacts) (string, error) {
 }
 
 type decisionInputs struct {
-	Signals         []decisionSignal                         `json:"signals"`
+	Observations    []decisionObservation                    `json:"observations"`
 	LinkedIncidents []decisionIncident                       `json:"linked_incidents"`
 	Reasons         []decisionReason                         `json:"reasons"`
 	Entities        []schematypes.SituationEntityFacts       `json:"entities,omitempty"`
 	Relationships   []schematypes.SituationRelationshipFacts `json:"relationships,omitempty"`
-	Earlier         []schematypes.SituationEarlierFacts      `json:"earlier,omitempty"`
 }
 
-type decisionSignal struct {
-	EntityID       uuid.UUID                               `json:"entity_id"`
-	Kind           string                                  `json:"kind"`
-	SourceEntityID *uuid.UUID                              `json:"source_entity_id"`
-	Seeding        bool                                    `json:"seeding"`
-	Attention      string                                  `json:"attention"`
-	MatchKind      string                                  `json:"match_kind"`
-	StartedAt      time.Time                               `json:"started_at"`
-	FinishedAt     *time.Time                              `json:"finished_at"`
-	PriorOutcomes  *schematypes.SituationPriorOutcomeFacts `json:"prior_outcomes"`
-	EntityIDs      []uuid.UUID                             `json:"entity_ids,omitempty"`
-	Alert          *decisionAlert                          `json:"alert"`
+type decisionObservation struct {
+	schematypes.SituationObservationRef
+	SourceID      uuid.UUID                               `json:"source_id"`
+	Seeding       bool                                    `json:"seeding"`
+	Attention     string                                  `json:"attention"`
+	StartedAt     time.Time                               `json:"started_at"`
+	FinishedAt    *time.Time                              `json:"finished_at"`
+	PriorOutcomes *schematypes.SituationPriorOutcomeFacts `json:"prior_outcomes"`
+	EntityIDs     []uuid.UUID                             `json:"entity_ids,omitempty"`
+	Alert         *decisionAlert                          `json:"alert"`
 }
 
 type decisionAlert struct {

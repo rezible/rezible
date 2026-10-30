@@ -230,8 +230,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestConfirmMergesEntities() {
 	createSituation := client.Situation.Create().
 		SetNumber(1).
 		SetTitle("Checkout errors").
-		SetOpenedAt(start).
-		SetSeedEntityID(otherID)
+		SetOpenedAt(start)
 	situation := createSituation.SaveX(ctx)
 	for entityID, matching := range map[uuid.UUID]bool{survivorID: false, otherID: true} {
 		addMember := client.SituationEntity.Create().
@@ -304,7 +303,6 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestConfirmMergesEntities() {
 		s.Require().Len(members, 1)
 		s.Equal(survivorID, members[0].KnowledgeEntityID)
 		s.True(members[0].Matching)
-		s.Equal(survivorID, client.Situation.GetX(ctx, situation.ID).SeedEntityID)
 
 		queryAnalysisEntities := client.SystemAnalysisEntity.Query().
 			Where(sae.AnalysisID(analysis.ID))

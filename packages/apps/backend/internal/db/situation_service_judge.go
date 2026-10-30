@@ -10,14 +10,11 @@ import (
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	inc "github.com/rezible/rezible/ent/incident"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sitent "github.com/rezible/rezible/ent/situationentity"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
-	sitlink "github.com/rezible/rezible/ent/situationlink"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/situations"
@@ -97,11 +94,11 @@ func (s *SituationService) applyModelJudgment(ctx context.Context, captured *can
 }
 
 // loadJudgeContext loads what only the model judge reads: the situation's entities with their names and
-// properties, each member signal's runtime entities, the depends-on and adjacent relationships among the
-// entities, and the situations it recurs.
+// properties, each member observation's runtime entities, the depends-on and adjacent relationships among the
+// entities.
 func (s *SituationService) loadJudgeContext(ctx context.Context, situationID uuid.UUID, input situations.EvaluationInput) (*situations.JudgeContext, error) {
 	judgeContext := &situations.JudgeContext{
-		SignalEntityIDs: make(map[uuid.UUID][]uuid.UUID, len(input.Members)),
+		ObservationEntityIDs: make(map[rez.SituationObservationRef][]uuid.UUID, len(input.Members)),
 	}
 	client := s.db.Client(ctx)
 	queryEntities := client.SituationEntity.Query().
@@ -127,11 +124,11 @@ func (s *SituationService) loadJudgeContext(ctx context.Context, situationID uui
 	}
 
 	for _, member := range input.Members {
-		signalEntities, signalErr := s.signalRuntimeEntities(ctx, member.Signal)
-		if signalErr != nil {
-			return nil, signalErr
+		observationEntities, observationErr := s.observationRuntimeEntities(ctx, member.Observation)
+		if observationErr != nil {
+			return nil, observationErr
 		}
-		judgeContext.SignalEntityIDs[member.Signal.EntityID] = signalEntities.ToSlice()
+		judgeContext.ObservationEntityIDs[member.Observation.Ref] = observationEntities.ToSlice()
 	}
 
 	if len(entityIDs) > 0 {
@@ -140,7 +137,7 @@ func (s *SituationService) loadJudgeContext(ctx context.Context, situationID uui
 			knowledgegraph.RelationshipClassAdjacent.Predicates(),
 		)
 		listParams := rez.ListKnowledgeRelationshipsParams{
-			PageSize: signalGraphPageSize,
+			PageSize: observationGraphPageSize,
 			Predicates: []predicate.KnowledgeRelationship{
 				knr.PredicateIn(classPredicates...),
 				knr.SourceEntityIDIn(entityIDs...),
@@ -161,44 +158,5 @@ func (s *SituationService) loadJudgeContext(ctx context.Context, situationID uui
 		}
 	}
 
-	earlier, earlierErr := s.earlierSituations(ctx, situationID)
-	if earlierErr != nil {
-		return nil, earlierErr
-	}
-	judgeContext.Earlier = earlier
 	return judgeContext, nil
-}
-
-// earlierSituations describes the situations the situation recurs: whether each was raised, its mute and
-// close reasons, when it closed, and whether an incident was linked.
-func (s *SituationService) earlierSituations(ctx context.Context, situationID uuid.UUID) ([]schematypes.SituationEarlierFacts, error) {
-	queryLinks := s.db.Client(ctx).SituationLink.Query().
-		Where(sitlink.SituationID(situationID), sitlink.KindEQ(sitlink.KindRecurrenceOf)).
-		WithLinkedSituation(func(q *ent.SituationQuery) {
-			q.WithIncidents(func(q *ent.IncidentQuery) {
-				q.Select(inc.FieldID)
-			})
-		})
-	links, linksErr := queryLinks.All(ctx)
-	if linksErr != nil {
-		return nil, fmt.Errorf("query recurrence links: %w", linksErr)
-	}
-	earlier := make([]schematypes.SituationEarlierFacts, 0, len(links))
-	for _, link := range links {
-		linked := link.Edges.LinkedSituation
-		earlierFacts := schematypes.SituationEarlierFacts{
-			SituationID:    linked.ID,
-			WasRaised:      linked.RaisedAt != nil,
-			ClosedAt:       linked.ClosedAt,
-			IncidentLinked: len(linked.Edges.Incidents) > 0,
-		}
-		if linked.MuteReason != nil {
-			earlierFacts.MuteReason = string(*linked.MuteReason)
-		}
-		if linked.CloseReason != nil {
-			earlierFacts.CloseReason = string(*linked.CloseReason)
-		}
-		earlier = append(earlier, earlierFacts)
-	}
-	return earlier, nil
 }

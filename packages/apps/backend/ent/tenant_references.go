@@ -76,14 +76,10 @@ import (
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
-	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
-	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationnotice"
-	"github.com/rezible/rezible/ent/situationnoticerating"
+	"github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
-	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
@@ -277,6 +273,11 @@ func (m *AlertEpisodeMutation) CheckTenantReferences(ctx context.Context) error 
 	}
 	if ids := m.InstancesIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, alertinstance.Label, len(ids), m.Client().AlertInstance.Query().Where(alertinstance.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.SituationObservationsIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, situationobservation.Label, len(ids), m.Client().SituationObservation.Query().Where(situationobservation.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -859,7 +860,7 @@ func (m *InvestigationMutation) CheckTenantReferences(ctx context.Context) error
 		}
 	}
 	if ids := m.SituationsIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationinvestigation.Label, len(ids), m.Client().SituationInvestigation.Query().Where(situationinvestigation.IDIn(ids...))); err != nil {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -1560,12 +1561,7 @@ func (m *SequenceCounterMutation) CheckTenantReferences(ctx context.Context) err
 // that is missing or belongs to another tenant.
 func (m *SituationMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationinvestigation.Label, len(ids), m.Client().SituationInvestigation.Query().Where(situationinvestigation.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.HazardAssessmentsIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationhazardassessment.Label, len(ids), m.Client().SituationHazardAssessment.Query().Where(situationhazardassessment.IDIn(ids...))); err != nil {
+		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -1579,8 +1575,8 @@ func (m *SituationMutation) CheckTenantReferences(ctx context.Context) error {
 			return err
 		}
 	}
-	if ids := m.SignalsIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationsignal.Label, len(ids), m.Client().SituationSignal.Query().Where(situationsignal.IDIn(ids...))); err != nil {
+	if ids := m.ObservationsIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, situationobservation.Label, len(ids), m.Client().SituationObservation.Query().Where(situationobservation.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -1589,33 +1585,18 @@ func (m *SituationMutation) CheckTenantReferences(ctx context.Context) error {
 			return err
 		}
 	}
-	if ids := m.LinksIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationlink.Label, len(ids), m.Client().SituationLink.Query().Where(situationlink.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
 	if ids := m.ActionsIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, situationaction.Label, len(ids), m.Client().SituationAction.Query().Where(situationaction.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
-	if ids := m.NoticesIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationnotice.Label, len(ids), m.Client().SituationNotice.Query().Where(situationnotice.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.NoticeRatingsIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationnoticerating.Label, len(ids), m.Client().SituationNoticeRating.Query().Where(situationnoticerating.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.LatestJudgmentIDs(); len(ids) > 0 {
+	if ids := m.JudgmentsIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, situationjudgment.Label, len(ids), m.Client().SituationJudgment.Query().Where(situationjudgment.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
-	if ids := m.SeedEntityIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
+	if ids := m.NoticesIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, situationnotice.Label, len(ids), m.Client().SituationNotice.Query().Where(situationnotice.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -1656,66 +1637,8 @@ func (m *SituationEntityMutation) CheckTenantReferences(ctx context.Context) err
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
 // that is missing or belongs to another tenant.
-func (m *SituationHazardAssessmentMutation) CheckTenantReferences(ctx context.Context) error {
-	if ids := m.SituationIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.SystemHazardIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, systemhazard.Label, len(ids), m.Client().SystemHazard.Query().Where(systemhazard.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.UserIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.AgentTurnIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, agentturn.Label, len(ids), m.Client().AgentTurn.Query().Where(agentturn.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that is missing or belongs to another tenant.
-func (m *SituationInvestigationMutation) CheckTenantReferences(ctx context.Context) error {
-	if ids := m.SituationIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.InvestigationIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, investigation.Label, len(ids), m.Client().Investigation.Query().Where(investigation.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that is missing or belongs to another tenant.
 func (m *SituationJudgmentMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that is missing or belongs to another tenant.
-func (m *SituationLinkMutation) CheckTenantReferences(ctx context.Context) error {
-	if ids := m.SituationIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.LinkedSituationIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
 		}
@@ -1741,14 +1664,19 @@ func (m *SituationNoticeMutation) CheckTenantReferences(ctx context.Context) err
 
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
 // that is missing or belongs to another tenant.
-func (m *SituationNoticeRatingMutation) CheckTenantReferences(ctx context.Context) error {
+func (m *SituationObservationMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.SituationIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
-	if ids := m.UserIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
+	if ids := m.ObservationGroupIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, situationobservationgroup.Label, len(ids), m.Client().SituationObservationGroup.Query().Where(situationobservationgroup.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.AlertEpisodeIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, alertepisode.Label, len(ids), m.Client().AlertEpisode.Query().Where(alertepisode.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -1763,39 +1691,8 @@ func (m *SituationObservationGroupMutation) CheckTenantReferences(ctx context.Co
 			return err
 		}
 	}
-	if ids := m.SignalsIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationsignal.Label, len(ids), m.Client().SituationSignal.Query().Where(situationsignal.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that is missing or belongs to another tenant.
-func (m *SituationSignalMutation) CheckTenantReferences(ctx context.Context) error {
-	if ids := m.SituationIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.ObservationGroupIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationobservationgroup.Label, len(ids), m.Client().SituationObservationGroup.Query().Where(situationobservationgroup.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.SourceEntityIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.ViaRelationshipIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
+	if ids := m.ObservationsIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, situationobservation.Label, len(ids), m.Client().SituationObservation.Query().Where(situationobservation.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -1956,11 +1853,6 @@ func (m *SystemHazardMutation) CheckTenantReferences(ctx context.Context) error 
 			return err
 		}
 	}
-	if ids := m.SituationAssessmentsIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationhazardassessment.Label, len(ids), m.Client().SituationHazardAssessment.Query().Where(situationhazardassessment.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -2104,11 +1996,6 @@ func (m *UserMutation) CheckTenantReferences(ctx context.Context) error {
 	}
 	if ids := m.EventAnnotationsIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, eventannotation.Label, len(ids), m.Client().EventAnnotation.Query().Where(eventannotation.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.SituationHazardAssessmentsIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationhazardassessment.Label, len(ids), m.Client().SituationHazardAssessment.Query().Where(situationhazardassessment.IDIn(ids...))); err != nil {
 			return err
 		}
 	}

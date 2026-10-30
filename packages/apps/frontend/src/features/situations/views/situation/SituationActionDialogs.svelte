@@ -34,7 +34,7 @@
 		<Dialog.Header>
 			<Dialog.Title>Mute situation</Dialog.Title>
 			<Dialog.Description>
-				A muted situation keeps its evidence and still gathers matching signals, but is not assessed,
+				A muted situation keeps its evidence and still gathers matching observations, but is not assessed,
 				raised or investigated.
 			</Dialog.Description>
 		</Dialog.Header>
@@ -75,7 +75,7 @@
 		<Dialog.Header>
 			<Dialog.Title>Merge into another situation</Dialog.Title>
 			<Dialog.Description>
-				Use this for a duplicate: this situation's signals move to the one you choose, and this
+				Use this for a duplicate: this situation's observations move to the one you choose, and this
 				situation closes as merged.
 			</Dialog.Description>
 		</Dialog.Header>

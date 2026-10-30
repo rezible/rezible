@@ -20,22 +20,23 @@ func at(minutes int) time.Time {
 	return evaluationNow.Add(time.Duration(minutes) * time.Minute)
 }
 
-// member is a seeding, default-attention alert signal attached at `attached`, finished at `finished` when
+// member is a seeding, default-attention alert observation attached at `attached`, finished at `finished` when
 // given, and otherwise active for `activeMinutes`.
 func member(attached int, finished *int, activeMinutes int) Member {
-	signal := rez.SituationSignal{
-		EntityID:        uuid.New(),
+	observation := rez.SituationObservation{
+		Ref:             rez.SituationObservationRef{AlertEpisodeID: uuid.New()},
+		SourceID:        uuid.New(),
 		Severity:        schematypes.SignalSeverityCritical,
 		SignalAttention: ssa.LevelDefault,
 		Alert:           &schematypes.SituationAlertFacts{},
 	}
 	if finished != nil {
-		signal.FinishedAt = new(at(*finished))
+		observation.FinishedAt = new(at(*finished))
 	} else {
-		signal.Alert.Active = true
-		signal.Alert.ActiveSeconds = int64(activeMinutes * 60)
+		observation.Alert.Active = true
+		observation.Alert.ActiveSeconds = int64(activeMinutes * 60)
 	}
-	return Member{Signal: signal, AttachedAt: at(attached)}
+	return Member{Observation: observation, AttachedAt: at(attached)}
 }
 
 func TestCloseableAt(t *testing.T) {

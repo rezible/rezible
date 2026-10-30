@@ -32,7 +32,6 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situation"
-	sha "github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/situationsignalattention"
 	sae "github.com/rezible/rezible/ent/systemanalysisentry"
 	"github.com/rezible/rezible/ent/task"
@@ -1066,12 +1065,12 @@ type (
 
 	ListAlertEpisodesParams struct {
 		ent.ListParams
-		// SituationID lists the episodes that are signals of the situation.
+		// SituationID lists the episodes the situation observes.
 		SituationID uuid.UUID
 	}
 
 	AlertService interface {
-		SituationSignalSource
+		SituationObservationSource
 
 		ListAlerts(context.Context, ListAlertsParams) (*ent.ListResult[ent.AlertDefinition], error)
 		ListAlertEpisodes(context.Context, ListAlertEpisodesParams) (*ent.ListResult[ent.AlertEpisode], error)
@@ -1414,12 +1413,14 @@ type (
 )
 
 type (
-	SituationSignalKind string
+	SituationObservationRef = schematypes.SituationObservationRef
 
-	SituationSignal struct {
-		EntityID             uuid.UUID
-		Kind                 SituationSignalKind
-		Title                string
+	// SituationObservation describes what an observation is of, from its stored state.
+	SituationObservation struct {
+		Ref   SituationObservationRef
+		Title string
+		// SourceID is the signal that produced it, and SourceEntityID the signal's knowledge entity, if any.
+		SourceID             uuid.UUID
 		SourceEntityID       *uuid.UUID
 		SignalAttention      situationsignalattention.Level
 		SignalAttentionSetAt *time.Time
@@ -1429,17 +1430,21 @@ type (
 		Active               bool
 		LastActivityAt       time.Time
 		EventIDs             []uuid.UUID
-		Revision             int
-		Alert                *schematypes.SituationAlertFacts
+		// Revision increases whenever the observed evidence changes.
+		Revision int
+		// Alert describes an alert episode.
+		Alert *schematypes.SituationAlertFacts
 	}
 
-	LoadSituationSignalsOptions struct {
+	LoadSituationObservationsOptions struct {
 		History bool
 	}
 
-	SituationSignalSource interface {
-		SituationSignalKind() SituationSignalKind
-		LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts LoadSituationSignalsOptions) ([]SituationSignal, error)
+	// SituationObservationSource describes the observations of one kind.
+	SituationObservationSource interface {
+		SituationObservationKind() schematypes.SituationObservationKind
+		// LoadObservations describes the referenced observations, in no particular order; unknown ones are left out.
+		LoadObservations(ctx context.Context, refs []SituationObservationRef, opts LoadSituationObservationsOptions) ([]SituationObservation, error)
 	}
 
 	// SituationStage is derived from stored times: closed if closed, raised if raised, otherwise a candidate.
@@ -1450,7 +1455,7 @@ type (
 		Stages      []SituationStage
 		Muted       *bool
 		OpenedAfter *time.Time
-		// InvestigationID lists the situation investigated by that investigation.
+		// InvestigationID lists the situations investigated by that investigation.
 		InvestigationID uuid.UUID
 	}
 
@@ -1462,17 +1467,17 @@ type (
 	CreateSituationParams struct {
 		Title   string
 		Summary string
-		// SeedEntityID is the signal that started the situation; it must be one of the groups' signals.
-		SeedEntityID      uuid.UUID
+		// Observations are observed outside any group.
+		Observations      []SituationObservationRef
 		ObservationGroups []SituationObservationGroupParams
 		// Raise raises the new situation; nil leaves it a candidate.
 		Raise *RaiseSituationParams
 	}
 
 	SituationObservationGroupParams struct {
-		Title           string
-		Body            *string
-		SignalEntityIDs []uuid.UUID
+		Title        string
+		Body         *string
+		Observations []SituationObservationRef
 	}
 
 	RaiseSituationParams struct {
@@ -1505,22 +1510,6 @@ type (
 		Removed []uuid.UUID
 	}
 
-	ListSituationHazardAssessmentsParams struct {
-		ent.ListParams
-		SituationID    uuid.UUID
-		SystemHazardID uuid.UUID
-	}
-
-	AddSituationHazardAssessmentParams struct {
-		SituationID    uuid.UUID
-		SystemHazardID uuid.UUID
-		Status         sha.Status
-		Summary        string
-		AssessedAt     time.Time
-		UserID         *uuid.UUID
-		AgentTurnID    *uuid.UUID
-	}
-
 	SituationService interface {
 		ListSituations(context.Context, ListSituationsParams) (*ent.ListResult[ent.Situation], error)
 		GetSituation(context.Context, predicate.Situation) (*ent.Situation, error)
@@ -1537,23 +1526,20 @@ type (
 		// SetSituationHold delays the situation's automatic closure, or clears the hold when nil.
 		SetSituationHold(context.Context, uuid.UUID, *SituationHold) (*ent.Situation, error)
 
-		// ListSituationEventIDs lists the events of the situation's signals.
+		// ListSituationEventIDs lists the events of the situation's observations.
 		ListSituationEventIDs(context.Context, uuid.UUID) ([]uuid.UUID, error)
 
 		// SyncIncidentLinks applies an incident write's situation link changes inside its transaction.
 		SyncIncidentLinks(ctx context.Context, incidentID uuid.UUID, changes IncidentSituationLinkChanges) error
 
-		ListSituationHazardAssessments(context.Context, ListSituationHazardAssessmentsParams) (*ent.ListResult[ent.SituationHazardAssessment], error)
-		AddSituationHazardAssessment(context.Context, AddSituationHazardAssessmentParams) (*ent.SituationHazardAssessment, error)
-
-		// LoadSignals loads signals of any kind from their sources, in the order of entityIDs. An unknown entity
-		// or a kind without a source is invalid input.
-		LoadSignals(ctx context.Context, entityIDs []uuid.UUID, opts LoadSituationSignalsOptions) ([]SituationSignal, error)
+		// LoadObservations describes the referenced observations by reference, through the source of each
+		// one's kind. An unknown observation, or a kind without a source, is invalid input.
+		LoadObservations(ctx context.Context, refs []SituationObservationRef, opts LoadSituationObservationsOptions) (map[SituationObservationRef]SituationObservation, error)
 	}
 
-	SituationSignalService interface {
-		// NotifySignalChanged tells situations that a signal's stored state changed
-		NotifySignalChanged(ctx context.Context, signalEntityID uuid.UUID) error
+	SituationObservationService interface {
+		// NotifyObservationChanged tells situations that what an observation is of changed.
+		NotifyObservationChanged(ctx context.Context, ref SituationObservationRef) error
 	}
 )
 
@@ -1573,8 +1559,6 @@ type EventOnSituationUpdated struct {
 }
 
 func (EventOnSituationUpdated) MessageName() string { return "situation.updated.v1" }
-
-const SignalKindAlertEpisode SituationSignalKind = "alert_episode"
 
 const (
 	SituationStageCandidate SituationStage = "candidate"

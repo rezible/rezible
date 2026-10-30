@@ -15,7 +15,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	sitlink "github.com/rezible/rezible/ent/situationlink"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
@@ -67,31 +66,19 @@ type SituationNoticeSender interface {
 
 // SituationNoticeContent is what a notice shows, read when it is synced.
 type SituationNoticeContent struct {
-	// Situation has its links, with their linked situations, loaded.
 	Situation *ent.Situation
 	Services  []*ent.KnowledgeEntity
 	// Deployment is the latest deployment before the situation started, or nil to omit it.
 	Deployment *rez.SituationLatestDeployment
 	// Report is the investigation's latest completed report, or nil while there is none.
 	Report *ent.InvestigationReport
-	// SituationURL links to the situation, and MergedIntoURL to the one it was merged into, if any.
-	SituationURL  string
-	MergedIntoURL string
+	// SituationURL links to the situation.
+	SituationURL string
 	// IncidentURL links to the newest unresolved incident the situation is part of, if any. Otherwise
 	// DeclareIncidentURL opens the declare dialog for the situation, when declaring is possible.
 	IncidentURL        string
 	DeclareIncidentURL string
 	Now                time.Time
-}
-
-// MergedInto is the situation's link to the one it was merged into, or nil.
-func (c *SituationNoticeContent) MergedInto() *ent.SituationLink {
-	for _, link := range c.Situation.Edges.Links {
-		if link.Kind == sitlink.KindMergedInto {
-			return link
-		}
-	}
-	return nil
 }
 
 // NoticeDeliveryError is a notice the provider did not accept. Reason is shown to people, so it never

@@ -77,7 +77,7 @@
      "line": "POST /v1/authorizations 200 3010ms: connection pool exhausted (max=20)",
      "from": "{{-25m}}", "to": "{{now}}", "every": "4s"}
   ],
-  "setup": {"situation": {"title": "Checkout errors", "signals": ["error-rate"]}},
+  "setup": {"situation": {"title": "Checkout errors", "observations": ["error-rate"]}},
   "phases": [
     {
       "check": [

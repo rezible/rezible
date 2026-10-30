@@ -88,7 +88,7 @@ class IncidentOverviewController {
 		})),
 	}));
 	private investigationIds = $derived(
-		this.situationQueries.map((query) => query.data?.data.attributes.investigation?.investigation.id)
+		this.situationQueries.map((query) => query.data?.data.attributes.investigationId)
 	);
 	private conclusions = createInvestigationConclusions(() => this.investigationIds);
 

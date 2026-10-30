@@ -16,7 +16,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
@@ -37,13 +36,11 @@ func (s *SituationsHandlerSuite) TestGetSituationByReference() {
 	_, tdb := s.SetupTestDatabase()
 	ctx, identity := s.NewIdentity(tdb, "a")
 	client := tdb.Client(ctx)
-	seed := client.KnowledgeEntity.Create().SetCategory(knowledgeentity.CategoryContainer).SetKind("service").SaveX(ctx)
 	for number, title := range map[int]string{1: "First", 2: "Second"} {
 		createSituation := client.Situation.Create().
 			SetNumber(number).
 			SetTitle(title).
-			SetOpenedAt(time.Now()).
-			SetSeedEntityID(seed.ID)
+			SetOpenedAt(time.Now())
 		createSituation.ExecX(ctx)
 	}
 	situations, situationsErr := db.NewSituationService(rez.SituationsConfig{}, tdb, test.NewClock(time.Now()), nil, nil, nil, nil, nil, noJudge{t: s.T()})

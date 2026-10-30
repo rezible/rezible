@@ -897,30 +897,6 @@ func (f SituationEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationEntityMutation", m)
 }
 
-// The SituationHazardAssessmentFunc type is an adapter to allow the use of ordinary
-// function as SituationHazardAssessment mutator.
-type SituationHazardAssessmentFunc func(context.Context, *ent.SituationHazardAssessmentMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SituationHazardAssessmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SituationHazardAssessmentMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationHazardAssessmentMutation", m)
-}
-
-// The SituationInvestigationFunc type is an adapter to allow the use of ordinary
-// function as SituationInvestigation mutator.
-type SituationInvestigationFunc func(context.Context, *ent.SituationInvestigationMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SituationInvestigationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SituationInvestigationMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationInvestigationMutation", m)
-}
-
 // The SituationJudgmentFunc type is an adapter to allow the use of ordinary
 // function as SituationJudgment mutator.
 type SituationJudgmentFunc func(context.Context, *ent.SituationJudgmentMutation) (ent.Value, error)
@@ -931,18 +907,6 @@ func (f SituationJudgmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationJudgmentMutation", m)
-}
-
-// The SituationLinkFunc type is an adapter to allow the use of ordinary
-// function as SituationLink mutator.
-type SituationLinkFunc func(context.Context, *ent.SituationLinkMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SituationLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SituationLinkMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationLinkMutation", m)
 }
 
 // The SituationNoticeFunc type is an adapter to allow the use of ordinary
@@ -957,16 +921,16 @@ func (f SituationNoticeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationNoticeMutation", m)
 }
 
-// The SituationNoticeRatingFunc type is an adapter to allow the use of ordinary
-// function as SituationNoticeRating mutator.
-type SituationNoticeRatingFunc func(context.Context, *ent.SituationNoticeRatingMutation) (ent.Value, error)
+// The SituationObservationFunc type is an adapter to allow the use of ordinary
+// function as SituationObservation mutator.
+type SituationObservationFunc func(context.Context, *ent.SituationObservationMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f SituationNoticeRatingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SituationNoticeRatingMutation); ok {
+func (f SituationObservationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SituationObservationMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationNoticeRatingMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationObservationMutation", m)
 }
 
 // The SituationObservationGroupFunc type is an adapter to allow the use of ordinary
@@ -979,18 +943,6 @@ func (f SituationObservationGroupFunc) Mutate(ctx context.Context, m ent.Mutatio
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationObservationGroupMutation", m)
-}
-
-// The SituationSignalFunc type is an adapter to allow the use of ordinary
-// function as SituationSignal mutator.
-type SituationSignalFunc func(context.Context, *ent.SituationSignalMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SituationSignalFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SituationSignalMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationSignalMutation", m)
 }
 
 // The SituationSignalAttentionFunc type is an adapter to allow the use of ordinary

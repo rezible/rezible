@@ -147,6 +147,8 @@ func (i *investigationInvocation) makeIntroduction(
 	})
 }
 
+// introduceSituation introduces the investigation's situation. An investigation several situations share
+// is introduced through the first one listed.
 func (i *investigationInvocation) introduceSituation(ctx context.Context, changesAvailable bool) (*rezai.InvestigationSituation, error) {
 	listParams := rez.ListSituationsParams{
 		PageSize:        1,
@@ -165,49 +167,45 @@ func (i *investigationInvocation) introduceSituation(ctx context.Context, change
 		End:   situation.ClosedAt,
 	}
 	introduced := &rezai.InvestigationSituation{
-		Title:    situation.Title,
-		Summary:  situation.Summary,
-		OpenedAt: situation.OpenedAt,
-		ClosedAt: situation.ClosedAt,
-		Signals:  make([]rezai.InvestigationSignal, 0),
-		Entities: make([]rezai.InvestigationEntity, 0),
+		Title:        situation.Title,
+		Summary:      situation.Summary,
+		OpenedAt:     situation.OpenedAt,
+		ClosedAt:     situation.ClosedAt,
+		Observations: make([]rezai.InvestigationObservation, 0),
+		Entities:     make([]rezai.InvestigationEntity, 0),
 	}
 
-	// The signal's own entity is an internal episode without evidence, so its source is the ref. A signal
-	// without a source has nothing to read and is left out. Only the most recently attached are loaded.
-	var members []*ent.SituationSignal
-	for _, group := range situation.Edges.ObservationGroups {
-		for _, member := range group.Edges.Signals {
-			if member.SourceEntityID != nil {
-				members = append(members, member)
-			}
-		}
-	}
-	slices.SortFunc(members, func(a, b *ent.SituationSignal) int {
+	// Observations are not graph subjects, so the ref is their source's knowledge entity. An observation whose
+	// source has no knowledge entity has nothing to read and is left out. Only the most recently attached are
+	// loaded.
+	members := slices.Clone(situation.Edges.Observations)
+	slices.SortFunc(members, func(a, b *ent.SituationObservation) int {
 		return cmp.Or(b.AttachedAt.Compare(a.AttachedAt), strings.Compare(a.ID.String(), b.ID.String()))
 	})
 	members = members[:min(len(members), introductionListLimit)]
-	signalEntityIDs := make([]uuid.UUID, len(members))
-	sources := make(map[uuid.UUID]uuid.UUID, len(members))
+	refs := make([]rez.SituationObservationRef, len(members))
 	for index, member := range members {
-		signalEntityIDs[index] = member.KnowledgeEntityID
-		sources[member.KnowledgeEntityID] = *member.SourceEntityID
+		refs[index] = member.Ref()
 	}
-	signals, signalsErr := i.situations.LoadSignals(ctx, signalEntityIDs, rez.LoadSituationSignalsOptions{})
-	if signalsErr != nil {
-		return nil, fmt.Errorf("load situation signals: %w", signalsErr)
+	loaded, loadErr := i.situations.LoadObservations(ctx, refs, rez.LoadSituationObservationsOptions{})
+	if loadErr != nil {
+		return nil, fmt.Errorf("load situation observations: %w", loadErr)
 	}
-	slices.SortFunc(signals, func(a, b rez.SituationSignal) int {
+	observations := slices.Collect(maps.Values(loaded))
+	slices.SortFunc(observations, func(a, b rez.SituationObservation) int {
 		return cmp.Or(b.StartedAt.Compare(a.StartedAt), strings.Compare(a.Title, b.Title))
 	})
-	for _, signal := range signals {
-		introduced.Signals = append(introduced.Signals, rezai.InvestigationSignal{
-			Ref:        i.formatRef(sources[signal.EntityID]),
-			Name:       signal.Title,
-			Severity:   string(signal.Severity),
-			StartedAt:  signal.StartedAt,
-			FinishedAt: signal.FinishedAt,
-			Active:     signal.Active,
+	for _, observation := range observations {
+		if observation.SourceEntityID == nil {
+			continue
+		}
+		introduced.Observations = append(introduced.Observations, rezai.InvestigationObservation{
+			Ref:        i.formatRef(*observation.SourceEntityID),
+			Name:       observation.Title,
+			Severity:   string(observation.Severity),
+			StartedAt:  observation.StartedAt,
+			FinishedAt: observation.FinishedAt,
+			Active:     observation.Active,
 		})
 	}
 

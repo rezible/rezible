@@ -18,7 +18,6 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/systemhazardriskassessment"
 	"github.com/rezible/rezible/ent/tenant"
@@ -27,15 +26,14 @@ import (
 // SystemHazardQuery is the builder for querying SystemHazard entities.
 type SystemHazardQuery struct {
 	config
-	ctx                      *QueryContext
-	order                    []systemhazard.OrderOption
-	inters                   []Interceptor
-	predicates               []predicate.SystemHazard
-	withTenant               *TenantQuery
-	withKnowledgeEntity      *KnowledgeEntityQuery
-	withRiskAssessments      *SystemHazardRiskAssessmentQuery
-	withSituationAssessments *SituationHazardAssessmentQuery
-	modifiers                []func(*sql.Selector)
+	ctx                 *QueryContext
+	order               []systemhazard.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.SystemHazard
+	withTenant          *TenantQuery
+	withKnowledgeEntity *KnowledgeEntityQuery
+	withRiskAssessments *SystemHazardRiskAssessmentQuery
+	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -141,31 +139,6 @@ func (_q *SystemHazardQuery) QueryRiskAssessments() *SystemHazardRiskAssessmentQ
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SystemHazardRiskAssessment
 		step.Edge.Schema = schemaConfig.SystemHazardRiskAssessment
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySituationAssessments chains the current query on the "situation_assessments" edge.
-func (_q *SystemHazardQuery) QuerySituationAssessments() *SituationHazardAssessmentQuery {
-	query := (&SituationHazardAssessmentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, selector),
-			sqlgraph.To(situationhazardassessment.Table, situationhazardassessment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, systemhazard.SituationAssessmentsTable, systemhazard.SituationAssessmentsColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SituationHazardAssessment
-		step.Edge.Schema = schemaConfig.SituationHazardAssessment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -359,15 +332,14 @@ func (_q *SystemHazardQuery) Clone() *SystemHazardQuery {
 		return nil
 	}
 	return &SystemHazardQuery{
-		config:                   _q.config,
-		ctx:                      _q.ctx.Clone(),
-		order:                    append([]systemhazard.OrderOption{}, _q.order...),
-		inters:                   append([]Interceptor{}, _q.inters...),
-		predicates:               append([]predicate.SystemHazard{}, _q.predicates...),
-		withTenant:               _q.withTenant.Clone(),
-		withKnowledgeEntity:      _q.withKnowledgeEntity.Clone(),
-		withRiskAssessments:      _q.withRiskAssessments.Clone(),
-		withSituationAssessments: _q.withSituationAssessments.Clone(),
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]systemhazard.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.SystemHazard{}, _q.predicates...),
+		withTenant:          _q.withTenant.Clone(),
+		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
+		withRiskAssessments: _q.withRiskAssessments.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -404,17 +376,6 @@ func (_q *SystemHazardQuery) WithRiskAssessments(opts ...func(*SystemHazardRiskA
 		opt(query)
 	}
 	_q.withRiskAssessments = query
-	return _q
-}
-
-// WithSituationAssessments tells the query-builder to eager-load the nodes that are connected to
-// the "situation_assessments" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemHazardQuery) WithSituationAssessments(opts ...func(*SituationHazardAssessmentQuery)) *SystemHazardQuery {
-	query := (&SituationHazardAssessmentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withSituationAssessments = query
 	return _q
 }
 
@@ -502,11 +463,10 @@ func (_q *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*SystemHazard{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withRiskAssessments != nil,
-			_q.withSituationAssessments != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -549,15 +509,6 @@ func (_q *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 			func(n *SystemHazard) { n.Edges.RiskAssessments = []*SystemHazardRiskAssessment{} },
 			func(n *SystemHazard, e *SystemHazardRiskAssessment) {
 				n.Edges.RiskAssessments = append(n.Edges.RiskAssessments, e)
-			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withSituationAssessments; query != nil {
-		if err := _q.loadSituationAssessments(ctx, query, nodes,
-			func(n *SystemHazard) { n.Edges.SituationAssessments = []*SituationHazardAssessment{} },
-			func(n *SystemHazard, e *SituationHazardAssessment) {
-				n.Edges.SituationAssessments = append(n.Edges.SituationAssessments, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -651,37 +602,6 @@ func (_q *SystemHazardQuery) loadRiskAssessments(ctx context.Context, query *Sys
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "system_hazard_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *SystemHazardQuery) loadSituationAssessments(ctx context.Context, query *SituationHazardAssessmentQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *SituationHazardAssessment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*SystemHazard)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.SituationHazardAssessment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(systemhazard.SituationAssessmentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.system_hazard_situation_assessments
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "system_hazard_situation_assessments" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "system_hazard_situation_assessments" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

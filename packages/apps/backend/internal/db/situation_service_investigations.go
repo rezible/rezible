@@ -48,19 +48,19 @@ func makeSetSituationEntrySubject(id uuid.UUID, kind string, role string) (strin
 const maxSituationEvidenceQueryPageSize = 100
 
 // createInvestigation starts the situation's investigation over a system analysis prepared from its
-// signals' events, and records that it saw each signal's current revision.
+// observations' events, and records that it saw each observation's current revision.
 func (s *SituationService) createInvestigation(ctx context.Context, situationID uuid.UUID) error {
-	memberIDs, membersErr := s.memberEntityIDs(ctx, situationID)
-	if membersErr != nil {
-		return membersErr
+	refs, refsErr := s.observedRefs(ctx, situationID)
+	if refsErr != nil {
+		return refsErr
 	}
-	signals, loadErr := s.loadSignals(ctx, memberIDs, rez.LoadSituationSignalsOptions{})
+	observations, loadErr := s.LoadObservations(ctx, refs, rez.LoadSituationObservationsOptions{})
 	if loadErr != nil {
 		return loadErr
 	}
 	eventIDs := mapset.NewSet[uuid.UUID]()
-	for _, signal := range signals {
-		eventIDs.Append(signal.EventIDs...)
+	for _, observation := range observations {
+		eventIDs.Append(observation.EventIDs...)
 	}
 	analysis, analysisErr := s.analyses.SetSystemAnalysis(ctx, uuid.Nil, func(*ent.SystemAnalysisMutation) {})
 	if analysisErr != nil {
@@ -77,13 +77,12 @@ func (s *SituationService) createInvestigation(ctx context.Context, situationID 
 	if investigationErr != nil {
 		return fmt.Errorf("create situation investigation: %w", investigationErr)
 	}
-	createLink := s.db.Client(ctx).SituationInvestigation.Create().
-		SetSituationID(situationID).
+	setInvestigation := s.db.Client(ctx).Situation.UpdateOneID(situationID).
 		SetInvestigationID(investigation.ID)
-	if linkErr := createLink.Exec(ctx); linkErr != nil {
-		return fmt.Errorf("link situation investigation: %w", linkErr)
+	if setErr := setInvestigation.Exec(ctx); setErr != nil {
+		return fmt.Errorf("set situation investigation: %w", setErr)
 	}
-	return s.observeRevisions(ctx, situationID, slices.Collect(maps.Values(signals)))
+	return s.observeRevisions(ctx, situationID, slices.Collect(maps.Values(observations)))
 }
 
 // prepareOrRefreshSituationAnalysis adds or refreshes one observation per event in the analysis, attaching

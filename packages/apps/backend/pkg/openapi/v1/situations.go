@@ -12,7 +12,6 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
 	"github.com/rezible/rezible/pkg/openapi"
 )
 
@@ -31,9 +30,6 @@ type SituationsHandler interface {
 
 	SetSituationHold(context.Context, *SetSituationHoldRequest) (*SetSituationHoldResponse, error)
 	ClearSituationHold(context.Context, *ClearSituationHoldRequest) (*ClearSituationHoldResponse, error)
-
-	ListSituationHazardAssessments(context.Context, *ListSituationHazardAssessmentsRequest) (*ListSituationHazardAssessmentsResponse, error)
-	AddSituationHazardAssessment(context.Context, *AddSituationHazardAssessmentRequest) (*AddSituationHazardAssessmentResponse, error)
 }
 
 func (o operations) RegisterSituations(api huma.API) {
@@ -51,9 +47,6 @@ func (o operations) RegisterSituations(api huma.API) {
 
 	huma.Register(api, SetSituationHold, o.SetSituationHold)
 	huma.Register(api, ClearSituationHold, o.ClearSituationHold)
-
-	huma.Register(api, ListSituationHazardAssessments, o.ListSituationHazardAssessments)
-	huma.Register(api, AddSituationHazardAssessment, o.AddSituationHazardAssessment)
 }
 
 type (
@@ -67,8 +60,6 @@ type (
 		Title             string                      `json:"title"`
 		Summary           string                      `json:"summary"`
 		Stage             string                      `json:"stage" enum:"candidate,raised,closed"`
-		SignalCount       int                         `json:"signalCount"`
-		SeedEntityId      uuid.UUID                   `json:"seedEntityId"`
 		OpenedAt          time.Time                   `json:"openedAt"`
 		CreatedAt         time.Time                   `json:"createdAt" doc:"When watching began"`
 		RaisedBy          *SituationRaisedBy          `json:"raisedBy,omitempty"`
@@ -80,13 +71,12 @@ type (
 		CloseReason       *string                     `json:"closeReason,omitempty" enum:"stabilized,expired,merged,dismissed"`
 		UpdatedAt         time.Time                   `json:"updatedAt"`
 		LinkedIncidentIds []uuid.UUID                 `json:"linkedIncidentIds"`
-		Investigation     *SituationInvestigation     `json:"investigation,omitempty"`
+		InvestigationId   *uuid.UUID                  `json:"investigationId,omitempty"`
+		Observations      []SituationObservation      `json:"observations"`
 		ObservationGroups []SituationObservationGroup `json:"observationGroups"`
-		Links             []SituationLink             `json:"links"`
 		Entities          []SituationEntity           `json:"entities"`
-		LatestJudgment    *SituationJudgment          `json:"latestJudgment,omitempty"`
+		LatestJudgment    *SituationJudgment          `json:"latestJudgment,omitempty" doc:"Set when getting one situation"`
 		Notices           []SituationNotice           `json:"notices"`
-		NoticeRatings     SituationNoticeRatings      `json:"noticeRatings"`
 	}
 
 	// SituationNotice is the chat message announcing the situation in one installation's channel.
@@ -97,11 +87,6 @@ type (
 		Permalink     string     `json:"permalink,omitempty"`
 		Error         string     `json:"error,omitempty" doc:"Why delivery failed, or why the notice was skipped"`
 		LastAttemptAt *time.Time `json:"lastAttemptAt,omitempty"`
-	}
-
-	SituationNoticeRatings struct {
-		Useful    int `json:"useful"`
-		NotUseful int `json:"notUseful"`
 	}
 
 	SituationRaisedBy struct {
@@ -136,39 +121,12 @@ type (
 		Detail string `json:"detail"`
 	}
 
-	SituationLink struct {
-		Kind               string    `json:"kind" enum:"recurrence_of,merged_into"`
-		SituationId        uuid.UUID `json:"situationId"`
-		SituationReference string    `json:"situationReference"`
-		Title              string    `json:"title"`
-		Stage              string    `json:"stage" enum:"candidate,raised,closed"`
-	}
-
 	SituationEntity struct {
 		Id          uuid.UUID `json:"id" doc:"The knowledge entity"`
-		Matching    bool      `json:"matching" doc:"Whether it attracts related signals"`
+		Matching    bool      `json:"matching" doc:"Whether it attracts related observations"`
 		Category    string    `json:"category"`
 		Kind        string    `json:"kind"`
 		DisplayName string    `json:"displayName"`
-	}
-
-	SituationInvestigation struct {
-		Investigation Expandable[InvestigationAttributes] `json:"investigation"`
-	}
-
-	SituationHazardAssessment struct {
-		Id         uuid.UUID                      `json:"id"`
-		Attributes SituationHazardAssessmentAttrs `json:"attributes"`
-	}
-
-	SituationHazardAssessmentAttrs struct {
-		SystemHazardId uuid.UUID  `json:"systemHazardId"`
-		Revision       int        `json:"revision"`
-		Status         string     `json:"status" enum:"suspected,confirmed,disproven"`
-		Summary        string     `json:"summary"`
-		AssessedAt     time.Time  `json:"assessedAt"`
-		UserId         *uuid.UUID `json:"userId,omitempty"`
-		AgentTurnId    *uuid.UUID `json:"agentTurnId,omitempty"`
 	}
 
 	SituationObservationGroup struct {
@@ -177,18 +135,17 @@ type (
 	}
 
 	SituationObservationGroupAttributes struct {
-		SituationId uuid.UUID         `json:"situationId"`
-		Title       string            `json:"title"`
-		Body        string            `json:"body,omitempty"`
-		Signals     []SituationSignal `json:"signals"`
+		SituationId uuid.UUID `json:"situationId"`
+		Title       string    `json:"title"`
+		Body        string    `json:"body,omitempty"`
 	}
 
-	SituationSignal struct {
-		KnowledgeEntityId uuid.UUID  `json:"knowledgeEntityId"`
-		Kind              string     `json:"kind"`
-		SourceEntityId    *uuid.UUID `json:"sourceEntityId,omitempty"`
-		AttachedAt        time.Time  `json:"attachedAt"`
-		MatchKind         string     `json:"matchKind" enum:"seed,shared_entity,dependency,dependent,adjacent,manual"`
+	SituationObservation struct {
+		Id                 uuid.UUID  `json:"id"`
+		ObservationGroupId *uuid.UUID `json:"observationGroupId,omitempty"`
+		AlertEpisodeId     *uuid.UUID `json:"alertEpisodeId,omitempty"`
+		AttachedAt         time.Time  `json:"attachedAt"`
+		MatchExplanation   string     `json:"matchExplanation,omitempty"`
 	}
 )
 
@@ -208,18 +165,17 @@ func SituationObservationGroupFromEnt(g *ent.SituationObservationGroup) Situatio
 		SituationId: g.SituationID,
 		Title:       g.Title,
 		Body:        g.Body,
-		Signals:     ConvertSlice(g.Edges.Signals, SituationSignalFromEnt),
 	}
 	return SituationObservationGroup{Id: g.ID, Attributes: attrs}
 }
 
-func SituationSignalFromEnt(m *ent.SituationSignal) SituationSignal {
-	return SituationSignal{
-		KnowledgeEntityId: m.KnowledgeEntityID,
-		Kind:              m.Kind,
-		SourceEntityId:    m.SourceEntityID,
-		AttachedAt:        m.AttachedAt,
-		MatchKind:         m.MatchKind.String(),
+func SituationObservationFromEnt(o *ent.SituationObservation) SituationObservation {
+	return SituationObservation{
+		Id:                 o.ID,
+		ObservationGroupId: o.ObservationGroupID,
+		AlertEpisodeId:     o.AlertEpisodeID,
+		AttachedAt:         o.AttachedAt,
+		MatchExplanation:   o.MatchExplanation,
 	}
 }
 
@@ -233,38 +189,12 @@ func SituationEntityFromEnt(e *ent.SituationEntity) SituationEntity {
 	return entity
 }
 
-func SituationLinkFromEnt(l *ent.SituationLink) SituationLink {
-	link := SituationLink{Kind: l.Kind.String(), SituationId: l.LinkedSituationID}
-	if linked := l.Edges.LinkedSituation; linked != nil {
-		link.SituationReference = linked.Reference()
-		link.Title = linked.Title
-		link.Stage = situationStage(linked)
-	}
-	return link
-}
-
-func SituationHazardAssessmentFromEnt(a *ent.SituationHazardAssessment) SituationHazardAssessment {
-	return SituationHazardAssessment{
-		Id: a.ID,
-		Attributes: SituationHazardAssessmentAttrs{
-			SystemHazardId: a.SystemHazardID,
-			Revision:       a.Revision,
-			Status:         string(a.Status),
-			Summary:        a.Summary,
-			AssessedAt:     a.AssessedAt,
-			UserId:         a.UserID,
-			AgentTurnId:    a.AgentTurnID,
-		},
-	}
-}
-
 func SituationFromEnt(s *ent.Situation) Situation {
 	attrs := SituationAttributes{
 		Reference:         s.Reference(),
 		Title:             s.Title,
 		Summary:           s.Summary,
 		Stage:             situationStage(s),
-		SeedEntityId:      s.SeedEntityID,
 		OpenedAt:          s.OpenedAt,
 		CreatedAt:         s.CreatedAt,
 		RaisedAt:          s.RaisedAt,
@@ -272,13 +202,11 @@ func SituationFromEnt(s *ent.Situation) Situation {
 		HoldUntil:         s.HoldUntil,
 		ClosedAt:          s.ClosedAt,
 		UpdatedAt:         s.UpdatedAt,
+		InvestigationId:   s.InvestigationID,
+		Observations:      ConvertSlice(s.Edges.Observations, SituationObservationFromEnt),
 		ObservationGroups: ConvertSlice(s.Edges.ObservationGroups, SituationObservationGroupFromEnt),
-		Links:             ConvertSlice(s.Edges.Links, SituationLinkFromEnt),
 		Entities:          ConvertSlice(s.Edges.Entities, SituationEntityFromEnt),
 		LinkedIncidentIds: make([]uuid.UUID, len(s.Edges.Incidents)),
-	}
-	for _, group := range s.Edges.ObservationGroups {
-		attrs.SignalCount += len(group.Edges.Signals)
 	}
 	for i, incident := range s.Edges.Incidents {
 		attrs.LinkedIncidentIds[i] = incident.ID
@@ -289,9 +217,6 @@ func SituationFromEnt(s *ent.Situation) Situation {
 	if s.CloseReason != nil {
 		attrs.CloseReason = new(s.CloseReason.String())
 	}
-	if s.Edges.Investigation != nil {
-		attrs.Investigation = new(SituationInvestigationFromEnt(s.Edges.Investigation))
-	}
 	if s.RaisedAt != nil {
 		for _, action := range s.Edges.Actions {
 			if action.Action == situationaction.ActionRaised {
@@ -300,17 +225,10 @@ func SituationFromEnt(s *ent.Situation) Situation {
 			}
 		}
 	}
-	if s.Edges.LatestJudgment != nil {
-		attrs.LatestJudgment = new(SituationJudgmentFromEnt(s.Edges.LatestJudgment))
+	if len(s.Edges.Judgments) > 0 {
+		attrs.LatestJudgment = new(SituationJudgmentFromEnt(s.Edges.Judgments[0]))
 	}
 	attrs.Notices = ConvertSlice(s.Edges.Notices, SituationNoticeFromEnt)
-	for _, rating := range s.Edges.NoticeRatings {
-		if rating.Useful {
-			attrs.NoticeRatings.Useful++
-		} else {
-			attrs.NoticeRatings.NotUseful++
-		}
-	}
 	return Situation{Id: s.ID, Attributes: attrs}
 }
 
@@ -355,12 +273,6 @@ func SituationJudgmentHistoryItemFromEnt(j *ent.SituationJudgment) SituationJudg
 		Facts:             j.Facts,
 	}
 	return SituationJudgmentHistoryItem{Id: j.ID, Attributes: attrs}
-}
-
-func SituationInvestigationFromEnt(si *ent.SituationInvestigation) SituationInvestigation {
-	return SituationInvestigation{
-		Investigation: AsExpandable[InvestigationAttributes](si.InvestigationID, nil),
-	}
 }
 
 var situationsTags = []string{"Situations"}
@@ -582,44 +494,6 @@ var RaiseSituation = openapi.Operation{
 
 type RaiseSituationRequest IdRequest
 type RaiseSituationResponse ItemResponse[Situation]
-
-var ListSituationHazardAssessments = openapi.Operation{
-	OperationID: "list-situation-hazard-assessments",
-	Method:      http.MethodGet,
-	Path:        "/situations/{id}/hazard_assessments",
-	Summary:     "List Situation Hazard Assessments",
-	Tags:        situationsTags,
-	Errors:      ErrorCodes(),
-}
-
-type ListSituationHazardAssessmentsRequest struct {
-	IdRequest
-	PaginationRequest
-}
-
-type ListSituationHazardAssessmentsResponse PaginatedResponse[SituationHazardAssessment]
-
-var AddSituationHazardAssessment = openapi.Operation{
-	OperationID: "add-situation-hazard-assessment",
-	Method:      http.MethodPost,
-	Path:        "/situations/{id}/hazard_assessments",
-	Summary:     "Add Situation Hazard Assessment",
-	Tags:        situationsTags,
-	Errors:      ErrorCodes(),
-}
-
-type AddSituationHazardAssessmentRequest struct {
-	IdRequest
-	Body struct {
-		Attributes struct {
-			SystemHazardId uuid.UUID                        `json:"systemHazardId"`
-			Status         situationhazardassessment.Status `json:"status" enum:"suspected,confirmed,disproven"`
-			Summary        string                           `json:"summary"`
-		} `json:"attributes"`
-	}
-}
-
-type AddSituationHazardAssessmentResponse ItemResponse[SituationHazardAssessment]
 
 var SetSituationMute = openapi.Operation{
 	OperationID: "set-situation-mute",

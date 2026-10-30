@@ -10,10 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/situationinvestigation"
-	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -34,7 +32,7 @@ type Situation struct {
 	Title string `json:"title,omitempty"`
 	// Summary holds the value of the "summary" field.
 	Summary string `json:"summary,omitempty"`
-	// The earliest start of its signals; lowered when an earlier signal joins, never raised
+	// The earliest start of its observations; lowered when an earlier one joins, never raised
 	OpenedAt time.Time `json:"opened_at,omitempty"`
 	// Processing time it was raised; unset while a candidate
 	RaisedAt *time.Time `json:"raised_at,omitempty"`
@@ -48,10 +46,8 @@ type Situation struct {
 	ClosedAt *time.Time `json:"closed_at,omitempty"`
 	// CloseReason holds the value of the "close_reason" field.
 	CloseReason *situation.CloseReason `json:"close_reason,omitempty"`
-	// Knowledge entity of the signal that started it; kept after situation merges, re-pointed by entity merges
-	SeedEntityID uuid.UUID `json:"seed_entity_id,omitempty"`
-	// Its most recently recorded judgment
-	LatestJudgmentID *uuid.UUID `json:"latest_judgment_id,omitempty"`
+	// The investigation of its observations; several situations may share one
+	InvestigationID *uuid.UUID `json:"investigation_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SituationQuery when eager-loading is set.
 	Edges        SituationEdges `json:"edges"`
@@ -63,32 +59,24 @@ type SituationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Investigation holds the value of the investigation edge.
-	Investigation *SituationInvestigation `json:"investigation,omitempty"`
-	// HazardAssessments holds the value of the hazard_assessments edge.
-	HazardAssessments []*SituationHazardAssessment `json:"hazard_assessments,omitempty"`
+	Investigation *Investigation `json:"investigation,omitempty"`
 	// ObservationGroups holds the value of the observation_groups edge.
 	ObservationGroups []*SituationObservationGroup `json:"observation_groups,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
-	// Signals holds the value of the signals edge.
-	Signals []*SituationSignal `json:"signals,omitempty"`
+	// Observations holds the value of the observations edge.
+	Observations []*SituationObservation `json:"observations,omitempty"`
 	// Entities holds the value of the entities edge.
 	Entities []*SituationEntity `json:"entities,omitempty"`
-	// Links holds the value of the links edge.
-	Links []*SituationLink `json:"links,omitempty"`
 	// Actions holds the value of the actions edge.
 	Actions []*SituationAction `json:"actions,omitempty"`
+	// Judgments holds the value of the judgments edge.
+	Judgments []*SituationJudgment `json:"judgments,omitempty"`
 	// Notices holds the value of the notices edge.
 	Notices []*SituationNotice `json:"notices,omitempty"`
-	// NoticeRatings holds the value of the notice_ratings edge.
-	NoticeRatings []*SituationNoticeRating `json:"notice_ratings,omitempty"`
-	// LatestJudgment holds the value of the latest_judgment edge.
-	LatestJudgment *SituationJudgment `json:"latest_judgment,omitempty"`
-	// SeedEntity holds the value of the seed_entity edge.
-	SeedEntity *KnowledgeEntity `json:"seed_entity,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [13]bool
+	loadedTypes [9]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -104,28 +92,19 @@ func (e SituationEdges) TenantOrErr() (*Tenant, error) {
 
 // InvestigationOrErr returns the Investigation value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SituationEdges) InvestigationOrErr() (*SituationInvestigation, error) {
+func (e SituationEdges) InvestigationOrErr() (*Investigation, error) {
 	if e.Investigation != nil {
 		return e.Investigation, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: situationinvestigation.Label}
+		return nil, &NotFoundError{label: investigation.Label}
 	}
 	return nil, &NotLoadedError{edge: "investigation"}
-}
-
-// HazardAssessmentsOrErr returns the HazardAssessments value or an error if the edge
-// was not loaded in eager-loading.
-func (e SituationEdges) HazardAssessmentsOrErr() ([]*SituationHazardAssessment, error) {
-	if e.loadedTypes[2] {
-		return e.HazardAssessments, nil
-	}
-	return nil, &NotLoadedError{edge: "hazard_assessments"}
 }
 
 // ObservationGroupsOrErr returns the ObservationGroups value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) ObservationGroupsOrErr() ([]*SituationObservationGroup, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.ObservationGroups, nil
 	}
 	return nil, &NotLoadedError{edge: "observation_groups"}
@@ -134,86 +113,55 @@ func (e SituationEdges) ObservationGroupsOrErr() ([]*SituationObservationGroup, 
 // IncidentsOrErr returns the Incidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) IncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.Incidents, nil
 	}
 	return nil, &NotLoadedError{edge: "incidents"}
 }
 
-// SignalsOrErr returns the Signals value or an error if the edge
+// ObservationsOrErr returns the Observations value or an error if the edge
 // was not loaded in eager-loading.
-func (e SituationEdges) SignalsOrErr() ([]*SituationSignal, error) {
-	if e.loadedTypes[5] {
-		return e.Signals, nil
+func (e SituationEdges) ObservationsOrErr() ([]*SituationObservation, error) {
+	if e.loadedTypes[4] {
+		return e.Observations, nil
 	}
-	return nil, &NotLoadedError{edge: "signals"}
+	return nil, &NotLoadedError{edge: "observations"}
 }
 
 // EntitiesOrErr returns the Entities value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) EntitiesOrErr() ([]*SituationEntity, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.Entities, nil
 	}
 	return nil, &NotLoadedError{edge: "entities"}
 }
 
-// LinksOrErr returns the Links value or an error if the edge
-// was not loaded in eager-loading.
-func (e SituationEdges) LinksOrErr() ([]*SituationLink, error) {
-	if e.loadedTypes[7] {
-		return e.Links, nil
-	}
-	return nil, &NotLoadedError{edge: "links"}
-}
-
 // ActionsOrErr returns the Actions value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) ActionsOrErr() ([]*SituationAction, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[6] {
 		return e.Actions, nil
 	}
 	return nil, &NotLoadedError{edge: "actions"}
 }
 
+// JudgmentsOrErr returns the Judgments value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) JudgmentsOrErr() ([]*SituationJudgment, error) {
+	if e.loadedTypes[7] {
+		return e.Judgments, nil
+	}
+	return nil, &NotLoadedError{edge: "judgments"}
+}
+
 // NoticesOrErr returns the Notices value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) NoticesOrErr() ([]*SituationNotice, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[8] {
 		return e.Notices, nil
 	}
 	return nil, &NotLoadedError{edge: "notices"}
-}
-
-// NoticeRatingsOrErr returns the NoticeRatings value or an error if the edge
-// was not loaded in eager-loading.
-func (e SituationEdges) NoticeRatingsOrErr() ([]*SituationNoticeRating, error) {
-	if e.loadedTypes[10] {
-		return e.NoticeRatings, nil
-	}
-	return nil, &NotLoadedError{edge: "notice_ratings"}
-}
-
-// LatestJudgmentOrErr returns the LatestJudgment value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SituationEdges) LatestJudgmentOrErr() (*SituationJudgment, error) {
-	if e.LatestJudgment != nil {
-		return e.LatestJudgment, nil
-	} else if e.loadedTypes[11] {
-		return nil, &NotFoundError{label: situationjudgment.Label}
-	}
-	return nil, &NotLoadedError{edge: "latest_judgment"}
-}
-
-// SeedEntityOrErr returns the SeedEntity value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SituationEdges) SeedEntityOrErr() (*KnowledgeEntity, error) {
-	if e.SeedEntity != nil {
-		return e.SeedEntity, nil
-	} else if e.loadedTypes[12] {
-		return nil, &NotFoundError{label: knowledgeentity.Label}
-	}
-	return nil, &NotLoadedError{edge: "seed_entity"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -221,7 +169,7 @@ func (*Situation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case situation.FieldLatestJudgmentID:
+		case situation.FieldInvestigationID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case situation.FieldTenantID, situation.FieldNumber:
 			values[i] = new(sql.NullInt64)
@@ -229,7 +177,7 @@ func (*Situation) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case situation.FieldCreatedAt, situation.FieldUpdatedAt, situation.FieldOpenedAt, situation.FieldRaisedAt, situation.FieldMutedAt, situation.FieldHoldUntil, situation.FieldClosedAt:
 			values[i] = new(sql.NullTime)
-		case situation.FieldID, situation.FieldSeedEntityID:
+		case situation.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -336,18 +284,12 @@ func (_m *Situation) assignValues(columns []string, values []any) error {
 				_m.CloseReason = new(situation.CloseReason)
 				*_m.CloseReason = situation.CloseReason(value.String)
 			}
-		case situation.FieldSeedEntityID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field seed_entity_id", values[i])
-			} else if value != nil {
-				_m.SeedEntityID = *value
-			}
-		case situation.FieldLatestJudgmentID:
+		case situation.FieldInvestigationID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field latest_judgment_id", values[i])
+				return fmt.Errorf("unexpected type %T for field investigation_id", values[i])
 			} else if value.Valid {
-				_m.LatestJudgmentID = new(uuid.UUID)
-				*_m.LatestJudgmentID = *value.S.(*uuid.UUID)
+				_m.InvestigationID = new(uuid.UUID)
+				*_m.InvestigationID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -368,13 +310,8 @@ func (_m *Situation) QueryTenant() *TenantQuery {
 }
 
 // QueryInvestigation queries the "investigation" edge of the Situation entity.
-func (_m *Situation) QueryInvestigation() *SituationInvestigationQuery {
+func (_m *Situation) QueryInvestigation() *InvestigationQuery {
 	return NewSituationClient(_m.config).QueryInvestigation(_m)
-}
-
-// QueryHazardAssessments queries the "hazard_assessments" edge of the Situation entity.
-func (_m *Situation) QueryHazardAssessments() *SituationHazardAssessmentQuery {
-	return NewSituationClient(_m.config).QueryHazardAssessments(_m)
 }
 
 // QueryObservationGroups queries the "observation_groups" edge of the Situation entity.
@@ -387,9 +324,9 @@ func (_m *Situation) QueryIncidents() *IncidentQuery {
 	return NewSituationClient(_m.config).QueryIncidents(_m)
 }
 
-// QuerySignals queries the "signals" edge of the Situation entity.
-func (_m *Situation) QuerySignals() *SituationSignalQuery {
-	return NewSituationClient(_m.config).QuerySignals(_m)
+// QueryObservations queries the "observations" edge of the Situation entity.
+func (_m *Situation) QueryObservations() *SituationObservationQuery {
+	return NewSituationClient(_m.config).QueryObservations(_m)
 }
 
 // QueryEntities queries the "entities" edge of the Situation entity.
@@ -397,34 +334,19 @@ func (_m *Situation) QueryEntities() *SituationEntityQuery {
 	return NewSituationClient(_m.config).QueryEntities(_m)
 }
 
-// QueryLinks queries the "links" edge of the Situation entity.
-func (_m *Situation) QueryLinks() *SituationLinkQuery {
-	return NewSituationClient(_m.config).QueryLinks(_m)
-}
-
 // QueryActions queries the "actions" edge of the Situation entity.
 func (_m *Situation) QueryActions() *SituationActionQuery {
 	return NewSituationClient(_m.config).QueryActions(_m)
 }
 
+// QueryJudgments queries the "judgments" edge of the Situation entity.
+func (_m *Situation) QueryJudgments() *SituationJudgmentQuery {
+	return NewSituationClient(_m.config).QueryJudgments(_m)
+}
+
 // QueryNotices queries the "notices" edge of the Situation entity.
 func (_m *Situation) QueryNotices() *SituationNoticeQuery {
 	return NewSituationClient(_m.config).QueryNotices(_m)
-}
-
-// QueryNoticeRatings queries the "notice_ratings" edge of the Situation entity.
-func (_m *Situation) QueryNoticeRatings() *SituationNoticeRatingQuery {
-	return NewSituationClient(_m.config).QueryNoticeRatings(_m)
-}
-
-// QueryLatestJudgment queries the "latest_judgment" edge of the Situation entity.
-func (_m *Situation) QueryLatestJudgment() *SituationJudgmentQuery {
-	return NewSituationClient(_m.config).QueryLatestJudgment(_m)
-}
-
-// QuerySeedEntity queries the "seed_entity" edge of the Situation entity.
-func (_m *Situation) QuerySeedEntity() *KnowledgeEntityQuery {
-	return NewSituationClient(_m.config).QuerySeedEntity(_m)
 }
 
 // Update returns a builder for updating this Situation.
@@ -501,11 +423,8 @@ func (_m *Situation) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("seed_entity_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SeedEntityID))
-	builder.WriteString(", ")
-	if v := _m.LatestJudgmentID; v != nil {
-		builder.WriteString("latest_judgment_id=")
+	if v := _m.InvestigationID; v != nil {
+		builder.WriteString("investigation_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')

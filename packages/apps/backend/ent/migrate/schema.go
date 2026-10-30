@@ -3464,8 +3464,7 @@ var (
 		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "close_reason", Type: field.TypeEnum, Nullable: true, Enums: []string{"stabilized", "expired", "merged", "dismissed"}},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "latest_judgment_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "seed_entity_id", Type: field.TypeUUID},
+		{Name: "investigation_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SituationsTable holds the schema information for the "situations" table.
 	SituationsTable = &schema.Table{
@@ -3480,16 +3479,10 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "situations_situation_judgments_latest_judgment",
+				Symbol:     "situations_investigations_investigation",
 				Columns:    []*schema.Column{SituationsColumns[14]},
-				RefColumns: []*schema.Column{SituationJudgmentsColumns[0]},
+				RefColumns: []*schema.Column{InvestigationsColumns[0]},
 				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "situations_knowledge_entities_seed_entity",
-				Columns:    []*schema.Column{SituationsColumns[15]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -3514,9 +3507,9 @@ var (
 				Columns: []*schema.Column{SituationsColumns[13], SituationsColumns[11]},
 			},
 			{
-				Name:    "situation_tenant_id_seed_entity_id",
+				Name:    "situation_tenant_id_investigation_id",
 				Unique:  false,
-				Columns: []*schema.Column{SituationsColumns[13], SituationsColumns[15]},
+				Columns: []*schema.Column{SituationsColumns[13], SituationsColumns[14]},
 			},
 		},
 	}
@@ -3622,140 +3615,6 @@ var (
 			},
 		},
 	}
-	// SituationHazardAssessmentsColumns holds the columns for the "situation_hazard_assessments" table.
-	SituationHazardAssessmentsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "revision", Type: field.TypeInt},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"suspected", "confirmed", "disproven"}},
-		{Name: "summary", Type: field.TypeString, Size: 2147483647},
-		{Name: "assessed_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "situation_id", Type: field.TypeUUID},
-		{Name: "system_hazard_id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "agent_turn_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "system_hazard_situation_assessments", Type: field.TypeUUID, Nullable: true},
-	}
-	// SituationHazardAssessmentsTable holds the schema information for the "situation_hazard_assessments" table.
-	SituationHazardAssessmentsTable = &schema.Table{
-		Name:       "situation_hazard_assessments",
-		Columns:    SituationHazardAssessmentsColumns,
-		PrimaryKey: []*schema.Column{SituationHazardAssessmentsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "situation_hazard_assessments_tenants_tenant",
-				Columns:    []*schema.Column{SituationHazardAssessmentsColumns[7]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_hazard_assessments_situations_situation",
-				Columns:    []*schema.Column{SituationHazardAssessmentsColumns[8]},
-				RefColumns: []*schema.Column{SituationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_hazard_assessments_system_hazards_system_hazard",
-				Columns:    []*schema.Column{SituationHazardAssessmentsColumns[9]},
-				RefColumns: []*schema.Column{SystemHazardsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_hazard_assessments_users_user",
-				Columns:    []*schema.Column{SituationHazardAssessmentsColumns[10]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "situation_hazard_assessments_agent_turns_agent_turn",
-				Columns:    []*schema.Column{SituationHazardAssessmentsColumns[11]},
-				RefColumns: []*schema.Column{AgentTurnsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "situation_hazard_assessments_system_hazards_situation_assessments",
-				Columns:    []*schema.Column{SituationHazardAssessmentsColumns[12]},
-				RefColumns: []*schema.Column{SystemHazardsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "situationhazardassessment_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SituationHazardAssessmentsColumns[7]},
-			},
-			{
-				Name:    "situationhazardassessment_tenant_id_situation_id_system_hazard_id_revision",
-				Unique:  true,
-				Columns: []*schema.Column{SituationHazardAssessmentsColumns[7], SituationHazardAssessmentsColumns[8], SituationHazardAssessmentsColumns[9], SituationHazardAssessmentsColumns[3]},
-			},
-			{
-				Name:    "situationhazardassessment_tenant_id_situation_id_assessed_at",
-				Unique:  false,
-				Columns: []*schema.Column{SituationHazardAssessmentsColumns[7], SituationHazardAssessmentsColumns[8], SituationHazardAssessmentsColumns[6]},
-			},
-			{
-				Name:    "situationhazardassessment_tenant_id_system_hazard_id_assessed_at",
-				Unique:  false,
-				Columns: []*schema.Column{SituationHazardAssessmentsColumns[7], SituationHazardAssessmentsColumns[9], SituationHazardAssessmentsColumns[6]},
-			},
-		},
-	}
-	// SituationInvestigationsColumns holds the columns for the "situation_investigations" table.
-	SituationInvestigationsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "investigation_id", Type: field.TypeUUID},
-		{Name: "situation_id", Type: field.TypeUUID, Unique: true},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// SituationInvestigationsTable holds the schema information for the "situation_investigations" table.
-	SituationInvestigationsTable = &schema.Table{
-		Name:       "situation_investigations",
-		Columns:    SituationInvestigationsColumns,
-		PrimaryKey: []*schema.Column{SituationInvestigationsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "situation_investigations_investigations_situations",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[3]},
-				RefColumns: []*schema.Column{InvestigationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_investigations_situations_investigation",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[4]},
-				RefColumns: []*schema.Column{SituationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_investigations_tenants_tenant",
-				Columns:    []*schema.Column{SituationInvestigationsColumns[5]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "situationinvestigation_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SituationInvestigationsColumns[5]},
-			},
-			{
-				Name:    "situationinvestigation_tenant_id_situation_id",
-				Unique:  true,
-				Columns: []*schema.Column{SituationInvestigationsColumns[5], SituationInvestigationsColumns[4]},
-			},
-			{
-				Name:    "situationinvestigation_tenant_id_investigation_id",
-				Unique:  true,
-				Columns: []*schema.Column{SituationInvestigationsColumns[5], SituationInvestigationsColumns[3]},
-			},
-		},
-	}
 	// SituationJudgmentsColumns holds the columns for the "situation_judgments" table.
 	SituationJudgmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -3800,53 +3659,6 @@ var (
 				Name:    "situationjudgment_tenant_id_situation_id_judged_at",
 				Unique:  false,
 				Columns: []*schema.Column{SituationJudgmentsColumns[10], SituationJudgmentsColumns[11], SituationJudgmentsColumns[1]},
-			},
-		},
-	}
-	// SituationLinksColumns holds the columns for the "situation_links" table.
-	SituationLinksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"recurrence_of", "merged_into"}},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "situation_id", Type: field.TypeUUID},
-		{Name: "linked_situation_id", Type: field.TypeUUID},
-	}
-	// SituationLinksTable holds the schema information for the "situation_links" table.
-	SituationLinksTable = &schema.Table{
-		Name:       "situation_links",
-		Columns:    SituationLinksColumns,
-		PrimaryKey: []*schema.Column{SituationLinksColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "situation_links_tenants_tenant",
-				Columns:    []*schema.Column{SituationLinksColumns[3]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_links_situations_situation",
-				Columns:    []*schema.Column{SituationLinksColumns[4]},
-				RefColumns: []*schema.Column{SituationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_links_situations_linked_situation",
-				Columns:    []*schema.Column{SituationLinksColumns[5]},
-				RefColumns: []*schema.Column{SituationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "situationlink_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SituationLinksColumns[3]},
-			},
-			{
-				Name:    "situationlink_tenant_id_situation_id_linked_situation_id_kind",
-				Unique:  true,
-				Columns: []*schema.Column{SituationLinksColumns[3], SituationLinksColumns[4], SituationLinksColumns[5], SituationLinksColumns[1]},
 			},
 		},
 	}
@@ -3910,52 +3722,63 @@ var (
 			},
 		},
 	}
-	// SituationNoticeRatingsColumns holds the columns for the "situation_notice_ratings" table.
-	SituationNoticeRatingsColumns = []*schema.Column{
+	// SituationObservationsColumns holds the columns for the "situation_observations" table.
+	SituationObservationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "chat_user_id", Type: field.TypeString},
-		{Name: "useful", Type: field.TypeBool},
-		{Name: "situation_id", Type: field.TypeUUID},
+		{Name: "attached_at", Type: field.TypeTime},
+		{Name: "match_explanation", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "observed_revision", Type: field.TypeInt, Default: 0},
+		{Name: "alert_episode_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "situation_id", Type: field.TypeUUID},
+		{Name: "observation_group_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// SituationNoticeRatingsTable holds the schema information for the "situation_notice_ratings" table.
-	SituationNoticeRatingsTable = &schema.Table{
-		Name:       "situation_notice_ratings",
-		Columns:    SituationNoticeRatingsColumns,
-		PrimaryKey: []*schema.Column{SituationNoticeRatingsColumns[0]},
+	// SituationObservationsTable holds the schema information for the "situation_observations" table.
+	SituationObservationsTable = &schema.Table{
+		Name:       "situation_observations",
+		Columns:    SituationObservationsColumns,
+		PrimaryKey: []*schema.Column{SituationObservationsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "situation_notice_ratings_situations_notice_ratings",
-				Columns:    []*schema.Column{SituationNoticeRatingsColumns[5]},
-				RefColumns: []*schema.Column{SituationsColumns[0]},
+				Symbol:     "situation_observations_alert_episodes_situation_observations",
+				Columns:    []*schema.Column{SituationObservationsColumns[4]},
+				RefColumns: []*schema.Column{AlertEpisodesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "situation_notice_ratings_tenants_tenant",
-				Columns:    []*schema.Column{SituationNoticeRatingsColumns[6]},
+				Symbol:     "situation_observations_tenants_tenant",
+				Columns:    []*schema.Column{SituationObservationsColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "situation_notice_ratings_users_user",
-				Columns:    []*schema.Column{SituationNoticeRatingsColumns[7]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "situation_observations_situations_situation",
+				Columns:    []*schema.Column{SituationObservationsColumns[6]},
+				RefColumns: []*schema.Column{SituationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "situation_observations_situation_observation_groups_observation_group",
+				Columns:    []*schema.Column{SituationObservationsColumns[7]},
+				RefColumns: []*schema.Column{SituationObservationGroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "situationnoticerating_tenant_id",
+				Name:    "situationobservation_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SituationNoticeRatingsColumns[6]},
+				Columns: []*schema.Column{SituationObservationsColumns[5]},
 			},
 			{
-				Name:    "situationnoticerating_tenant_id_situation_id_chat_user_id",
+				Name:    "situationobservation_tenant_id_situation_id_alert_episode_id",
 				Unique:  true,
-				Columns: []*schema.Column{SituationNoticeRatingsColumns[6], SituationNoticeRatingsColumns[5], SituationNoticeRatingsColumns[3]},
+				Columns: []*schema.Column{SituationObservationsColumns[5], SituationObservationsColumns[6], SituationObservationsColumns[4]},
+			},
+			{
+				Name:    "situationobservation_tenant_id_alert_episode_id",
+				Unique:  false,
+				Columns: []*schema.Column{SituationObservationsColumns[5], SituationObservationsColumns[4]},
 			},
 		},
 	}
@@ -3993,92 +3816,6 @@ var (
 				Name:    "situationobservationgroup_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{SituationObservationGroupsColumns[5]},
-			},
-		},
-	}
-	// SituationSignalsColumns holds the columns for the "situation_signals" table.
-	SituationSignalsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "kind", Type: field.TypeString},
-		{Name: "attached_at", Type: field.TypeTime},
-		{Name: "match_kind", Type: field.TypeEnum, Enums: []string{"seed", "shared_entity", "dependency", "dependent", "adjacent", "manual"}},
-		{Name: "match_explanation", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "observed_revision", Type: field.TypeInt, Default: 0},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "situation_id", Type: field.TypeUUID},
-		{Name: "observation_group_id", Type: field.TypeUUID},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID},
-		{Name: "source_entity_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "via_relationship_id", Type: field.TypeUUID, Nullable: true},
-	}
-	// SituationSignalsTable holds the schema information for the "situation_signals" table.
-	SituationSignalsTable = &schema.Table{
-		Name:       "situation_signals",
-		Columns:    SituationSignalsColumns,
-		PrimaryKey: []*schema.Column{SituationSignalsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "situation_signals_tenants_tenant",
-				Columns:    []*schema.Column{SituationSignalsColumns[6]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_signals_situations_situation",
-				Columns:    []*schema.Column{SituationSignalsColumns[7]},
-				RefColumns: []*schema.Column{SituationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_signals_situation_observation_groups_observation_group",
-				Columns:    []*schema.Column{SituationSignalsColumns[8]},
-				RefColumns: []*schema.Column{SituationObservationGroupsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_signals_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{SituationSignalsColumns[9]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_signals_knowledge_entities_source_entity",
-				Columns:    []*schema.Column{SituationSignalsColumns[10]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_signals_knowledge_relationships_via_relationship",
-				Columns:    []*schema.Column{SituationSignalsColumns[11]},
-				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "situationsignal_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SituationSignalsColumns[6]},
-			},
-			{
-				Name:    "situationsignal_tenant_id_knowledge_entity_id",
-				Unique:  true,
-				Columns: []*schema.Column{SituationSignalsColumns[6], SituationSignalsColumns[9]},
-			},
-			{
-				Name:    "situationsignal_tenant_id_situation_id",
-				Unique:  false,
-				Columns: []*schema.Column{SituationSignalsColumns[6], SituationSignalsColumns[7]},
-			},
-			{
-				Name:    "situationsignal_tenant_id_source_entity_id",
-				Unique:  false,
-				Columns: []*schema.Column{SituationSignalsColumns[6], SituationSignalsColumns[10]},
-			},
-			{
-				Name:    "situationsignal_tenant_id_via_relationship_id",
-				Unique:  false,
-				Columns: []*schema.Column{SituationSignalsColumns[6], SituationSignalsColumns[11]},
 			},
 		},
 	}
@@ -5335,14 +5072,10 @@ var (
 		SituationsTable,
 		SituationActionsTable,
 		SituationEntitiesTable,
-		SituationHazardAssessmentsTable,
-		SituationInvestigationsTable,
 		SituationJudgmentsTable,
-		SituationLinksTable,
 		SituationNoticesTable,
-		SituationNoticeRatingsTable,
+		SituationObservationsTable,
 		SituationObservationGroupsTable,
-		SituationSignalsTable,
 		SituationSignalAttentionsTable,
 		SystemAnalysesTable,
 		SystemAnalysisEntitiesTable,
@@ -5589,46 +5322,29 @@ func init() {
 	}
 	SequenceCountersTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationsTable.ForeignKeys[0].RefTable = TenantsTable
-	SituationsTable.ForeignKeys[1].RefTable = SituationJudgmentsTable
-	SituationsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	SituationsTable.ForeignKeys[1].RefTable = InvestigationsTable
 	SituationActionsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationActionsTable.ForeignKeys[1].RefTable = SituationsTable
 	SituationActionsTable.ForeignKeys[2].RefTable = UsersTable
 	SituationEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationEntitiesTable.ForeignKeys[1].RefTable = SituationsTable
 	SituationEntitiesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
-	SituationHazardAssessmentsTable.ForeignKeys[0].RefTable = TenantsTable
-	SituationHazardAssessmentsTable.ForeignKeys[1].RefTable = SituationsTable
-	SituationHazardAssessmentsTable.ForeignKeys[2].RefTable = SystemHazardsTable
-	SituationHazardAssessmentsTable.ForeignKeys[3].RefTable = UsersTable
-	SituationHazardAssessmentsTable.ForeignKeys[4].RefTable = AgentTurnsTable
-	SituationHazardAssessmentsTable.ForeignKeys[5].RefTable = SystemHazardsTable
-	SituationHazardAssessmentsTable.Annotation = &entsql.Annotation{}
-	SituationHazardAssessmentsTable.Annotation.Checks = map[string]string{
-		"situation_hazard_assessment_exactly_one_assessor": "num_nonnulls(user_id, agent_turn_id) = 1",
-	}
-	SituationInvestigationsTable.ForeignKeys[0].RefTable = InvestigationsTable
-	SituationInvestigationsTable.ForeignKeys[1].RefTable = SituationsTable
-	SituationInvestigationsTable.ForeignKeys[2].RefTable = TenantsTable
 	SituationJudgmentsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationJudgmentsTable.ForeignKeys[1].RefTable = SituationsTable
-	SituationLinksTable.ForeignKeys[0].RefTable = TenantsTable
-	SituationLinksTable.ForeignKeys[1].RefTable = SituationsTable
-	SituationLinksTable.ForeignKeys[2].RefTable = SituationsTable
 	SituationNoticesTable.ForeignKeys[0].RefTable = SituationsTable
 	SituationNoticesTable.ForeignKeys[1].RefTable = TenantsTable
 	SituationNoticesTable.ForeignKeys[2].RefTable = IntegrationsTable
-	SituationNoticeRatingsTable.ForeignKeys[0].RefTable = SituationsTable
-	SituationNoticeRatingsTable.ForeignKeys[1].RefTable = TenantsTable
-	SituationNoticeRatingsTable.ForeignKeys[2].RefTable = UsersTable
+	SituationObservationsTable.ForeignKeys[0].RefTable = AlertEpisodesTable
+	SituationObservationsTable.ForeignKeys[1].RefTable = TenantsTable
+	SituationObservationsTable.ForeignKeys[2].RefTable = SituationsTable
+	SituationObservationsTable.ForeignKeys[3].RefTable = SituationObservationGroupsTable
+	SituationObservationsTable.Annotation = &entsql.Annotation{}
+	SituationObservationsTable.Annotation.Checks = map[string]string{
+		"situation_observation_exactly_one_reference":         "num_nonnulls(alert_episode_id) = 1",
+		"situation_observation_observed_revision_nonnegative": "observed_revision >= 0",
+	}
 	SituationObservationGroupsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationObservationGroupsTable.ForeignKeys[1].RefTable = SituationsTable
-	SituationSignalsTable.ForeignKeys[0].RefTable = TenantsTable
-	SituationSignalsTable.ForeignKeys[1].RefTable = SituationsTable
-	SituationSignalsTable.ForeignKeys[2].RefTable = SituationObservationGroupsTable
-	SituationSignalsTable.ForeignKeys[3].RefTable = KnowledgeEntitiesTable
-	SituationSignalsTable.ForeignKeys[4].RefTable = KnowledgeEntitiesTable
-	SituationSignalsTable.ForeignKeys[5].RefTable = KnowledgeRelationshipsTable
 	SituationSignalAttentionsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationSignalAttentionsTable.ForeignKeys[1].RefTable = UsersTable
 	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable

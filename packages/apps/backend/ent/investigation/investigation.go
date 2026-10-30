@@ -68,10 +68,10 @@ const (
 	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
 	SystemAnalysisColumn = "system_analysis_id"
 	// SituationsTable is the table that holds the situations relation/edge.
-	SituationsTable = "situation_investigations"
-	// SituationsInverseTable is the table name for the SituationInvestigation entity.
-	// It exists in this package in order to avoid circular dependency with the "situationinvestigation" package.
-	SituationsInverseTable = "situation_investigations"
+	SituationsTable = "situations"
+	// SituationsInverseTable is the table name for the Situation entity.
+	// It exists in this package in order to avoid circular dependency with the "situation" package.
+	SituationsInverseTable = "situations"
 	// SituationsColumn is the table column denoting the situations relation/edge.
 	SituationsColumn = "investigation_id"
 	// UserInputsTable is the table that holds the user_inputs relation/edge.
@@ -311,7 +311,7 @@ func newSituationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SituationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, SituationsTable, SituationsColumn),
+		sqlgraph.Edge(sqlgraph.O2M, true, SituationsTable, SituationsColumn),
 	)
 }
 func newUserInputsStep() *sqlgraph.Step {

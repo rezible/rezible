@@ -14,18 +14,14 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
-	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
-	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationnotice"
-	"github.com/rezible/rezible/ent/situationnoticerating"
+	"github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
-	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -187,22 +183,16 @@ func (_c *SituationCreate) SetNillableCloseReason(v *situation.CloseReason) *Sit
 	return _c
 }
 
-// SetSeedEntityID sets the "seed_entity_id" field.
-func (_c *SituationCreate) SetSeedEntityID(v uuid.UUID) *SituationCreate {
-	_c.mutation.SetSeedEntityID(v)
+// SetInvestigationID sets the "investigation_id" field.
+func (_c *SituationCreate) SetInvestigationID(v uuid.UUID) *SituationCreate {
+	_c.mutation.SetInvestigationID(v)
 	return _c
 }
 
-// SetLatestJudgmentID sets the "latest_judgment_id" field.
-func (_c *SituationCreate) SetLatestJudgmentID(v uuid.UUID) *SituationCreate {
-	_c.mutation.SetLatestJudgmentID(v)
-	return _c
-}
-
-// SetNillableLatestJudgmentID sets the "latest_judgment_id" field if the given value is not nil.
-func (_c *SituationCreate) SetNillableLatestJudgmentID(v *uuid.UUID) *SituationCreate {
+// SetNillableInvestigationID sets the "investigation_id" field if the given value is not nil.
+func (_c *SituationCreate) SetNillableInvestigationID(v *uuid.UUID) *SituationCreate {
 	if v != nil {
-		_c.SetLatestJudgmentID(*v)
+		_c.SetInvestigationID(*v)
 	}
 	return _c
 }
@@ -226,38 +216,9 @@ func (_c *SituationCreate) SetTenant(v *Tenant) *SituationCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetInvestigationID sets the "investigation" edge to the SituationInvestigation entity by ID.
-func (_c *SituationCreate) SetInvestigationID(id uuid.UUID) *SituationCreate {
-	_c.mutation.SetInvestigationID(id)
-	return _c
-}
-
-// SetNillableInvestigationID sets the "investigation" edge to the SituationInvestigation entity by ID if the given value is not nil.
-func (_c *SituationCreate) SetNillableInvestigationID(id *uuid.UUID) *SituationCreate {
-	if id != nil {
-		_c = _c.SetInvestigationID(*id)
-	}
-	return _c
-}
-
-// SetInvestigation sets the "investigation" edge to the SituationInvestigation entity.
-func (_c *SituationCreate) SetInvestigation(v *SituationInvestigation) *SituationCreate {
+// SetInvestigation sets the "investigation" edge to the Investigation entity.
+func (_c *SituationCreate) SetInvestigation(v *Investigation) *SituationCreate {
 	return _c.SetInvestigationID(v.ID)
-}
-
-// AddHazardAssessmentIDs adds the "hazard_assessments" edge to the SituationHazardAssessment entity by IDs.
-func (_c *SituationCreate) AddHazardAssessmentIDs(ids ...uuid.UUID) *SituationCreate {
-	_c.mutation.AddHazardAssessmentIDs(ids...)
-	return _c
-}
-
-// AddHazardAssessments adds the "hazard_assessments" edges to the SituationHazardAssessment entity.
-func (_c *SituationCreate) AddHazardAssessments(v ...*SituationHazardAssessment) *SituationCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddHazardAssessmentIDs(ids...)
 }
 
 // AddObservationGroupIDs adds the "observation_groups" edge to the SituationObservationGroup entity by IDs.
@@ -290,19 +251,19 @@ func (_c *SituationCreate) AddIncidents(v ...*Incident) *SituationCreate {
 	return _c.AddIncidentIDs(ids...)
 }
 
-// AddSignalIDs adds the "signals" edge to the SituationSignal entity by IDs.
-func (_c *SituationCreate) AddSignalIDs(ids ...uuid.UUID) *SituationCreate {
-	_c.mutation.AddSignalIDs(ids...)
+// AddObservationIDs adds the "observations" edge to the SituationObservation entity by IDs.
+func (_c *SituationCreate) AddObservationIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddObservationIDs(ids...)
 	return _c
 }
 
-// AddSignals adds the "signals" edges to the SituationSignal entity.
-func (_c *SituationCreate) AddSignals(v ...*SituationSignal) *SituationCreate {
+// AddObservations adds the "observations" edges to the SituationObservation entity.
+func (_c *SituationCreate) AddObservations(v ...*SituationObservation) *SituationCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddSignalIDs(ids...)
+	return _c.AddObservationIDs(ids...)
 }
 
 // AddEntityIDs adds the "entities" edge to the SituationEntity entity by IDs.
@@ -320,21 +281,6 @@ func (_c *SituationCreate) AddEntities(v ...*SituationEntity) *SituationCreate {
 	return _c.AddEntityIDs(ids...)
 }
 
-// AddLinkIDs adds the "links" edge to the SituationLink entity by IDs.
-func (_c *SituationCreate) AddLinkIDs(ids ...uuid.UUID) *SituationCreate {
-	_c.mutation.AddLinkIDs(ids...)
-	return _c
-}
-
-// AddLinks adds the "links" edges to the SituationLink entity.
-func (_c *SituationCreate) AddLinks(v ...*SituationLink) *SituationCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddLinkIDs(ids...)
-}
-
 // AddActionIDs adds the "actions" edge to the SituationAction entity by IDs.
 func (_c *SituationCreate) AddActionIDs(ids ...uuid.UUID) *SituationCreate {
 	_c.mutation.AddActionIDs(ids...)
@@ -350,6 +296,21 @@ func (_c *SituationCreate) AddActions(v ...*SituationAction) *SituationCreate {
 	return _c.AddActionIDs(ids...)
 }
 
+// AddJudgmentIDs adds the "judgments" edge to the SituationJudgment entity by IDs.
+func (_c *SituationCreate) AddJudgmentIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddJudgmentIDs(ids...)
+	return _c
+}
+
+// AddJudgments adds the "judgments" edges to the SituationJudgment entity.
+func (_c *SituationCreate) AddJudgments(v ...*SituationJudgment) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddJudgmentIDs(ids...)
+}
+
 // AddNoticeIDs adds the "notices" edge to the SituationNotice entity by IDs.
 func (_c *SituationCreate) AddNoticeIDs(ids ...uuid.UUID) *SituationCreate {
 	_c.mutation.AddNoticeIDs(ids...)
@@ -363,31 +324,6 @@ func (_c *SituationCreate) AddNotices(v ...*SituationNotice) *SituationCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddNoticeIDs(ids...)
-}
-
-// AddNoticeRatingIDs adds the "notice_ratings" edge to the SituationNoticeRating entity by IDs.
-func (_c *SituationCreate) AddNoticeRatingIDs(ids ...uuid.UUID) *SituationCreate {
-	_c.mutation.AddNoticeRatingIDs(ids...)
-	return _c
-}
-
-// AddNoticeRatings adds the "notice_ratings" edges to the SituationNoticeRating entity.
-func (_c *SituationCreate) AddNoticeRatings(v ...*SituationNoticeRating) *SituationCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddNoticeRatingIDs(ids...)
-}
-
-// SetLatestJudgment sets the "latest_judgment" edge to the SituationJudgment entity.
-func (_c *SituationCreate) SetLatestJudgment(v *SituationJudgment) *SituationCreate {
-	return _c.SetLatestJudgmentID(v.ID)
-}
-
-// SetSeedEntity sets the "seed_entity" edge to the KnowledgeEntity entity.
-func (_c *SituationCreate) SetSeedEntity(v *KnowledgeEntity) *SituationCreate {
-	return _c.SetSeedEntityID(v.ID)
 }
 
 // Mutation returns the SituationMutation object of the builder.
@@ -491,14 +427,8 @@ func (_c *SituationCreate) check() error {
 			return &ValidationError{Name: "close_reason", err: fmt.Errorf(`ent: validator failed for field "Situation.close_reason": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.SeedEntityID(); !ok {
-		return &ValidationError{Name: "seed_entity_id", err: errors.New(`ent: missing required field "Situation.seed_entity_id"`)}
-	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Situation.tenant"`)}
-	}
-	if len(_c.mutation.SeedEntityIDs()) == 0 {
-		return &ValidationError{Name: "seed_entity", err: errors.New(`ent: missing required edge "Situation.seed_entity"`)}
 	}
 	return nil
 }
@@ -605,36 +535,20 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 	}
 	if nodes := _c.mutation.InvestigationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
 			Table:   situation.InvestigationTable,
 			Columns: []string{situation.InvestigationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationinvestigation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(investigation.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SituationInvestigation
+		edge.Schema = _c.schemaConfig.Situation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.HazardAssessmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   situation.HazardAssessmentsTable,
-			Columns: []string{situation.HazardAssessmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationhazardassessment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SituationHazardAssessment
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
+		_node.InvestigationID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ObservationGroupsIDs(); len(nodes) > 0 {
@@ -671,18 +585,18 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SignalsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ObservationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   situation.SignalsTable,
-			Columns: []string{situation.SignalsColumn},
+			Table:   situation.ObservationsTable,
+			Columns: []string{situation.ObservationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationsignal.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(situationobservation.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SituationSignal
+		edge.Schema = _c.schemaConfig.SituationObservation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -705,23 +619,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.LinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   situation.LinksTable,
-			Columns: []string{situation.LinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationlink.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SituationLink
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.ActionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -734,6 +631,23 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.SituationAction
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.JudgmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   situation.JudgmentsTable,
+			Columns: []string{situation.JudgmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situationjudgment.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.SituationJudgment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -754,59 +668,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.NoticeRatingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   situation.NoticeRatingsTable,
-			Columns: []string{situation.NoticeRatingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationnoticerating.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SituationNoticeRating
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.LatestJudgmentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   situation.LatestJudgmentTable,
-			Columns: []string{situation.LatestJudgmentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationjudgment.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Situation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.LatestJudgmentID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.SeedEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   situation.SeedEntityTable,
-			Columns: []string{situation.SeedEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Situation
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.SeedEntityID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -1035,33 +896,21 @@ func (u *SituationUpsert) ClearCloseReason() *SituationUpsert {
 	return u
 }
 
-// SetSeedEntityID sets the "seed_entity_id" field.
-func (u *SituationUpsert) SetSeedEntityID(v uuid.UUID) *SituationUpsert {
-	u.Set(situation.FieldSeedEntityID, v)
+// SetInvestigationID sets the "investigation_id" field.
+func (u *SituationUpsert) SetInvestigationID(v uuid.UUID) *SituationUpsert {
+	u.Set(situation.FieldInvestigationID, v)
 	return u
 }
 
-// UpdateSeedEntityID sets the "seed_entity_id" field to the value that was provided on create.
-func (u *SituationUpsert) UpdateSeedEntityID() *SituationUpsert {
-	u.SetExcluded(situation.FieldSeedEntityID)
+// UpdateInvestigationID sets the "investigation_id" field to the value that was provided on create.
+func (u *SituationUpsert) UpdateInvestigationID() *SituationUpsert {
+	u.SetExcluded(situation.FieldInvestigationID)
 	return u
 }
 
-// SetLatestJudgmentID sets the "latest_judgment_id" field.
-func (u *SituationUpsert) SetLatestJudgmentID(v uuid.UUID) *SituationUpsert {
-	u.Set(situation.FieldLatestJudgmentID, v)
-	return u
-}
-
-// UpdateLatestJudgmentID sets the "latest_judgment_id" field to the value that was provided on create.
-func (u *SituationUpsert) UpdateLatestJudgmentID() *SituationUpsert {
-	u.SetExcluded(situation.FieldLatestJudgmentID)
-	return u
-}
-
-// ClearLatestJudgmentID clears the value of the "latest_judgment_id" field.
-func (u *SituationUpsert) ClearLatestJudgmentID() *SituationUpsert {
-	u.SetNull(situation.FieldLatestJudgmentID)
+// ClearInvestigationID clears the value of the "investigation_id" field.
+func (u *SituationUpsert) ClearInvestigationID() *SituationUpsert {
+	u.SetNull(situation.FieldInvestigationID)
 	return u
 }
 
@@ -1322,38 +1171,24 @@ func (u *SituationUpsertOne) ClearCloseReason() *SituationUpsertOne {
 	})
 }
 
-// SetSeedEntityID sets the "seed_entity_id" field.
-func (u *SituationUpsertOne) SetSeedEntityID(v uuid.UUID) *SituationUpsertOne {
+// SetInvestigationID sets the "investigation_id" field.
+func (u *SituationUpsertOne) SetInvestigationID(v uuid.UUID) *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
-		s.SetSeedEntityID(v)
+		s.SetInvestigationID(v)
 	})
 }
 
-// UpdateSeedEntityID sets the "seed_entity_id" field to the value that was provided on create.
-func (u *SituationUpsertOne) UpdateSeedEntityID() *SituationUpsertOne {
+// UpdateInvestigationID sets the "investigation_id" field to the value that was provided on create.
+func (u *SituationUpsertOne) UpdateInvestigationID() *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
-		s.UpdateSeedEntityID()
+		s.UpdateInvestigationID()
 	})
 }
 
-// SetLatestJudgmentID sets the "latest_judgment_id" field.
-func (u *SituationUpsertOne) SetLatestJudgmentID(v uuid.UUID) *SituationUpsertOne {
+// ClearInvestigationID clears the value of the "investigation_id" field.
+func (u *SituationUpsertOne) ClearInvestigationID() *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
-		s.SetLatestJudgmentID(v)
-	})
-}
-
-// UpdateLatestJudgmentID sets the "latest_judgment_id" field to the value that was provided on create.
-func (u *SituationUpsertOne) UpdateLatestJudgmentID() *SituationUpsertOne {
-	return u.Update(func(s *SituationUpsert) {
-		s.UpdateLatestJudgmentID()
-	})
-}
-
-// ClearLatestJudgmentID clears the value of the "latest_judgment_id" field.
-func (u *SituationUpsertOne) ClearLatestJudgmentID() *SituationUpsertOne {
-	return u.Update(func(s *SituationUpsert) {
-		s.ClearLatestJudgmentID()
+		s.ClearInvestigationID()
 	})
 }
 
@@ -1781,38 +1616,24 @@ func (u *SituationUpsertBulk) ClearCloseReason() *SituationUpsertBulk {
 	})
 }
 
-// SetSeedEntityID sets the "seed_entity_id" field.
-func (u *SituationUpsertBulk) SetSeedEntityID(v uuid.UUID) *SituationUpsertBulk {
+// SetInvestigationID sets the "investigation_id" field.
+func (u *SituationUpsertBulk) SetInvestigationID(v uuid.UUID) *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
-		s.SetSeedEntityID(v)
+		s.SetInvestigationID(v)
 	})
 }
 
-// UpdateSeedEntityID sets the "seed_entity_id" field to the value that was provided on create.
-func (u *SituationUpsertBulk) UpdateSeedEntityID() *SituationUpsertBulk {
+// UpdateInvestigationID sets the "investigation_id" field to the value that was provided on create.
+func (u *SituationUpsertBulk) UpdateInvestigationID() *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
-		s.UpdateSeedEntityID()
+		s.UpdateInvestigationID()
 	})
 }
 
-// SetLatestJudgmentID sets the "latest_judgment_id" field.
-func (u *SituationUpsertBulk) SetLatestJudgmentID(v uuid.UUID) *SituationUpsertBulk {
+// ClearInvestigationID clears the value of the "investigation_id" field.
+func (u *SituationUpsertBulk) ClearInvestigationID() *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
-		s.SetLatestJudgmentID(v)
-	})
-}
-
-// UpdateLatestJudgmentID sets the "latest_judgment_id" field to the value that was provided on create.
-func (u *SituationUpsertBulk) UpdateLatestJudgmentID() *SituationUpsertBulk {
-	return u.Update(func(s *SituationUpsert) {
-		s.UpdateLatestJudgmentID()
-	})
-}
-
-// ClearLatestJudgmentID clears the value of the "latest_judgment_id" field.
-func (u *SituationUpsertBulk) ClearLatestJudgmentID() *SituationUpsertBulk {
-	return u.Update(func(s *SituationUpsert) {
-		s.ClearLatestJudgmentID()
+		s.ClearInvestigationID()
 	})
 }
 

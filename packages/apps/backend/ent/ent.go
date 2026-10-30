@@ -87,14 +87,10 @@ import (
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
 	"github.com/rezible/rezible/ent/situationentity"
-	"github.com/rezible/rezible/ent/situationhazardassessment"
-	"github.com/rezible/rezible/ent/situationinvestigation"
 	"github.com/rezible/rezible/ent/situationjudgment"
-	"github.com/rezible/rezible/ent/situationlink"
 	"github.com/rezible/rezible/ent/situationnotice"
-	"github.com/rezible/rezible/ent/situationnoticerating"
+	"github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/ent/situationobservationgroup"
-	"github.com/rezible/rezible/ent/situationsignal"
 	"github.com/rezible/rezible/ent/situationsignalattention"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisentity"
@@ -246,14 +242,10 @@ func checkColumn(t, c string) error {
 			situation.Table:                       situation.ValidColumn,
 			situationaction.Table:                 situationaction.ValidColumn,
 			situationentity.Table:                 situationentity.ValidColumn,
-			situationhazardassessment.Table:       situationhazardassessment.ValidColumn,
-			situationinvestigation.Table:          situationinvestigation.ValidColumn,
 			situationjudgment.Table:               situationjudgment.ValidColumn,
-			situationlink.Table:                   situationlink.ValidColumn,
 			situationnotice.Table:                 situationnotice.ValidColumn,
-			situationnoticerating.Table:           situationnoticerating.ValidColumn,
+			situationobservation.Table:            situationobservation.ValidColumn,
 			situationobservationgroup.Table:       situationobservationgroup.ValidColumn,
-			situationsignal.Table:                 situationsignal.ValidColumn,
 			situationsignalattention.Table:        situationsignalattention.ValidColumn,
 			systemanalysis.Table:                  systemanalysis.ValidColumn,
 			systemanalysisentity.Table:            systemanalysisentity.ValidColumn,
