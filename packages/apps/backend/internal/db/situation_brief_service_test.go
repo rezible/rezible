@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strconv"
 	"strings"
 	"testing"
@@ -118,14 +119,18 @@ func (b *briefLogReader) CheckLogsAvailable() error {
 	return nil
 }
 
-// countingChanges records each changes lookup before running it.
+// countingChanges records each changes lookup before running it. A lookup of the failing service fails.
 type countingChanges struct {
 	rez.ChangesService
 	lookups []rez.ListServiceChangesParams
+	failing uuid.UUID
 }
 
 func (c *countingChanges) ListServiceChanges(ctx context.Context, params rez.ListServiceChangesParams) (*rez.ServiceChanges, error) {
 	c.lookups = append(c.lookups, params)
+	if params.ServiceEntityID == c.failing {
+		return nil, errors.New("lookup failed")
+	}
 	return c.ChangesService.ListServiceChanges(ctx, params)
 }
 
@@ -380,6 +385,32 @@ func (s *SituationBriefServiceSuite) TestSituationBriefChanges() {
 		s.Require().Len(listed, 2)
 		s.Equal(rez.SituationBriefUnlinkedRepositoryNotForge, listed[0].MergedChangesUnlinked)
 		s.Equal(rez.SituationBriefUnlinkedNoRepository, listed[1].MergedChangesUnlinked)
+	})
+
+	s.Run("a service whose changes cannot be loaded says so, and the others are kept", func() {
+		ctx, tdb := s.SetupTestDatabase()
+		h := s.newFixture(tdb)
+		h.installed.install("provider-b", "deployments")
+		situation := s.openSituation(ctx, h, s.serviceRef("checkout-api"), s.serviceRef("payments-api"))
+		deployed := s.deploy(ctx, h, checkoutDeployment("before", changesAt(-30)))
+		services, servicesErr := h.briefs.ListBriefServices(ctx, situation.ID)
+		s.Require().NoError(servicesErr)
+		s.Require().Len(services, 2)
+		checkout, payments := services[0], services[1]
+		s.Require().Equal("payments-api", payments.State.DisplayName)
+		h.lookups.failing = payments.ID
+
+		brief := s.brief(ctx, h, situation)
+
+		s.Require().Len(brief.Changes.Services, 2)
+		loaded, failed := brief.Changes.Services[0], brief.Changes.Services[1]
+		s.Equal(checkout.ID, loaded.ServiceEntityID)
+		s.Empty(loaded.UnavailableReason)
+		s.Require().Len(loaded.Deployments, 1)
+		s.Equal(deployed.ID, loaded.Deployments[0].Deployment.ID)
+		s.Equal(payments.ID, failed.ServiceEntityID)
+		s.NotEmpty(failed.UnavailableReason)
+		s.Empty(failed.Deployments)
 	})
 
 	s.Run("a container that is not a service is left out", func() {

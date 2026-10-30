@@ -109,5 +109,9 @@ func (c *ConfigLoader) validateConfig(ctx context.Context, cfg rez.Config) error
 			}
 		}
 	}
+	// Auth dev skip mode is only allowed in debug mode.
+	if cfg.HttpServer.Auth.EnableDevSkipMode && !cfg.App.DebugMode {
+		validationErrs = append(validationErrs, errors.New("http.auth.enable_dev_skip_mode requires app.debug_mode"))
+	}
 	return errors.Join(validationErrs...)
 }

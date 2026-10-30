@@ -134,7 +134,7 @@ type (
 
 var PublishInvestigationReportTool = defineTool[ToolDefinition[PublishInvestigationReportToolInput, *InvestigationReportToolResult]](
 	"publish_investigation_report",
-	"Publish an investigation report. text is Markdown. summary is one or two plain sentences stating the current conclusion and its certainty. Cite knowledge-evidence and provider read refs; empty evidence_refs is valid. next_checks are up to 3 checks for a responder, each with why.",
+	"Publish an investigation report. text is Markdown. summary is one or two plain sentences stating the current conclusion and its certainty. Cite the knowledge-evidence and provider read refs behind its claims; with no evidence, say so in summary. next_checks are up to 3 checks for a responder, each with why.",
 )
 
 type (

@@ -443,9 +443,10 @@ type (
 	}
 
 	SituationBriefServiceChanges struct {
-		ServiceId   uuid.UUID                  `json:"serviceId"`
-		Deployments []SituationBriefDeployment `json:"deployments" doc:"After the situation opened, then before it, each newest first"`
-		Limits      []string                   `json:"limits"`
+		ServiceId         uuid.UUID                  `json:"serviceId"`
+		UnavailableReason string                     `json:"unavailableReason" doc:"Why the service's changes could not be looked up; empty when they were"`
+		Deployments       []SituationBriefDeployment `json:"deployments" doc:"After the situation opened, then before it, each newest first"`
+		Limits            []string                   `json:"limits"`
 	}
 
 	SituationBriefDeployment struct {
@@ -526,9 +527,10 @@ func situationBriefServiceFromRez(service rez.BriefService) SituationBriefServic
 
 func situationBriefServiceChangesFromRez(changes rez.SituationBriefServiceChanges) SituationBriefServiceChanges {
 	converted := SituationBriefServiceChanges{
-		ServiceId:   changes.ServiceEntityID,
-		Deployments: make([]SituationBriefDeployment, len(changes.Deployments)),
-		Limits:      changes.Limits,
+		ServiceId:         changes.ServiceEntityID,
+		UnavailableReason: changes.UnavailableReason,
+		Deployments:       make([]SituationBriefDeployment, len(changes.Deployments)),
+		Limits:            changes.Limits,
 	}
 	if converted.Limits == nil {
 		converted.Limits = []string{}

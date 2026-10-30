@@ -30,8 +30,10 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentmessage"
+	apr "github.com/rezible/rezible/ent/agentproviderread"
 	asb "github.com/rezible/rezible/ent/agentsessionbinding"
 	at "github.com/rezible/rezible/ent/agentturn"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/errs"
@@ -1250,6 +1252,76 @@ func (s *AiAgentSessionServiceSuite) TestToolIterationLimitIsNotRetriedAutomatic
 	s.Equal(string(aix.AgentFinishReasonFailed), turn.FinishReason)
 	s.Require().NotNil(turn.Error)
 	s.NotNil(turn.FinishedAt)
+}
+
+func (s *AiAgentSessionServiceSuite) TestTurnEndFailsUnfinishedProviderReads() {
+	ctx, h := s.newAgentSessionFixture()
+	createService := h.tdb.Client(ctx).KnowledgeEntity.Create().
+		SetCategory(kne.CategoryContainer).
+		SetKind("service")
+	service, serviceErr := createService.Save(ctx)
+	s.Require().NoError(serviceErr)
+	integrationID := createTestLogIntegration(ctx, s.Require(), h.tdb)
+	createRead := func(turn *ent.AgentTurn, status apr.Status) *ent.AgentProviderRead {
+		create := h.tdb.Client(ctx).AgentProviderRead.Create().
+			SetAgentSessionID(turn.AgentSessionID).
+			SetAgentTurnID(turn.ID).
+			SetToolName(rezai.SearchLogsTool.Name()).
+			SetServiceEntityID(service.ID).
+			SetIntegrationID(integrationID).
+			SetInput([]byte(`{}`)).
+			SetStatus(status)
+		read, createErr := create.Save(ctx)
+		s.Require().NoError(createErr)
+		return read
+	}
+	requireReadStatus := func(read *ent.AgentProviderRead, status apr.Status, turn *ent.AgentTurn) {
+		saved, getErr := h.tdb.Client(ctx).AgentProviderRead.Get(ctx, read.ID)
+		s.Require().NoError(getErr)
+		s.Equal(status, saved.Status)
+		if status == apr.StatusFailed {
+			s.Require().NotNil(saved.Error)
+			s.Equal(unfinishedProviderReadError, *saved.Error)
+			s.Require().NotNil(saved.FinishedAt)
+			s.Require().NotNil(turn.FinishedAt)
+			s.WithinDuration(*turn.FinishedAt, *saved.FinishedAt, time.Millisecond, "the read ends when its turn did")
+		}
+	}
+
+	// A turn cut off by the tool iteration limit fails the reads it left running and keeps those that finished.
+	f := s.newFailedTurnFixture(ctx, h, 961)
+	limitedRunning := createRead(f.turn, apr.StatusRunning)
+	limitedSucceeded := createRead(f.turn, apr.StatusSucceeded)
+	limited := &rez.AiAgentInvocationResult{
+		FinishReason: aix.AgentFinishReasonFailed,
+		Error:        status.Errorf(ai.ErrMaxTurnsExceeded, "exceeded maximum tool call iterations (%d)", 1),
+	}
+	f.runtime.EXPECT().
+		InvokeAgentTurn(mock.Anything, mock.Anything).
+		Return(limited, nil).
+		Once()
+	s.Require().Error(f.worker.Work(ctx, makeAgentTurnJob(f.turn, 1)))
+	limitedTurn, limitedTurnErr := h.tdb.Client(ctx).AgentTurn.Get(ctx, f.turn.ID)
+	s.Require().NoError(limitedTurnErr)
+	s.Require().Equal(at.StatusFailed, limitedTurn.Status)
+	requireReadStatus(limitedRunning, apr.StatusFailed, limitedTurn)
+	requireReadStatus(limitedSucceeded, apr.StatusSucceeded, limitedTurn)
+
+	// An aborted turn fails the reads it left running.
+	session := s.createAgentSession(ctx, h.tdb, testAgentInput{})
+	abortedTurn := s.createAgentTurn(ctx, h.tdb, session, agentTurnSeed{
+		riverJobID: 971,
+		status:     at.StatusRunning,
+		startedAt:  new(time.Now().UTC()),
+	})
+	abortedRunning := createRead(abortedTurn, apr.StatusRunning)
+	h.jobs.EXPECT().
+		Cancel(mock.Anything, int64(971)).
+		Return(nil).
+		Once()
+	aborted, abortErr := h.service.AbortAgentTurn(ctx, abortedTurn.ID)
+	s.Require().NoError(abortErr)
+	requireReadStatus(abortedRunning, apr.StatusFailed, aborted)
 }
 
 func (s *AiAgentSessionServiceSuite) TestRetryingOlderTurnKeepsSequencesAndHistoryOrder() {

@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 const (
@@ -221,5 +222,38 @@ func (s *AuthSessionService) LookupSession(ctx context.Context, id uuid.UUID) (*
 }
 
 func (s *AuthSessionService) DeleteSession(ctx context.Context, id uuid.UUID) error {
+	stored, lookupErr := s.LookupSession(ctx, id)
+	if lookupErr != nil {
+		return lookupErr
+	}
+	ctx = execution.NewTenantContext(ctx, stored.TenantID)
 	return s.db.Client(ctx).UserAuthSession.DeleteOneID(id).Exec(ctx)
+}
+
+func NewDeleteExpiredAuthSessionsWorker(service *AuthSessionService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.deleteExpiredSessions)
+}
+
+// deleteExpiredSessions deletes the sessions whose expiry has passed, each organization's under its own tenant. It
+// runs as the system, since sessions span organizations.
+func (s *AuthSessionService) deleteExpiredSessions(ctx context.Context, _ jobs.DeleteExpiredAuthSessions) error {
+	now := time.Now()
+	queryTenants := s.db.Client(ctx).UserAuthSession.Query().
+		Where(userauthsession.ExpiresAtLT(now)).
+		Unique(true).
+		Select(userauthsession.FieldTenantID)
+	tenantIDs, queryErr := queryTenants.Ints(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("query tenants with expired sessions: %w", queryErr)
+	}
+	var deleteErrs []error
+	for _, tenantID := range tenantIDs {
+		tenantCtx := execution.NewTenantContext(ctx, tenantID)
+		deleteExpired := s.db.Client(tenantCtx).UserAuthSession.Delete().
+			Where(userauthsession.ExpiresAtLT(now))
+		if _, deleteErr := deleteExpired.Exec(tenantCtx); deleteErr != nil {
+			deleteErrs = append(deleteErrs, fmt.Errorf("delete expired sessions of tenant %d: %w", tenantID, deleteErr))
+		}
+	}
+	return errors.Join(deleteErrs...)
 }

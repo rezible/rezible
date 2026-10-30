@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 	"github.com/stretchr/testify/suite"
@@ -220,4 +221,33 @@ func (s *AuthSessionServiceSuite) TestRefreshWithoutRefreshTokenLeavesSession() 
 	result, refreshErr := sessions.Refresh(s.T().Context(), sess.ID, exchange)
 	s.Require().NoError(refreshErr)
 	s.WithinDuration(expiresAt, result.ExpiresAt, time.Second)
+}
+
+func (s *AuthSessionServiceSuite) TestDeleteSessionEndsSession() {
+	sessions, _ := s.newServices()
+	sess := s.signIn(sessions, "delete-org-"+uuid.NewString(), "person", user.RoleMember)
+
+	s.Require().NoError(sessions.DeleteSession(s.T().Context(), sess.ID))
+
+	_, lookupErr := sessions.LookupSession(s.T().Context(), sess.ID)
+	s.True(ent.IsNotFound(lookupErr))
+}
+
+func (s *AuthSessionServiceSuite) TestDeleteExpiredSessionsKeepsCurrentSessions() {
+	sessions, _ := s.newServices()
+	orgID := "expiry-org-" + uuid.NewString()
+	expired := s.signIn(sessions, orgID, "expired", user.RoleMember)
+	current := s.signIn(sessions, orgID, "current", user.RoleMember)
+	tenantCtx := execution.NewTenantContext(s.T().Context(), expired.TenantID)
+	expire := sessions.db.Client(tenantCtx).UserAuthSession.UpdateOneID(expired.ID).
+		SetExpiresAt(time.Now().Add(-time.Minute))
+	s.Require().NoError(expire.Exec(tenantCtx))
+
+	systemCtx := execution.NewSystemContext(s.T().Context())
+	s.Require().NoError(sessions.deleteExpiredSessions(systemCtx, jobs.DeleteExpiredAuthSessions{}))
+
+	_, expiredErr := sessions.LookupSession(s.T().Context(), expired.ID)
+	s.True(ent.IsNotFound(expiredErr))
+	_, currentErr := sessions.LookupSession(s.T().Context(), current.ID)
+	s.NoError(currentErr)
 }

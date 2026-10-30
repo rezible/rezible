@@ -13,8 +13,10 @@ import (
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	kela "github.com/rezible/rezible/ent/knowledgeentitylinkingattribute"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/projections"
@@ -26,9 +28,6 @@ const (
 	changesLookbackWithoutPrevious = 7 * 24 * time.Hour
 	changesDeploymentEventKind     = "deployment"
 	changesCodeChangeEventKind     = "code_change"
-	// changesDeploymentReportProvider is the webhook integration's provider name. A repository with an alias
-	// from any other provider has been seen by a code forge.
-	changesDeploymentReportProvider = "webhook"
 )
 
 type ChangesService struct {
@@ -159,7 +158,8 @@ func (s *ChangesService) listDeploymentChanges(ctx context.Context, serviceEntit
 }
 
 // queryDeploymentRepository returns the repository the deployment touches under the name its state reports,
-// with the repository's aliases from code forges.
+// with the repository's aliases from code forges: those with evidence from a repository or code change event,
+// rather than only from deployment reports.
 func (s *ChangesService) queryDeploymentRepository(ctx context.Context, deploymentID uuid.UUID, fullName string) (*ent.KnowledgeEntity, error) {
 	queryRepository := s.db.Client(ctx).KnowledgeEntity.Query().
 		Where(
@@ -175,7 +175,7 @@ func (s *ChangesService) queryDeploymentRepository(ctx context.Context, deployme
 			),
 		).
 		WithAliases(func(q *ent.KnowledgeSubjectAliasQuery) {
-			q.Where(ksa.ProviderNEQ(changesDeploymentReportProvider))
+			q.Where(ksa.HasEvidenceWith(ke.HasEventWith(ne.KindIn(projections.KindCodeForge, projections.KindCodeChange))))
 		})
 	return queryRepository.Only(ctx)
 }

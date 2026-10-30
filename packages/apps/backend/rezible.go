@@ -1200,6 +1200,9 @@ type (
 
 	SituationBriefServiceChanges struct {
 		ServiceEntityID uuid.UUID
+		// UnavailableReason says, for people, why the service's changes could not be looked up; empty when they
+		// were. Without them, Deployments and Limits are empty.
+		UnavailableReason string
 		// Deployments are the deployments after the situation opened, then those before, each newest first.
 		Deployments []SituationBriefDeployment
 		// Limits describes, in plain words, each limit that cut the lookups.

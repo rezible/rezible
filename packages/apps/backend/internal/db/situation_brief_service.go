@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"log/slog"
 	"slices"
 	"strings"
 	"time"
@@ -131,11 +132,7 @@ func (s *SituationBriefService) GetSituationBrief(ctx context.Context, situation
 		brief.Services[index] = rez.BriefService{Entity: service, UnconfirmedMatches: matches[service.ID]}
 	}
 
-	changes, changesErr := s.listChanges(ctx, loaded, sources.Changes)
-	if changesErr != nil {
-		return nil, changesErr
-	}
-	brief.Changes = *changes
+	brief.Changes = *s.listChanges(ctx, loaded, sources.Changes)
 	return brief, nil
 }
 
@@ -168,7 +165,8 @@ func (w changesWindow) hasAfter() bool {
 	return w.end.After(w.afterStart)
 }
 
-func (s *SituationBriefService) listChanges(ctx context.Context, loaded *briefSituation, deployments rezai.SourceAvailability) (*rez.SituationBriefChanges, error) {
+// listChanges looks up each service's changes. A service whose lookup fails says so, and the others are kept.
+func (s *SituationBriefService) listChanges(ctx context.Context, loaded *briefSituation, deployments rezai.SourceAvailability) *rez.SituationBriefChanges {
 	window := s.changesWindow(loaded.situation)
 	changes := &rez.SituationBriefChanges{
 		Available:         deployments.Available,
@@ -179,16 +177,20 @@ func (s *SituationBriefService) listChanges(ctx context.Context, loaded *briefSi
 		Services:          make([]rez.SituationBriefServiceChanges, 0, len(loaded.services)),
 	}
 	if !deployments.Available {
-		return changes, nil
+		return changes
 	}
 	for _, service := range loaded.services {
 		serviceChanges, listErr := s.listServiceChanges(ctx, service, window)
 		if listErr != nil {
-			return nil, fmt.Errorf("service %s: %w", service.ID, listErr)
+			slog.ErrorContext(ctx, "list service changes for situation brief", "service_entity_id", service.ID, "error", listErr)
+			serviceChanges = &rez.SituationBriefServiceChanges{
+				ServiceEntityID:   service.ID,
+				UnavailableReason: "This service's deployments could not be loaded.",
+			}
 		}
 		changes.Services = append(changes.Services, *serviceChanges)
 	}
-	return changes, nil
+	return changes
 }
 
 // listServiceChanges looks up the service's deployments before and after the situation opened separately, so

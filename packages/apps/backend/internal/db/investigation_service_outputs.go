@@ -824,9 +824,9 @@ type investigationOutputRef struct {
 }
 
 // saveInvestigationEvidenceIDs saves the citations. IDs that are provider reads of the investigation's agent
-// session cite those reads, and their cited items are merged into their highlights; every other ID must be
-// knowledge evidence, whose subject is included in the investigation's analysis. Provider reads are not graph
-// subjects, so they add nothing to it.
+// session cite those reads, which must have succeeded, and their cited items are merged into their highlights;
+// every other ID must be knowledge evidence, whose subject is included in the investigation's analysis. Provider
+// reads are not graph subjects, so they add nothing to it.
 func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context, ref investigationOutputRef, ids []uuid.UUID, citedItems map[uuid.UUID][]schematypes.ProviderReadItem) error {
 	if len(ids) == 0 {
 		return nil
@@ -842,6 +842,9 @@ func (s *InvestigationService) saveInvestigationEvidenceIDs(ctx context.Context,
 	for _, read := range reads {
 		if read.AgentSessionID != ref.agentSessionID {
 			return fmt.Errorf("%w: provider read %s was made by another agent session", errs.ErrInvalidInput, read.ID)
+		}
+		if read.Status != apr.StatusSucceeded {
+			return fmt.Errorf("%w: provider read %s has status %s, so it cannot be cited; cite only provider reads that returned a result", errs.ErrInvalidInput, read.ID, read.Status)
 		}
 		providerReadIDs.Add(read.ID)
 		if items := citedItems[read.ID]; len(items) > 0 {

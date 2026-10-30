@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	agta "github.com/rezible/rezible/ent/agentartifact"
 	agtm "github.com/rezible/rezible/ent/agentmessage"
+	apr "github.com/rezible/rezible/ent/agentproviderread"
 	agts "github.com/rezible/rezible/ent/agentsession"
 	agtt "github.com/rezible/rezible/ent/agentturn"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -549,6 +550,16 @@ func (w *InvokeAgentTurnWorker) saveInvocationResult(ctx context.Context, job *r
 		updated, updateErr := u.Save(ctx)
 		if updateErr != nil {
 			return nil, fmt.Errorf("save agent turn result: %w", updateErr)
+		}
+		if updated.Status == agtt.StatusCompleted || updated.Status == agtt.StatusFailed {
+			failUnfinishedReads := tx.AgentProviderRead.Update().
+				Where(apr.AgentTurnID(turn.ID), apr.StatusEQ(apr.StatusRunning)).
+				SetStatus(apr.StatusFailed).
+				SetError(unfinishedProviderReadError).
+				SetNillableFinishedAt(updated.FinishedAt)
+			if failReadsErr := failUnfinishedReads.Exec(ctx); failReadsErr != nil {
+				return nil, fmt.Errorf("fail unfinished provider reads: %w", failReadsErr)
+			}
 		}
 
 		if publishErr := w.publishTurnUpdated(ctx, updated); publishErr != nil {

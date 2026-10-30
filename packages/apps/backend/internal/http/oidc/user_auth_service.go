@@ -163,8 +163,15 @@ func refusalAttrs(refusal error) []any {
 	return attrs
 }
 
+// handleLogout deletes the session named by the session cookie and clears the cookie. A missing, malformed or
+// unknown session still logs out.
 func (s *UserAuthProvider) handleLogout(w http.ResponseWriter, r *http.Request) (string, error) {
 	ctx := r.Context()
+	if sessionID, cookieErr := s.cookie.Get(r); cookieErr == nil && sessionID != uuid.Nil {
+		if deleteErr := s.sess.DeleteSession(ctx, sessionID); deleteErr != nil && !ent.IsNotFound(deleteErr) {
+			slog.ErrorContext(ctx, "delete session on logout", "error", deleteErr)
+		}
+	}
 	if clearErr := s.oidc.doLogout(ctx); clearErr != nil {
 		slog.ErrorContext(ctx, "oidc logout", "error", clearErr)
 	}

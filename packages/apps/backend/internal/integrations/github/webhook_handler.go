@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -19,6 +20,9 @@ import (
 	"github.com/rezible/rezible/pkg/execution"
 )
 
+// maxDeliveryBytes bounds a delivery body while it is read.
+const maxDeliveryBytes = 5 << 20
+
 type webhookHandler struct {
 	secret        string
 	provEvents    rez.ProviderEventPipelineService
@@ -30,8 +34,12 @@ func newWebhookHandler(secret string, provEvents rez.ProviderEventPipelineServic
 }
 
 func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	body, readErr := io.ReadAll(r.Body)
+	body, readErr := io.ReadAll(http.MaxBytesReader(w, r.Body, maxDeliveryBytes))
 	if readErr != nil {
+		if _, tooLarge := errors.AsType[*http.MaxBytesError](readErr); tooLarge {
+			http.Error(w, "body too large", http.StatusRequestEntityTooLarge)
+			return
+		}
 		http.Error(w, "failed to read body", http.StatusBadRequest)
 		return
 	}

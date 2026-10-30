@@ -14,6 +14,9 @@ import (
 	"github.com/rezible/rezible/pkg/errs"
 )
 
+// unfinishedProviderReadError is the error of a read still running when its turn ended.
+const unfinishedProviderReadError = "the turn ended before the read finished"
+
 type AgentProviderReadService struct {
 	db    rez.Database
 	clock rez.Clock

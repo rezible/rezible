@@ -131,7 +131,9 @@
 			{#each state.services as service (service.id)}
 				<li class="flex flex-col gap-2">
 					<BriefServiceName {service} />
-					{#if service.deployments.length === 0}
+					{#if service.unavailableReason}
+						<p class="text-xs text-muted-foreground">{service.unavailableReason}</p>
+					{:else if service.deployments.length === 0}
 						<p class="text-xs text-muted-foreground">No deployments in this window.</p>
 					{:else}
 						<ul class="flex flex-col gap-3">

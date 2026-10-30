@@ -8010,8 +8010,12 @@ components:
           type: array
         serviceId:
           type: string
+        unavailableReason:
+          description: Why the service's changes could not be looked up; empty when they were
+          type: string
       required:
         - serviceId
+        - unavailableReason
         - deployments
         - limits
       type: object

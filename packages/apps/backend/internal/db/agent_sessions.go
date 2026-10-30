@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	agta "github.com/rezible/rezible/ent/agentartifact"
 	agtm "github.com/rezible/rezible/ent/agentmessage"
+	apr "github.com/rezible/rezible/ent/agentproviderread"
 	agts "github.com/rezible/rezible/ent/agentsession"
 	agtt "github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/predicate"
@@ -463,6 +464,14 @@ func (s *AiAgentSessionService) AbortAgentTurn(ctx context.Context, turnID uuid.
 		savedTurn, saveTurnErr := update.Save(ctx)
 		if saveTurnErr != nil {
 			return nil, fmt.Errorf("abort agent turn: %w", saveTurnErr)
+		}
+		failUnfinishedReads := tx.AgentProviderRead.Update().
+			Where(apr.AgentTurnID(turn.ID), apr.StatusEQ(apr.StatusRunning)).
+			SetStatus(apr.StatusFailed).
+			SetError(unfinishedProviderReadError).
+			SetNillableFinishedAt(savedTurn.FinishedAt)
+		if failReadsErr := failUnfinishedReads.Exec(ctx); failReadsErr != nil {
+			return nil, fmt.Errorf("fail unfinished provider reads: %w", failReadsErr)
 		}
 		result := savedTurn
 		if eventErr := s.publishTurnUpdated(ctx, result); eventErr != nil {

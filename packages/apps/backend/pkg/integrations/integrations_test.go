@@ -2,7 +2,10 @@ package integrations
 
 import (
 	"context"
+	"errors"
+	"slices"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -45,8 +48,35 @@ func (s *IntegrationsSuite) TestLookupInstallationAs() {
 	s.ErrorIs(missingErr, errs.ErrNotFound)
 }
 
+func (s *IntegrationsSuite) TestLookupLogSourceChoosesOneInstallation() {
+	createdAt := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	oldest := newFakeLogReader(createdAt, "00000000-0000-0000-0000-000000000002", nil)
+	tied := newFakeLogReader(createdAt, "00000000-0000-0000-0000-000000000003", nil)
+	newer := newFakeLogReader(createdAt.Add(time.Hour), "00000000-0000-0000-0000-000000000001", nil)
+	unavailable := newFakeLogReader(createdAt.Add(-time.Hour), "00000000-0000-0000-0000-000000000000", errors.New("no data source"))
+	getter := fakeInstallationGetter{all: []rez.InstalledIntegration{newer, tied, unavailable, oldest, &fakeInstallation{}}}
+	statedBy := func(stating ...*fakeLogReader) func(*ent.Integration) (bool, error) {
+		return func(installation *ent.Integration) (bool, error) {
+			return slices.ContainsFunc(stating, func(reader *fakeLogReader) bool { return reader.intg == installation }), nil
+		}
+	}
+
+	s.Run("the oldest installation that states the service", func() {
+		source, lookupErr := LookupLogSource(s.T().Context(), getter, statedBy(newer, tied))
+		s.Require().NoError(lookupErr)
+		s.Same(tied.intg, source.Installation)
+	})
+
+	s.Run("else the oldest that can read logs, ties ordered by ID", func() {
+		source, lookupErr := LookupLogSource(s.T().Context(), getter, statedBy())
+		s.Require().NoError(lookupErr)
+		s.Same(oldest.intg, source.Installation)
+	})
+}
+
 type fakeInstallationGetter struct {
 	installed rez.InstalledIntegration
+	all       []rez.InstalledIntegration
 	err       error
 }
 
@@ -55,7 +85,7 @@ func (g fakeInstallationGetter) GetInstalledIntegration(context.Context, uuid.UU
 }
 
 func (g fakeInstallationGetter) ListAllInstalled(context.Context, ...predicate.Integration) ([]rez.InstalledIntegration, error) {
-	return nil, nil
+	return g.all, nil
 }
 
 type fakeInstallation struct{}
@@ -78,4 +108,32 @@ type fakeChatInstallation struct {
 
 func (ii *fakeChatInstallation) ListChatChannels(context.Context, ListChatChannelsParams) (*ChatChannelPage, error) {
 	return &ChatChannelPage{}, nil
+}
+
+// fakeLogReader is an installation that reads logs, unless unavailable says why it cannot.
+type fakeLogReader struct {
+	fakeInstallation
+	intg        *ent.Integration
+	unavailable error
+}
+
+func newFakeLogReader(createdAt time.Time, id string, unavailable error) *fakeLogReader {
+	intg := &ent.Integration{ID: uuid.MustParse(id), Name: "fake", CreatedAt: createdAt}
+	return &fakeLogReader{intg: intg, unavailable: unavailable}
+}
+
+func (r *fakeLogReader) Integration() *ent.Integration {
+	return r.intg
+}
+
+func (r *fakeLogReader) SearchLogs(context.Context, LogSearchParams) (*LogSearchResult, error) {
+	return &LogSearchResult{}, nil
+}
+
+func (r *fakeLogReader) CountLogs(context.Context, LogCountParams) (*LogCountResult, error) {
+	return &LogCountResult{}, nil
+}
+
+func (r *fakeLogReader) CheckLogsAvailable() error {
+	return r.unavailable
 }

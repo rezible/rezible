@@ -1047,6 +1047,20 @@ func (s *InvestigationServiceSuite) TestOutputsCiteProviderReads() {
 	}
 	_, otherErr := service.PublishInvestigationReport(ctx, turnScope, otherParams)
 	s.ErrorIs(otherErr, errs.ErrInvalidInput, "a provider read of another session is invalid input")
+
+	unfinishedReadID := startRead(turn)
+	unfinishedParams := rez.PublishInvestigationReportParams{
+		Text:        "Cites a read that has not returned.",
+		EvidenceIDs: []uuid.UUID{evidenceID, unfinishedReadID},
+	}
+	_, runningErr := service.PublishInvestigationReport(ctx, turnScope, unfinishedParams)
+	s.ErrorIs(runningErr, errs.ErrInvalidInput, "a running provider read is invalid input")
+	s.ErrorContains(runningErr, unfinishedReadID.String()+" has status running", "the error names the read and why")
+	failParams := rez.FinishAgentProviderReadParams{ID: unfinishedReadID, Error: "provider unavailable"}
+	s.Require().NoError(reads.FinishProviderRead(ctx, failParams))
+	_, failedErr := service.PublishInvestigationReport(ctx, turnScope, unfinishedParams)
+	s.ErrorIs(failedErr, errs.ErrInvalidInput, "a failed provider read is invalid input")
+	s.ErrorContains(failedErr, unfinishedReadID.String()+" has status failed", "the error names the read and why")
 }
 
 func (s *InvestigationServiceSuite) TestInvestigationReportNextChecks() {

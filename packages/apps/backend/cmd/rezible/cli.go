@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -63,6 +64,9 @@ var (
 			return runApplication(ctx, func(ctx context.Context, app *Application) error {
 				if prepareErr := app.prepare(); prepareErr != nil {
 					return prepareErr
+				}
+				if app.mustInvoke[rez.Config]().HttpServer.Auth.EnableDevSkipMode {
+					slog.WarnContext(ctx, "Auth dev skip mode is on: every API request runs as the development admin")
 				}
 				if seedErr := seedDevelopmentIdentity(ctx, app); seedErr != nil {
 					return fmt.Errorf("seed development identity: %w", seedErr)

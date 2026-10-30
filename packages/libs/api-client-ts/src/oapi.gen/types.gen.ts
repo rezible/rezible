@@ -3542,6 +3542,10 @@ export type SituationBriefServiceChanges = {
     deployments: Array<SituationBriefDeployment>;
     limits: Array<string>;
     serviceId: string;
+    /**
+     * Why the service's changes could not be looked up; empty when they were
+     */
+    unavailableReason: string;
 };
 
 export type SituationBriefUnseen = {

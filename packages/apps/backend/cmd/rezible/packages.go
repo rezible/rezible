@@ -439,13 +439,14 @@ var pkgDatabase = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (rez.AuthSessionService, error) {
+	do.Lazy(func(i do.Injector) (*db.AuthSessionService, error) {
 		return db.NewAuthSessionService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.UserService](i),
 		)
 	}),
+	do.Bind[*db.AuthSessionService, rez.AuthSessionService](),
 
 	do.Lazy(func(i do.Injector) (rez.IncidentDetailsService, error) {
 		return db.NewIncidentDetailsService(
@@ -838,6 +839,7 @@ var pkgJobs = do.Package(
 		p.addInvokedProviderFunc(db.NewGenerateShiftMetricsWorker)
 		p.addInvokedProviderFunc(db.NewSyncScheduledIntegrationSourcesWorker)
 		p.addInvokedProviderFunc(db.NewSyncSituationNoticesWorker)
+		p.addInvokedProviderFunc(db.NewDeleteExpiredAuthSessionsWorker)
 		p.add(db.NewSendReviewRequestMessageWorker(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.Config](i),
@@ -854,6 +856,7 @@ var pkgJobs = do.Package(
 	do.Lazy(func(i do.Injector) ([]*jobs.PeriodicJob, error) {
 		periodicJobs := []*jobs.PeriodicJob{
 			jobs.MakePeriodicIntervalJob[jobs.SyncScheduledIntegrationSources](time.Hour, nil),
+			jobs.MakePeriodicIntervalJob[jobs.DeleteExpiredAuthSessions](24*time.Hour, &jobs.PeriodicJobOpts{RunOnStart: true}),
 		}
 		return periodicJobs, nil
 	}),

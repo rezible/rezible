@@ -2,17 +2,18 @@ package integrations
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"reflect"
 	"slices"
+	"strings"
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
@@ -26,7 +27,6 @@ import (
 var (
 	ErrUnknownIntegration     = fmt.Errorf("%w: unknown integration", errs.ErrNotFound)
 	ErrCapabilityNotSupported = fmt.Errorf("%w: integration capability not supported", errs.ErrUnprocessableInput)
-	ErrCapabilityNotInstalled = fmt.Errorf("%w: no installed integration has the capability", errs.ErrNotFound)
 )
 
 type (
@@ -88,50 +88,67 @@ func LookupInstallationAs[T any](ctx context.Context, getter rez.InstalledIntegr
 	return As[T](ii)
 }
 
-// FindInstallationAs returns the organization's one installation with capability T, and the installation as T.
-// It returns ErrCapabilityNotInstalled when there is none, and an error when there is more than one.
-func FindInstallationAs[T any](ctx context.Context, getter rez.InstalledIntegrationGetter) (rez.InstalledIntegration, T, error) {
-	var zero T
-	installed, listErr := getter.ListAllInstalled(ctx)
-	if listErr != nil {
-		return nil, zero, fmt.Errorf("list installed integrations: %w", listErr)
-	}
-	var found []rez.InstalledIntegration
-	for _, ii := range installed {
-		if _, supported := ii.(T); supported {
-			found = append(found, ii)
-		}
-	}
-	switch len(found) {
-	case 0:
-		return nil, zero, fmt.Errorf("%w: %s", ErrCapabilityNotInstalled, reflect.TypeFor[T]())
-	case 1:
-		return found[0], found[0].(T), nil
-	default:
-		return nil, zero, fmt.Errorf("%d installations implement %s", len(found), reflect.TypeFor[T]())
-	}
-}
-
-// LogSource is the organization's log reader.
+// LogSource is an installation that reads logs.
 type LogSource struct {
 	Installation *ent.Integration
 	Querier      LogQuerier
 }
 
-// LookupLogSource returns the organization's log reader. When logs cannot be read, it returns an
-// *UnavailableError saying why, worked out without calling a provider.
-func LookupLogSource(ctx context.Context, getter rez.InstalledIntegrationGetter) (*LogSource, error) {
-	ii, querier, findErr := FindInstallationAs[LogQuerier](ctx, getter)
-	if findErr != nil {
-		if errors.Is(findErr, ErrCapabilityNotInstalled) {
-			return nil, &UnavailableError{Reason: "no logs integration installed"}
+// LookupLogSource returns the reader of a service's logs: of the installations that can read logs, the oldest
+// that states the service, or else the oldest. statesService says whether an installation states the service.
+// When logs cannot be read, it returns an *UnavailableError saying why, worked out without calling a provider.
+func LookupLogSource(ctx context.Context, getter rez.InstalledIntegrationGetter, statesService func(*ent.Integration) (bool, error)) (*LogSource, error) {
+	installed, listErr := getter.ListAllInstalled(ctx)
+	if listErr != nil {
+		return nil, fmt.Errorf("list installed integrations: %w", listErr)
+	}
+	sources, unavailable := logSources(installed)
+	if unavailable != nil {
+		return nil, unavailable
+	}
+	for _, source := range sources {
+		states, statesErr := statesService(source.Installation)
+		if statesErr != nil {
+			return nil, fmt.Errorf("check whether installation %s states the service: %w", source.Installation.ID, statesErr)
 		}
-		return nil, findErr
+		if states {
+			return source, nil
+		}
 	}
-	if availableErr := querier.CheckLogsAvailable(); availableErr != nil {
-		return nil, &UnavailableError{Reason: availableErr.Error()}
+	return sources[0], nil
+}
+
+// logSources returns the installations that can read logs, oldest first by created_at, then ID. When none
+// can, it says why: none is installed, or the oldest installation's own reason.
+func logSources(installed []rez.InstalledIntegration) ([]*LogSource, *UnavailableError) {
+	var candidates []*LogSource
+	for _, ii := range installed {
+		if querier, supported := ii.(LogQuerier); supported {
+			candidates = append(candidates, &LogSource{Installation: ii.Integration(), Querier: querier})
+		}
 	}
-	return &LogSource{Installation: ii.Integration(), Querier: querier}, nil
+	if len(candidates) == 0 {
+		return nil, &UnavailableError{Reason: "no logs integration installed"}
+	}
+	slices.SortFunc(candidates, func(a, b *LogSource) int {
+		return cmp.Or(a.Installation.CreatedAt.Compare(b.Installation.CreatedAt), strings.Compare(a.Installation.ID.String(), b.Installation.ID.String()))
+	})
+
+	var sources []*LogSource
+	var unavailable *UnavailableError
+	for _, candidate := range candidates {
+		if availableErr := candidate.Querier.CheckLogsAvailable(); availableErr != nil {
+			if unavailable == nil {
+				unavailable = &UnavailableError{Reason: availableErr.Error()}
+			}
+			continue
+		}
+		sources = append(sources, candidate)
+	}
+	if len(sources) == 0 {
+		return nil, unavailable
+	}
+	return sources, nil
 }
 
 // UnavailableError says why a source cannot be read.
@@ -174,12 +191,7 @@ func CheckSources(ctx context.Context, getter rez.InstalledIntegrationGetter) So
 		Changes:     rezai.SourceAvailability{Reason: "no deployments integration installed"},
 		CodeChanges: rezai.SourceAvailability{Reason: "no code changes integration installed"},
 	}
-	if _, logsErr := LookupLogSource(ctx, getter); logsErr != nil {
-		var unavailable *UnavailableError
-		if !errors.As(logsErr, &unavailable) {
-			slog.ErrorContext(ctx, "look up log source for sources", "error", logsErr)
-			unavailable = &UnavailableError{Reason: "the logs integration could not be loaded"}
-		}
+	if _, unavailable := logSources(installed); unavailable != nil {
 		sources.Logs = rezai.SourceAvailability{Reason: unavailable.Reason}
 	}
 	for _, ii := range installed {

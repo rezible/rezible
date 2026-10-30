@@ -31,7 +31,6 @@ func (h *organizationsHandler) GetOrganization(ctx context.Context, req *oapi.Ge
 }
 
 func (h *organizationsHandler) CompleteOrgSetup(ctx context.Context, req *oapi.CompleteOrgSetupRequest) (*oapi.CompleteOrgSetupResponse, error) {
-	// TODO: require organization admin authorization.
 	var resp oapi.CompleteOrgSetupResponse
 
 	attrs := req.Body.Attributes

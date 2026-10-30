@@ -7,13 +7,7 @@ import type {
 	SituationBriefDeployment,
 	SituationBriefService,
 } from "$lib/api";
-import {
-	briefSections,
-	changesState,
-	checkedState,
-	unseenState,
-	type BriefLoad,
-} from "./brief";
+import { briefSections, changesState, checkedState, unseenState, type BriefLoad } from "./brief";
 
 const service = (
 	id: string,
@@ -53,7 +47,7 @@ const brief = (overrides: Partial<SituationBrief> = {}): SituationBrief => ({
 		start: "2026-10-14T10:00:00Z",
 		openedAt: "2026-10-15T10:00:00Z",
 		end: "2026-10-15T12:00:00Z",
-		services: [{ serviceId: "checkout", deployments: [], limits: [] }],
+		services: [{ serviceId: "checkout", unavailableReason: "", deployments: [], limits: [] }],
 	},
 	unseen: [{ kind: "not_read", text: "Rezible does not read metrics or traces yet." }],
 	...overrides,
@@ -137,6 +131,23 @@ test("changesState: nothing found says over which window", () => {
 	}
 });
 
+test("changesState: a service whose changes could not be loaded says so, rather than that nothing was found", () => {
+	const value = brief();
+	value.changes.services = [
+		{
+			serviceId: "checkout",
+			unavailableReason: "This service's deployments could not be loaded.",
+			deployments: [],
+			limits: [],
+		},
+	];
+
+	const state = changesState(loaded(value));
+
+	expect(state.kind).toBe("deployments");
+	expect(state.kind === "deployments" && state.services[0].unavailableReason).toBeTruthy();
+});
+
 test("changesState: deployments link to their source, else their evidence, and say why changes are unlinked", () => {
 	const value = brief({
 		services: [
@@ -157,6 +168,7 @@ test("changesState: deployments link to their source, else their evidence, and s
 	value.changes.services = [
 		{
 			serviceId: "checkout",
+			unavailableReason: "",
 			deployments: [
 				deployment("after", {
 					afterOpened: true,
@@ -181,7 +193,7 @@ test("changesState: deployments link to their source, else their evidence, and s
 			],
 			limits: [],
 		},
-		{ serviceId: "payments", deployments: [], limits: [] },
+		{ serviceId: "payments", unavailableReason: "", deployments: [], limits: [] },
 	];
 
 	const state = changesState(loaded(value));

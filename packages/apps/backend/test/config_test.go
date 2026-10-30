@@ -99,3 +99,15 @@ func TestConfigRequiresHexEncryptionKey(t *testing.T) {
 		require.ErrorContains(t, configErr, "EncryptionKeyHex")
 	}
 }
+
+func TestConfigRequiresDebugModeForDevSkipMode(t *testing.T) {
+	_, skipErr := loadConfig(t.Context(), map[string]any{"http.auth.enable_dev_skip_mode": true})
+	require.ErrorContains(t, skipErr, "enable_dev_skip_mode")
+
+	cfg, debugErr := loadConfig(t.Context(), map[string]any{
+		"http.auth.enable_dev_skip_mode": true,
+		"app.debug_mode":                 true,
+	})
+	require.NoError(t, debugErr)
+	require.True(t, cfg.HttpServer.Auth.EnableDevSkipMode)
+}

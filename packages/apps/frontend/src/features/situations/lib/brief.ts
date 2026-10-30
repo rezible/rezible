@@ -70,6 +70,8 @@ export type DeploymentView = {
 };
 
 export type ServiceChangesView = BriefServiceView & {
+	/** Why the service's changes could not be looked up; undefined when they were. */
+	unavailableReason: string | undefined;
 	deployments: DeploymentView[];
 	limits: string[];
 };
@@ -177,12 +179,14 @@ export function changesState(load: BriefLoad): ChangesState {
 		const serviceChanges = changesByService.get(service.id);
 		return {
 			...service,
+			unavailableReason: serviceChanges?.unavailableReason || undefined,
 			deployments: (serviceChanges?.deployments ?? []).map(deploymentView),
 			limits: serviceChanges?.limits ?? [],
 		};
 	});
 
-	const found = withChanges.some((service) => service.deployments.length > 0);
+	// A service whose changes could not be looked up is shown as such, not as one with nothing found.
+	const found = withChanges.some((service) => service.deployments.length > 0 || service.unavailableReason);
 	if (!found) {
 		return { kind: "nothing_found", window, services };
 	}

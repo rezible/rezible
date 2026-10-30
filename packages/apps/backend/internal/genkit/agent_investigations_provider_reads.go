@@ -378,7 +378,11 @@ func (i *investigationInvocation) prepareLogRead(ctx context.Context, serviceVal
 	if windowErr := i.checkProviderReadWindow(start, end); windowErr != nil {
 		return nil, windowErr
 	}
-	source, sourceErr := integrations.LookupLogSource(ctx, i.integrations)
+	statesService := func(installation *ent.Integration) (bool, error) {
+		aliases, aliasesErr := i.logSourceAliases(ctx, service.ID, installation)
+		return len(aliases) > 0, aliasesErr
+	}
+	source, sourceErr := integrations.LookupLogSource(ctx, i.integrations, statesService)
 	if sourceErr != nil {
 		var unavailable *integrations.UnavailableError
 		if errors.As(sourceErr, &unavailable) {
@@ -387,7 +391,7 @@ func (i *investigationInvocation) prepareLogRead(ctx context.Context, serviceVal
 		return nil, fmt.Errorf("look up log source: %w", sourceErr)
 	}
 
-	aliases, aliasesErr := i.logSourceAliases(ctx, service.ID, source)
+	aliases, aliasesErr := i.logSourceAliases(ctx, service.ID, source.Installation)
 	if aliasesErr != nil {
 		return nil, aliasesErr
 	}
@@ -440,15 +444,15 @@ func (i *investigationInvocation) resolveService(ctx context.Context, value stri
 	return nil, fmt.Errorf("%w: Several services' names contain %q; call again with one of their refs:\n%s", errs.ErrInvalidInput, name, strings.Join(lines, "\n"))
 }
 
-// logSourceAliases returns the resource refs of the service's aliases from the log source's installation, for
-// the integration to choose the value its logs are read by.
-func (i *investigationInvocation) logSourceAliases(ctx context.Context, serviceID uuid.UUID, source *integrations.LogSource) ([]string, error) {
+// logSourceAliases returns the resource refs of the service's aliases from a log installation: the service
+// names it states, for the integration to choose the value its logs are read by.
+func (i *investigationInvocation) logSourceAliases(ctx context.Context, serviceID uuid.UUID, installation *ent.Integration) ([]string, error) {
 	params := rez.ListKnowledgeSubjectAliasesParams{
 		ListParams: ent.ListParams{PageSize: 50},
 		Predicates: []predicate.KnowledgeSubjectAlias{
 			ksa.EntityID(serviceID),
-			ksa.Provider(source.Installation.Provider),
-			ksa.ProviderNamespace(source.Installation.ID.String()),
+			ksa.Provider(installation.Provider),
+			ksa.ProviderNamespace(installation.ID.String()),
 		},
 	}
 	aliases, listErr := i.knowledge.ListSubjectAliases(ctx, params)

@@ -109,6 +109,18 @@ func (SyncScheduledIntegrationSources) WorkerExecutionContext() execution.ActorK
 	return execution.KindSystem
 }
 
+// DeleteExpiredAuthSessions deletes the expired sign-in sessions of every organization.
+type DeleteExpiredAuthSessions struct{}
+
+func (DeleteExpiredAuthSessions) Kind() string {
+	return "delete-expired-auth-sessions"
+}
+
+// WorkerExecutionContext runs the job as the system, since sessions span organizations.
+func (DeleteExpiredAuthSessions) WorkerExecutionContext() execution.ActorKind {
+	return execution.KindSystem
+}
+
 type SendIncidentDebriefRequests struct {
 	IncidentId uuid.UUID
 }
