@@ -4,11 +4,7 @@
 	import * as Popover from "$components/ui/popover";
 	import * as ToggleGroup from "$components/ui/toggle-group";
 	import { getMapCategoryDisplay } from "$features/system/lib/system-map/category";
-	import {
-		systemMapCategoryOptions,
-		useSystemMapViewController,
-		type MapViewKind,
-	} from "../../controller.svelte";
+	import { useSystemMapViewController, type MapViewKind } from "../../controller.svelte";
 
 	const view = useSystemMapViewController();
 	const map = $derived(view.mapView === "structure" ? view.mapHandle : undefined);
@@ -49,7 +45,7 @@
 			<Popover.Content align="start" class="max-h-80 w-64 overflow-y-auto p-2">
 				<p class="px-2 pb-2 text-xs font-medium">Filter by category</p>
 				<div class="flex flex-col gap-1" role="group" aria-label="Categories">
-					{#each systemMapCategoryOptions as category (category)}
+					{#each view.categoryOptions as category (category)}
 						<div class="flex items-center gap-2 rounded-sm px-2 py-1">
 							<Checkbox.Root
 								checked={view.isCategorySelected(category)}

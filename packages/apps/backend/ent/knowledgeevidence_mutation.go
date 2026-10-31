@@ -28,6 +28,8 @@ type KnowledgeEvidenceMutation struct {
 	created_at           *time.Time
 	effective_at         *time.Time
 	subject_state        *schematypes.KnowledgeGraphSubjectState
+	state_mode           *knowledgeevidence.StateMode
+	expires_at           *time.Time
 	clearedFields        map[string]struct{}
 	tenant               *int
 	clearedtenant        bool
@@ -432,6 +434,91 @@ func (m *KnowledgeEvidenceMutation) ResetSubjectState() {
 	m.subject_state = nil
 }
 
+// SetStateMode sets the "state_mode" field.
+func (m *KnowledgeEvidenceMutation) SetStateMode(km knowledgeevidence.StateMode) {
+	m.state_mode = &km
+}
+
+// StateMode returns the value of the "state_mode" field in the mutation.
+func (m *KnowledgeEvidenceMutation) StateMode() (r knowledgeevidence.StateMode, exists bool) {
+	v := m.state_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStateMode returns the old "state_mode" field's value of the KnowledgeEvidence entity.
+// If the KnowledgeEvidence object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEvidenceMutation) OldStateMode(ctx context.Context) (v knowledgeevidence.StateMode, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStateMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStateMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStateMode: %w", err)
+	}
+	return oldValue.StateMode, nil
+}
+
+// ResetStateMode resets all changes to the "state_mode" field.
+func (m *KnowledgeEvidenceMutation) ResetStateMode() {
+	m.state_mode = nil
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *KnowledgeEvidenceMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *KnowledgeEvidenceMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the KnowledgeEvidence entity.
+// If the KnowledgeEvidence object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEvidenceMutation) OldExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (m *KnowledgeEvidenceMutation) ClearExpiresAt() {
+	m.expires_at = nil
+	m.clearedFields[knowledgeevidence.FieldExpiresAt] = struct{}{}
+}
+
+// ExpiresAtCleared returns if the "expires_at" field was cleared in this mutation.
+func (m *KnowledgeEvidenceMutation) ExpiresAtCleared() bool {
+	_, ok := m.clearedFields[knowledgeevidence.FieldExpiresAt]
+	return ok
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *KnowledgeEvidenceMutation) ResetExpiresAt() {
+	m.expires_at = nil
+	delete(m.clearedFields, knowledgeevidence.FieldExpiresAt)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *KnowledgeEvidenceMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -547,7 +634,7 @@ func (m *KnowledgeEvidenceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeEvidenceMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.tenant != nil {
 		fields = append(fields, knowledgeevidence.FieldTenantID)
 	}
@@ -571,6 +658,12 @@ func (m *KnowledgeEvidenceMutation) Fields() []string {
 	}
 	if m.subject_state != nil {
 		fields = append(fields, knowledgeevidence.FieldSubjectState)
+	}
+	if m.state_mode != nil {
+		fields = append(fields, knowledgeevidence.FieldStateMode)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, knowledgeevidence.FieldExpiresAt)
 	}
 	return fields
 }
@@ -596,6 +689,10 @@ func (m *KnowledgeEvidenceMutation) Field(name string) (ent.Value, bool) {
 		return m.EffectiveAt()
 	case knowledgeevidence.FieldSubjectState:
 		return m.SubjectState()
+	case knowledgeevidence.FieldStateMode:
+		return m.StateMode()
+	case knowledgeevidence.FieldExpiresAt:
+		return m.ExpiresAt()
 	}
 	return nil, false
 }
@@ -621,6 +718,10 @@ func (m *KnowledgeEvidenceMutation) OldField(ctx context.Context, name string) (
 		return m.OldEffectiveAt(ctx)
 	case knowledgeevidence.FieldSubjectState:
 		return m.OldSubjectState(ctx)
+	case knowledgeevidence.FieldStateMode:
+		return m.OldStateMode(ctx)
+	case knowledgeevidence.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeEvidence field %s", name)
 }
@@ -686,6 +787,20 @@ func (m *KnowledgeEvidenceMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetSubjectState(v)
 		return nil
+	case knowledgeevidence.FieldStateMode:
+		v, ok := value.(knowledgeevidence.StateMode)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStateMode(v)
+		return nil
+	case knowledgeevidence.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence field %s", name)
 }
@@ -718,7 +833,11 @@ func (m *KnowledgeEvidenceMutation) AddField(name string, value ent.Value) error
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *KnowledgeEvidenceMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(knowledgeevidence.FieldExpiresAt) {
+		fields = append(fields, knowledgeevidence.FieldExpiresAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -731,6 +850,11 @@ func (m *KnowledgeEvidenceMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *KnowledgeEvidenceMutation) ClearField(name string) error {
+	switch name {
+	case knowledgeevidence.FieldExpiresAt:
+		m.ClearExpiresAt()
+		return nil
+	}
 	return fmt.Errorf("unknown KnowledgeEvidence nullable field %s", name)
 }
 
@@ -761,6 +885,12 @@ func (m *KnowledgeEvidenceMutation) ResetField(name string) error {
 		return nil
 	case knowledgeevidence.FieldSubjectState:
 		m.ResetSubjectState()
+		return nil
+	case knowledgeevidence.FieldStateMode:
+		m.ResetStateMode()
+		return nil
+	case knowledgeevidence.FieldExpiresAt:
+		m.ResetExpiresAt()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence field %s", name)

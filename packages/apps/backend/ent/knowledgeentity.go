@@ -27,14 +27,24 @@ type KnowledgeEntity struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Display name, description and properties, merged key by key from the live aliases.
+	State schematypes.KnowledgeGraphSubjectState `json:"state,omitempty"`
+	// For each field of the state, the alias that supplied it and its effective time.
+	StateSources schematypes.KnowledgeStateSources `json:"state_sources,omitempty"`
+	// Latest effective time among the state's fields. For event entities this is when the event happened, as currently known: projections set an event's evidence effective time to the event's own time.
+	StateEffectiveAt *time.Time `json:"state_effective_at,omitempty"`
+	// LastObservedAt holds the value of the "last_observed_at" field.
+	LastObservedAt *time.Time `json:"last_observed_at,omitempty"`
+	// Set when the subject has aliases and all are withdrawn. Default reads exclude withdrawn subjects.
+	WithdrawnAt *time.Time `json:"withdrawn_at,omitempty"`
+	// When the subject goes stale; null when any live alias never expires.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Stable semantic category used by graph queries, generated views, and agent reasoning.
 	Category knowledgeentity.Category `json:"category,omitempty"`
 	// Canonical domain type within the entity category.
 	Kind string `json:"kind,omitempty"`
-	// Current display name, description and properties, merged from observed evidence.
-	State schematypes.KnowledgeGraphSubjectState `json:"state,omitempty"`
-	// Effective time of the evidence that last changed the state. For event entities this is when the event happened, as currently known: projections set an event's evidence effective time to the event's own time.
-	StateEffectiveAt *time.Time `json:"state_effective_at,omitempty"`
+	// Source of the one current contains relationship chosen as the entity's parent; every reader of the tree uses it. Kept current on every write that can change the choice.
+	ParentID *uuid.UUID `json:"parent_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEntityQuery when eager-loading is set.
 	Edges        KnowledgeEntityEdges `json:"edges"`
@@ -53,9 +63,13 @@ type KnowledgeEntityEdges struct {
 	SourceRelationships []*KnowledgeRelationship `json:"source_relationships,omitempty"`
 	// TargetRelationships holds the value of the target_relationships edge.
 	TargetRelationships []*KnowledgeRelationship `json:"target_relationships,omitempty"`
+	// Parent holds the value of the parent edge.
+	Parent *KnowledgeEntity `json:"parent,omitempty"`
+	// Children holds the value of the children edge.
+	Children []*KnowledgeEntity `json:"children,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [7]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -105,18 +119,40 @@ func (e KnowledgeEntityEdges) TargetRelationshipsOrErr() ([]*KnowledgeRelationsh
 	return nil, &NotLoadedError{edge: "target_relationships"}
 }
 
+// ParentOrErr returns the Parent value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e KnowledgeEntityEdges) ParentOrErr() (*KnowledgeEntity, error) {
+	if e.Parent != nil {
+		return e.Parent, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: knowledgeentity.Label}
+	}
+	return nil, &NotLoadedError{edge: "parent"}
+}
+
+// ChildrenOrErr returns the Children value or an error if the edge
+// was not loaded in eager-loading.
+func (e KnowledgeEntityEdges) ChildrenOrErr() ([]*KnowledgeEntity, error) {
+	if e.loadedTypes[6] {
+		return e.Children, nil
+	}
+	return nil, &NotLoadedError{edge: "children"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*KnowledgeEntity) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case knowledgeentity.FieldState:
+		case knowledgeentity.FieldParentID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case knowledgeentity.FieldState, knowledgeentity.FieldStateSources:
 			values[i] = new([]byte)
 		case knowledgeentity.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case knowledgeentity.FieldCategory, knowledgeentity.FieldKind:
 			values[i] = new(sql.NullString)
-		case knowledgeentity.FieldCreatedAt, knowledgeentity.FieldUpdatedAt, knowledgeentity.FieldStateEffectiveAt:
+		case knowledgeentity.FieldCreatedAt, knowledgeentity.FieldUpdatedAt, knowledgeentity.FieldStateEffectiveAt, knowledgeentity.FieldLastObservedAt, knowledgeentity.FieldWithdrawnAt, knowledgeentity.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
 		case knowledgeentity.FieldID:
 			values[i] = new(uuid.UUID)
@@ -159,6 +195,50 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
+		case knowledgeentity.FieldState:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field state", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.State); err != nil {
+					return fmt.Errorf("unmarshal field state: %w", err)
+				}
+			}
+		case knowledgeentity.FieldStateSources:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field state_sources", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.StateSources); err != nil {
+					return fmt.Errorf("unmarshal field state_sources: %w", err)
+				}
+			}
+		case knowledgeentity.FieldStateEffectiveAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field state_effective_at", values[i])
+			} else if value.Valid {
+				_m.StateEffectiveAt = new(time.Time)
+				*_m.StateEffectiveAt = value.Time
+			}
+		case knowledgeentity.FieldLastObservedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_observed_at", values[i])
+			} else if value.Valid {
+				_m.LastObservedAt = new(time.Time)
+				*_m.LastObservedAt = value.Time
+			}
+		case knowledgeentity.FieldWithdrawnAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field withdrawn_at", values[i])
+			} else if value.Valid {
+				_m.WithdrawnAt = new(time.Time)
+				*_m.WithdrawnAt = value.Time
+			}
+		case knowledgeentity.FieldExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
+			} else if value.Valid {
+				_m.ExpiresAt = new(time.Time)
+				*_m.ExpiresAt = value.Time
+			}
 		case knowledgeentity.FieldCategory:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field category", values[i])
@@ -171,20 +251,12 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Kind = value.String
 			}
-		case knowledgeentity.FieldState:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field state", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.State); err != nil {
-					return fmt.Errorf("unmarshal field state: %w", err)
-				}
-			}
-		case knowledgeentity.FieldStateEffectiveAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field state_effective_at", values[i])
+		case knowledgeentity.FieldParentID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
 			} else if value.Valid {
-				_m.StateEffectiveAt = new(time.Time)
-				*_m.StateEffectiveAt = value.Time
+				_m.ParentID = new(uuid.UUID)
+				*_m.ParentID = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -224,6 +296,16 @@ func (_m *KnowledgeEntity) QueryTargetRelationships() *KnowledgeRelationshipQuer
 	return NewKnowledgeEntityClient(_m.config).QueryTargetRelationships(_m)
 }
 
+// QueryParent queries the "parent" edge of the KnowledgeEntity entity.
+func (_m *KnowledgeEntity) QueryParent() *KnowledgeEntityQuery {
+	return NewKnowledgeEntityClient(_m.config).QueryParent(_m)
+}
+
+// QueryChildren queries the "children" edge of the KnowledgeEntity entity.
+func (_m *KnowledgeEntity) QueryChildren() *KnowledgeEntityQuery {
+	return NewKnowledgeEntityClient(_m.config).QueryChildren(_m)
+}
+
 // Update returns a builder for updating this KnowledgeEntity.
 // Note that you need to call KnowledgeEntity.Unwrap() before calling this method if this KnowledgeEntity
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -256,18 +338,41 @@ func (_m *KnowledgeEntity) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
+	builder.WriteString("state=")
+	builder.WriteString(fmt.Sprintf("%v", _m.State))
+	builder.WriteString(", ")
+	builder.WriteString("state_sources=")
+	builder.WriteString(fmt.Sprintf("%v", _m.StateSources))
+	builder.WriteString(", ")
+	if v := _m.StateEffectiveAt; v != nil {
+		builder.WriteString("state_effective_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.LastObservedAt; v != nil {
+		builder.WriteString("last_observed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.WithdrawnAt; v != nil {
+		builder.WriteString("withdrawn_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ExpiresAt; v != nil {
+		builder.WriteString("expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("category=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Category))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(_m.Kind)
 	builder.WriteString(", ")
-	builder.WriteString("state=")
-	builder.WriteString(fmt.Sprintf("%v", _m.State))
-	builder.WriteString(", ")
-	if v := _m.StateEffectiveAt; v != nil {
-		builder.WriteString("state_effective_at=")
-		builder.WriteString(v.Format(time.ANSIC))
+	if v := _m.ParentID; v != nil {
+		builder.WriteString("parent_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')
 	return builder.String()

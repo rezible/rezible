@@ -34,15 +34,6 @@ export type MapCategoryDisplay = {
 	categoryLabel: string;
 };
 
-const architectureCategories = new Set<string>([
-	MapCategory.SystemFunction,
-	MapCategory.System,
-	MapCategory.Container,
-	MapCategory.Infrastructure,
-	MapCategory.Component,
-	MapCategory.Code,
-]);
-
 const categoryLabels: Readonly<Record<MapCategory, string>> = {
 	[MapCategory.SystemFunction]: "Function",
 	[MapCategory.System]: "System",
@@ -66,5 +57,3 @@ export function getMapCategoryDisplay(category: string): MapCategoryDisplay {
 	const parsed = parseMapCategory(category);
 	return { categoryLabel: categoryLabels[parsed] };
 }
-
-export const isArchitectureCategory = (category: string): boolean => architectureCategories.has(category);

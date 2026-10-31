@@ -88,7 +88,7 @@ func (s *SystemAnalysisServiceSuite) createGraphFixture(ctx context.Context, tdb
 	target, targetErr := createTarget.Save(ctx)
 	s.Require().NoError(targetErr)
 	createRelationship := client.KnowledgeRelationship.Create().
-		SetPredicate(knr.PredicateUses).
+		SetPredicate(knr.PredicateDependsOn).
 		SetSourceEntityID(source.ID).
 		SetTargetEntityID(target.ID)
 	relationship, relationshipErr := createRelationship.Save(ctx)

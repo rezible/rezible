@@ -42,7 +42,7 @@ export type InspectorSubject = {
 function nodeTitle(node: SystemAnalysisNode) {
 	return (
 		node.attributes.labelOverride ??
-		node.attributes.knowledgeEntity.attributes.latestState?.displayName ??
+		node.attributes.knowledgeEntity.attributes.state.displayName ??
 		"Subject"
 	);
 }
@@ -217,7 +217,7 @@ export class IncidentAnalysisController {
 				kind: "subject",
 				title: nodeTitle(this.selectedEntity),
 				context: `${entityAttrs.category} · ${entityAttrs.kind}`,
-				description: attrs.descriptionOverride ?? entityAttrs.latestState?.description,
+				description: attrs.descriptionOverride ?? entityAttrs.state.description,
 			};
 		}
 		if (this.selectedEdge) {
@@ -225,12 +225,9 @@ export class IncidentAnalysisController {
 			return {
 				kind: "subject",
 				title:
-					this.selectedEdge.attributes.labelOverride ??
-					attrs.latestState?.displayName ??
-					attrs.predicate,
+					this.selectedEdge.attributes.labelOverride ?? attrs.state.displayName ?? attrs.predicate,
 				context: attrs.predicate,
-				description:
-					this.selectedEdge.attributes.descriptionOverride ?? attrs.latestState?.description,
+				description: this.selectedEdge.attributes.descriptionOverride ?? attrs.state.description,
 			};
 		}
 		return undefined;

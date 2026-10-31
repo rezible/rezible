@@ -1,66 +1,50 @@
-import { MapCategory } from "./category";
-import type { GraphEntity, GraphSubset } from "./graph";
+import { loadedAncestors, type GraphEntity, type GraphSubset } from "./graph";
 import { entityLabel } from "./labels";
-
-export type StructureLevel = "landscape" | "system" | "runtime" | "implementation";
+import {
+	categoryLevel,
+	COMPONENT_LEVEL,
+	CONTAINER_LEVEL,
+	LANDSCAPE_LEVEL,
+	LOGICAL_HIERARCHY,
+	inHierarchy,
+	SYSTEM_LEVEL,
+} from "./model";
 
 export type RegionLevel = "landscape" | "system";
 
-/** A landscape or system region. Its children may mix systems and cards when a level is missing. */
+/** A system function or system region. Regions nest to any depth, and may hold regions and cards together. */
 export type StructureRegion = {
 	readonly type: "region";
 	readonly id: string;
 	readonly level: RegionLevel;
 	readonly entity: GraphEntity;
-	/** Structural parents other than the primary one, by id. */
-	readonly alsoIn: readonly string[];
+	readonly otherParentIds: readonly string[];
 	readonly children: readonly StructureNode[];
 };
 
-/** A runtime entity, with its implementation subtree folded into a count. */
+/** A container, with the components below it folded into a count. */
 export type StructureCard = {
 	readonly type: "card";
 	readonly id: string;
 	readonly entity: GraphEntity;
-	readonly alsoIn: readonly string[];
+	readonly otherParentIds: readonly string[];
+	/** The loaded container this one is part of; the card still sits in its nearest region. */
+	readonly partOf?: GraphEntity;
 	readonly implementationCount: number;
 };
 
 export type StructureNode = StructureRegion | StructureCard;
 
 export type StructureTree = {
-	/** Top-level nodes in packing order: landscapes, then systems and cards with no drawn parent. */
+	/** Top-level nodes in packing order: landscapes, then systems and cards with no drawn region. */
 	readonly roots: readonly StructureNode[];
 	/** Every drawn node by id. */
 	readonly nodes: ReadonlyMap<string, StructureNode>;
-	/** The primary structural parent of every map entity that has one. */
-	readonly primaryParents: ReadonlyMap<string, string>;
+	/** The drawn node each logical entity resolves to: itself when drawn, else its nearest drawn ancestor. */
+	readonly drawnNodes: ReadonlyMap<string, string>;
+	/** The region a drawn node sits in directly. */
+	readonly enclosingRegions: ReadonlyMap<string, string>;
 };
-
-const categoryLevels: Readonly<Record<string, StructureLevel>> = {
-	[MapCategory.SystemFunction]: "landscape",
-	[MapCategory.System]: "system",
-	[MapCategory.Container]: "runtime",
-	[MapCategory.Infrastructure]: "runtime",
-	[MapCategory.Component]: "implementation",
-	[MapCategory.Code]: "implementation",
-};
-
-/**
- * Containment depth by category. Components rank above code so component → code chains carry implementation
- * entities up to their runtime; the structure levels themselves stay as categoryLevels defines them.
- */
-const categoryDepths: Readonly<Record<string, number>> = {
-	[MapCategory.SystemFunction]: 0,
-	[MapCategory.System]: 1,
-	[MapCategory.Container]: 2,
-	[MapCategory.Infrastructure]: 2,
-	[MapCategory.Component]: 3,
-	[MapCategory.Code]: 4,
-};
-
-/** The structure level of a category, or undefined when the category is not a map entity. */
-export const structureLevel = (category: string): StructureLevel | undefined => categoryLevels[category];
 
 /** Plain code-point comparison, the repository tie-breaker. */
 export const compareIds = (a: string, b: string): number => {
@@ -93,34 +77,6 @@ function compareSiblings(a: StructureNode, b: StructureNode): number {
 	);
 }
 
-/** Candidate parents per map entity: loaded contains sources at a shallower depth. */
-function collectParentCandidates(graph: GraphSubset, depths: ReadonlyMap<string, number>) {
-	const candidates = new Map<string, Set<string>>();
-	for (const relationship of graph.relationships) {
-		if (relationship.predicate !== "contains") {
-			continue;
-		}
-		const sourceDepth = depths.get(relationship.source);
-		const targetDepth = depths.get(relationship.target);
-		if (sourceDepth === undefined || targetDepth === undefined || sourceDepth >= targetDepth) {
-			continue;
-		}
-
-		let parents = candidates.get(relationship.target);
-		if (!parents) {
-			parents = new Set();
-			candidates.set(relationship.target, parents);
-		}
-		parents.add(relationship.source);
-	}
-	return candidates;
-}
-
-/** Nearest depth first, then lowest id. */
-function rankParents(parents: Iterable<string>, depths: ReadonlyMap<string, number>): string[] {
-	return [...parents].sort((a, b) => depths.get(b)! - depths.get(a)! || compareIds(a, b));
-}
-
 type MutableRegion = Omit<StructureRegion, "children"> & { children: StructureNode[] };
 
 function sortRegion(region: MutableRegion): StructureRegion {
@@ -134,87 +90,84 @@ function sortRegion(region: MutableRegion): StructureRegion {
 	return { ...region, children };
 }
 
-/** Builds the containment tree of the map entities in a graph. */
+/** Builds the logical tree from each entity's parentId. A parent outside the subset makes a root. */
 export function buildStructureTree(graph: GraphSubset): StructureTree {
-	const entities = new Map<string, GraphEntity>();
-	const depths = new Map<string, number>();
-	for (const entity of graph.entities) {
-		const depth = categoryDepths[entity.category];
-		if (depth !== undefined) {
-			entities.set(entity.id, entity);
-			depths.set(entity.id, depth);
-		}
-	}
+	const { model } = graph;
+	const entities = new Map(graph.entities.map((entity) => [entity.id, entity]));
+	const level = (entity: GraphEntity) =>
+		inHierarchy(model, entity.category, LOGICAL_HIERARCHY)
+			? categoryLevel(model, entity.category)
+			: undefined;
+	const isRegion = (entity: GraphEntity) => {
+		const entityLevel = level(entity);
+		return entityLevel === LANDSCAPE_LEVEL || entityLevel === SYSTEM_LEVEL;
+	};
+	const isDrawn = (entity: GraphEntity) => isRegion(entity) || level(entity) === CONTAINER_LEVEL;
 
-	const primaryParents = new Map<string, string>();
-	const alsoIn = new Map<string, string[]>();
-	for (const [id, parents] of collectParentCandidates(graph, depths)) {
-		const [primary, ...others] = rankParents(parents, depths);
-		primaryParents.set(id, primary);
-		alsoIn.set(id, others.sort(compareIds));
-	}
-
+	const ancestors = new Map<string, GraphEntity[]>();
+	const drawnNodes = new Map<string, string>();
 	const implementationCounts = new Map<string, number>();
-	for (const [id, entity] of entities) {
-		if (structureLevel(entity.category) !== "implementation") {
+	for (const entity of graph.entities) {
+		if (level(entity) === undefined) {
 			continue;
 		}
-		let ancestor = primaryParents.get(id);
-		while (ancestor && structureLevel(entities.get(ancestor)!.category) === "implementation") {
-			ancestor = primaryParents.get(ancestor);
+		const chain = loadedAncestors(entities, entity.id);
+		ancestors.set(entity.id, chain);
+		const drawn = isDrawn(entity) ? entity : chain.find(isDrawn);
+		if (drawn) {
+			drawnNodes.set(entity.id, drawn.id);
 		}
-		if (ancestor && structureLevel(entities.get(ancestor)!.category) === "runtime") {
-			implementationCounts.set(ancestor, (implementationCounts.get(ancestor) ?? 0) + 1);
+		if (level(entity) === COMPONENT_LEVEL && drawn && level(drawn) === CONTAINER_LEVEL) {
+			implementationCounts.set(drawn.id, (implementationCounts.get(drawn.id) ?? 0) + 1);
 		}
 	}
 
 	const regions = new Map<string, MutableRegion>();
-	const roots: StructureNode[] = [];
+	const pending: { node: StructureNode; regionId?: string }[] = [];
+	for (const entity of graph.entities) {
+		if (!isDrawn(entity)) {
+			continue;
+		}
+		const chain = ancestors.get(entity.id)!;
+		const regionId = chain.find(isRegion)?.id;
+		const otherParentIds = entity.otherParentIds ?? [];
+		if (isRegion(entity)) {
+			const region: MutableRegion = {
+				type: "region",
+				id: entity.id,
+				level: level(entity) === LANDSCAPE_LEVEL ? "landscape" : "system",
+				entity,
+				otherParentIds,
+				children: [],
+			};
+			regions.set(entity.id, region);
+			pending.push({ node: region, regionId });
+			continue;
+		}
+		const parent = chain[0];
+		pending.push({
+			node: {
+				type: "card",
+				id: entity.id,
+				entity,
+				otherParentIds,
+				partOf: parent && level(parent) === CONTAINER_LEVEL ? parent : undefined,
+				implementationCount: implementationCounts.get(entity.id) ?? 0,
+			},
+			regionId,
+		});
+	}
 
-	/** Places a node directly in its primary parent when that parent is a drawn region, else at the root. */
-	const place = (node: StructureNode) => {
-		const parentId = primaryParents.get(node.id);
-		const parent = parentId ? regions.get(parentId) : undefined;
-		if (parent) {
-			parent.children.push(node);
+	// The backend keeps parents acyclic; regions caught in a cycle written concurrently are not drawn.
+	const roots: StructureNode[] = [];
+	const enclosingRegions = new Map<string, string>();
+	for (const { node, regionId } of pending) {
+		if (regionId) {
+			regions.get(regionId)!.children.push(node);
+			enclosingRegions.set(node.id, regionId);
 		} else {
 			roots.push(node);
 		}
-	};
-
-	const addRegion = (id: string, level: RegionLevel, entity: GraphEntity) => {
-		const region: MutableRegion = {
-			type: "region",
-			id,
-			level,
-			entity,
-			alsoIn: alsoIn.get(id) ?? [],
-			children: [],
-		};
-		regions.set(id, region);
-		place(region);
-	};
-
-	// Each level is placed after the level above it exists.
-	for (const level of ["landscape", "system"] as const) {
-		for (const [id, entity] of entities) {
-			if (structureLevel(entity.category) === level) {
-				addRegion(id, level, entity);
-			}
-		}
-	}
-
-	for (const [id, entity] of entities) {
-		if (structureLevel(entity.category) !== "runtime") {
-			continue;
-		}
-		place({
-			type: "card",
-			id,
-			entity,
-			alsoIn: alsoIn.get(id) ?? [],
-			implementationCount: implementationCounts.get(id) ?? 0,
-		});
 	}
 
 	const sorted = roots.map((node) => (node.type === "region" ? sortRegion(node as MutableRegion) : node));
@@ -229,5 +182,5 @@ export function buildStructureTree(graph: GraphSubset): StructureTree {
 	};
 	sorted.forEach(index);
 
-	return { roots: sorted, nodes, primaryParents };
+	return { roots: sorted, nodes, drawnNodes, enclosingRegions };
 }

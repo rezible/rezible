@@ -34,11 +34,14 @@ export type InspectorViewData = {
 	};
 	/** "2 systems", "4 runtime entities", "8 implementation entities grouped". */
 	structureFacts: readonly string[];
-	/** Where a runtime entity runs. */
+	/** Where a runtime entity runs: its most specific placements, with their ancestry. */
 	runsOn: readonly InspectorEndpointView[];
+	alsoClaimedBy: readonly InspectorEndpointView[];
+	builtFrom: readonly InspectorEndpointView[];
 	/** A container with no loaded placement reads "Placement unknown" under Runs on. */
 	placementUnknown: boolean;
 	incidentRelationships: readonly InspectorRelationshipView[];
+	undrawnRelationships: readonly InspectorRelationshipView[];
 	selectionAvailable: boolean;
 };
 
@@ -61,7 +64,7 @@ const relationshipView = ({
 		predicate,
 		source: sourceView,
 		target: targetView,
-		text: `${sourceView.text} → ${predicate} → ${targetView.text}`,
+		text: `${sourceView.text} → ${predicate} → ${targetView.text}${relationship.stale ? " · stale" : ""}`,
 	};
 };
 
@@ -96,7 +99,10 @@ function runsOnViews(structure: InspectedStructure | undefined): InspectorEndpoi
 	if (structure?.level !== "runtime") {
 		return [];
 	}
-	return structure.runsOn.map((target) => endpointView(target.id, target));
+	return structure.runsOn.map(({ entity, breadcrumb }) => {
+		const view = endpointView(entity.id, entity);
+		return breadcrumb ? { ...view, text: `${breadcrumb} › ${view.text}` } : view;
+	});
 }
 
 export const buildInspectionViewData = (inspection: MapInspection): InspectorViewData | undefined => {
@@ -122,7 +128,10 @@ export const buildInspectionViewData = (inspection: MapInspection): InspectorVie
 		structureFacts: structureFacts(inspection.structure),
 		runsOn: runsOnViews(inspection.structure),
 		placementUnknown: inspection.structure?.level === "runtime" && inspection.structure.placementUnknown,
+		alsoClaimedBy: inspection.alsoClaimedBy.map(({ id, entity }) => endpointView(id, entity)),
+		builtFrom: inspection.builtFrom.map(({ id, entity }) => endpointView(id, entity)),
 		incidentRelationships: inspection.incidentRelationships.map(relationshipView),
+		undrawnRelationships: inspection.undrawnRelationships.map(relationshipView),
 		selectionAvailable: inspection.available,
 	};
 };

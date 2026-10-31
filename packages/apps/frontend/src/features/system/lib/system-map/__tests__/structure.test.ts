@@ -1,8 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { regionOutline, type Box, type Point } from "../geometry";
 import {
-	CARD_HEIGHT,
-	CARD_WIDTH,
 	layoutStructure,
 	regionContentBox,
 	REGION_LABEL_HEIGHT,
@@ -15,8 +13,12 @@ import {
 	type StructureNode,
 	type StructureRegion,
 } from "../structure";
-import { largeFixture } from "$features/dev/views/system-map-fixture/large-fixture";
-import { fullFixture, mainFixture } from "$features/dev/views/system-map-fixture/terrain-fixture";
+import { largeFixture as largeFixtureGraph } from "$features/dev/views/system-map-fixture/large-fixture";
+import { fullFixture as fullFixtureGraph } from "$features/dev/views/system-map-fixture/terrain-fixture";
+import { withTestModel } from "./test-model";
+
+const fullFixture = withTestModel(fullFixtureGraph);
+const largeFixture = withTestModel(largeFixtureGraph);
 
 type Outline = { id: string; children?: Outline[] };
 
@@ -58,91 +60,50 @@ const insidePolygon = (polygon: readonly Point[], point: Point) => {
 };
 
 describe("system map structure", () => {
-	test("places entities under their primary parents and orphans in the nearest drawn ancestor or the root", () => {
-		const tree = buildStructureTree(fullFixture);
+	test("nests regions to any depth, from parentId, with parents outside the subset as roots", () => {
 		const fulfilment = Array.from({ length: 12 }, (_, index) => ({
 			id: `rt-fulfilment-${String(index + 1).padStart(2, "0")}`,
 		}));
 
-		expect(tree.roots.map(outline)).toEqual([
+		expect(buildStructureTree(fullFixture).roots.map(outline)).toEqual([
+			{
+				id: "fn-discovery",
+				children: [{ id: "sys-search", children: [{ id: "rt-search-api" }] }, { id: "rt-crawler" }],
+			},
 			{
 				id: "fn-commerce",
 				children: [
 					{
-						id: "sys-checkout",
+						id: "sys-commerce-core",
 						children: [
-							{ id: "rt-checkout-api" },
-							{ id: "rt-checkout-db" },
-							{ id: "rt-ledger-db" },
+							{
+								id: "sys-payments",
+								children: [{ id: "rt-payment-service" }, { id: "rt-payment-worker" }],
+							},
+							// A container in a container is its own card, in the nearest region.
+							{ id: "rt-checkout" },
+							{ id: "rt-checkout-proxy" },
 						],
 					},
 					{ id: "sys-fulfilment", children: fulfilment },
-					{
-						id: "sys-payments",
-						children: [{ id: "rt-payment-service" }, { id: "rt-payment-worker" }],
-					},
 				],
 			},
-			{
-				id: "fn-discovery",
-				// A runtime whose parent is a landscape sits directly in it, after its systems.
-				children: [
-					{ id: "sys-search", children: [{ id: "rt-search-api" }, { id: "rt-search-index" }] },
-					{ id: "rt-crawler" },
-				],
-			},
-			{
-				id: "fn-platform",
-				children: [
-					{
-						id: "sys-compute",
-						children: [{ id: "rt-production-cluster" }, { id: "rt-standby-cluster" }],
-					},
-				],
-			},
-			{ id: "sys-notifications", children: [] },
 			{ id: "rt-legacy-cron" },
+			{ id: "rt-reports" },
 		]);
 	});
 
-	test("places a runtime with several parents once, in the parent with the lowest id", () => {
-		const tree = buildStructureTree(fullFixture);
-		const ledger = cards(tree.roots).filter((card) => card.id === "rt-ledger-db");
+	test("a card names its parent container, its other claims and its component count", () => {
+		const byId = new Map(cards(buildStructureTree(fullFixture).roots).map((card) => [card.id, card]));
 
-		expect(ledger).toHaveLength(1);
-		expect(tree.primaryParents.get("rt-ledger-db")).toBe("sys-checkout");
-		expect(ledger[0].alsoIn).toEqual(["sys-payments"]);
-	});
-
-	test("counts each implementation entity once, under its runtime ancestor", () => {
-		const counts = Object.fromEntries(
-			cards(buildStructureTree(fullFixture).roots).map((card) => [card.id, card.implementationCount])
-		);
-
-		expect(counts["rt-checkout-api"]).toBe(8);
-		expect(Object.values(counts).reduce((total, count) => total + count, 0)).toBe(8);
+		expect(byId.get("rt-checkout-proxy")!.partOf?.id).toBe("rt-checkout");
+		expect(byId.get("rt-checkout")!.partOf).toBeUndefined();
+		expect(byId.get("rt-search-api")!.otherParentIds).toEqual(["sys-commerce-core"]);
+		expect(byId.get("rt-checkout")!.implementationCount).toBe(2);
 	});
 });
 
 describe("system map layout", () => {
-	test("packs the example tree into the worked-example boxes", () => {
-		const layout = layoutStructure(buildStructureTree(mainFixture));
-		const box = (id: string) => layout.boxes.get(id);
-
-		expect(box("fn-commerce")).toEqual({ x: 0, y: 0, width: 1705, height: 517.5 });
-		expect(box("fn-discovery")).toEqual({ x: 1801, y: 0, width: 867.5, height: 517.5 });
-		expect(box("sys-checkout")).toEqual({ x: 202.5, y: 123.75, width: 630, height: 310 });
-		expect(box("sys-payments")).toEqual({ x: 872.5, y: 123.75, width: 630, height: 310 });
-		expect(box("sys-search")).toEqual({ x: 1919.75, y: 123.75, width: 630, height: 310 });
-		expect(box("rt-checkout-api")).toEqual({
-			x: 297.5,
-			y: 226.75,
-			width: CARD_WIDTH,
-			height: CARD_HEIGHT,
-		});
-		expect({ width: layout.width, height: layout.height }).toEqual({ width: 2668.5, height: 517.5 });
-	});
-
 	test("keeps children inside their region's content area without overlapping siblings", () => {
 		const tree = buildStructureTree(fullFixture);
 		const layout = layoutStructure(tree);
@@ -172,7 +133,7 @@ describe("system map layout", () => {
 			[3200, 400],
 			[12800, 800],
 		];
-		const ids = ["fn-commerce", "sys-checkout", "sys-payments", "sys-search"];
+		const ids = ["fn-commerce", "sys-commerce-core", "sys-payments", "sys-search"];
 
 		for (const [width, height] of paddedSizes) {
 			const box = {

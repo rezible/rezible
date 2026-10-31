@@ -66,7 +66,7 @@
 
 {#snippet entityText(entry: DeploymentEntry, nameClass: string)}
 	{@const EntryIcon = categoryIcon(entry.entity.category)}
-	{@const ancestry = entry.breadcrumb.join(" / ")}
+	{@const ancestry = entry.breadcrumb}
 	<span class="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
 		<EntryIcon class="tier-icon size-4" aria-hidden="true" />
 	</span>
@@ -116,7 +116,9 @@
 		<header class="flex flex-wrap items-start justify-between gap-3">
 			<div>
 				<h2 class="text-2xl leading-9 font-semibold">Deployment</h2>
-				<p class="text-muted-foreground text-sm">Grouped by placement target</p>
+				<p class="text-muted-foreground text-sm">
+					The infrastructure tree, with what runs on each node
+				</p>
 			</div>
 			<Button
 				variant="outline"
@@ -135,7 +137,7 @@
 				</Empty.Header>
 			</Empty.Root>
 		{:else}
-			<div class="grid grid-cols-[repeat(auto-fill,minmax(22rem,1fr))] items-start gap-4">
+			<div class="flex max-w-4xl flex-col gap-3">
 				{#each groups.sections as section (section.entity.id)}
 					{@const targetSelected = section.entity.id === selectedEntityId}
 					<section
@@ -145,6 +147,7 @@
 						)}
 						data-section-id={section.entity.id}
 						aria-label={section.label}
+						style:margin-left="{section.depth * 1.5}rem"
 					>
 						<button
 							type="button"

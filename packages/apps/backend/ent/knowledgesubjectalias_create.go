@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -17,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeproposal"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -96,6 +98,90 @@ func (_c *KnowledgeSubjectAliasCreate) SetMergedByProposalID(v uuid.UUID) *Knowl
 func (_c *KnowledgeSubjectAliasCreate) SetNillableMergedByProposalID(v *uuid.UUID) *KnowledgeSubjectAliasCreate {
 	if v != nil {
 		_c.SetMergedByProposalID(*v)
+	}
+	return _c
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (_c *KnowledgeSubjectAliasCreate) SetCreatedAt(v time.Time) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *KnowledgeSubjectAliasCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeSubjectAliasCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetState sets the "state" field.
+func (_c *KnowledgeSubjectAliasCreate) SetState(v schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetState(v)
+	return _c
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_c *KnowledgeSubjectAliasCreate) SetNillableState(v *schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasCreate {
+	if v != nil {
+		_c.SetState(*v)
+	}
+	return _c
+}
+
+// SetFirstObservedAt sets the "first_observed_at" field.
+func (_c *KnowledgeSubjectAliasCreate) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetFirstObservedAt(v)
+	return _c
+}
+
+// SetNillableFirstObservedAt sets the "first_observed_at" field if the given value is not nil.
+func (_c *KnowledgeSubjectAliasCreate) SetNillableFirstObservedAt(v *time.Time) *KnowledgeSubjectAliasCreate {
+	if v != nil {
+		_c.SetFirstObservedAt(*v)
+	}
+	return _c
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_c *KnowledgeSubjectAliasCreate) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetLastObservedAt(v)
+	return _c
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_c *KnowledgeSubjectAliasCreate) SetNillableLastObservedAt(v *time.Time) *KnowledgeSubjectAliasCreate {
+	if v != nil {
+		_c.SetLastObservedAt(*v)
+	}
+	return _c
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (_c *KnowledgeSubjectAliasCreate) SetWithdrawnAt(v time.Time) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetWithdrawnAt(v)
+	return _c
+}
+
+// SetNillableWithdrawnAt sets the "withdrawn_at" field if the given value is not nil.
+func (_c *KnowledgeSubjectAliasCreate) SetNillableWithdrawnAt(v *time.Time) *KnowledgeSubjectAliasCreate {
+	if v != nil {
+		_c.SetWithdrawnAt(*v)
+	}
+	return _c
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_c *KnowledgeSubjectAliasCreate) SetExpiresAt(v time.Time) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetExpiresAt(v)
+	return _c
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_c *KnowledgeSubjectAliasCreate) SetNillableExpiresAt(v *time.Time) *KnowledgeSubjectAliasCreate {
+	if v != nil {
+		_c.SetExpiresAt(*v)
 	}
 	return _c
 }
@@ -186,6 +272,13 @@ func (_c *KnowledgeSubjectAliasCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *KnowledgeSubjectAliasCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		if knowledgesubjectalias.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgesubjectalias.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
+		v := knowledgesubjectalias.DefaultCreatedAt()
+		_c.mutation.SetCreatedAt(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if knowledgesubjectalias.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized knowledgesubjectalias.DefaultID (forgotten import ent/runtime?)")
@@ -227,6 +320,9 @@ func (_c *KnowledgeSubjectAliasCreate) check() error {
 		if err := knowledgesubjectalias.SubjectKindValidator(v); err != nil {
 			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeSubjectAlias.subject_kind": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.created_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeSubjectAlias.tenant"`)}
@@ -283,6 +379,30 @@ func (_c *KnowledgeSubjectAliasCreate) createSpec() (*KnowledgeSubjectAlias, *sq
 	if value, ok := _c.mutation.SubjectKind(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldSubjectKind, field.TypeEnum, value)
 		_node.SubjectKind = value
+	}
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.State(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldState, field.TypeJSON, value)
+		_node.State = value
+	}
+	if value, ok := _c.mutation.FirstObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime, value)
+		_node.FirstObservedAt = &value
+	}
+	if value, ok := _c.mutation.LastObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime, value)
+		_node.LastObservedAt = &value
+	}
+	if value, ok := _c.mutation.WithdrawnAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldWithdrawnAt, field.TypeTime, value)
+		_node.WithdrawnAt = &value
+	}
+	if value, ok := _c.mutation.ExpiresAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldExpiresAt, field.TypeTime, value)
+		_node.ExpiresAt = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -479,6 +599,96 @@ func (u *KnowledgeSubjectAliasUpsert) ClearMergedByProposalID() *KnowledgeSubjec
 	return u
 }
 
+// SetState sets the "state" field.
+func (u *KnowledgeSubjectAliasUpsert) SetState(v schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasUpsert {
+	u.Set(knowledgesubjectalias.FieldState, v)
+	return u
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsert) UpdateState() *KnowledgeSubjectAliasUpsert {
+	u.SetExcluded(knowledgesubjectalias.FieldState)
+	return u
+}
+
+// ClearState clears the value of the "state" field.
+func (u *KnowledgeSubjectAliasUpsert) ClearState() *KnowledgeSubjectAliasUpsert {
+	u.SetNull(knowledgesubjectalias.FieldState)
+	return u
+}
+
+// SetFirstObservedAt sets the "first_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsert) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasUpsert {
+	u.Set(knowledgesubjectalias.FieldFirstObservedAt, v)
+	return u
+}
+
+// UpdateFirstObservedAt sets the "first_observed_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsert) UpdateFirstObservedAt() *KnowledgeSubjectAliasUpsert {
+	u.SetExcluded(knowledgesubjectalias.FieldFirstObservedAt)
+	return u
+}
+
+// ClearFirstObservedAt clears the value of the "first_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsert) ClearFirstObservedAt() *KnowledgeSubjectAliasUpsert {
+	u.SetNull(knowledgesubjectalias.FieldFirstObservedAt)
+	return u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsert) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpsert {
+	u.Set(knowledgesubjectalias.FieldLastObservedAt, v)
+	return u
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsert) UpdateLastObservedAt() *KnowledgeSubjectAliasUpsert {
+	u.SetExcluded(knowledgesubjectalias.FieldLastObservedAt)
+	return u
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsert) ClearLastObservedAt() *KnowledgeSubjectAliasUpsert {
+	u.SetNull(knowledgesubjectalias.FieldLastObservedAt)
+	return u
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (u *KnowledgeSubjectAliasUpsert) SetWithdrawnAt(v time.Time) *KnowledgeSubjectAliasUpsert {
+	u.Set(knowledgesubjectalias.FieldWithdrawnAt, v)
+	return u
+}
+
+// UpdateWithdrawnAt sets the "withdrawn_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsert) UpdateWithdrawnAt() *KnowledgeSubjectAliasUpsert {
+	u.SetExcluded(knowledgesubjectalias.FieldWithdrawnAt)
+	return u
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (u *KnowledgeSubjectAliasUpsert) ClearWithdrawnAt() *KnowledgeSubjectAliasUpsert {
+	u.SetNull(knowledgesubjectalias.FieldWithdrawnAt)
+	return u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *KnowledgeSubjectAliasUpsert) SetExpiresAt(v time.Time) *KnowledgeSubjectAliasUpsert {
+	u.Set(knowledgesubjectalias.FieldExpiresAt, v)
+	return u
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsert) UpdateExpiresAt() *KnowledgeSubjectAliasUpsert {
+	u.SetExcluded(knowledgesubjectalias.FieldExpiresAt)
+	return u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *KnowledgeSubjectAliasUpsert) ClearExpiresAt() *KnowledgeSubjectAliasUpsert {
+	u.SetNull(knowledgesubjectalias.FieldExpiresAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -510,6 +720,9 @@ func (u *KnowledgeSubjectAliasUpsertOne) UpdateNewValues() *KnowledgeSubjectAlia
 		}
 		if _, exists := u.create.mutation.SubjectKind(); exists {
 			s.SetIgnore(knowledgesubjectalias.FieldSubjectKind)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(knowledgesubjectalias.FieldCreatedAt)
 		}
 	}))
 	return u
@@ -602,6 +815,111 @@ func (u *KnowledgeSubjectAliasUpsertOne) UpdateMergedByProposalID() *KnowledgeSu
 func (u *KnowledgeSubjectAliasUpsertOne) ClearMergedByProposalID() *KnowledgeSubjectAliasUpsertOne {
 	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
 		s.ClearMergedByProposalID()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *KnowledgeSubjectAliasUpsertOne) SetState(v schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertOne) UpdateState() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateState()
+	})
+}
+
+// ClearState clears the value of the "state" field.
+func (u *KnowledgeSubjectAliasUpsertOne) ClearState() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearState()
+	})
+}
+
+// SetFirstObservedAt sets the "first_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsertOne) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetFirstObservedAt(v)
+	})
+}
+
+// UpdateFirstObservedAt sets the "first_observed_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertOne) UpdateFirstObservedAt() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateFirstObservedAt()
+	})
+}
+
+// ClearFirstObservedAt clears the value of the "first_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsertOne) ClearFirstObservedAt() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearFirstObservedAt()
+	})
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsertOne) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetLastObservedAt(v)
+	})
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertOne) UpdateLastObservedAt() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateLastObservedAt()
+	})
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsertOne) ClearLastObservedAt() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearLastObservedAt()
+	})
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (u *KnowledgeSubjectAliasUpsertOne) SetWithdrawnAt(v time.Time) *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetWithdrawnAt(v)
+	})
+}
+
+// UpdateWithdrawnAt sets the "withdrawn_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertOne) UpdateWithdrawnAt() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateWithdrawnAt()
+	})
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (u *KnowledgeSubjectAliasUpsertOne) ClearWithdrawnAt() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearWithdrawnAt()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *KnowledgeSubjectAliasUpsertOne) SetExpiresAt(v time.Time) *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertOne) UpdateExpiresAt() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *KnowledgeSubjectAliasUpsertOne) ClearExpiresAt() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearExpiresAt()
 	})
 }
 
@@ -803,6 +1121,9 @@ func (u *KnowledgeSubjectAliasUpsertBulk) UpdateNewValues() *KnowledgeSubjectAli
 			if _, exists := b.mutation.SubjectKind(); exists {
 				s.SetIgnore(knowledgesubjectalias.FieldSubjectKind)
 			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(knowledgesubjectalias.FieldCreatedAt)
+			}
 		}
 	}))
 	return u
@@ -895,6 +1216,111 @@ func (u *KnowledgeSubjectAliasUpsertBulk) UpdateMergedByProposalID() *KnowledgeS
 func (u *KnowledgeSubjectAliasUpsertBulk) ClearMergedByProposalID() *KnowledgeSubjectAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
 		s.ClearMergedByProposalID()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) SetState(v schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertBulk) UpdateState() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateState()
+	})
+}
+
+// ClearState clears the value of the "state" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) ClearState() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearState()
+	})
+}
+
+// SetFirstObservedAt sets the "first_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetFirstObservedAt(v)
+	})
+}
+
+// UpdateFirstObservedAt sets the "first_observed_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertBulk) UpdateFirstObservedAt() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateFirstObservedAt()
+	})
+}
+
+// ClearFirstObservedAt clears the value of the "first_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) ClearFirstObservedAt() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearFirstObservedAt()
+	})
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetLastObservedAt(v)
+	})
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertBulk) UpdateLastObservedAt() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateLastObservedAt()
+	})
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) ClearLastObservedAt() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearLastObservedAt()
+	})
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) SetWithdrawnAt(v time.Time) *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetWithdrawnAt(v)
+	})
+}
+
+// UpdateWithdrawnAt sets the "withdrawn_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertBulk) UpdateWithdrawnAt() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateWithdrawnAt()
+	})
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) ClearWithdrawnAt() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearWithdrawnAt()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) SetExpiresAt(v time.Time) *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertBulk) UpdateExpiresAt() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) ClearExpiresAt() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.ClearExpiresAt()
 	})
 }
 

@@ -1,8 +1,11 @@
+import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { tick } from "svelte";
 
 import type { SystemMapHandle } from "$features/system/components/system-map";
+import { knowledgeModelOptions } from "$features/system/lib/knowledge-model";
 import type { GraphSubset } from "$features/system/lib/system-map/graph";
+import { emptyMapModel, mapModel } from "$features/system/lib/system-map/model";
 import type { MapHighlights, MapSelection } from "$features/system/lib/system-map/presentation";
 import { reconcileSelection } from "$features/system/lib/system-map/selection";
 import { systemMapFixtureScenarios, type FixtureScenarioId } from "./fixtures";
@@ -14,7 +17,10 @@ export class SystemMapFixtureController {
 	deploymentFocusTargetId = $state<string>();
 	mapHandle = $state<SystemMapHandle>();
 
-	graph = $derived<GraphSubset>(systemMapFixtureScenarios[this.scenario].graph);
+	private modelQuery = createQuery(() => knowledgeModelOptions());
+	/** The fixtures use the model the backend serves, so they follow the same rules as the real map. */
+	private model = $derived(this.modelQuery.data ? mapModel(this.modelQuery.data.data) : emptyMapModel);
+	graph = $derived<GraphSubset>({ ...systemMapFixtureScenarios[this.scenario].graph, model: this.model });
 	highlights = $derived<MapHighlights>({
 		entityIds: this.selection?.kind === "entity" ? [this.selection.entityId] : [],
 		relationshipIds:
@@ -37,7 +43,7 @@ export class SystemMapFixtureController {
 	setScenario = (value?: string) => {
 		if (!value || !(value in systemMapFixtureScenarios) || value === this.scenario) return;
 		this.scenario = value as FixtureScenarioId;
-		this.selection = reconcileSelection(systemMapFixtureScenarios[this.scenario].graph, this.selection);
+		this.selection = reconcileSelection(this.graph, this.selection);
 	};
 
 	setSelection = (selection: MapSelection | undefined) => {

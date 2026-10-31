@@ -23,6 +23,18 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldState holds the string denoting the state field in the database.
+	FieldState = "state"
+	// FieldStateSources holds the string denoting the state_sources field in the database.
+	FieldStateSources = "state_sources"
+	// FieldStateEffectiveAt holds the string denoting the state_effective_at field in the database.
+	FieldStateEffectiveAt = "state_effective_at"
+	// FieldLastObservedAt holds the string denoting the last_observed_at field in the database.
+	FieldLastObservedAt = "last_observed_at"
+	// FieldWithdrawnAt holds the string denoting the withdrawn_at field in the database.
+	FieldWithdrawnAt = "withdrawn_at"
+	// FieldExpiresAt holds the string denoting the expires_at field in the database.
+	FieldExpiresAt = "expires_at"
 	// FieldPredicate holds the string denoting the predicate field in the database.
 	FieldPredicate = "predicate"
 	// FieldSourceEntityID holds the string denoting the source_entity_id field in the database.
@@ -75,6 +87,12 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldState,
+	FieldStateSources,
+	FieldStateEffectiveAt,
+	FieldLastObservedAt,
+	FieldWithdrawnAt,
+	FieldExpiresAt,
 	FieldPredicate,
 	FieldSourceEntityID,
 	FieldTargetEntityID,
@@ -114,33 +132,25 @@ type Predicate string
 // Predicate values.
 const (
 	PredicateContains       Predicate = "contains"
-	PredicateInteractsWith  Predicate = "interacts_with"
+	PredicateRunsOn         Predicate = "runs_on"
+	PredicateBuiltFrom      Predicate = "built_from"
+	PredicateOwns           Predicate = "owns"
+	PredicateMemberOf       Predicate = "member_of"
+	PredicateParticipatesIn Predicate = "participates_in"
+	PredicateUses           Predicate = "uses"
+	PredicateSupports       Predicate = "supports"
 	PredicateCalls          Predicate = "calls"
 	PredicateReadsFrom      Predicate = "reads_from"
 	PredicateWritesTo       Predicate = "writes_to"
 	PredicatePublishesTo    Predicate = "publishes_to"
 	PredicateConsumesFrom   Predicate = "consumes_from"
 	PredicateDependsOn      Predicate = "depends_on"
-	PredicateRunsOn         Predicate = "runs_on"
-	PredicateOwns           Predicate = "owns"
-	PredicateSupports       Predicate = "supports"
-	PredicateParticipatesIn Predicate = "participates_in"
-	PredicateMemberOf       Predicate = "member_of"
-	PredicateControls       Predicate = "controls"
 	PredicateObserves       Predicate = "observes"
-	PredicateInfluences     Predicate = "influences"
 	PredicateConstrains     Predicate = "constrains"
 	PredicateAddresses      Predicate = "addresses"
+	PredicateMitigates      Predicate = "mitigates"
 	PredicateImpacts        Predicate = "impacts"
 	PredicateTouches        Predicate = "touches"
-	PredicateUses           Predicate = "uses"
-	PredicateProcesses      Predicate = "processes"
-	PredicateIndexes        Predicate = "indexes"
-	PredicateStores         Predicate = "stores"
-	PredicateIndicates      Predicate = "indicates"
-	PredicateClassifiedAs   Predicate = "classified_as"
-	PredicateRespondsTo     Predicate = "responds_to"
-	PredicateMitigates      Predicate = "mitigates"
 )
 
 func (pr Predicate) String() string {
@@ -150,7 +160,7 @@ func (pr Predicate) String() string {
 // PredicateValidator is a validator for the "predicate" field enum values. It is called by the builders before save.
 func PredicateValidator(pr Predicate) error {
 	switch pr {
-	case PredicateContains, PredicateInteractsWith, PredicateCalls, PredicateReadsFrom, PredicateWritesTo, PredicatePublishesTo, PredicateConsumesFrom, PredicateDependsOn, PredicateRunsOn, PredicateOwns, PredicateSupports, PredicateParticipatesIn, PredicateMemberOf, PredicateControls, PredicateObserves, PredicateInfluences, PredicateConstrains, PredicateAddresses, PredicateImpacts, PredicateTouches, PredicateUses, PredicateProcesses, PredicateIndexes, PredicateStores, PredicateIndicates, PredicateClassifiedAs, PredicateRespondsTo, PredicateMitigates:
+	case PredicateContains, PredicateRunsOn, PredicateBuiltFrom, PredicateOwns, PredicateMemberOf, PredicateParticipatesIn, PredicateUses, PredicateSupports, PredicateCalls, PredicateReadsFrom, PredicateWritesTo, PredicatePublishesTo, PredicateConsumesFrom, PredicateDependsOn, PredicateObserves, PredicateConstrains, PredicateAddresses, PredicateMitigates, PredicateImpacts, PredicateTouches:
 		return nil
 	default:
 		return fmt.Errorf("knowledgerelationship: invalid enum value for predicate field: %q", pr)
@@ -178,6 +188,26 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByStateEffectiveAt orders the results by the state_effective_at field.
+func ByStateEffectiveAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStateEffectiveAt, opts...).ToFunc()
+}
+
+// ByLastObservedAt orders the results by the last_observed_at field.
+func ByLastObservedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastObservedAt, opts...).ToFunc()
+}
+
+// ByWithdrawnAt orders the results by the withdrawn_at field.
+func ByWithdrawnAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWithdrawnAt, opts...).ToFunc()
+}
+
+// ByExpiresAt orders the results by the expires_at field.
+func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
 }
 
 // ByPredicate orders the results by the predicate field.
@@ -261,31 +291,23 @@ func newAliasesStep() *sqlgraph.Step {
 // PredicateValues contains all permitted values. Treat this slice as read-only.
 var PredicateValues = []string{
 	"contains",
-	"interacts_with",
+	"runs_on",
+	"built_from",
+	"owns",
+	"member_of",
+	"participates_in",
+	"uses",
+	"supports",
 	"calls",
 	"reads_from",
 	"writes_to",
 	"publishes_to",
 	"consumes_from",
 	"depends_on",
-	"runs_on",
-	"owns",
-	"supports",
-	"participates_in",
-	"member_of",
-	"controls",
 	"observes",
-	"influences",
 	"constrains",
 	"addresses",
+	"mitigates",
 	"impacts",
 	"touches",
-	"uses",
-	"processes",
-	"indexes",
-	"stores",
-	"indicates",
-	"classified_as",
-	"responds_to",
-	"mitigates",
 }

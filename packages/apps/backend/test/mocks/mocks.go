@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situationsignalattention"
@@ -841,6 +842,74 @@ func (_c *MockKnowledgeGraphQueryService_GetSubjectAlias_Call) RunAndReturn(run 
 	return _c
 }
 
+// ListAncestors provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) ListAncestors(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeEntity, error) {
+	ret := _mock.Called(ctx, entityIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListAncestors")
+	}
+
+	var r0 map[uuid.UUID][]*ent.KnowledgeEntity
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeEntity, error)); ok {
+		return returnFunc(ctx, entityIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) map[uuid.UUID][]*ent.KnowledgeEntity); ok {
+		r0 = returnFunc(ctx, entityIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID][]*ent.KnowledgeEntity)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, entityIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphQueryService_ListAncestors_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAncestors'
+type MockKnowledgeGraphQueryService_ListAncestors_Call struct {
+	*mock.Call
+}
+
+// ListAncestors is a helper method to define mock.On call
+//   - ctx context.Context
+//   - entityIDs []uuid.UUID
+func (_e *MockKnowledgeGraphQueryService_Expecter) ListAncestors(ctx interface{}, entityIDs interface{}) *MockKnowledgeGraphQueryService_ListAncestors_Call {
+	return &MockKnowledgeGraphQueryService_ListAncestors_Call{Call: _e.mock.On("ListAncestors", ctx, entityIDs)}
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListAncestors_Call) Run(run func(ctx context.Context, entityIDs []uuid.UUID)) *MockKnowledgeGraphQueryService_ListAncestors_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListAncestors_Call) Return(uUIDToKnowledgeEntitys map[uuid.UUID][]*ent.KnowledgeEntity, err error) *MockKnowledgeGraphQueryService_ListAncestors_Call {
+	_c.Call.Return(uUIDToKnowledgeEntitys, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListAncestors_Call) RunAndReturn(run func(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeEntity, error)) *MockKnowledgeGraphQueryService_ListAncestors_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListEntities provides a mock function for the type MockKnowledgeGraphQueryService
 func (_mock *MockKnowledgeGraphQueryService) ListEntities(context1 context.Context, listKnowledgeEntitiesParams rez.ListKnowledgeEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error) {
 	ret := _mock.Called(context1, listKnowledgeEntitiesParams)
@@ -973,6 +1042,74 @@ func (_c *MockKnowledgeGraphQueryService_ListEvidence_Call) Return(listResult *e
 }
 
 func (_c *MockKnowledgeGraphQueryService_ListEvidence_Call) RunAndReturn(run func(context1 context.Context, listKnowledgeEvidenceParams rez.ListKnowledgeEvidenceParams) (*ent.ListResult[ent.KnowledgeEvidence], error)) *MockKnowledgeGraphQueryService_ListEvidence_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListParentClaims provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) ListParentClaims(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeRelationship, error) {
+	ret := _mock.Called(ctx, entityIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListParentClaims")
+	}
+
+	var r0 map[uuid.UUID][]*ent.KnowledgeRelationship
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeRelationship, error)); ok {
+		return returnFunc(ctx, entityIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) map[uuid.UUID][]*ent.KnowledgeRelationship); ok {
+		r0 = returnFunc(ctx, entityIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID][]*ent.KnowledgeRelationship)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, entityIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockKnowledgeGraphQueryService_ListParentClaims_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListParentClaims'
+type MockKnowledgeGraphQueryService_ListParentClaims_Call struct {
+	*mock.Call
+}
+
+// ListParentClaims is a helper method to define mock.On call
+//   - ctx context.Context
+//   - entityIDs []uuid.UUID
+func (_e *MockKnowledgeGraphQueryService_Expecter) ListParentClaims(ctx interface{}, entityIDs interface{}) *MockKnowledgeGraphQueryService_ListParentClaims_Call {
+	return &MockKnowledgeGraphQueryService_ListParentClaims_Call{Call: _e.mock.On("ListParentClaims", ctx, entityIDs)}
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListParentClaims_Call) Run(run func(ctx context.Context, entityIDs []uuid.UUID)) *MockKnowledgeGraphQueryService_ListParentClaims_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListParentClaims_Call) Return(uUIDToKnowledgeRelationships map[uuid.UUID][]*ent.KnowledgeRelationship, err error) *MockKnowledgeGraphQueryService_ListParentClaims_Call {
+	_c.Call.Return(uUIDToKnowledgeRelationships, err)
+	return _c
+}
+
+func (_c *MockKnowledgeGraphQueryService_ListParentClaims_Call) RunAndReturn(run func(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeRelationship, error)) *MockKnowledgeGraphQueryService_ListParentClaims_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1181,70 +1318,82 @@ func (_c *MockKnowledgeGraphQueryService_ListSubjectAliases_Call) RunAndReturn(r
 	return _c
 }
 
-// ResolveStructure provides a mock function for the type MockKnowledgeGraphQueryService
-func (_mock *MockKnowledgeGraphQueryService) ResolveStructure(context1 context.Context, resolveStructureParams rez.ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error) {
-	ret := _mock.Called(context1, resolveStructureParams)
+// ResolveRepresentatives provides a mock function for the type MockKnowledgeGraphQueryService
+func (_mock *MockKnowledgeGraphQueryService) ResolveRepresentatives(ctx context.Context, entityIDs []uuid.UUID, categories []knowledgeentity.Category, maxDepth int) (map[uuid.UUID]uuid.UUID, error) {
+	ret := _mock.Called(ctx, entityIDs, categories, maxDepth)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ResolveStructure")
+		panic("no return value specified for ResolveRepresentatives")
 	}
 
-	var r0 map[uuid.UUID][]uuid.UUID
+	var r0 map[uuid.UUID]uuid.UUID
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error)); ok {
-		return returnFunc(context1, resolveStructureParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, []knowledgeentity.Category, int) (map[uuid.UUID]uuid.UUID, error)); ok {
+		return returnFunc(ctx, entityIDs, categories, maxDepth)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ResolveStructureParams) map[uuid.UUID][]uuid.UUID); ok {
-		r0 = returnFunc(context1, resolveStructureParams)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, []knowledgeentity.Category, int) map[uuid.UUID]uuid.UUID); ok {
+		r0 = returnFunc(ctx, entityIDs, categories, maxDepth)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[uuid.UUID][]uuid.UUID)
+			r0 = ret.Get(0).(map[uuid.UUID]uuid.UUID)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ResolveStructureParams) error); ok {
-		r1 = returnFunc(context1, resolveStructureParams)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, []knowledgeentity.Category, int) error); ok {
+		r1 = returnFunc(ctx, entityIDs, categories, maxDepth)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockKnowledgeGraphQueryService_ResolveStructure_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveStructure'
-type MockKnowledgeGraphQueryService_ResolveStructure_Call struct {
+// MockKnowledgeGraphQueryService_ResolveRepresentatives_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveRepresentatives'
+type MockKnowledgeGraphQueryService_ResolveRepresentatives_Call struct {
 	*mock.Call
 }
 
-// ResolveStructure is a helper method to define mock.On call
-//   - context1 context.Context
-//   - resolveStructureParams rez.ResolveStructureParams
-func (_e *MockKnowledgeGraphQueryService_Expecter) ResolveStructure(context1 interface{}, resolveStructureParams interface{}) *MockKnowledgeGraphQueryService_ResolveStructure_Call {
-	return &MockKnowledgeGraphQueryService_ResolveStructure_Call{Call: _e.mock.On("ResolveStructure", context1, resolveStructureParams)}
+// ResolveRepresentatives is a helper method to define mock.On call
+//   - ctx context.Context
+//   - entityIDs []uuid.UUID
+//   - categories []knowledgeentity.Category
+//   - maxDepth int
+func (_e *MockKnowledgeGraphQueryService_Expecter) ResolveRepresentatives(ctx interface{}, entityIDs interface{}, categories interface{}, maxDepth interface{}) *MockKnowledgeGraphQueryService_ResolveRepresentatives_Call {
+	return &MockKnowledgeGraphQueryService_ResolveRepresentatives_Call{Call: _e.mock.On("ResolveRepresentatives", ctx, entityIDs, categories, maxDepth)}
 }
 
-func (_c *MockKnowledgeGraphQueryService_ResolveStructure_Call) Run(run func(context1 context.Context, resolveStructureParams rez.ResolveStructureParams)) *MockKnowledgeGraphQueryService_ResolveStructure_Call {
+func (_c *MockKnowledgeGraphQueryService_ResolveRepresentatives_Call) Run(run func(ctx context.Context, entityIDs []uuid.UUID, categories []knowledgeentity.Category, maxDepth int)) *MockKnowledgeGraphQueryService_ResolveRepresentatives_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.ResolveStructureParams
+		var arg1 []uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].(rez.ResolveStructureParams)
+			arg1 = args[1].([]uuid.UUID)
+		}
+		var arg2 []knowledgeentity.Category
+		if args[2] != nil {
+			arg2 = args[2].([]knowledgeentity.Category)
+		}
+		var arg3 int
+		if args[3] != nil {
+			arg3 = args[3].(int)
 		}
 		run(
 			arg0,
 			arg1,
+			arg2,
+			arg3,
 		)
 	})
 	return _c
 }
 
-func (_c *MockKnowledgeGraphQueryService_ResolveStructure_Call) Return(uUIDToUUIDs map[uuid.UUID][]uuid.UUID, err error) *MockKnowledgeGraphQueryService_ResolveStructure_Call {
-	_c.Call.Return(uUIDToUUIDs, err)
+func (_c *MockKnowledgeGraphQueryService_ResolveRepresentatives_Call) Return(uUIDToUUID map[uuid.UUID]uuid.UUID, err error) *MockKnowledgeGraphQueryService_ResolveRepresentatives_Call {
+	_c.Call.Return(uUIDToUUID, err)
 	return _c
 }
 
-func (_c *MockKnowledgeGraphQueryService_ResolveStructure_Call) RunAndReturn(run func(context1 context.Context, resolveStructureParams rez.ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error)) *MockKnowledgeGraphQueryService_ResolveStructure_Call {
+func (_c *MockKnowledgeGraphQueryService_ResolveRepresentatives_Call) RunAndReturn(run func(ctx context.Context, entityIDs []uuid.UUID, categories []knowledgeentity.Category, maxDepth int) (map[uuid.UUID]uuid.UUID, error)) *MockKnowledgeGraphQueryService_ResolveRepresentatives_Call {
 	_c.Call.Return(run)
 	return _c
 }

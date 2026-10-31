@@ -1,6 +1,14 @@
 package situations
 
-import "time"
+import (
+	"time"
+
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+)
+
+// RepresentativeCategories are the categories a signal is attributed to: an observation's entities resolve to
+// their nearest ancestor-or-self in one of them.
+var RepresentativeCategories = []kne.Category{kne.CategoryContainer, kne.CategoryInfrastructure}
 
 const (
 	// EntityResolutionDepth is the most structure steps climbed when resolving an observation's entities to the

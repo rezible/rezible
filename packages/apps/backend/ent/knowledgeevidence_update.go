@@ -86,6 +86,9 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 			}
 		}
 	}
+	if _u.mutation.ExpiresAtCleared() {
+		_spec.ClearField(knowledgeevidence.FieldExpiresAt, field.TypeTime)
+	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeEvidence
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -195,6 +198,9 @@ func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 				ps[i](selector)
 			}
 		}
+	}
+	if _u.mutation.ExpiresAtCleared() {
+		_spec.ClearField(knowledgeevidence.FieldExpiresAt, field.TypeTime)
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeEvidence
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

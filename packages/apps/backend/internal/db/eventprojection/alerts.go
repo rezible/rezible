@@ -3,10 +3,12 @@ package eventprojection
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
@@ -29,7 +31,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 	}
 	alertEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategorySignal,
-		Kind:                knowledgeEntityKindAlert,
+		Kind:                knowledgegraph.EntityKindAlert,
 		ProviderResourceRef: alertResourceRef,
 	}
 	alertProperties := map[string]any{
@@ -41,6 +43,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 	alertEntityEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionAlertDefinitionObserved,
+		StateMode:   ke.StateModeReplace,
 		EffectiveAt: event.OccurredAt,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.Title,
@@ -117,7 +120,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 		}
 
 		projected := []rez.ProjectedEntityRef{{
-			Kind: knowledgeEntityKindAlert,
+			Kind: knowledgegraph.EntityKindAlert,
 			Id:   definition.ID,
 		}}
 		return projected, nil

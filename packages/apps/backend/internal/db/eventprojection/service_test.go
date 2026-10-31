@@ -113,7 +113,7 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 		ResourceRef:       "database",
 	}
 	relationship := projections.SystemRelationshipEventAttributes{
-		Predicate:   knr.PredicateUses,
+		Predicate:   knr.PredicateDependsOn,
 		DisplayName: "uses",
 		Source: projections.EntityObservation{
 			Ref:         sourceRef,
@@ -164,7 +164,7 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 	s.NotEqual(sourceAlias.Edges.Entity.ID, targetAlias.Edges.Entity.ID)
 	projectedRelationship, relationshipErr := client.KnowledgeRelationship.Query().Only(ctx)
 	s.Require().NoError(relationshipErr)
-	s.Equal(knr.PredicateUses, projectedRelationship.Predicate)
+	s.Equal(knr.PredicateDependsOn, projectedRelationship.Predicate)
 	s.Equal(sourceAlias.Edges.Entity.ID, projectedRelationship.SourceEntityID, "API is the source of uses")
 	s.Equal(targetAlias.Edges.Entity.ID, projectedRelationship.TargetEntityID, "database is the target of uses")
 
@@ -198,7 +198,7 @@ func (s *ProjectionServiceSuite) TestProjectsSystemTopologyRelationship() {
 
 	s.Equal(2, entityCount)
 	relationshipQuery := tdb.Client(ctx).KnowledgeRelationship.Query()
-	relationshipQuery.Where(knr.PredicateEQ(knr.PredicateUses))
+	relationshipQuery.Where(knr.PredicateEQ(knr.PredicateDependsOn))
 	relationshipCount, relationshipCountErr := relationshipQuery.Count(ctx)
 	s.Require().NoError(relationshipCountErr)
 

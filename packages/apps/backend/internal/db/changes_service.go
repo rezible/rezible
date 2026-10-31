@@ -54,7 +54,9 @@ func (s *ChangesService) ListServiceChanges(ctx context.Context, params rez.List
 		}
 	}
 
-	serviceEntity, serviceErr := s.db.Client(ctx).KnowledgeEntity.Get(ctx, params.ServiceEntityID)
+	queryService := s.db.Client(ctx).KnowledgeEntity.Query().
+		Where(kne.ID(params.ServiceEntityID), currentKnowledgeEntity())
+	serviceEntity, serviceErr := queryService.Only(ctx)
 	if serviceErr != nil && !ent.IsNotFound(serviceErr) {
 		return nil, fmt.Errorf("query service entity: %w", serviceErr)
 	}
@@ -168,6 +170,7 @@ func (s *ChangesService) queryDeploymentRepository(ctx context.Context, deployme
 			kne.HasTargetRelationshipsWith(
 				knr.PredicateEQ(knr.PredicateTouches),
 				knr.SourceEntityID(deploymentID),
+				currentKnowledgeRelationship(),
 			),
 			kne.HasLinkingAttributesWith(
 				kela.Attribute(projections.LinkingAttributeRepositoryFullName),

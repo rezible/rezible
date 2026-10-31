@@ -9,7 +9,7 @@ test("incident rows dedupe and limit service names", () => {
 		source: "",
 		knowledgeEntity: {
 			id: "entity",
-			attributes: name ? { latestState: { displayName: name } } : undefined,
+			attributes: name ? { state: { displayName: name } } : undefined,
 		},
 	});
 	const incident = {

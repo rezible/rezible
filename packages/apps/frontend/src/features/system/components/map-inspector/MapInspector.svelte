@@ -5,7 +5,13 @@
 	import { Separator } from "$components/ui/separator";
 	import type { MapSelection } from "$features/system/lib/system-map/presentation";
 	import { buildInspectionItems, resolveInspection, type MapInspectorItem } from "./inspection";
-	import { buildInspectionViewData, isInspectorItemSelected, loadedCountsText } from "./presentation";
+	import {
+		buildInspectionViewData,
+		isInspectorItemSelected,
+		loadedCountsText,
+		type InspectorEndpointView,
+		type InspectorRelationshipView,
+	} from "./presentation";
 	import type { MapInspectorProps } from "./types";
 
 	let { graph, selection, onSelectionChange }: MapInspectorProps = $props();
@@ -39,6 +45,54 @@
 		return isInspectorItemSelected(item, selection);
 	}
 </script>
+
+{#snippet endpointList(title: string, endpoints: readonly InspectorEndpointView[])}
+	{#if endpoints.length > 0}
+		<div class="flex flex-col gap-1">
+			<h4 class="text-xs font-medium uppercase">{title}</h4>
+			<ul class="flex flex-col gap-1 text-xs">
+				{#each endpoints as endpoint (endpoint.id)}
+					<li>
+						{#if endpoint.entity}
+							<Button
+								variant="link"
+								size="xs"
+								class="h-auto max-w-full justify-start whitespace-normal px-0 text-left"
+								onclick={(event) => selectEntity(endpoint.id, event)}
+							>
+								{endpoint.text}
+							</Button>
+						{:else}
+							<span class="wrap-anywhere">{endpoint.text}</span>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet relationshipList(title: string, relationships: readonly InspectorRelationshipView[])}
+	{#if relationships.length > 0}
+		<div class="flex flex-col gap-1">
+			<h4 class="text-xs font-medium uppercase">{title}</h4>
+			<ul class="flex flex-col gap-1 text-xs">
+				{#each relationships as relationship (relationship.id)}
+					<li>
+						<Button
+							variant="link"
+							size="xs"
+							class="h-auto max-w-full justify-start whitespace-normal px-0 text-left"
+							onclick={(event) => selectRelationship(relationship.id, event)}
+						>
+							{relationship.text}
+						</Button>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
+{/snippet}
 
 <aside
 	class="bg-card border-border flex w-80 min-h-0 min-w-0 shrink-0 flex-col border-l"
@@ -84,6 +138,10 @@
 						<dd class="wrap-anywhere">{inspectionView.entity.category}</dd>
 						<dt class="text-muted-foreground">Kind</dt>
 						<dd class="wrap-anywhere">{inspectionView.entity.kind}</dd>
+						{#if inspectionView.entity.stale}
+							<dt class="text-muted-foreground">Status</dt>
+							<dd>Stale: no source observes it any more</dd>
+						{/if}
 					</dl>
 					{#if inspectionView.structureFacts.length > 0}
 						<ul class="flex flex-col gap-1 text-xs" aria-label="Structure">
@@ -97,44 +155,16 @@
 							<h4 class="text-xs font-medium uppercase">Runs on</h4>
 							<p class="text-muted-foreground text-xs">Placement unknown</p>
 						</div>
-					{:else if inspectionView.runsOn.length > 0}
-						<div class="flex flex-col gap-1">
-							<h4 class="text-xs font-medium uppercase">Runs on</h4>
-							<ul class="flex flex-col gap-1 text-xs">
-								{#each inspectionView.runsOn as target (target.id)}
-									<li>
-										<Button
-											variant="link"
-											size="xs"
-											class="h-auto max-w-full justify-start whitespace-normal px-0 text-left"
-											onclick={(event) => selectEntity(target.id, event)}
-										>
-											{target.text}
-										</Button>
-									</li>
-								{/each}
-							</ul>
-						</div>
+					{:else}
+						{@render endpointList("Runs on", inspectionView.runsOn)}
 					{/if}
-					{#if inspectionView.incidentRelationships.length > 0}
-						<div class="flex flex-col gap-1">
-							<h4 class="text-xs font-medium uppercase">Incident relationships</h4>
-							<ul class="flex flex-col gap-1 text-xs">
-								{#each inspectionView.incidentRelationships as relationship (relationship.id)}
-									<li>
-										<Button
-											variant="link"
-											size="xs"
-											class="h-auto max-w-full justify-start whitespace-normal px-0 text-left"
-											onclick={(event) => selectRelationship(relationship.id, event)}
-										>
-											{relationship.text}
-										</Button>
-									</li>
-								{/each}
-							</ul>
-						</div>
-					{/if}
+					{@render endpointList("Also claimed by", inspectionView.alsoClaimedBy)}
+					{@render endpointList("Built from", inspectionView.builtFrom)}
+					{@render relationshipList("Incident relationships", inspectionView.incidentRelationships)}
+					{@render relationshipList(
+						"Not drawn as connections",
+						inspectionView.undrawnRelationships
+					)}
 				{:else if inspectionView.relationship}
 					<div class="flex flex-col gap-2 text-xs">
 						<dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1">

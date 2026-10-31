@@ -84,6 +84,34 @@ func (_c *KnowledgeEvidenceCreate) SetSubjectState(v schematypes.KnowledgeGraphS
 	return _c
 }
 
+// SetStateMode sets the "state_mode" field.
+func (_c *KnowledgeEvidenceCreate) SetStateMode(v knowledgeevidence.StateMode) *KnowledgeEvidenceCreate {
+	_c.mutation.SetStateMode(v)
+	return _c
+}
+
+// SetNillableStateMode sets the "state_mode" field if the given value is not nil.
+func (_c *KnowledgeEvidenceCreate) SetNillableStateMode(v *knowledgeevidence.StateMode) *KnowledgeEvidenceCreate {
+	if v != nil {
+		_c.SetStateMode(*v)
+	}
+	return _c
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_c *KnowledgeEvidenceCreate) SetExpiresAt(v time.Time) *KnowledgeEvidenceCreate {
+	_c.mutation.SetExpiresAt(v)
+	return _c
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_c *KnowledgeEvidenceCreate) SetNillableExpiresAt(v *time.Time) *KnowledgeEvidenceCreate {
+	if v != nil {
+		_c.SetExpiresAt(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *KnowledgeEvidenceCreate) SetID(v uuid.UUID) *KnowledgeEvidenceCreate {
 	_c.mutation.SetID(v)
@@ -157,6 +185,10 @@ func (_c *KnowledgeEvidenceCreate) defaults() error {
 		v := knowledgeevidence.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
+	if _, ok := _c.mutation.StateMode(); !ok {
+		v := knowledgeevidence.DefaultStateMode
+		_c.mutation.SetStateMode(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if knowledgeevidence.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized knowledgeevidence.DefaultID (forgotten import ent/runtime?)")
@@ -202,6 +234,14 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 	}
 	if _, ok := _c.mutation.SubjectState(); !ok {
 		return &ValidationError{Name: "subject_state", err: errors.New(`ent: missing required field "KnowledgeEvidence.subject_state"`)}
+	}
+	if _, ok := _c.mutation.StateMode(); !ok {
+		return &ValidationError{Name: "state_mode", err: errors.New(`ent: missing required field "KnowledgeEvidence.state_mode"`)}
+	}
+	if v, ok := _c.mutation.StateMode(); ok {
+		if err := knowledgeevidence.StateModeValidator(v); err != nil {
+			return &ValidationError{Name: "state_mode", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.state_mode": %w`, err)}
+		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEvidence.tenant"`)}
@@ -268,6 +308,14 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 	if value, ok := _c.mutation.SubjectState(); ok {
 		_spec.SetField(knowledgeevidence.FieldSubjectState, field.TypeJSON, value)
 		_node.SubjectState = value
+	}
+	if value, ok := _c.mutation.StateMode(); ok {
+		_spec.SetField(knowledgeevidence.FieldStateMode, field.TypeEnum, value)
+		_node.StateMode = value
+	}
+	if value, ok := _c.mutation.ExpiresAt(); ok {
+		_spec.SetField(knowledgeevidence.FieldExpiresAt, field.TypeTime, value)
+		_node.ExpiresAt = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -415,6 +463,12 @@ func (u *KnowledgeEvidenceUpsertOne) UpdateNewValues() *KnowledgeEvidenceUpsertO
 		}
 		if _, exists := u.create.mutation.SubjectState(); exists {
 			s.SetIgnore(knowledgeevidence.FieldSubjectState)
+		}
+		if _, exists := u.create.mutation.StateMode(); exists {
+			s.SetIgnore(knowledgeevidence.FieldStateMode)
+		}
+		if _, exists := u.create.mutation.ExpiresAt(); exists {
+			s.SetIgnore(knowledgeevidence.FieldExpiresAt)
 		}
 	}))
 	return u
@@ -653,6 +707,12 @@ func (u *KnowledgeEvidenceUpsertBulk) UpdateNewValues() *KnowledgeEvidenceUpsert
 			}
 			if _, exists := b.mutation.SubjectState(); exists {
 				s.SetIgnore(knowledgeevidence.FieldSubjectState)
+			}
+			if _, exists := b.mutation.StateMode(); exists {
+				s.SetIgnore(knowledgeevidence.FieldStateMode)
+			}
+			if _, exists := b.mutation.ExpiresAt(); exists {
+				s.SetIgnore(knowledgeevidence.FieldExpiresAt)
 			}
 		}
 	}))

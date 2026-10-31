@@ -4,6 +4,7 @@ package knowledgesubjectalias
 
 import (
 	"fmt"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -32,6 +33,18 @@ const (
 	FieldRelationshipID = "relationship_id"
 	// FieldMergedByProposalID holds the string denoting the merged_by_proposal_id field in the database.
 	FieldMergedByProposalID = "merged_by_proposal_id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldState holds the string denoting the state field in the database.
+	FieldState = "state"
+	// FieldFirstObservedAt holds the string denoting the first_observed_at field in the database.
+	FieldFirstObservedAt = "first_observed_at"
+	// FieldLastObservedAt holds the string denoting the last_observed_at field in the database.
+	FieldLastObservedAt = "last_observed_at"
+	// FieldWithdrawnAt holds the string denoting the withdrawn_at field in the database.
+	FieldWithdrawnAt = "withdrawn_at"
+	// FieldExpiresAt holds the string denoting the expires_at field in the database.
+	FieldExpiresAt = "expires_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEntity holds the string denoting the entity edge name in mutations.
@@ -92,6 +105,12 @@ var Columns = []string{
 	FieldEntityID,
 	FieldRelationshipID,
 	FieldMergedByProposalID,
+	FieldCreatedAt,
+	FieldState,
+	FieldFirstObservedAt,
+	FieldLastObservedAt,
+	FieldWithdrawnAt,
+	FieldExpiresAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -116,6 +135,8 @@ var (
 	ProviderValidator func(string) error
 	// ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
 	ProviderResourceRefValidator func(string) error
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -189,6 +210,31 @@ func ByRelationshipID(opts ...sql.OrderTermOption) OrderOption {
 // ByMergedByProposalID orders the results by the merged_by_proposal_id field.
 func ByMergedByProposalID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMergedByProposalID, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByFirstObservedAt orders the results by the first_observed_at field.
+func ByFirstObservedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFirstObservedAt, opts...).ToFunc()
+}
+
+// ByLastObservedAt orders the results by the last_observed_at field.
+func ByLastObservedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastObservedAt, opts...).ToFunc()
+}
+
+// ByWithdrawnAt orders the results by the withdrawn_at field.
+func ByWithdrawnAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWithdrawnAt, opts...).ToFunc()
+}
+
+// ByExpiresAt orders the results by the expires_at field.
+func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

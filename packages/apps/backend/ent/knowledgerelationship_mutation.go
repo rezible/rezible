@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // KnowledgeRelationshipMutation represents an operation that mutates the KnowledgeRelationship nodes in the graph.
@@ -24,6 +25,12 @@ type KnowledgeRelationshipMutation struct {
 	id                   *uuid.UUID
 	created_at           *time.Time
 	updated_at           *time.Time
+	state                *schematypes.KnowledgeGraphSubjectState
+	state_sources        *schematypes.KnowledgeStateSources
+	state_effective_at   *time.Time
+	last_observed_at     *time.Time
+	withdrawn_at         *time.Time
+	expires_at           *time.Time
 	predicate            *knowledgerelationship.Predicate
 	clearedFields        map[string]struct{}
 	tenant               *int
@@ -250,6 +257,300 @@ func (m *KnowledgeRelationshipMutation) OldUpdatedAt(ctx context.Context) (v tim
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *KnowledgeRelationshipMutation) ResetUpdatedAt() {
 	m.updated_at = nil
+}
+
+// SetState sets the "state" field.
+func (m *KnowledgeRelationshipMutation) SetState(sgss schematypes.KnowledgeGraphSubjectState) {
+	m.state = &sgss
+}
+
+// State returns the value of the "state" field in the mutation.
+func (m *KnowledgeRelationshipMutation) State() (r schematypes.KnowledgeGraphSubjectState, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldState returns the old "state" field's value of the KnowledgeRelationship entity.
+// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeRelationshipMutation) OldState(ctx context.Context) (v schematypes.KnowledgeGraphSubjectState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldState: %w", err)
+	}
+	return oldValue.State, nil
+}
+
+// ClearState clears the value of the "state" field.
+func (m *KnowledgeRelationshipMutation) ClearState() {
+	m.state = nil
+	m.clearedFields[knowledgerelationship.FieldState] = struct{}{}
+}
+
+// StateCleared returns if the "state" field was cleared in this mutation.
+func (m *KnowledgeRelationshipMutation) StateCleared() bool {
+	_, ok := m.clearedFields[knowledgerelationship.FieldState]
+	return ok
+}
+
+// ResetState resets all changes to the "state" field.
+func (m *KnowledgeRelationshipMutation) ResetState() {
+	m.state = nil
+	delete(m.clearedFields, knowledgerelationship.FieldState)
+}
+
+// SetStateSources sets the "state_sources" field.
+func (m *KnowledgeRelationshipMutation) SetStateSources(sss schematypes.KnowledgeStateSources) {
+	m.state_sources = &sss
+}
+
+// StateSources returns the value of the "state_sources" field in the mutation.
+func (m *KnowledgeRelationshipMutation) StateSources() (r schematypes.KnowledgeStateSources, exists bool) {
+	v := m.state_sources
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStateSources returns the old "state_sources" field's value of the KnowledgeRelationship entity.
+// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeRelationshipMutation) OldStateSources(ctx context.Context) (v schematypes.KnowledgeStateSources, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStateSources is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStateSources requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStateSources: %w", err)
+	}
+	return oldValue.StateSources, nil
+}
+
+// ClearStateSources clears the value of the "state_sources" field.
+func (m *KnowledgeRelationshipMutation) ClearStateSources() {
+	m.state_sources = nil
+	m.clearedFields[knowledgerelationship.FieldStateSources] = struct{}{}
+}
+
+// StateSourcesCleared returns if the "state_sources" field was cleared in this mutation.
+func (m *KnowledgeRelationshipMutation) StateSourcesCleared() bool {
+	_, ok := m.clearedFields[knowledgerelationship.FieldStateSources]
+	return ok
+}
+
+// ResetStateSources resets all changes to the "state_sources" field.
+func (m *KnowledgeRelationshipMutation) ResetStateSources() {
+	m.state_sources = nil
+	delete(m.clearedFields, knowledgerelationship.FieldStateSources)
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (m *KnowledgeRelationshipMutation) SetStateEffectiveAt(t time.Time) {
+	m.state_effective_at = &t
+}
+
+// StateEffectiveAt returns the value of the "state_effective_at" field in the mutation.
+func (m *KnowledgeRelationshipMutation) StateEffectiveAt() (r time.Time, exists bool) {
+	v := m.state_effective_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStateEffectiveAt returns the old "state_effective_at" field's value of the KnowledgeRelationship entity.
+// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeRelationshipMutation) OldStateEffectiveAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStateEffectiveAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStateEffectiveAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStateEffectiveAt: %w", err)
+	}
+	return oldValue.StateEffectiveAt, nil
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (m *KnowledgeRelationshipMutation) ClearStateEffectiveAt() {
+	m.state_effective_at = nil
+	m.clearedFields[knowledgerelationship.FieldStateEffectiveAt] = struct{}{}
+}
+
+// StateEffectiveAtCleared returns if the "state_effective_at" field was cleared in this mutation.
+func (m *KnowledgeRelationshipMutation) StateEffectiveAtCleared() bool {
+	_, ok := m.clearedFields[knowledgerelationship.FieldStateEffectiveAt]
+	return ok
+}
+
+// ResetStateEffectiveAt resets all changes to the "state_effective_at" field.
+func (m *KnowledgeRelationshipMutation) ResetStateEffectiveAt() {
+	m.state_effective_at = nil
+	delete(m.clearedFields, knowledgerelationship.FieldStateEffectiveAt)
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (m *KnowledgeRelationshipMutation) SetLastObservedAt(t time.Time) {
+	m.last_observed_at = &t
+}
+
+// LastObservedAt returns the value of the "last_observed_at" field in the mutation.
+func (m *KnowledgeRelationshipMutation) LastObservedAt() (r time.Time, exists bool) {
+	v := m.last_observed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastObservedAt returns the old "last_observed_at" field's value of the KnowledgeRelationship entity.
+// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeRelationshipMutation) OldLastObservedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastObservedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastObservedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastObservedAt: %w", err)
+	}
+	return oldValue.LastObservedAt, nil
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (m *KnowledgeRelationshipMutation) ClearLastObservedAt() {
+	m.last_observed_at = nil
+	m.clearedFields[knowledgerelationship.FieldLastObservedAt] = struct{}{}
+}
+
+// LastObservedAtCleared returns if the "last_observed_at" field was cleared in this mutation.
+func (m *KnowledgeRelationshipMutation) LastObservedAtCleared() bool {
+	_, ok := m.clearedFields[knowledgerelationship.FieldLastObservedAt]
+	return ok
+}
+
+// ResetLastObservedAt resets all changes to the "last_observed_at" field.
+func (m *KnowledgeRelationshipMutation) ResetLastObservedAt() {
+	m.last_observed_at = nil
+	delete(m.clearedFields, knowledgerelationship.FieldLastObservedAt)
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (m *KnowledgeRelationshipMutation) SetWithdrawnAt(t time.Time) {
+	m.withdrawn_at = &t
+}
+
+// WithdrawnAt returns the value of the "withdrawn_at" field in the mutation.
+func (m *KnowledgeRelationshipMutation) WithdrawnAt() (r time.Time, exists bool) {
+	v := m.withdrawn_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWithdrawnAt returns the old "withdrawn_at" field's value of the KnowledgeRelationship entity.
+// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeRelationshipMutation) OldWithdrawnAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWithdrawnAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWithdrawnAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWithdrawnAt: %w", err)
+	}
+	return oldValue.WithdrawnAt, nil
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (m *KnowledgeRelationshipMutation) ClearWithdrawnAt() {
+	m.withdrawn_at = nil
+	m.clearedFields[knowledgerelationship.FieldWithdrawnAt] = struct{}{}
+}
+
+// WithdrawnAtCleared returns if the "withdrawn_at" field was cleared in this mutation.
+func (m *KnowledgeRelationshipMutation) WithdrawnAtCleared() bool {
+	_, ok := m.clearedFields[knowledgerelationship.FieldWithdrawnAt]
+	return ok
+}
+
+// ResetWithdrawnAt resets all changes to the "withdrawn_at" field.
+func (m *KnowledgeRelationshipMutation) ResetWithdrawnAt() {
+	m.withdrawn_at = nil
+	delete(m.clearedFields, knowledgerelationship.FieldWithdrawnAt)
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *KnowledgeRelationshipMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *KnowledgeRelationshipMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the KnowledgeRelationship entity.
+// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeRelationshipMutation) OldExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (m *KnowledgeRelationshipMutation) ClearExpiresAt() {
+	m.expires_at = nil
+	m.clearedFields[knowledgerelationship.FieldExpiresAt] = struct{}{}
+}
+
+// ExpiresAtCleared returns if the "expires_at" field was cleared in this mutation.
+func (m *KnowledgeRelationshipMutation) ExpiresAtCleared() bool {
+	_, ok := m.clearedFields[knowledgerelationship.FieldExpiresAt]
+	return ok
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *KnowledgeRelationshipMutation) ResetExpiresAt() {
+	m.expires_at = nil
+	delete(m.clearedFields, knowledgerelationship.FieldExpiresAt)
 }
 
 // SetPredicate sets the "predicate" field.
@@ -529,7 +830,7 @@ func (m *KnowledgeRelationshipMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeRelationshipMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 12)
 	if m.tenant != nil {
 		fields = append(fields, knowledgerelationship.FieldTenantID)
 	}
@@ -538,6 +839,24 @@ func (m *KnowledgeRelationshipMutation) Fields() []string {
 	}
 	if m.updated_at != nil {
 		fields = append(fields, knowledgerelationship.FieldUpdatedAt)
+	}
+	if m.state != nil {
+		fields = append(fields, knowledgerelationship.FieldState)
+	}
+	if m.state_sources != nil {
+		fields = append(fields, knowledgerelationship.FieldStateSources)
+	}
+	if m.state_effective_at != nil {
+		fields = append(fields, knowledgerelationship.FieldStateEffectiveAt)
+	}
+	if m.last_observed_at != nil {
+		fields = append(fields, knowledgerelationship.FieldLastObservedAt)
+	}
+	if m.withdrawn_at != nil {
+		fields = append(fields, knowledgerelationship.FieldWithdrawnAt)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, knowledgerelationship.FieldExpiresAt)
 	}
 	if m.predicate != nil {
 		fields = append(fields, knowledgerelationship.FieldPredicate)
@@ -562,6 +881,18 @@ func (m *KnowledgeRelationshipMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case knowledgerelationship.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case knowledgerelationship.FieldState:
+		return m.State()
+	case knowledgerelationship.FieldStateSources:
+		return m.StateSources()
+	case knowledgerelationship.FieldStateEffectiveAt:
+		return m.StateEffectiveAt()
+	case knowledgerelationship.FieldLastObservedAt:
+		return m.LastObservedAt()
+	case knowledgerelationship.FieldWithdrawnAt:
+		return m.WithdrawnAt()
+	case knowledgerelationship.FieldExpiresAt:
+		return m.ExpiresAt()
 	case knowledgerelationship.FieldPredicate:
 		return m.Predicate()
 	case knowledgerelationship.FieldSourceEntityID:
@@ -583,6 +914,18 @@ func (m *KnowledgeRelationshipMutation) OldField(ctx context.Context, name strin
 		return m.OldCreatedAt(ctx)
 	case knowledgerelationship.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case knowledgerelationship.FieldState:
+		return m.OldState(ctx)
+	case knowledgerelationship.FieldStateSources:
+		return m.OldStateSources(ctx)
+	case knowledgerelationship.FieldStateEffectiveAt:
+		return m.OldStateEffectiveAt(ctx)
+	case knowledgerelationship.FieldLastObservedAt:
+		return m.OldLastObservedAt(ctx)
+	case knowledgerelationship.FieldWithdrawnAt:
+		return m.OldWithdrawnAt(ctx)
+	case knowledgerelationship.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
 	case knowledgerelationship.FieldPredicate:
 		return m.OldPredicate(ctx)
 	case knowledgerelationship.FieldSourceEntityID:
@@ -618,6 +961,48 @@ func (m *KnowledgeRelationshipMutation) SetField(name string, value ent.Value) e
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case knowledgerelationship.FieldState:
+		v, ok := value.(schematypes.KnowledgeGraphSubjectState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetState(v)
+		return nil
+	case knowledgerelationship.FieldStateSources:
+		v, ok := value.(schematypes.KnowledgeStateSources)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStateSources(v)
+		return nil
+	case knowledgerelationship.FieldStateEffectiveAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStateEffectiveAt(v)
+		return nil
+	case knowledgerelationship.FieldLastObservedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastObservedAt(v)
+		return nil
+	case knowledgerelationship.FieldWithdrawnAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWithdrawnAt(v)
+		return nil
+	case knowledgerelationship.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
 		return nil
 	case knowledgerelationship.FieldPredicate:
 		v, ok := value.(knowledgerelationship.Predicate)
@@ -672,7 +1057,26 @@ func (m *KnowledgeRelationshipMutation) AddField(name string, value ent.Value) e
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *KnowledgeRelationshipMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(knowledgerelationship.FieldState) {
+		fields = append(fields, knowledgerelationship.FieldState)
+	}
+	if m.FieldCleared(knowledgerelationship.FieldStateSources) {
+		fields = append(fields, knowledgerelationship.FieldStateSources)
+	}
+	if m.FieldCleared(knowledgerelationship.FieldStateEffectiveAt) {
+		fields = append(fields, knowledgerelationship.FieldStateEffectiveAt)
+	}
+	if m.FieldCleared(knowledgerelationship.FieldLastObservedAt) {
+		fields = append(fields, knowledgerelationship.FieldLastObservedAt)
+	}
+	if m.FieldCleared(knowledgerelationship.FieldWithdrawnAt) {
+		fields = append(fields, knowledgerelationship.FieldWithdrawnAt)
+	}
+	if m.FieldCleared(knowledgerelationship.FieldExpiresAt) {
+		fields = append(fields, knowledgerelationship.FieldExpiresAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -685,6 +1089,26 @@ func (m *KnowledgeRelationshipMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *KnowledgeRelationshipMutation) ClearField(name string) error {
+	switch name {
+	case knowledgerelationship.FieldState:
+		m.ClearState()
+		return nil
+	case knowledgerelationship.FieldStateSources:
+		m.ClearStateSources()
+		return nil
+	case knowledgerelationship.FieldStateEffectiveAt:
+		m.ClearStateEffectiveAt()
+		return nil
+	case knowledgerelationship.FieldLastObservedAt:
+		m.ClearLastObservedAt()
+		return nil
+	case knowledgerelationship.FieldWithdrawnAt:
+		m.ClearWithdrawnAt()
+		return nil
+	case knowledgerelationship.FieldExpiresAt:
+		m.ClearExpiresAt()
+		return nil
+	}
 	return fmt.Errorf("unknown KnowledgeRelationship nullable field %s", name)
 }
 
@@ -700,6 +1124,24 @@ func (m *KnowledgeRelationshipMutation) ResetField(name string) error {
 		return nil
 	case knowledgerelationship.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case knowledgerelationship.FieldState:
+		m.ResetState()
+		return nil
+	case knowledgerelationship.FieldStateSources:
+		m.ResetStateSources()
+		return nil
+	case knowledgerelationship.FieldStateEffectiveAt:
+		m.ResetStateEffectiveAt()
+		return nil
+	case knowledgerelationship.FieldLastObservedAt:
+		m.ResetLastObservedAt()
+		return nil
+	case knowledgerelationship.FieldWithdrawnAt:
+		m.ResetWithdrawnAt()
+		return nil
+	case knowledgerelationship.FieldExpiresAt:
+		m.ResetExpiresAt()
 		return nil
 	case knowledgerelationship.FieldPredicate:
 		m.ResetPredicate()

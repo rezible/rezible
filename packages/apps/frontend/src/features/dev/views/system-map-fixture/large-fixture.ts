@@ -1,4 +1,5 @@
-import type { GraphEntity, GraphRelationship, GraphSubset } from "$features/system/lib/system-map/graph";
+import type { GraphEntity, GraphRelationship } from "$features/system/lib/system-map/graph";
+import type { FixtureGraph } from "./fixtures";
 
 const LANDSCAPES = ["Commerce", "Platform", "Insights"];
 
@@ -20,14 +21,14 @@ const SYSTEMS = [
 	"Experiments",
 ];
 
-/** Runtimes per system, in the order above; 300 in total. */
+/** Runtimes per system, in the order above; 300 in total, every fifth a store. */
 const RUNTIME_COUNTS = [36, 12, 24, 8, 20, 30, 16, 10, 28, 14, 26, 18, 22, 6, 30];
 
 const PREDICATES = ["calls", "reads_from", "writes_to", "publishes_to"];
 
 const BEHAVIOUR_RELATIONSHIP_COUNT = 100;
 
-/** Shared clusters in the Scheduling system that every service runs on. */
+/** Shared clusters, in one environment, that every service runs on; stores sit in the clusters. */
 const CLUSTERS = [
 	{ id: "rt-primary-cluster", name: "Primary cluster" },
 	{ id: "rt-secondary-cluster", name: "Secondary cluster" },
@@ -53,71 +54,79 @@ const relationship = (source: string, predicate: string, target: string): GraphR
 	predicate,
 });
 
-function buildLargeFixture(): GraphSubset {
+function buildLargeFixture(): FixtureGraph {
 	const random = seededRandom(20261029);
 	const pick = <T>(items: readonly T[]) => items[Math.floor(random() * items.length)];
 	const entities: GraphEntity[] = [];
 	const relationships: GraphRelationship[] = [];
 	const runtimeIds: string[] = [];
-	const codeIds: string[] = [];
+	const componentIds: string[] = [];
+	const add = (entity: GraphEntity) => {
+		entities.push(entity);
+		if (entity.parentId) {
+			relationships.push(relationship(entity.parentId, "contains", entity.id));
+		}
+	};
 
+	add({ id: "env-production", category: "infrastructure", kind: "environment", name: "production" });
 	for (const { id, name } of CLUSTERS) {
-		entities.push({ id, category: "infrastructure", kind: "cluster", name });
-		relationships.push(relationship("sys-scheduling", "contains", id));
+		add({ id, category: "infrastructure", kind: "kubernetes_cluster", name, parentId: "env-production" });
 	}
 
 	LANDSCAPES.forEach((name) => {
-		entities.push({ id: `fn-${slug(name)}`, category: "system_function", kind: "function", name });
+		add({ id: `fn-${slug(name)}`, category: "system_function", kind: "function", name });
 	});
 
 	SYSTEMS.forEach((name, systemIndex) => {
 		const systemId = `sys-${slug(name)}`;
 		const landscapeId = `fn-${slug(LANDSCAPES[Math.floor(systemIndex / 5)])}`;
-		entities.push({ id: systemId, category: "system", kind: "system", name });
-		relationships.push(relationship(landscapeId, "contains", systemId));
+		add({ id: systemId, category: "system", kind: "system", name, parentId: landscapeId });
 
 		for (let index = 1; index <= RUNTIME_COUNTS[systemIndex]; index++) {
 			const number = String(index).padStart(2, "0");
 			const runtimeId = `rt-${slug(name)}-${number}`;
+			const cluster = CLUSTERS[systemIndex % 2].id;
 			if (index % 5 === 0) {
-				entities.push({
+				add({
 					id: runtimeId,
 					category: "infrastructure",
 					kind: "database",
 					name: `${name} store ${number}`,
+					parentId: cluster,
 				});
-			} else {
-				entities.push({
-					id: runtimeId,
-					category: "container",
-					kind: "service",
-					name: `${name} service ${number}`,
-				});
-				relationships.push(relationship(runtimeId, "runs_on", CLUSTERS[systemIndex % 2].id));
+				continue;
 			}
-			relationships.push(relationship(systemId, "contains", runtimeId));
+			add({
+				id: runtimeId,
+				category: "container",
+				kind: "service",
+				name: `${name} service ${number}`,
+				parentId: systemId,
+			});
+			relationships.push(relationship(runtimeId, "runs_on", cluster));
 			runtimeIds.push(runtimeId);
 		}
 
-		// The first runtime of each system carries two components and a source file.
-		const firstRuntimeId = `rt-${slug(name)}-01`;
-		const codeId = `code-${slug(name)}`;
-		entities.push({ id: codeId, category: "code", kind: "file", name: `${slug(name)}.go` });
-		codeIds.push(codeId);
+		// The first container of each system carries two components.
 		for (const component of ["handlers", "client"]) {
 			const componentId = `cmp-${slug(name)}-${component}`;
-			entities.push({ id: componentId, category: "component", kind: "module", name: component });
-			relationships.push(relationship(firstRuntimeId, "contains", componentId));
+			add({
+				id: componentId,
+				category: "component",
+				kind: "module",
+				name: component,
+				parentId: `rt-${slug(name)}-01`,
+			});
+			componentIds.push(componentId);
 		}
-		relationships.push(relationship(`cmp-${slug(name)}-handlers`, "contains", codeId));
 	});
 
-	// A tenth of the behaviour starts in source files, which roll up to their runtimes.
+	// A tenth of the flow starts in components, which roll up to their containers.
 	const behaviour = new Map<string, GraphRelationship>();
 	while (behaviour.size < BEHAVIOUR_RELATIONSHIP_COUNT) {
 		let source = pick(runtimeIds);
 		if (random() < 0.1) {
-			source = pick(codeIds);
+			source = pick(componentIds);
 		}
 		const target = pick(runtimeIds);
 		if (source === target) {
@@ -136,7 +145,7 @@ function buildLargeFixture(): GraphSubset {
 }
 
 /**
- * Three landscapes, fifteen systems and 302 runtimes, for checking the map zoomed fully out. Services run on
- * one of two shared clusters.
+ * Three landscapes, fifteen systems and 240 containers, for checking the map zoomed fully out. Services run on
+ * one of two shared clusters, which also hold 60 stores.
  */
 export const largeFixture = buildLargeFixture();

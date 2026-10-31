@@ -1564,6 +1564,14 @@ export type GetKnowledgeGraphEvidenceResponseBody = {
     data: KnowledgeGraphEvidence;
 };
 
+export type GetKnowledgeGraphModelResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: KnowledgeGraphModel;
+};
+
 export type GetKnowledgeGraphRelationshipResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2274,6 +2282,21 @@ export type KnowledgeGraphAliasMerge = {
     proposalId: string;
 };
 
+export type KnowledgeGraphAliasState = {
+    description?: KnowledgeGraphStateValue;
+    displayName?: KnowledgeGraphStateValue;
+    properties: {
+        [key: string]: KnowledgeGraphStateValue;
+    };
+    replacedAt?: string;
+};
+
+export type KnowledgeGraphCategorySpec = {
+    hierarchy?: 'logical' | 'deployment' | 'code' | 'organization' | 'process' | 'concern' | 'decision' | 'monitoring';
+    level?: number;
+    value: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event';
+};
+
 export type KnowledgeGraphEntitiesPage = {
     entities: Array<KnowledgeGraphEntitySummary>;
     entitySelectionRef: string;
@@ -2297,20 +2320,30 @@ export type KnowledgeGraphEntityAlias = {
 
 export type KnowledgeGraphEntityAttributes = {
     aliases: Array<KnowledgeGraphEntityAlias>;
-    category: 'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal';
+    ancestors?: Array<KnowledgeGraphEntitySummary>;
+    category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event';
     createdAt: string;
     displayName: string;
     kind: string;
-    latestState?: KnowledgeGraphSubjectState;
+    lastObservedAt?: string;
     linkingAttributes: Array<KnowledgeGraphLinkingAttribute>;
+    otherParentClaims?: Array<KnowledgeGraphParentClaim>;
+    parentId?: string;
+    stale: boolean;
+    state: KnowledgeGraphSubjectState;
+    stateSources: KnowledgeGraphStateSources;
     updatedAt: string;
+    withdrawnAt?: string;
 };
 
 export type KnowledgeGraphEntitySummary = {
-    category: 'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal';
+    category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event';
     displayName: string;
     id: string;
     kind: string;
+    otherParentIds: Array<string>;
+    parentId?: string;
+    stale: boolean;
 };
 
 export type KnowledgeGraphEvidence = {
@@ -2328,9 +2361,36 @@ export type KnowledgeGraphEvidenceAttributes = {
     subjectState: KnowledgeGraphSubjectState;
 };
 
+export type KnowledgeGraphHierarchy = {
+    categories: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
+    value: 'logical' | 'deployment' | 'code' | 'organization' | 'process' | 'concern' | 'decision' | 'monitoring';
+};
+
 export type KnowledgeGraphLinkingAttribute = {
     attribute: string;
     value: string;
+};
+
+export type KnowledgeGraphModel = {
+    categories: Array<KnowledgeGraphCategorySpec>;
+    hierarchies: Array<KnowledgeGraphHierarchy>;
+    predicates: Array<KnowledgeGraphPredicateSpec>;
+};
+
+export type KnowledgeGraphParentClaim = {
+    parent: KnowledgeGraphEntitySummary;
+    providers: Array<string>;
+    relationship: KnowledgeGraphRelationshipSummary;
+};
+
+export type KnowledgeGraphPredicateSpec = {
+    dependency: 'source_on_target' | 'target_on_source' | 'mutual' | 'none';
+    family: 'structure' | 'placement' | 'implementation' | 'ownership' | 'membership' | 'support' | 'flow' | 'observation' | 'governance' | 'occurrence';
+    rollsUp: boolean;
+    sameHierarchy: boolean;
+    sourceCategories: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
+    targetCategories: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
+    value: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates' | 'impacts' | 'touches';
 };
 
 export type KnowledgeGraphRelationship = {
@@ -2341,17 +2401,22 @@ export type KnowledgeGraphRelationship = {
 export type KnowledgeGraphRelationshipAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
-    latestState?: KnowledgeGraphSubjectState;
-    predicate: string;
+    lastObservedAt?: string;
+    predicate: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates' | 'impacts' | 'touches';
     sourceEntityId: string;
+    stale: boolean;
+    state: KnowledgeGraphSubjectState;
+    stateSources: KnowledgeGraphStateSources;
     targetEntityId: string;
     updatedAt: string;
+    withdrawnAt?: string;
 };
 
 export type KnowledgeGraphRelationshipSummary = {
     id: string;
-    predicate: 'contains' | 'interacts_with' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'runs_on' | 'owns' | 'supports' | 'participates_in' | 'member_of' | 'controls' | 'observes' | 'influences' | 'constrains' | 'addresses' | 'impacts' | 'touches' | 'uses' | 'processes' | 'indexes' | 'stores' | 'indicates' | 'classified_as' | 'responds_to' | 'mitigates';
+    predicate: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates' | 'impacts' | 'touches';
     sourceId: string;
+    stale: boolean;
     targetId: string;
 };
 
@@ -2360,14 +2425,39 @@ export type KnowledgeGraphRelationshipsPage = {
     relationships: Array<KnowledgeGraphRelationshipSummary>;
 };
 
+export type KnowledgeGraphStateSource = {
+    aliasId: string;
+    effectiveAt: string;
+};
+
+export type KnowledgeGraphStateSources = {
+    description?: KnowledgeGraphStateSource;
+    displayName?: KnowledgeGraphStateSource;
+    properties: {
+        [key: string]: KnowledgeGraphStateSource;
+    };
+};
+
+export type KnowledgeGraphStateValue = {
+    effectiveAt: string;
+    unset: boolean;
+    value?: unknown;
+};
+
 export type KnowledgeGraphSubjectAlias = {
     attributes: KnowledgeGraphSubjectAliasAttributes;
     id: string;
 };
 
 export type KnowledgeGraphSubjectAliasAttributes = {
+    expiresAt?: string;
+    firstObservedAt?: string;
     kind: 'entity' | 'relationship';
+    lastObservedAt?: string;
     resourceRef: ProviderResourceRef;
+    stale: boolean;
+    state: KnowledgeGraphAliasState;
+    withdrawnAt?: string;
 };
 
 export type KnowledgeGraphSubjectState = {
@@ -2385,7 +2475,7 @@ export type KnowledgeProposal = {
 
 export type KnowledgeProposalAttributes = {
     attribute: string;
-    category: 'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal';
+    category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event';
     createdAt: string;
     decisions: Array<KnowledgeProposalDecision>;
     evidence: KnowledgeProposalEvidence;
@@ -10017,7 +10107,7 @@ export type ListKnowledgeGraphEntitiesData = {
         page?: number;
         pageSize?: number;
         search?: string;
-        category?: Array<'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal'>;
+        category?: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
         kind?: Array<string>;
         provider?: string;
         providerNamespace?: string;
@@ -10212,7 +10302,7 @@ export type SelectKnowledgeGraphEntitiesData = {
     body?: never;
     path?: never;
     query?: {
-        category?: Array<'system_function' | 'actor' | 'system' | 'container' | 'infrastructure' | 'component' | 'code' | 'process' | 'concern' | 'decision' | 'event' | 'signal'>;
+        category?: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
         kind?: Array<string>;
         cursor?: string;
         limit?: number;
@@ -10263,7 +10353,7 @@ export type ExpandKnowledgeGraphRelationshipsData = {
     path?: never;
     query: {
         entitySelectionRef: string;
-        predicate?: Array<'contains' | 'interacts_with' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'runs_on' | 'owns' | 'supports' | 'participates_in' | 'member_of' | 'controls' | 'observes' | 'influences' | 'constrains' | 'addresses' | 'impacts' | 'touches' | 'uses' | 'processes' | 'indexes' | 'stores' | 'indicates' | 'classified_as' | 'responds_to' | 'mitigates'>;
+        predicate?: Array<'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates' | 'impacts' | 'touches'>;
         cursor?: string;
         limit?: number;
     };
@@ -10307,6 +10397,51 @@ export type ExpandKnowledgeGraphRelationshipsResponses = {
 };
 
 export type ExpandKnowledgeGraphRelationshipsResponse = ExpandKnowledgeGraphRelationshipsResponses[keyof ExpandKnowledgeGraphRelationshipsResponses];
+
+export type GetKnowledgeGraphModelData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/knowledge/model';
+};
+
+export type GetKnowledgeGraphModelErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetKnowledgeGraphModelError = GetKnowledgeGraphModelErrors[keyof GetKnowledgeGraphModelErrors];
+
+export type GetKnowledgeGraphModelResponses = {
+    /**
+     * OK
+     */
+    200: GetKnowledgeGraphModelResponseBody;
+};
+
+export type GetKnowledgeGraphModelResponse = GetKnowledgeGraphModelResponses[keyof GetKnowledgeGraphModelResponses];
 
 export type ListKnowledgeProposalsData = {
     body?: never;

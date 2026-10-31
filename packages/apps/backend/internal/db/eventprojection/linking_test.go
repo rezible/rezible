@@ -2,6 +2,7 @@ package eventprojection
 
 import (
 	"context"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"time"
 
 	"github.com/google/uuid"
@@ -61,7 +62,7 @@ func githubRepositoryObservation(repositoryID string, fullName string, linkingVa
 			ResourceRef:       repositoryID,
 		},
 		Category:    kne.CategoryCode,
-		Kind:        knowledgeEntityKindRepository,
+		Kind:        knowledgegraph.EntityKindRepository,
 		DisplayName: fullName,
 		LinkingAttributes: projections.LinkingAttributes{
 			projections.LinkingAttributeRepositoryFullName: linkingValue,
@@ -238,7 +239,7 @@ func topologyObservation(resourceRef string, kind string, serviceName string) pr
 
 func (s *ProjectionServiceSuite) projectUsesRelationship(ctx context.Context, tdb rez.Database, service *ProjectionService, source projections.EntityObservation, target projections.EntityObservation) {
 	relationship := projections.SystemRelationshipEventAttributes{
-		Predicate: knr.PredicateUses,
+		Predicate: knr.PredicateDependsOn,
 		Source:    source,
 		Target:    target,
 	}
@@ -261,7 +262,7 @@ func (s *ProjectionServiceSuite) TestSystemRelationshipEndpointsLandOnLinkedServ
 
 		services := s.entitiesOfKind(ctx, tdb, kne.CategoryContainer, "service")
 		s.Require().Len(services, 1)
-		uses := s.relationshipsOf(ctx, tdb, knr.PredicateUses)
+		uses := s.relationshipsOf(ctx, tdb, knr.PredicateDependsOn)
 		s.Require().Len(uses, 1)
 		s.Equal(services[0].ID, uses[0].SourceEntityID)
 	})
@@ -277,7 +278,7 @@ func (s *ProjectionServiceSuite) TestSystemRelationshipEndpointsLandOnLinkedServ
 
 		services := s.entitiesOfKind(ctx, tdb, kne.CategoryContainer, "service")
 		s.Require().Len(services, 1)
-		uses := s.relationshipsOf(ctx, tdb, knr.PredicateUses)
+		uses := s.relationshipsOf(ctx, tdb, knr.PredicateDependsOn)
 		s.Require().Len(uses, 1)
 		s.Equal(services[0].ID, uses[0].TargetEntityID)
 	})
@@ -329,7 +330,7 @@ func (s *ProjectionServiceSuite) TestRepositoryObservationsFromTwoProvidersResol
 }
 
 func (s *ProjectionServiceSuite) assertChangeTouchesOneRepository(ctx context.Context, tdb rez.Database) {
-	repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgeEntityKindRepository)
+	repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgegraph.EntityKindRepository)
 	s.Require().Len(repositories, 1)
 	touches := s.relationshipsOf(ctx, tdb, knr.PredicateTouches)
 	s.Require().Len(touches, 1)
@@ -348,7 +349,7 @@ func (s *ProjectionServiceSuite) TestRenamedRepositoryStaysOnItsAliasAndProposes
 	projectErr := s.projectGithubChange(ctx, tdb, service, "change:42:def456", renamed)
 
 	s.Require().NoError(projectErr)
-	s.Len(s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgeEntityKindRepository), 2)
+	s.Len(s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgegraph.EntityKindRepository), 2)
 	checkoutQuery := tdb.Client(ctx).KnowledgeEntityLinkingAttribute.Query().
 		Where(kela.Value("acme/checkout"))
 	checkoutRepository := checkoutQuery.OnlyX(ctx)

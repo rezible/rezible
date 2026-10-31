@@ -27,6 +27,7 @@
 			"map-card text-card-foreground relative flex h-full w-full flex-col items-center justify-center rounded-[32px] px-4 text-center",
 			data.highlighted && "highlighted",
 			data.footprint && "footprint",
+			data.card.entity.stale && "stale",
 			selected && "selected"
 		)}
 	>
@@ -38,18 +39,27 @@
 			class="text-muted-foreground max-w-full truncate text-[13px] leading-4"
 			title={data.card.entity.kind}
 		>
-			{data.card.entity.kind}
+			{data.card.entity.kind}{#if data.card.entity.stale}
+				· stale{/if}
 		</span>
+		{#if data.partOfLabel}
+			<span
+				class="text-muted-foreground max-w-full truncate text-[12px] leading-4"
+				title={data.partOfLabel}
+			>
+				{data.partOfLabel}
+			</span>
+		{/if}
 		{#if data.placement.targets.length > 0}
 			<div class="mt-1.5 max-w-full">
 				<PlacementChips cardId={id} cardSelected={selected} placement={data.placement} />
 			</div>
 		{/if}
-		{#if data.alsoInLabel}
+		{#if data.alsoClaimedLabel}
 			<span
 				class="bg-muted-foreground absolute top-4 right-5 size-2 rounded-full"
-				title={data.alsoInLabel}
-				aria-label={data.alsoInLabel}
+				title={data.alsoClaimedLabel}
+				aria-label={data.alsoClaimedLabel}
 				role="img"
 			></span>
 		{/if}
@@ -83,6 +93,12 @@
 	.map-card.footprint {
 		border-color: var(--primary);
 		border-style: dashed;
+	}
+
+	/* No source observes it any more; it may be gone. */
+	.map-card.stale {
+		opacity: 0.6;
+		border-style: dotted;
 	}
 
 	.map-card.selected {

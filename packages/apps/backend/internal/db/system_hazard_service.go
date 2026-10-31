@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"strings"
 	"time"
 
@@ -36,7 +37,7 @@ func (s *SystemHazardService) CreateSystemHazard(ctx context.Context, params rez
 		hazardId := uuid.New()
 		hazardEntityRef := &rez.KnowledgeEntityRef{
 			Category:            kne.CategoryConcern,
-			Kind:                "system_hazard",
+			Kind:                knowledgegraph.EntityKindSystemHazard,
 			ProviderResourceRef: projections.InternalEntityResourceRef(hazardId),
 		}
 		ka, kaErr := s.knowledge.ResolveInternalSubject(ctx, rez.KnowledgeSubjectRef{Entity: hazardEntityRef})
@@ -72,7 +73,7 @@ func (s *SystemHazardService) GetSystemHazard(ctx context.Context, id uuid.UUID)
 		Only(ctx)
 }
 
-const systemHazardLockNamespace = "system_hazard"
+const systemHazardLockNamespace = knowledgegraph.EntityKindSystemHazard
 
 func (s *SystemHazardService) RetireSystemHazard(ctx context.Context, id uuid.UUID) (*ent.SystemHazard, error) {
 	if id == uuid.Nil {

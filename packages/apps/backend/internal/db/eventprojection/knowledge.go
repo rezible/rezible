@@ -11,13 +11,9 @@ import (
 )
 
 const (
-	knowledgeEntityKindAlert      = "alert"
 	knowledgeEntityKindCodeChange = "code_change"
 	knowledgeEntityKindDeployment = "deployment"
 	knowledgeEntityKindIncident   = "incident"
-	knowledgeEntityKindRepository = "repository"
-	knowledgeEntityKindTeam       = "team"
-	knowledgeEntityKindUser       = "user"
 )
 
 func (s *ProjectionService) ingestEntityEvidence(ctx context.Context, evt *ent.NormalizedEvent, evRef rez.KnowledgeEvidenceRef) (uuid.UUID, error) {

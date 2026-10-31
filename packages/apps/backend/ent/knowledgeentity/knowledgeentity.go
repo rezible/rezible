@@ -23,14 +23,24 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldState holds the string denoting the state field in the database.
+	FieldState = "state"
+	// FieldStateSources holds the string denoting the state_sources field in the database.
+	FieldStateSources = "state_sources"
+	// FieldStateEffectiveAt holds the string denoting the state_effective_at field in the database.
+	FieldStateEffectiveAt = "state_effective_at"
+	// FieldLastObservedAt holds the string denoting the last_observed_at field in the database.
+	FieldLastObservedAt = "last_observed_at"
+	// FieldWithdrawnAt holds the string denoting the withdrawn_at field in the database.
+	FieldWithdrawnAt = "withdrawn_at"
+	// FieldExpiresAt holds the string denoting the expires_at field in the database.
+	FieldExpiresAt = "expires_at"
 	// FieldCategory holds the string denoting the category field in the database.
 	FieldCategory = "category"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
-	// FieldState holds the string denoting the state field in the database.
-	FieldState = "state"
-	// FieldStateEffectiveAt holds the string denoting the state_effective_at field in the database.
-	FieldStateEffectiveAt = "state_effective_at"
+	// FieldParentID holds the string denoting the parent_id field in the database.
+	FieldParentID = "parent_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
@@ -41,6 +51,10 @@ const (
 	EdgeSourceRelationships = "source_relationships"
 	// EdgeTargetRelationships holds the string denoting the target_relationships edge name in mutations.
 	EdgeTargetRelationships = "target_relationships"
+	// EdgeParent holds the string denoting the parent edge name in mutations.
+	EdgeParent = "parent"
+	// EdgeChildren holds the string denoting the children edge name in mutations.
+	EdgeChildren = "children"
 	// Table holds the table name of the knowledgeentity in the database.
 	Table = "knowledge_entities"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -78,6 +92,14 @@ const (
 	TargetRelationshipsInverseTable = "knowledge_relationships"
 	// TargetRelationshipsColumn is the table column denoting the target_relationships relation/edge.
 	TargetRelationshipsColumn = "target_entity_id"
+	// ParentTable is the table that holds the parent relation/edge.
+	ParentTable = "knowledge_entities"
+	// ParentColumn is the table column denoting the parent relation/edge.
+	ParentColumn = "parent_id"
+	// ChildrenTable is the table that holds the children relation/edge.
+	ChildrenTable = "knowledge_entities"
+	// ChildrenColumn is the table column denoting the children relation/edge.
+	ChildrenColumn = "parent_id"
 )
 
 // Columns holds all SQL columns for knowledgeentity fields.
@@ -86,10 +108,15 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldState,
+	FieldStateSources,
+	FieldStateEffectiveAt,
+	FieldLastObservedAt,
+	FieldWithdrawnAt,
+	FieldExpiresAt,
 	FieldCategory,
 	FieldKind,
-	FieldState,
-	FieldStateEffectiveAt,
+	FieldParentID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -128,17 +155,17 @@ type Category string
 // Category values.
 const (
 	CategorySystemFunction Category = "system_function"
-	CategoryActor          Category = "actor"
 	CategorySystem         Category = "system"
 	CategoryContainer      Category = "container"
-	CategoryInfrastructure Category = "infrastructure"
 	CategoryComponent      Category = "component"
+	CategoryInfrastructure Category = "infrastructure"
 	CategoryCode           Category = "code"
+	CategoryActor          Category = "actor"
 	CategoryProcess        Category = "process"
 	CategoryConcern        Category = "concern"
 	CategoryDecision       Category = "decision"
-	CategoryEvent          Category = "event"
 	CategorySignal         Category = "signal"
+	CategoryEvent          Category = "event"
 )
 
 func (c Category) String() string {
@@ -148,7 +175,7 @@ func (c Category) String() string {
 // CategoryValidator is a validator for the "category" field enum values. It is called by the builders before save.
 func CategoryValidator(c Category) error {
 	switch c {
-	case CategorySystemFunction, CategoryActor, CategorySystem, CategoryContainer, CategoryInfrastructure, CategoryComponent, CategoryCode, CategoryProcess, CategoryConcern, CategoryDecision, CategoryEvent, CategorySignal:
+	case CategorySystemFunction, CategorySystem, CategoryContainer, CategoryComponent, CategoryInfrastructure, CategoryCode, CategoryActor, CategoryProcess, CategoryConcern, CategoryDecision, CategorySignal, CategoryEvent:
 		return nil
 	default:
 		return fmt.Errorf("knowledgeentity: invalid enum value for category field: %q", c)
@@ -178,6 +205,26 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByStateEffectiveAt orders the results by the state_effective_at field.
+func ByStateEffectiveAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStateEffectiveAt, opts...).ToFunc()
+}
+
+// ByLastObservedAt orders the results by the last_observed_at field.
+func ByLastObservedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastObservedAt, opts...).ToFunc()
+}
+
+// ByWithdrawnAt orders the results by the withdrawn_at field.
+func ByWithdrawnAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWithdrawnAt, opts...).ToFunc()
+}
+
+// ByExpiresAt orders the results by the expires_at field.
+func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
+}
+
 // ByCategory orders the results by the category field.
 func ByCategory(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCategory, opts...).ToFunc()
@@ -188,9 +235,9 @@ func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
-// ByStateEffectiveAt orders the results by the state_effective_at field.
-func ByStateEffectiveAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStateEffectiveAt, opts...).ToFunc()
+// ByParentID orders the results by the parent_id field.
+func ByParentID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldParentID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -255,6 +302,27 @@ func ByTargetRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOpti
 		sqlgraph.OrderByNeighborTerms(s, newTargetRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByParentField orders the results by parent field.
+func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newParentStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByChildrenCount orders the results by children count.
+func ByChildrenCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newChildrenStep(), opts...)
+	}
+}
+
+// ByChildren orders the results by children terms.
+func ByChildren(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newChildrenStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -290,19 +358,33 @@ func newTargetRelationshipsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, TargetRelationshipsTable, TargetRelationshipsColumn),
 	)
 }
+func newParentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ParentTable, ParentColumn),
+	)
+}
+func newChildrenStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ChildrenTable, ChildrenColumn),
+	)
+}
 
 // CategoryValues contains all permitted values. Treat this slice as read-only.
 var CategoryValues = []string{
 	"system_function",
-	"actor",
 	"system",
 	"container",
-	"infrastructure",
 	"component",
+	"infrastructure",
 	"code",
+	"actor",
 	"process",
 	"concern",
 	"decision",
-	"event",
 	"signal",
+	"event",
 }

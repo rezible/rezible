@@ -87,6 +87,11 @@ func EffectiveAt(v time.Time) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEffectiveAt, v))
 }
 
+// ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
+func ExpiresAt(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldExpiresAt, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldTenantID, v))
@@ -310,6 +315,76 @@ func EffectiveAtLT(v time.Time) predicate.KnowledgeEvidence {
 // EffectiveAtLTE applies the LTE predicate on the "effective_at" field.
 func EffectiveAtLTE(v time.Time) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldEffectiveAt, v))
+}
+
+// StateModeEQ applies the EQ predicate on the "state_mode" field.
+func StateModeEQ(v StateMode) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldStateMode, v))
+}
+
+// StateModeNEQ applies the NEQ predicate on the "state_mode" field.
+func StateModeNEQ(v StateMode) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldStateMode, v))
+}
+
+// StateModeIn applies the In predicate on the "state_mode" field.
+func StateModeIn(vs ...StateMode) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldStateMode, vs...))
+}
+
+// StateModeNotIn applies the NotIn predicate on the "state_mode" field.
+func StateModeNotIn(vs ...StateMode) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldStateMode, vs...))
+}
+
+// ExpiresAtEQ applies the EQ predicate on the "expires_at" field.
+func ExpiresAtEQ(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtNEQ applies the NEQ predicate on the "expires_at" field.
+func ExpiresAtNEQ(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtIn applies the In predicate on the "expires_at" field.
+func ExpiresAtIn(vs ...time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtNotIn applies the NotIn predicate on the "expires_at" field.
+func ExpiresAtNotIn(vs ...time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtGT applies the GT predicate on the "expires_at" field.
+func ExpiresAtGT(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldGT(FieldExpiresAt, v))
+}
+
+// ExpiresAtGTE applies the GTE predicate on the "expires_at" field.
+func ExpiresAtGTE(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldGTE(FieldExpiresAt, v))
+}
+
+// ExpiresAtLT applies the LT predicate on the "expires_at" field.
+func ExpiresAtLT(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldLT(FieldExpiresAt, v))
+}
+
+// ExpiresAtLTE applies the LTE predicate on the "expires_at" field.
+func ExpiresAtLTE(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldExpiresAt, v))
+}
+
+// ExpiresAtIsNil applies the IsNil predicate on the "expires_at" field.
+func ExpiresAtIsNil() predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIsNull(FieldExpiresAt))
+}
+
+// ExpiresAtNotNil applies the NotNil predicate on the "expires_at" field.
+func ExpiresAtNotNil() predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldExpiresAt))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

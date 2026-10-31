@@ -313,13 +313,17 @@ CREATE UNIQUE INDEX "investigationuserinput_tenant_id_investigation_id_agent_tur
 -- create index "investigationuserinput_investigation_id_created_at_id" to table: "investigation_user_inputs"
 CREATE INDEX "investigationuserinput_investigation_id_created_at_id" ON "investigation_user_inputs" ("investigation_id", "created_at", "id");
 -- create "knowledge_entities" table
-CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "category" character varying NOT NULL, "kind" character varying NOT NULL, "state" jsonb NULL, "state_effective_at" timestamptz NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "state" jsonb NULL, "state_sources" jsonb NULL, "state_effective_at" timestamptz NULL, "last_observed_at" timestamptz NULL, "withdrawn_at" timestamptz NULL, "expires_at" timestamptz NULL, "category" character varying NOT NULL, "kind" character varying NOT NULL, "tenant_id" bigint NOT NULL, "parent_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "knowledge_entities_knowledge_entities_children" FOREIGN KEY ("parent_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL);
 -- create index "knowledgeentity_tenant_id" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id" ON "knowledge_entities" ("tenant_id");
 -- create index "knowledgeentity_tenant_id_category_kind" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id_category_kind" ON "knowledge_entities" ("tenant_id", "category", "kind");
 -- create index "knowledgeentity_tenant_id_kind_state_effective_at" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id_kind_state_effective_at" ON "knowledge_entities" ("tenant_id", "kind", "state_effective_at");
+-- create index "knowledgeentity_tenant_id_withdrawn_at" to table: "knowledge_entities"
+CREATE INDEX "knowledgeentity_tenant_id_withdrawn_at" ON "knowledge_entities" ("tenant_id", "withdrawn_at");
+-- create index "knowledgeentity_tenant_id_parent_id" to table: "knowledge_entities"
+CREATE INDEX "knowledgeentity_tenant_id_parent_id" ON "knowledge_entities" ("tenant_id", "parent_id");
 -- create "knowledge_entity_linking_attributes" table
 CREATE TABLE "knowledge_entity_linking_attributes" ("id" uuid NOT NULL, "attribute" character varying NOT NULL, "value" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeentitylinkingattribute_tenant_id" to table: "knowledge_entity_linking_attributes"
@@ -329,7 +333,7 @@ CREATE UNIQUE INDEX "knowledgeentitylinkingattribute_tenant_id_attribute_value" 
 -- create index "knowledgeentitylinkingattribute_tenant_id_entity_id" to table: "knowledge_entity_linking_attributes"
 CREATE INDEX "knowledgeentitylinkingattribute_tenant_id_entity_id" ON "knowledge_entity_linking_attributes" ("tenant_id", "entity_id");
 -- create "knowledge_evidences" table
-CREATE TABLE "knowledge_evidences" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "assertion" character varying NOT NULL, "created_at" timestamptz NOT NULL, "effective_at" timestamptz NOT NULL, "subject_state" jsonb NOT NULL, "tenant_id" bigint NOT NULL, "event_id" uuid NOT NULL, "subject_alias_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_evidences" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "assertion" character varying NOT NULL, "created_at" timestamptz NOT NULL, "effective_at" timestamptz NOT NULL, "subject_state" jsonb NOT NULL, "state_mode" character varying NOT NULL DEFAULT 'merge', "expires_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "event_id" uuid NOT NULL, "subject_alias_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeevidence_tenant_id" to table: "knowledge_evidences"
 CREATE INDEX "knowledgeevidence_tenant_id" ON "knowledge_evidences" ("tenant_id");
 -- create index "knowledgeevidence_tenant_id_event_id_subject_alias_id" to table: "knowledge_evidences"
@@ -353,7 +357,7 @@ CREATE INDEX "knowledgeproposaldecision_tenant_id" ON "knowledge_proposal_decisi
 -- create index "knowledgeproposaldecision_tenant_id_proposal_id" to table: "knowledge_proposal_decisions"
 CREATE INDEX "knowledgeproposaldecision_tenant_id_proposal_id" ON "knowledge_proposal_decisions" ("tenant_id", "proposal_id");
 -- create "knowledge_relationships" table
-CREATE TABLE "knowledge_relationships" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "predicate" character varying NOT NULL, "tenant_id" bigint NOT NULL, "source_entity_id" uuid NOT NULL, "target_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_relationships" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "state" jsonb NULL, "state_sources" jsonb NULL, "state_effective_at" timestamptz NULL, "last_observed_at" timestamptz NULL, "withdrawn_at" timestamptz NULL, "expires_at" timestamptz NULL, "predicate" character varying NOT NULL, "tenant_id" bigint NOT NULL, "source_entity_id" uuid NOT NULL, "target_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgerelationship_tenant_id" to table: "knowledge_relationships"
 CREATE INDEX "knowledgerelationship_tenant_id" ON "knowledge_relationships" ("tenant_id");
 -- create index "knowledgerelationship_tenant_i_370206a4e66194249f2742322d3eefc0" to table: "knowledge_relationships"
@@ -364,8 +368,10 @@ CREATE INDEX "knowledgerelationship_tenant_id_source_entity_id" ON "knowledge_re
 CREATE INDEX "knowledgerelationship_tenant_id_target_entity_id" ON "knowledge_relationships" ("tenant_id", "target_entity_id");
 -- create index "knowledgerelationship_tenant_id_predicate" to table: "knowledge_relationships"
 CREATE INDEX "knowledgerelationship_tenant_id_predicate" ON "knowledge_relationships" ("tenant_id", "predicate");
+-- create index "knowledgerelationship_tenant_id_withdrawn_at" to table: "knowledge_relationships"
+CREATE INDEX "knowledgerelationship_tenant_id_withdrawn_at" ON "knowledge_relationships" ("tenant_id", "withdrawn_at");
 -- create "knowledge_subject_alias" table
-CREATE TABLE "knowledge_subject_alias" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_namespace" character varying NOT NULL, "provider_resource_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NULL, "relationship_id" uuid NULL, "merged_by_proposal_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "knowledge_subject_alias_exactly_one_subject" CHECK ((subject_kind = 'entity' AND entity_id IS NOT NULL AND relationship_id IS NULL) OR (subject_kind = 'relationship' AND relationship_id IS NOT NULL AND entity_id IS NULL)));
+CREATE TABLE "knowledge_subject_alias" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_namespace" character varying NOT NULL, "provider_resource_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "created_at" timestamptz NOT NULL, "state" jsonb NULL, "first_observed_at" timestamptz NULL, "last_observed_at" timestamptz NULL, "withdrawn_at" timestamptz NULL, "expires_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NULL, "relationship_id" uuid NULL, "merged_by_proposal_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "knowledge_subject_alias_exactly_one_subject" CHECK ((subject_kind = 'entity' AND entity_id IS NOT NULL AND relationship_id IS NULL) OR (subject_kind = 'relationship' AND relationship_id IS NOT NULL AND entity_id IS NULL)));
 -- create index "knowledgesubjectalias_tenant_id" to table: "knowledge_subject_alias"
 CREATE INDEX "knowledgesubjectalias_tenant_id" ON "knowledge_subject_alias" ("tenant_id");
 -- create index "knowledgesubjectalias_tenant_i_63224b308164c14d49a6ab9ee6e09fbf" to table: "knowledge_subject_alias"

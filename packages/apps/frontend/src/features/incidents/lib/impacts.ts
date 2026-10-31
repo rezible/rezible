@@ -19,7 +19,7 @@ function trimmedOrUndefined(value: string | undefined) {
 export function incidentServiceImpacts(attributes: IncidentAttributes): IncidentServiceImpact[] {
 	const services: IncidentServiceImpact[] = [];
 	for (const impact of attributes.impacts) {
-		const name = impact.knowledgeEntity.attributes?.latestState?.displayName;
+		const name = impact.knowledgeEntity.attributes?.state.displayName;
 		if (!name) {
 			continue;
 		}

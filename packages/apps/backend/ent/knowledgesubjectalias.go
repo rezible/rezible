@@ -3,8 +3,10 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -13,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeproposal"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -37,6 +40,18 @@ type KnowledgeSubjectAlias struct {
 	RelationshipID *uuid.UUID `json:"relationship_id,omitempty"`
 	// The confirmed proposal whose merge moved the alias to its current subject.
 	MergedByProposalID *uuid.UUID `json:"merged_by_proposal_id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// What this alias's evidence says, field by field, with each field's effective time.
+	State schematypes.KnowledgeAliasState `json:"state,omitempty"`
+	// FirstObservedAt holds the value of the "first_observed_at" field.
+	FirstObservedAt *time.Time `json:"first_observed_at,omitempty"`
+	// LastObservedAt holds the value of the "last_observed_at" field.
+	LastObservedAt *time.Time `json:"last_observed_at,omitempty"`
+	// Set when the alias's latest evidence says the subject no longer exists.
+	WithdrawnAt *time.Time `json:"withdrawn_at,omitempty"`
+	// When the latest observation stops holding unless observed again; null never expires.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeSubjectAliasQuery when eager-loading is set.
 	Edges        KnowledgeSubjectAliasEdges `json:"edges"`
@@ -120,10 +135,14 @@ func (*KnowledgeSubjectAlias) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case knowledgesubjectalias.FieldEntityID, knowledgesubjectalias.FieldRelationshipID, knowledgesubjectalias.FieldMergedByProposalID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case knowledgesubjectalias.FieldState:
+			values[i] = new([]byte)
 		case knowledgesubjectalias.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case knowledgesubjectalias.FieldProvider, knowledgesubjectalias.FieldProviderNamespace, knowledgesubjectalias.FieldProviderResourceRef, knowledgesubjectalias.FieldSubjectKind:
 			values[i] = new(sql.NullString)
+		case knowledgesubjectalias.FieldCreatedAt, knowledgesubjectalias.FieldFirstObservedAt, knowledgesubjectalias.FieldLastObservedAt, knowledgesubjectalias.FieldWithdrawnAt, knowledgesubjectalias.FieldExpiresAt:
+			values[i] = new(sql.NullTime)
 		case knowledgesubjectalias.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -197,6 +216,48 @@ func (_m *KnowledgeSubjectAlias) assignValues(columns []string, values []any) er
 			} else if value.Valid {
 				_m.MergedByProposalID = new(uuid.UUID)
 				*_m.MergedByProposalID = *value.S.(*uuid.UUID)
+			}
+		case knowledgesubjectalias.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				_m.CreatedAt = value.Time
+			}
+		case knowledgesubjectalias.FieldState:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field state", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.State); err != nil {
+					return fmt.Errorf("unmarshal field state: %w", err)
+				}
+			}
+		case knowledgesubjectalias.FieldFirstObservedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field first_observed_at", values[i])
+			} else if value.Valid {
+				_m.FirstObservedAt = new(time.Time)
+				*_m.FirstObservedAt = value.Time
+			}
+		case knowledgesubjectalias.FieldLastObservedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_observed_at", values[i])
+			} else if value.Valid {
+				_m.LastObservedAt = new(time.Time)
+				*_m.LastObservedAt = value.Time
+			}
+		case knowledgesubjectalias.FieldWithdrawnAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field withdrawn_at", values[i])
+			} else if value.Valid {
+				_m.WithdrawnAt = new(time.Time)
+				*_m.WithdrawnAt = value.Time
+			}
+		case knowledgesubjectalias.FieldExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
+			} else if value.Valid {
+				_m.ExpiresAt = new(time.Time)
+				*_m.ExpiresAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -287,6 +348,32 @@ func (_m *KnowledgeSubjectAlias) String() string {
 	if v := _m.MergedByProposalID; v != nil {
 		builder.WriteString("merged_by_proposal_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("state=")
+	builder.WriteString(fmt.Sprintf("%v", _m.State))
+	builder.WriteString(", ")
+	if v := _m.FirstObservedAt; v != nil {
+		builder.WriteString("first_observed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.LastObservedAt; v != nil {
+		builder.WriteString("last_observed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.WithdrawnAt; v != nil {
+		builder.WriteString("withdrawn_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ExpiresAt; v != nil {
+		builder.WriteString("expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteByte(')')
 	return builder.String()

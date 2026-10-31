@@ -1,6 +1,7 @@
 package eventprojection
 
 import (
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -28,7 +29,7 @@ func (s *ProjectionServiceSuite) TestCodeChangeProjectionPersistsEvidenceAndIsId
 		Repository: projections.EntityObservation{
 			Ref:         repositoryResourceRef,
 			Category:    kne.CategoryCode,
-			Kind:        knowledgeEntityKindRepository,
+			Kind:        knowledgegraph.EntityKindRepository,
 			DisplayName: "Repository One",
 		},
 		DisplayName: "main@abc123",

@@ -1,8 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { fullFixture } from "$features/dev/views/system-map-fixture/terrain-fixture";
+import { fullFixture as fixture } from "$features/dev/views/system-map-fixture/terrain-fixture";
 import { connectionAnchors } from "$features/system/lib/system-map/geometry";
 import type { GraphSubset } from "$features/system/lib/system-map/graph";
-import { applyMapState, connectionLabel, projectMap, type FlowNode } from "../projection";
+import { withTestModel } from "$features/system/lib/system-map/__tests__/test-model";
+import { applyMapState, connectionLabel, projectMap, type CardFlowNode, type FlowNode } from "../projection";
+
+const fullFixture = withTestModel(fixture);
 
 const node = (nodes: FlowNode[], id: string) => nodes.find((candidate) => candidate.id === id)!;
 
@@ -23,10 +26,22 @@ describe("system map projection", () => {
 		});
 
 		expect(node(nodes, "fn-commerce").zIndex).toBe(0);
-		expect(node(nodes, "sys-checkout").zIndex).toBe(1);
-		expect(node(nodes, "rt-checkout-api").zIndex).toBe(3);
-		expect(edges.length).toBe(4);
+		expect(node(nodes, "sys-commerce-core").zIndex).toBe(1);
+		expect(node(nodes, "rt-checkout").zIndex).toBe(3);
+		expect(edges.length).toBe(3);
 		expect(edges.every((edge) => edge.zIndex === 2)).toBe(true);
+	});
+
+	test("cards read their parent container, other claims and placement ancestry", () => {
+		const { nodes } = projectMap(fullFixture);
+		const card = (id: string) => (node(nodes, id) as CardFlowNode).data;
+
+		expect(card("rt-checkout-proxy").partOfLabel).toBe("Part of checkout");
+		expect(card("rt-search-api").alsoClaimedLabel).toBe("Also claimed by Commerce Core");
+		expect(card("rt-checkout").placement.shown.map(({ breadcrumb }) => breadcrumb)).toEqual([
+			"production › prod-use1",
+			"production › prod-euw1",
+		]);
 	});
 
 	test("the landscape band hides cards except a selected one", () => {
@@ -34,11 +49,11 @@ describe("system map projection", () => {
 			graph: fullFixture,
 			band: "landscape",
 			relationshipMode: "focused",
-			selection: { kind: "entity", entityId: "rt-checkout-api" },
+			selection: { kind: "entity", entityId: "rt-checkout" },
 		});
 		const cards = nodes.filter((flowNode) => flowNode.type === "system-map-card");
 
-		expect(cards.filter((card) => !card.hidden).map((card) => card.id)).toEqual(["rt-checkout-api"]);
+		expect(cards.filter((card) => !card.hidden).map((card) => card.id)).toEqual(["rt-checkout"]);
 		expect(nodes.some((flowNode) => flowNode.type === "system-map-region" && flowNode.hidden)).toBe(
 			false
 		);
@@ -52,8 +67,8 @@ describe("system map projection", () => {
 				{
 					id: "reply",
 					source: "rt-payment-service",
-					target: "rt-checkout-api",
-					predicate: "notifies",
+					target: "rt-checkout",
+					predicate: "calls",
 				},
 			],
 		};
@@ -64,19 +79,17 @@ describe("system map projection", () => {
 		});
 		const anchorsOf = (source: string, target: string) =>
 			edges.find((edge) => edge.source === source && edge.target === target)!.data!.anchors;
-		const api = box(node(nodes, "rt-checkout-api"));
+		const api = box(node(nodes, "rt-checkout"));
 		const payments = box(node(nodes, "rt-payment-service"));
-		const database = box(node(nodes, "rt-checkout-db"));
+		const search = box(node(nodes, "rt-search-api"));
 
-		expect(anchorsOf("rt-checkout-api", "rt-payment-service")).toEqual(
+		expect(anchorsOf("rt-checkout", "rt-payment-service")).toEqual(
 			connectionAnchors(api, payments, true)
 		);
-		expect(anchorsOf("rt-payment-service", "rt-checkout-api")).toEqual(
+		expect(anchorsOf("rt-payment-service", "rt-checkout")).toEqual(
 			connectionAnchors(payments, api, true)
 		);
-		expect(anchorsOf("rt-checkout-api", "rt-checkout-db")).toEqual(
-			connectionAnchors(api, database, false)
-		);
+		expect(anchorsOf("rt-checkout", "rt-search-api")).toEqual(connectionAnchors(api, search, false));
 	});
 
 	test("system-level connections count relationships in the singular and plural", () => {
@@ -86,7 +99,6 @@ describe("system map projection", () => {
 			target: "b",
 			predicates: ["calls"],
 			relationshipIds: ["r1"],
-			placement: false,
 		};
 
 		expect(connectionLabel(connection, "system")).toBe("1 relationship");
@@ -102,7 +114,7 @@ describe("system map projection", () => {
 		const projection = projectMap(fullFixture);
 		const selection = {
 			kind: "relationship" as const,
-			relationshipId: "calls:rt-checkout-api:rt-payment-service",
+			relationshipId: "calls:rt-checkout:rt-payment-service",
 		};
 		for (const band of ["landscape", "runtime"] as const) {
 			for (const relationshipMode of ["focused", "all"] as const) {
@@ -133,9 +145,9 @@ describe("system map projection", () => {
 		]);
 		const emphasized = edges.filter((edge) => edge.data!.emphasized);
 		expect(emphasized.map((edge) => [edge.source, edge.target])).toEqual([
-			["rt-payment-worker", "rt-checkout-api"],
+			["rt-payment-worker", "rt-checkout"],
 		]);
-		expect(edges.filter((edge) => edge.data!.dimmed).length).toBe(3);
+		expect(edges.filter((edge) => edge.data!.dimmed).length).toBe(2);
 	});
 
 	test("Focused at rest labels a connection only while it is hovered", () => {

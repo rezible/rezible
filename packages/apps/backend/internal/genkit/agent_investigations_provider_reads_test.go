@@ -614,7 +614,7 @@ func (s *AiRuntimeSuite) TestProviderReadServiceIdentity() {
 		}
 		_, args := selector.Query()
 		installation := f.reader.Integration()
-		s.Equal([]any{f.service.ID, installation.Provider, installation.ID.String()}, args, "only the log installation's aliases")
+		s.Equal([]any{f.service.ID, installation.Provider, installation.ID.String()}, args[:3], "only the log installation's aliases")
 		s.Equal("checkout-api", result.ServiceName, "read by the alias")
 	})
 

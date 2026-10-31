@@ -155,6 +155,11 @@ type (
 		EffectiveAt  time.Time
 		Subject      KnowledgeSubjectRef
 		SubjectState KnowledgeSubjectState
+		// StateMode is merge (the default) or replace: a full snapshot that unsets the properties it omits.
+		StateMode ke.StateMode
+		// ValidFor, when set, is how long the observation holds unless observed again. Only periodic snapshot
+		// sources set it.
+		ValidFor time.Duration
 	}
 
 	KnowledgeGraphIngestionService interface {
@@ -193,6 +198,8 @@ type (
 		LinkingAttribute, LinkingValueContains string
 		// WithLinkingAttributes loads each entity's linking attributes.
 		WithLinkingAttributes bool
+		// IncludeWithdrawn also lists withdrawn entities.
+		IncludeWithdrawn bool
 	}
 
 	// KnowledgeEntityExpand names what GetEntity loads beyond the entity and its aliases.
@@ -216,6 +223,8 @@ type (
 		// instead of by ID.
 		NewestEvidenceFirst bool
 		Expand              KnowledgeRelationshipExpand
+		// IncludeWithdrawn also lists withdrawn relationships, and those with a withdrawn endpoint.
+		IncludeWithdrawn bool
 	}
 
 	// KnowledgeRelationshipExpand names what ListRelationships loads beyond the relationships and their aliases.
@@ -270,9 +279,9 @@ type (
 		// IntegrationDisplayName is the display name of the integration named by the alias's provider, empty
 		// when none is registered by that name.
 		IntegrationDisplayName string
-		// Name is the display name the alias's newest evidence states, or its resource ref when it states none.
+		// Name is the display name in the alias's state, or its resource ref when it states none.
 		Name string
-		// LastRecordedAt is the effective time of the alias's newest evidence, zero when it has none.
+		// LastRecordedAt is when the alias was last observed, zero when it never was.
 		LastRecordedAt time.Time
 	}
 
@@ -280,6 +289,10 @@ type (
 	KnowledgeEntityWithAliases struct {
 		Entity  *ent.KnowledgeEntity
 		Aliases []KnowledgeEntityAlias
+		// Ancestors (outermost first) and OtherParentClaims (with their aliases) are filled by
+		// GetEntityWithAliases.
+		Ancestors         []*ent.KnowledgeEntity
+		OtherParentClaims []*ent.KnowledgeRelationship
 	}
 
 	ListKnowledgeSubjectAliasesParams struct {
@@ -310,10 +323,16 @@ type (
 		SelectGraphEntities(context.Context, SelectKnowledgeGraphEntitiesParams) (*KnowledgeGraphEntitiesPage, error)
 		ExpandGraphRelationships(context.Context, ExpandKnowledgeGraphRelationshipsParams) (*KnowledgeGraphRelationshipsPage, error)
 
-		// ResolveStructure returns, for each entity, the entities in TargetCategories that represent it: itself
-		// if it is in one, otherwise its nearest ancestors in one, climbing the structure hierarchy at most
-		// MaxDepth steps. Entities represented by nothing are omitted.
-		ResolveStructure(context.Context, ResolveStructureParams) (map[uuid.UUID][]uuid.UUID, error)
+		// ListAncestors returns each entity's ancestors along parent_id, nearest first, at most
+		// knowledgegraph.MaxAncestryDepth of them, stopping at a withdrawn ancestor. Entities with no parent are
+		// omitted.
+		ListAncestors(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeEntity, error)
+		// ListParentClaims returns, for each entity, the current contains relationships targeting it other than
+		// the one from its parent, with their aliases. Entities with none are omitted.
+		ListParentClaims(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeRelationship, error)
+		// ResolveRepresentatives returns, for each entity, its nearest ancestor-or-self in one of the categories,
+		// climbing at most maxDepth steps. Withdrawn entities, and those represented by nothing, are omitted.
+		ResolveRepresentatives(ctx context.Context, entityIDs []uuid.UUID, categories []kne.Category, maxDepth int) (map[uuid.UUID]uuid.UUID, error)
 
 		// ListRelatedEvents lists event entities of one kind that relate to an entity, newest first.
 		ListRelatedEvents(context.Context, ListRelatedEventsParams) (*RelatedEvents, error)
@@ -437,6 +456,8 @@ type (
 		Entities           []*ent.KnowledgeEntity
 		EntitySelectionRef EntitySelectionRef
 		NextCursor         *EntitySelectionCursor
+		// OtherParentIDs are the sources of each entity's other parent claims, oldest claim first.
+		OtherParentIDs map[uuid.UUID][]uuid.UUID
 	}
 
 	RelationshipExpansionCursor string
@@ -451,14 +472,6 @@ type (
 	KnowledgeGraphRelationshipsPage struct {
 		Relationships []*ent.KnowledgeRelationship
 		NextCursor    *RelationshipExpansionCursor
-	}
-
-	ResolveStructureParams struct {
-		EntityIDs []uuid.UUID
-		// TargetCategories are the categories that represent an entity, for example
-		// knowledgegraph.StructureLevelRuntime.Categories().
-		TargetCategories []kne.Category
-		MaxDepth         int
 	}
 )
 

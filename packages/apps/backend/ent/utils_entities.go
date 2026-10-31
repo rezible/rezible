@@ -73,33 +73,6 @@ func (ie IncidentEdges) GetPrimaryVideoConference() *VideoConference {
 	return nil
 }
 
-func (aliases KnowledgeSubjectAliasSlice) LatestEvidence() *KnowledgeEvidence {
-	var latest *KnowledgeEvidence
-	for _, alias := range aliases {
-		for _, ev := range alias.Edges.Evidence {
-			if latest == nil || ev.EffectiveAt.After(latest.EffectiveAt) {
-				latest = ev
-				continue
-			}
-			if ev.EffectiveAt.Before(latest.EffectiveAt) || ev.CreatedAt.Before(latest.CreatedAt) {
-				continue
-			}
-			if ev.CreatedAt.After(latest.CreatedAt) || ev.ID.String() > latest.ID.String() {
-				latest = ev
-			}
-		}
-	}
-	return latest
-}
-
-func (e *KnowledgeEntity) LatestEvidence() *KnowledgeEvidence {
-	return KnowledgeSubjectAliasSlice(e.Edges.Aliases).LatestEvidence()
-}
-
-func (r *KnowledgeRelationship) LatestEvidence() *KnowledgeEvidence {
-	return KnowledgeSubjectAliasSlice(r.Edges.Aliases).LatestEvidence()
-}
-
 func (am *AgentMessage) MakeGenkitMessage() *ai.Message {
 	return ai.NewMessage(ai.Role(am.Role), am.Metadata, am.Content...)
 }

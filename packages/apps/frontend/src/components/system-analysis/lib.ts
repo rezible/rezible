@@ -1,5 +1,6 @@
 import type { SystemAnalysisEdge, SystemAnalysisEntry, SystemAnalysisNode } from "$lib/api";
 import type { GraphEntity, GraphRelationship, GraphSubset } from "$features/system/lib/system-map/graph";
+import type { MapModel } from "$features/system/lib/system-map/model";
 import type { ResponsePage } from "$lib/api/utils";
 
 export function flattenPages<T extends { id: string }>(pages: ResponsePage<T>[] | undefined) {
@@ -31,6 +32,9 @@ function canonicalNodeEntity(node: SystemAnalysisNode): GraphEntity {
 		category: entity.attributes.category,
 		kind: entity.attributes.kind,
 		name: entity.attributes.displayName,
+		parentId: entity.attributes.parentId,
+		otherParentIds: (entity.attributes.otherParentClaims ?? []).map((claim) => claim.parent.id),
+		stale: entity.attributes.stale,
 	};
 }
 
@@ -41,11 +45,13 @@ function canonicalEdgeRelationship(edge: SystemAnalysisEdge): GraphRelationship 
 		source: relationship.attributes.sourceEntityId,
 		target: relationship.attributes.targetEntityId,
 		predicate: relationship.attributes.predicate,
+		stale: relationship.attributes.stale,
 	};
 }
 
 /** Adapts included analysis records to canonical map records without enriching or filtering them. */
 export function buildAnalysisGraph(
+	model: MapModel,
 	analysisNodes: readonly SystemAnalysisNode[],
 	analysisEdges: readonly SystemAnalysisEdge[]
 ): AnalysisGraph {
@@ -95,6 +101,7 @@ export function buildAnalysisGraph(
 
 	return {
 		graph: {
+			model,
 			entities,
 			relationships: resolvedRelationships,
 			unresolvedRelationships,

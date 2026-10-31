@@ -1109,6 +1109,16 @@ func (m *KnowledgeEntityMutation) CheckTenantReferences(ctx context.Context) err
 			return err
 		}
 	}
+	if ids := m.ParentIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.ChildrenIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

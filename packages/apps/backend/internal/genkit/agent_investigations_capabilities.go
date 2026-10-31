@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"maps"
 	"slices"
 	"strings"
@@ -28,7 +29,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	rezai "github.com/rezible/rezible/pkg/ai"
-	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
@@ -253,7 +253,7 @@ func (i *investigationInvocation) introduceEntityReads(ctx context.Context, enti
 	}
 	introduced.Read, introduced.ReadHasMore = read.Text, read.HasMore
 
-	isService := entity.Category == kne.CategoryContainer && entity.Kind == projections.EntityKindService
+	isService := knowledgegraph.IsService(entity.Category, entity.Kind)
 	if !isService || !changesAvailable {
 		return nil
 	}
@@ -282,7 +282,7 @@ func (i *investigationInvocation) introduceEntityReads(ctx context.Context, enti
 func (i *investigationInvocation) unconfirmedServiceMatches(ctx context.Context, entities []*ent.KnowledgeEntity) (map[uuid.UUID][]rez.UnconfirmedMatch, error) {
 	var serviceIDs []uuid.UUID
 	for _, entity := range entities {
-		if entity.Category == kne.CategoryContainer && entity.Kind == projections.EntityKindService {
+		if knowledgegraph.IsService(entity.Category, entity.Kind) {
 			serviceIDs = append(serviceIDs, entity.ID)
 		}
 	}
@@ -431,7 +431,22 @@ func (i *investigationInvocation) readEntity(ctx context.Context, input rezai.Re
 		return nil, fmt.Errorf("count event relationships: %w", eventsErr)
 	}
 
+	now := i.clock.Now()
 	lines := []string{i.renderEntityLine(entity)}
+	if entity.WithdrawnAt != nil {
+		lines = append(lines, "withdrawn="+entity.WithdrawnAt.UTC().Format(time.RFC3339Nano))
+	}
+	if knowledgegraph.IsStale(entity.ExpiresAt, now) {
+		lines = append(lines, "stale=true")
+	}
+	if entity.LastObservedAt != nil {
+		lines = append(lines, "last_observed="+entity.LastObservedAt.UTC().Format(time.RFC3339Nano))
+	}
+	structureLines, structureErr := i.renderStructure(ctx, entity.ID)
+	if structureErr != nil {
+		return nil, structureErr
+	}
+	lines = append(lines, structureLines...)
 	if description := limitedAnalysisDescription(entity.State.Description); description != "" {
 		lines = append(lines, "description="+description)
 	}
@@ -453,6 +468,9 @@ func (i *investigationInvocation) readEntity(ctx context.Context, input rezai.Re
 		if summary, ok := evidence[alias.ID]; ok {
 			line += " latest_evidence_at=" + summary.LatestAt.UTC().Format(time.RFC3339Nano)
 		}
+		if knowledgegraph.IsStale(alias.ExpiresAt, now) {
+			line += " stale=true"
+		}
 		lines = append(lines, line)
 	}
 	for _, relationship := range relationships.Data {
@@ -462,7 +480,15 @@ func (i *investigationInvocation) readEntity(ctx context.Context, input rezai.Re
 				i.addEvidenceSummary(&relationshipEvidence, summary)
 			}
 		}
-		lines = append(lines, i.renderRelationshipLine(entity.ID, relationship)+" "+i.renderEvidenceSummary(relationshipEvidence))
+		line := i.renderRelationshipLine(entity.ID, relationship) + " " + i.renderEvidenceSummary(relationshipEvidence)
+		if len(relationship.State.Properties) > 0 {
+			properties, marshalErr := json.Marshal(relationship.State.Properties)
+			if marshalErr != nil {
+				return nil, fmt.Errorf("encode relationship properties: %w", marshalErr)
+			}
+			line += " properties=" + string(properties)
+		}
+		lines = append(lines, line)
 	}
 	if events.Total > 0 {
 		lines = append(lines, fmt.Sprintf("event_relationships=%d (not listed; use list_entity_evidence)", events.Total))
@@ -799,17 +825,53 @@ func (i *investigationInvocation) hypothesisToolResult(version *ent.Investigatio
 	}
 }
 
+// renderStructure renders the entity's ancestry, outermost first, and the contains claims not chosen as its
+// parent.
+func (i *investigationInvocation) renderStructure(ctx context.Context, entityID uuid.UUID) ([]string, error) {
+	ids := []uuid.UUID{entityID}
+	ancestors, ancestorsErr := i.knowledge.ListAncestors(ctx, ids)
+	if ancestorsErr != nil {
+		return nil, fmt.Errorf("list ancestors: %w", ancestorsErr)
+	}
+	claims, claimsErr := i.knowledge.ListParentClaims(ctx, ids)
+	if claimsErr != nil {
+		return nil, fmt.Errorf("list other parent claims: %w", claimsErr)
+	}
+	var lines []string
+	if chain := ancestors[entityID]; len(chain) > 0 {
+		names := make([]string, len(chain))
+		for index, ancestor := range chain {
+			names[len(chain)-1-index] = i.renderEntityName(ancestor)
+		}
+		lines = append(lines, "ancestors="+strings.Join(names, " > "))
+	}
+	for _, claim := range claims[entityID] {
+		providers := make([]string, len(claim.Edges.Aliases))
+		for index, alias := range claim.Edges.Aliases {
+			providers[index] = alias.Provider
+		}
+		lines = append(lines, fmt.Sprintf("other_parent_claim %s providers=%s",
+			i.renderEntityName(claim.Edges.SourceEntity), strings.Join(providers, ",")))
+	}
+	return lines, nil
+}
+
+// renderEntityName renders the entity's ref and name.
+func (i *investigationInvocation) renderEntityName(entity *ent.KnowledgeEntity) string {
+	rendered := i.formatRef(entity.ID)
+	if name := limitedAnalysisDescription(entity.State.DisplayName); name != "" {
+		rendered += " " + name
+	}
+	return rendered
+}
+
 func (i *investigationInvocation) renderEntityLine(entity *ent.KnowledgeEntity) string {
 	return "entity " + i.renderEntityRef(entity)
 }
 
 // renderEntityRef renders the entity's ref, name, category and kind.
 func (i *investigationInvocation) renderEntityRef(entity *ent.KnowledgeEntity) string {
-	rendered := i.formatRef(entity.ID)
-	if name := limitedAnalysisDescription(entity.State.DisplayName); name != "" {
-		rendered += " " + name
-	}
-	return rendered + " [" + entity.Category.String() + "/" + entity.Kind + "]"
+	return i.renderEntityName(entity) + " [" + entity.Category.String() + "/" + entity.Kind + "]"
 }
 
 // renderRelationshipLine describes the relationship from the viewpoint of one of its endpoints.
@@ -818,8 +880,26 @@ func (i *investigationInvocation) renderRelationshipLine(viewpointID uuid.UUID, 
 	if relationship.SourceEntityID != viewpointID {
 		direction, other = "incoming", relationship.Edges.SourceEntity
 	}
-	return fmt.Sprintf("relationship %s %s direction=%s other=%s",
-		i.formatRef(relationship.ID), relationship.Predicate, direction, i.renderEntityRef(other))
+	spec := knowledgegraph.PredicateSpecOf(relationship.Predicate)
+	return fmt.Sprintf("relationship %s %s direction=%s other=%s family=%s dependency=%s",
+		i.formatRef(relationship.ID), relationship.Predicate, direction, i.renderEntityRef(other),
+		spec.Family, i.dependencyWord(spec.Dependency, direction == "outgoing"))
+}
+
+// dependencyWord states a relationship's dependency relative to the entity read, which is its source when
+// outgoing.
+func (i *investigationInvocation) dependencyWord(dependency knowledgegraph.Dependency, outgoing bool) string {
+	switch dependency {
+	case knowledgegraph.DependencySourceOnTarget, knowledgegraph.DependencyTargetOnSource:
+		if outgoing == (dependency == knowledgegraph.DependencySourceOnTarget) {
+			return "this_depends_on_other"
+		}
+		return "other_depends_on_this"
+	case knowledgegraph.DependencyMutual:
+		return "mutual"
+	default:
+		return "none"
+	}
 }
 
 func (i *investigationInvocation) renderEvidenceSummary(summary rez.KnowledgeEvidenceSummary) string {

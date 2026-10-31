@@ -4,11 +4,14 @@ import { fullFixture } from "./terrain-fixture";
 
 export type FixtureScenarioId = "terrain" | "large" | "empty";
 
+/** A fixture graph; the page adds the model the backend serves. */
+export type FixtureGraph = Omit<GraphSubset, "model">;
+
 export type FixtureScenario = {
-	graph: GraphSubset;
+	graph: FixtureGraph;
 };
 
-const emptyGraph: GraphSubset = {
+const emptyGraph: FixtureGraph = {
 	entities: [],
 	relationships: [],
 	unresolvedRelationships: [],

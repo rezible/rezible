@@ -391,6 +391,10 @@ type (
 		Description       string            `json:"description"`
 		Properties        map[string]any    `json:"properties"`
 		LinkingAttributes LinkingAttributes `json:"linking_attributes,omitempty"`
+		// Listing marks a periodic listing that names the component without describing it: its evidence merges
+		// the display name and holds for ValidFor. Otherwise the event is a full snapshot of the component.
+		Listing  bool          `json:"listing,omitempty"`
+		ValidFor time.Duration `json:"valid_for,omitempty"`
 	}
 )
 

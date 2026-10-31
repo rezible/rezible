@@ -1593,6 +1593,10 @@ func init() {
 	knowledgesubjectaliasDescProviderResourceRef := knowledgesubjectaliasMixinFields2[2].Descriptor()
 	// knowledgesubjectalias.ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
 	knowledgesubjectalias.ProviderResourceRefValidator = knowledgesubjectaliasDescProviderResourceRef.Validators[0].(func(string) error)
+	// knowledgesubjectaliasDescCreatedAt is the schema descriptor for created_at field.
+	knowledgesubjectaliasDescCreatedAt := knowledgesubjectaliasFields[5].Descriptor()
+	// knowledgesubjectalias.DefaultCreatedAt holds the default value on creation for the created_at field.
+	knowledgesubjectalias.DefaultCreatedAt = knowledgesubjectaliasDescCreatedAt.Default.(func() time.Time)
 	// knowledgesubjectaliasDescID is the schema descriptor for id field.
 	knowledgesubjectaliasDescID := knowledgesubjectaliasFields[0].Descriptor()
 	// knowledgesubjectalias.DefaultID holds the default value on creation for the id field.

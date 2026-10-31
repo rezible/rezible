@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -57,6 +58,90 @@ func (_c *KnowledgeRelationshipCreate) SetUpdatedAt(v time.Time) *KnowledgeRelat
 func (_c *KnowledgeRelationshipCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeRelationshipCreate {
 	if v != nil {
 		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
+// SetState sets the "state" field.
+func (_c *KnowledgeRelationshipCreate) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeRelationshipCreate {
+	_c.mutation.SetState(v)
+	return _c
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableState(v *schematypes.KnowledgeGraphSubjectState) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetState(*v)
+	}
+	return _c
+}
+
+// SetStateSources sets the "state_sources" field.
+func (_c *KnowledgeRelationshipCreate) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeRelationshipCreate {
+	_c.mutation.SetStateSources(v)
+	return _c
+}
+
+// SetNillableStateSources sets the "state_sources" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableStateSources(v *schematypes.KnowledgeStateSources) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetStateSources(*v)
+	}
+	return _c
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (_c *KnowledgeRelationshipCreate) SetStateEffectiveAt(v time.Time) *KnowledgeRelationshipCreate {
+	_c.mutation.SetStateEffectiveAt(v)
+	return _c
+}
+
+// SetNillableStateEffectiveAt sets the "state_effective_at" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableStateEffectiveAt(v *time.Time) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetStateEffectiveAt(*v)
+	}
+	return _c
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_c *KnowledgeRelationshipCreate) SetLastObservedAt(v time.Time) *KnowledgeRelationshipCreate {
+	_c.mutation.SetLastObservedAt(v)
+	return _c
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableLastObservedAt(v *time.Time) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetLastObservedAt(*v)
+	}
+	return _c
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (_c *KnowledgeRelationshipCreate) SetWithdrawnAt(v time.Time) *KnowledgeRelationshipCreate {
+	_c.mutation.SetWithdrawnAt(v)
+	return _c
+}
+
+// SetNillableWithdrawnAt sets the "withdrawn_at" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableWithdrawnAt(v *time.Time) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetWithdrawnAt(*v)
+	}
+	return _c
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_c *KnowledgeRelationshipCreate) SetExpiresAt(v time.Time) *KnowledgeRelationshipCreate {
+	_c.mutation.SetExpiresAt(v)
+	return _c
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableExpiresAt(v *time.Time) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetExpiresAt(*v)
 	}
 	return _c
 }
@@ -263,6 +348,30 @@ func (_c *KnowledgeRelationshipCreate) createSpec() (*KnowledgeRelationship, *sq
 		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := _c.mutation.State(); ok {
+		_spec.SetField(knowledgerelationship.FieldState, field.TypeJSON, value)
+		_node.State = value
+	}
+	if value, ok := _c.mutation.StateSources(); ok {
+		_spec.SetField(knowledgerelationship.FieldStateSources, field.TypeJSON, value)
+		_node.StateSources = value
+	}
+	if value, ok := _c.mutation.StateEffectiveAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldStateEffectiveAt, field.TypeTime, value)
+		_node.StateEffectiveAt = &value
+	}
+	if value, ok := _c.mutation.LastObservedAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldLastObservedAt, field.TypeTime, value)
+		_node.LastObservedAt = &value
+	}
+	if value, ok := _c.mutation.WithdrawnAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldWithdrawnAt, field.TypeTime, value)
+		_node.WithdrawnAt = &value
+	}
+	if value, ok := _c.mutation.ExpiresAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldExpiresAt, field.TypeTime, value)
+		_node.ExpiresAt = &value
+	}
 	if value, ok := _c.mutation.Predicate(); ok {
 		_spec.SetField(knowledgerelationship.FieldPredicate, field.TypeEnum, value)
 		_node.Predicate = value
@@ -414,6 +523,114 @@ func (u *KnowledgeRelationshipUpsert) UpdateUpdatedAt() *KnowledgeRelationshipUp
 	return u
 }
 
+// SetState sets the "state" field.
+func (u *KnowledgeRelationshipUpsert) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldState, v)
+	return u
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateState() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldState)
+	return u
+}
+
+// ClearState clears the value of the "state" field.
+func (u *KnowledgeRelationshipUpsert) ClearState() *KnowledgeRelationshipUpsert {
+	u.SetNull(knowledgerelationship.FieldState)
+	return u
+}
+
+// SetStateSources sets the "state_sources" field.
+func (u *KnowledgeRelationshipUpsert) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldStateSources, v)
+	return u
+}
+
+// UpdateStateSources sets the "state_sources" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateStateSources() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldStateSources)
+	return u
+}
+
+// ClearStateSources clears the value of the "state_sources" field.
+func (u *KnowledgeRelationshipUpsert) ClearStateSources() *KnowledgeRelationshipUpsert {
+	u.SetNull(knowledgerelationship.FieldStateSources)
+	return u
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (u *KnowledgeRelationshipUpsert) SetStateEffectiveAt(v time.Time) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldStateEffectiveAt, v)
+	return u
+}
+
+// UpdateStateEffectiveAt sets the "state_effective_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateStateEffectiveAt() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldStateEffectiveAt)
+	return u
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (u *KnowledgeRelationshipUpsert) ClearStateEffectiveAt() *KnowledgeRelationshipUpsert {
+	u.SetNull(knowledgerelationship.FieldStateEffectiveAt)
+	return u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *KnowledgeRelationshipUpsert) SetLastObservedAt(v time.Time) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldLastObservedAt, v)
+	return u
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateLastObservedAt() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldLastObservedAt)
+	return u
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (u *KnowledgeRelationshipUpsert) ClearLastObservedAt() *KnowledgeRelationshipUpsert {
+	u.SetNull(knowledgerelationship.FieldLastObservedAt)
+	return u
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (u *KnowledgeRelationshipUpsert) SetWithdrawnAt(v time.Time) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldWithdrawnAt, v)
+	return u
+}
+
+// UpdateWithdrawnAt sets the "withdrawn_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateWithdrawnAt() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldWithdrawnAt)
+	return u
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (u *KnowledgeRelationshipUpsert) ClearWithdrawnAt() *KnowledgeRelationshipUpsert {
+	u.SetNull(knowledgerelationship.FieldWithdrawnAt)
+	return u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *KnowledgeRelationshipUpsert) SetExpiresAt(v time.Time) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldExpiresAt, v)
+	return u
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateExpiresAt() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldExpiresAt)
+	return u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *KnowledgeRelationshipUpsert) ClearExpiresAt() *KnowledgeRelationshipUpsert {
+	u.SetNull(knowledgerelationship.FieldExpiresAt)
+	return u
+}
+
 // SetSourceEntityID sets the "source_entity_id" field.
 func (u *KnowledgeRelationshipUpsert) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsert {
 	u.Set(knowledgerelationship.FieldSourceEntityID, v)
@@ -517,6 +734,132 @@ func (u *KnowledgeRelationshipUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeRel
 func (u *KnowledgeRelationshipUpsertOne) UpdateUpdatedAt() *KnowledgeRelationshipUpsertOne {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *KnowledgeRelationshipUpsertOne) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateState() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateState()
+	})
+}
+
+// ClearState clears the value of the "state" field.
+func (u *KnowledgeRelationshipUpsertOne) ClearState() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearState()
+	})
+}
+
+// SetStateSources sets the "state_sources" field.
+func (u *KnowledgeRelationshipUpsertOne) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetStateSources(v)
+	})
+}
+
+// UpdateStateSources sets the "state_sources" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateStateSources() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateStateSources()
+	})
+}
+
+// ClearStateSources clears the value of the "state_sources" field.
+func (u *KnowledgeRelationshipUpsertOne) ClearStateSources() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearStateSources()
+	})
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (u *KnowledgeRelationshipUpsertOne) SetStateEffectiveAt(v time.Time) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetStateEffectiveAt(v)
+	})
+}
+
+// UpdateStateEffectiveAt sets the "state_effective_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateStateEffectiveAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateStateEffectiveAt()
+	})
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (u *KnowledgeRelationshipUpsertOne) ClearStateEffectiveAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearStateEffectiveAt()
+	})
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *KnowledgeRelationshipUpsertOne) SetLastObservedAt(v time.Time) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetLastObservedAt(v)
+	})
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateLastObservedAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateLastObservedAt()
+	})
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (u *KnowledgeRelationshipUpsertOne) ClearLastObservedAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearLastObservedAt()
+	})
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (u *KnowledgeRelationshipUpsertOne) SetWithdrawnAt(v time.Time) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetWithdrawnAt(v)
+	})
+}
+
+// UpdateWithdrawnAt sets the "withdrawn_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateWithdrawnAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateWithdrawnAt()
+	})
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (u *KnowledgeRelationshipUpsertOne) ClearWithdrawnAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearWithdrawnAt()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *KnowledgeRelationshipUpsertOne) SetExpiresAt(v time.Time) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateExpiresAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *KnowledgeRelationshipUpsertOne) ClearExpiresAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearExpiresAt()
 	})
 }
 
@@ -794,6 +1137,132 @@ func (u *KnowledgeRelationshipUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeRe
 func (u *KnowledgeRelationshipUpsertBulk) UpdateUpdatedAt() *KnowledgeRelationshipUpsertBulk {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetState sets the "state" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetState(v)
+	})
+}
+
+// UpdateState sets the "state" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateState() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateState()
+	})
+}
+
+// ClearState clears the value of the "state" field.
+func (u *KnowledgeRelationshipUpsertBulk) ClearState() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearState()
+	})
+}
+
+// SetStateSources sets the "state_sources" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetStateSources(v)
+	})
+}
+
+// UpdateStateSources sets the "state_sources" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateStateSources() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateStateSources()
+	})
+}
+
+// ClearStateSources clears the value of the "state_sources" field.
+func (u *KnowledgeRelationshipUpsertBulk) ClearStateSources() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearStateSources()
+	})
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetStateEffectiveAt(v time.Time) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetStateEffectiveAt(v)
+	})
+}
+
+// UpdateStateEffectiveAt sets the "state_effective_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateStateEffectiveAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateStateEffectiveAt()
+	})
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) ClearStateEffectiveAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearStateEffectiveAt()
+	})
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetLastObservedAt(v time.Time) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetLastObservedAt(v)
+	})
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateLastObservedAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateLastObservedAt()
+	})
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) ClearLastObservedAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearLastObservedAt()
+	})
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetWithdrawnAt(v time.Time) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetWithdrawnAt(v)
+	})
+}
+
+// UpdateWithdrawnAt sets the "withdrawn_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateWithdrawnAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateWithdrawnAt()
+	})
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) ClearWithdrawnAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearWithdrawnAt()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetExpiresAt(v time.Time) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateExpiresAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) ClearExpiresAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearExpiresAt()
 	})
 }
 

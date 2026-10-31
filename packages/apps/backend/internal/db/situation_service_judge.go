@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"slices"
 
 	"github.com/google/uuid"
 
@@ -132,10 +131,7 @@ func (s *SituationService) loadJudgeContext(ctx context.Context, situationID uui
 	}
 
 	if len(entityIDs) > 0 {
-		classPredicates := slices.Concat(
-			knowledgegraph.RelationshipClassDependsOn.Predicates(),
-			knowledgegraph.RelationshipClassAdjacent.Predicates(),
-		)
+		classPredicates := knowledgegraph.PredicatesWithDependency(knowledgegraph.DependencySourceOnTarget, knowledgegraph.DependencyMutual)
 		listParams := rez.ListKnowledgeRelationshipsParams{
 			PageSize: observationGraphPageSize,
 			Predicates: []predicate.KnowledgeRelationship{

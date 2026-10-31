@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -14,6 +15,10 @@ import (
 
 // unnamedServicePrefix is what OpenTelemetry reports for a service that sets no name.
 const unnamedServicePrefix = "unknown_service"
+
+// serviceListingValidFor is how long a service listing's observation holds: services stop being confirmed by
+// Grafana once three hourly syncs have missed them.
+const serviceListingValidFor = 3 * time.Hour
 
 // EventProcessor normalizes Grafana provider events. It has no dependencies.
 type EventProcessor struct{}
@@ -42,6 +47,8 @@ func (p EventProcessor) ProcessProviderEvent(ctx context.Context, prov rez.Provi
 			LinkingAttributes: projections.LinkingAttributes{
 				projections.LinkingAttributeServiceName: name,
 			},
+			Listing:  true,
+			ValidFor: serviceListingValidFor,
 		}
 		encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 		if encodeErr != nil {

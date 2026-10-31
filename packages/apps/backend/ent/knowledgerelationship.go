@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -26,6 +28,18 @@ type KnowledgeRelationship struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Display name, description and properties, merged key by key from the live aliases.
+	State schematypes.KnowledgeGraphSubjectState `json:"state,omitempty"`
+	// For each field of the state, the alias that supplied it and its effective time.
+	StateSources schematypes.KnowledgeStateSources `json:"state_sources,omitempty"`
+	// Latest effective time among the state's fields. For event entities this is when the event happened, as currently known: projections set an event's evidence effective time to the event's own time.
+	StateEffectiveAt *time.Time `json:"state_effective_at,omitempty"`
+	// LastObservedAt holds the value of the "last_observed_at" field.
+	LastObservedAt *time.Time `json:"last_observed_at,omitempty"`
+	// Set when the subject has aliases and all are withdrawn. Default reads exclude withdrawn subjects.
+	WithdrawnAt *time.Time `json:"withdrawn_at,omitempty"`
+	// When the subject goes stale; null when any live alias never expires.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Canonical directional meaning from source entity to target entity.
 	Predicate knowledgerelationship.Predicate `json:"predicate,omitempty"`
 	// Changed only when a confirmed match merges two entities.
@@ -100,11 +114,13 @@ func (*KnowledgeRelationship) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case knowledgerelationship.FieldState, knowledgerelationship.FieldStateSources:
+			values[i] = new([]byte)
 		case knowledgerelationship.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case knowledgerelationship.FieldPredicate:
 			values[i] = new(sql.NullString)
-		case knowledgerelationship.FieldCreatedAt, knowledgerelationship.FieldUpdatedAt:
+		case knowledgerelationship.FieldCreatedAt, knowledgerelationship.FieldUpdatedAt, knowledgerelationship.FieldStateEffectiveAt, knowledgerelationship.FieldLastObservedAt, knowledgerelationship.FieldWithdrawnAt, knowledgerelationship.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
 		case knowledgerelationship.FieldID, knowledgerelationship.FieldSourceEntityID, knowledgerelationship.FieldTargetEntityID:
 			values[i] = new(uuid.UUID)
@@ -146,6 +162,50 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
+			}
+		case knowledgerelationship.FieldState:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field state", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.State); err != nil {
+					return fmt.Errorf("unmarshal field state: %w", err)
+				}
+			}
+		case knowledgerelationship.FieldStateSources:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field state_sources", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.StateSources); err != nil {
+					return fmt.Errorf("unmarshal field state_sources: %w", err)
+				}
+			}
+		case knowledgerelationship.FieldStateEffectiveAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field state_effective_at", values[i])
+			} else if value.Valid {
+				_m.StateEffectiveAt = new(time.Time)
+				*_m.StateEffectiveAt = value.Time
+			}
+		case knowledgerelationship.FieldLastObservedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_observed_at", values[i])
+			} else if value.Valid {
+				_m.LastObservedAt = new(time.Time)
+				*_m.LastObservedAt = value.Time
+			}
+		case knowledgerelationship.FieldWithdrawnAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field withdrawn_at", values[i])
+			} else if value.Valid {
+				_m.WithdrawnAt = new(time.Time)
+				*_m.WithdrawnAt = value.Time
+			}
+		case knowledgerelationship.FieldExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
+			} else if value.Valid {
+				_m.ExpiresAt = new(time.Time)
+				*_m.ExpiresAt = value.Time
 			}
 		case knowledgerelationship.FieldPredicate:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -229,6 +289,32 @@ func (_m *KnowledgeRelationship) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("state=")
+	builder.WriteString(fmt.Sprintf("%v", _m.State))
+	builder.WriteString(", ")
+	builder.WriteString("state_sources=")
+	builder.WriteString(fmt.Sprintf("%v", _m.StateSources))
+	builder.WriteString(", ")
+	if v := _m.StateEffectiveAt; v != nil {
+		builder.WriteString("state_effective_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.LastObservedAt; v != nil {
+		builder.WriteString("last_observed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.WithdrawnAt; v != nil {
+		builder.WriteString("withdrawn_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ExpiresAt; v != nil {
+		builder.WriteString("expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("predicate=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Predicate))

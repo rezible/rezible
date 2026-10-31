@@ -27,12 +27,7 @@
 	);
 </script>
 
-<g
-	class="connection"
-	class:emphasized={props.selected || data.emphasized}
-	class:dimmed={data.dimmed}
-	class:placement={data.connection.placement}
->
+<g class="connection" class:emphasized={props.selected || data.emphasized} class:dimmed={data.dimmed}>
 	<title>{data.label}</title>
 	<defs>
 		<marker
@@ -82,9 +77,6 @@
 		--connection-color: var(--foreground);
 		--connection-width: calc(1.5px / var(--map-zoom, 1));
 		--connection-opacity: 1;
-	}
-	.placement :global(.connection-path) {
-		stroke-dasharray: calc(5px / var(--map-zoom, 1)) calc(4px / var(--map-zoom, 1));
 	}
 	.dimmed {
 		opacity: 0.25;

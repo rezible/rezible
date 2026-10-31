@@ -36,6 +36,8 @@ type KnowledgeEntityQuery struct {
 	withLinkingAttributes   *KnowledgeEntityLinkingAttributeQuery
 	withSourceRelationships *KnowledgeRelationshipQuery
 	withTargetRelationships *KnowledgeRelationshipQuery
+	withParent              *KnowledgeEntityQuery
+	withChildren            *KnowledgeEntityQuery
 	modifiers               []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -192,6 +194,56 @@ func (_q *KnowledgeEntityQuery) QueryTargetRelationships() *KnowledgeRelationshi
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.KnowledgeRelationship
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryParent chains the current query on the "parent" edge.
+func (_q *KnowledgeEntityQuery) QueryParent() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, selector),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, knowledgeentity.ParentTable, knowledgeentity.ParentColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeEntity
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChildren chains the current query on the "children" edge.
+func (_q *KnowledgeEntityQuery) QueryChildren() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, selector),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, knowledgeentity.ChildrenTable, knowledgeentity.ChildrenColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeEntity
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -395,6 +447,8 @@ func (_q *KnowledgeEntityQuery) Clone() *KnowledgeEntityQuery {
 		withLinkingAttributes:   _q.withLinkingAttributes.Clone(),
 		withSourceRelationships: _q.withSourceRelationships.Clone(),
 		withTargetRelationships: _q.withTargetRelationships.Clone(),
+		withParent:              _q.withParent.Clone(),
+		withChildren:            _q.withChildren.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -453,6 +507,28 @@ func (_q *KnowledgeEntityQuery) WithTargetRelationships(opts ...func(*KnowledgeR
 		opt(query)
 	}
 	_q.withTargetRelationships = query
+	return _q
+}
+
+// WithParent tells the query-builder to eager-load the nodes that are connected to
+// the "parent" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeEntityQuery) WithParent(opts ...func(*KnowledgeEntityQuery)) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withParent = query
+	return _q
+}
+
+// WithChildren tells the query-builder to eager-load the nodes that are connected to
+// the "children" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeEntityQuery) WithChildren(opts ...func(*KnowledgeEntityQuery)) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withChildren = query
 	return _q
 }
 
@@ -540,12 +616,14 @@ func (_q *KnowledgeEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*KnowledgeEntity{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [7]bool{
 			_q.withTenant != nil,
 			_q.withAliases != nil,
 			_q.withLinkingAttributes != nil,
 			_q.withSourceRelationships != nil,
 			_q.withTargetRelationships != nil,
+			_q.withParent != nil,
+			_q.withChildren != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -608,6 +686,19 @@ func (_q *KnowledgeEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			func(n *KnowledgeEntity, e *KnowledgeRelationship) {
 				n.Edges.TargetRelationships = append(n.Edges.TargetRelationships, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withParent; query != nil {
+		if err := _q.loadParent(ctx, query, nodes, nil,
+			func(n *KnowledgeEntity, e *KnowledgeEntity) { n.Edges.Parent = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withChildren; query != nil {
+		if err := _q.loadChildren(ctx, query, nodes,
+			func(n *KnowledgeEntity) { n.Edges.Children = []*KnowledgeEntity{} },
+			func(n *KnowledgeEntity, e *KnowledgeEntity) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -766,6 +857,71 @@ func (_q *KnowledgeEntityQuery) loadTargetRelationships(ctx context.Context, que
 	}
 	return nil
 }
+func (_q *KnowledgeEntityQuery) loadParent(ctx context.Context, query *KnowledgeEntityQuery, nodes []*KnowledgeEntity, init func(*KnowledgeEntity), assign func(*KnowledgeEntity, *KnowledgeEntity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*KnowledgeEntity)
+	for i := range nodes {
+		if nodes[i].ParentID == nil {
+			continue
+		}
+		fk := *nodes[i].ParentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgeentity.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "parent_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *KnowledgeEntityQuery) loadChildren(ctx context.Context, query *KnowledgeEntityQuery, nodes []*KnowledgeEntity, init func(*KnowledgeEntity), assign func(*KnowledgeEntity, *KnowledgeEntity)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*KnowledgeEntity)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(knowledgeentity.FieldParentID)
+	}
+	query.Where(predicate.KnowledgeEntity(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(knowledgeentity.ChildrenColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ParentID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "parent_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "parent_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (_q *KnowledgeEntityQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -799,6 +955,9 @@ func (_q *KnowledgeEntityQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(knowledgeentity.FieldTenantID)
+		}
+		if _q.withParent != nil {
+			_spec.Node.AddColumnOnce(knowledgeentity.FieldParentID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

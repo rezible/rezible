@@ -1,90 +1,89 @@
 import type { GraphEntity, GraphSubset } from "./graph";
 import { entityLabel } from "./labels";
-import { isPlacementUnknown, PLACEMENT_PREDICATE, placementCountLine, placementTargets } from "./placement";
-import { buildStructureTree, compareIds, type StructureTree } from "./structure";
+import { categoryLevel, CONTAINER_LEVEL, DEPLOYMENT_HIERARCHY, inHierarchy } from "./model";
+import {
+	breadcrumb,
+	isPlacementUnknown,
+	placementCountLine,
+	placementSources,
+	placementTargets,
+} from "./placement";
+import { compareIds } from "./structure";
 
 /** One entity as the deployment view lists it. */
 export type DeploymentEntry = {
 	readonly entity: GraphEntity;
 	readonly label: string;
-	/** Display names of its structural ancestors, outermost first: ["Commerce", "Checkout"]. */
-	readonly breadcrumb: readonly string[];
+	/** Its ancestors' names, outermost first: "Commerce › Checkout". */
+	readonly breadcrumb: string;
 };
 
 export type DeploymentRow = DeploymentEntry & {
-	/** The source's other loaded targets, by display name, then id. */
+	/** The source's other most specific targets, by display name, then id. */
 	readonly alsoOn: readonly DeploymentEntry[];
 };
 
-/** A placement target and the loaded entities that run on it. */
+/** An infrastructure node and the loaded containers whose most specific placement it is. */
 export type DeploymentSection = DeploymentEntry & {
+	/** Depth in the infrastructure tree; roots are 0. */
+	readonly depth: number;
 	/** "3 entities run here", or "At least 3" on a partial graph. */
 	readonly countLine: string;
 	readonly rows: readonly DeploymentRow[];
 };
 
 export type DeploymentGroups = {
+	/** The infrastructure tree, depth first, siblings by display name, then id. */
 	readonly sections: readonly DeploymentSection[];
-	/** Containers with no loaded placement that are not targets themselves. */
+	/** Containers with no loaded placement. */
 	readonly placementUnknown: readonly DeploymentEntry[];
 };
 
 const compareEntities = (a: GraphEntity, b: GraphEntity) =>
 	compareIds(entityLabel(a), entityLabel(b)) || compareIds(a.id, b.id);
 
-function breadcrumb(tree: StructureTree, entities: ReadonlyMap<string, GraphEntity>, id: string): string[] {
-	const names: string[] = [];
-	let ancestorId = tree.primaryParents.get(id);
-	while (ancestorId) {
-		const ancestor = entities.get(ancestorId);
-		if (!ancestor) {
-			break;
-		}
-		names.unshift(entityLabel(ancestor));
-		ancestorId = tree.primaryParents.get(ancestorId);
-	}
-	return names;
-}
-
-/** Groups the loaded entities by the direct target of their runs_on relationships. */
+/** The deployment hierarchy as a tree from parentId, each node listing what runs directly on it. */
 export function deploymentGroups(graph: GraphSubset): DeploymentGroups {
-	const tree = buildStructureTree(graph);
 	const entities = new Map(graph.entities.map((entity) => [entity.id, entity]));
 	const targetsBySource = placementTargets(graph);
+	const sourcesByTarget = placementSources(graph, targetsBySource);
 	const entry = (entity: GraphEntity): DeploymentEntry => ({
 		entity,
 		label: entityLabel(entity),
-		breadcrumb: breadcrumb(tree, entities, entity.id),
+		breadcrumb: breadcrumb(entities, entity.id),
 	});
 
-	const sourcesByTarget = new Map<string, Set<GraphEntity>>();
-	for (const relationship of graph.relationships) {
-		const source = entities.get(relationship.source);
-		if (relationship.predicate !== PLACEMENT_PREDICATE || !source || !entities.has(relationship.target)) {
-			continue;
-		}
-
-		let sources = sourcesByTarget.get(relationship.target);
-		if (!sources) {
-			sources = new Set();
-			sourcesByTarget.set(relationship.target, sources);
-		}
-		sources.add(source);
+	const infrastructure = graph.entities.filter((entity) =>
+		inHierarchy(graph.model, entity.category, DEPLOYMENT_HIERARCHY)
+	);
+	const children = new Map<string | undefined, GraphEntity[]>();
+	for (const entity of infrastructure) {
+		const parent = entity.parentId ? entities.get(entity.parentId) : undefined;
+		// A parent outside the subset or outside the hierarchy makes a root.
+		const key =
+			parent && inHierarchy(graph.model, parent.category, DEPLOYMENT_HIERARCHY) ? parent.id : undefined;
+		children.set(key, [...(children.get(key) ?? []), entity]);
 	}
 
-	const targets = [...sourcesByTarget.keys()].map((id) => entities.get(id)!).sort(compareEntities);
-	const sections = targets.map((target): DeploymentSection => {
-		const sources = [...sourcesByTarget.get(target.id)!].sort(compareEntities);
+	const sections: DeploymentSection[] = [];
+	// The backend keeps parents acyclic; nodes caught in a cycle written concurrently are not listed.
+	const visit = (entity: GraphEntity, depth: number) => {
+		const sources = (sourcesByTarget.get(entity.id) ?? []).filter(
+			(source) => categoryLevel(graph.model, source.category) === CONTAINER_LEVEL
+		);
 		const rows = sources.map((source): DeploymentRow => {
-			const others = (targetsBySource.get(source.id) ?? []).filter((other) => other.id !== target.id);
+			const others = (targetsBySource.get(source.id) ?? []).filter((other) => other.id !== entity.id);
 			return { ...entry(source), alsoOn: others.map(entry) };
 		});
-		return { ...entry(target), countLine: placementCountLine(graph, target.id), rows };
-	});
+		sections.push({ ...entry(entity), depth, countLine: placementCountLine(graph, rows.length), rows });
+		[...(children.get(entity.id) ?? [])]
+			.sort(compareEntities)
+			.forEach((child) => visit(child, depth + 1));
+	};
+	[...(children.get(undefined) ?? [])].sort(compareEntities).forEach((root) => visit(root, 0));
 
 	const placementUnknown = graph.entities
-		.filter((entity) => !sourcesByTarget.has(entity.id))
-		.filter((entity) => isPlacementUnknown(entity, targetsBySource.get(entity.id)))
+		.filter((entity) => isPlacementUnknown(graph, entity, targetsBySource.get(entity.id)))
 		.sort(compareEntities)
 		.map(entry);
 

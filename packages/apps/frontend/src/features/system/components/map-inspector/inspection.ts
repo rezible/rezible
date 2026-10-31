@@ -5,15 +5,24 @@ import {
 	entityLabel,
 	relationshipPredicateLabel,
 } from "$features/system/lib/system-map/labels";
-import { isPlacementUnknown, placementTargets } from "$features/system/lib/system-map/placement";
+import { predicateFamily } from "$features/system/lib/system-map/model";
+import { breadcrumb, isPlacementUnknown, placementTargets } from "$features/system/lib/system-map/placement";
+import { drawableRelationships } from "$features/system/lib/system-map/rollup";
 import { selectionIsAvailable } from "$features/system/lib/system-map/selection";
-import { buildStructureTree, type StructureNode } from "$features/system/lib/system-map/structure";
+import {
+	buildStructureTree,
+	type StructureNode,
+	type StructureTree,
+} from "$features/system/lib/system-map/structure";
 
 export type InspectedRelationship = {
 	relationship: GraphRelationship;
 	source?: GraphEntity;
 	target?: GraphEntity;
 };
+
+/** A most specific placement target, with its infrastructure ancestry. */
+export type InspectedPlacement = { entity: GraphEntity; breadcrumb: string };
 
 /** What the structure tree says about a map entity. */
 export type InspectedStructure =
@@ -22,7 +31,7 @@ export type InspectedStructure =
 	| {
 			level: "runtime";
 			implementationCount: number;
-			runsOn: readonly GraphEntity[];
+			runsOn: readonly InspectedPlacement[];
 			/** A container with no loaded placement. */
 			placementUnknown: boolean;
 	  };
@@ -39,8 +48,14 @@ export type MapInspection = {
 		missingRelationshipIds: readonly string[];
 		distinctContributorCount: number;
 	};
-	/** Supplied relationships incident to the selected entity, including unresolved records. */
+	/** Relationships incident to the selected entity that the structure view draws as connections. */
 	incidentRelationships: readonly InspectedRelationship[];
+	/** The rest of its supplied relationships, including unresolved records and the tree's contains. */
+	undrawnRelationships: readonly InspectedRelationship[];
+	/** Sources of the entity's other contains claims; the entity is unloaded when outside the subset. */
+	alsoClaimedBy: readonly { id: string; entity?: GraphEntity }[];
+	/** Targets of its implementation relationships, such as repositories; unloaded ones by id. */
+	builtFrom: readonly { id: string; entity?: GraphEntity }[];
 };
 
 export type MapInspectorItem = {
@@ -74,19 +89,24 @@ const countRuntimes = (node: StructureNode): number => {
 	return node.children.reduce((total, child) => total + countRuntimes(child), 0);
 };
 
-function inspectStructure(graph: GraphSubset, entityId: string): InspectedStructure | undefined {
-	const node = buildStructureTree(graph).nodes.get(entityId);
+function inspectStructure(
+	graph: GraphSubset,
+	tree: StructureTree,
+	entitiesById: ReadonlyMap<string, GraphEntity>,
+	entityId: string
+): InspectedStructure | undefined {
+	const node = tree.nodes.get(entityId);
 	if (!node) {
 		return undefined;
 	}
 
 	if (node.type === "card") {
-		const runsOn = placementTargets(graph).get(node.id) ?? [];
+		const targets = placementTargets(graph).get(node.id) ?? [];
 		return {
 			level: "runtime",
 			implementationCount: node.implementationCount,
-			runsOn,
-			placementUnknown: isPlacementUnknown(node.entity, runsOn),
+			runsOn: targets.map((entity) => ({ entity, breadcrumb: breadcrumb(entitiesById, entity.id) })),
+			placementUnknown: isPlacementUnknown(graph, node.entity, targets),
 		};
 	}
 
@@ -106,22 +126,41 @@ export const resolveInspection = (graph: GraphSubset, selection: MapSelection | 
 	);
 	const available = selectionIsAvailable(graph, selection);
 
-	if (!selection) return { available, incidentRelationships: [] };
+	const empty = { incidentRelationships: [], undrawnRelationships: [], alsoClaimedBy: [], builtFrom: [] };
+	if (!selection) return { available, ...empty };
 
 	switch (selection.kind) {
 		case "entity": {
 			const entity = entitiesById.get(selection.entityId);
-			const incidentRelationships = entity
-				? allRelationships(graph)
-						.filter(
-							(relationship) =>
-								relationship.source === entity.id || relationship.target === entity.id
-						)
-						.map((relationship) => inspectedRelationship(relationship, entitiesById))
-				: [];
+			if (!entity) return { selection, available, ...empty };
 
-			const structure = entity ? inspectStructure(graph, entity.id) : undefined;
-			return { selection, available, entity, structure, incidentRelationships };
+			const tree = buildStructureTree(graph);
+			const drawn = new Set(drawableRelationships(graph, tree).map((relationship) => relationship.id));
+			const incident = allRelationships(graph).filter(
+				(relationship) => relationship.source === entity.id || relationship.target === entity.id
+			);
+			const inspect = (relationship: GraphRelationship) =>
+				inspectedRelationship(relationship, entitiesById);
+			const builtFrom = incident
+				.filter(
+					(relationship) =>
+						relationship.source === entity.id &&
+						predicateFamily(graph.model, relationship.predicate) === "implementation"
+				)
+				.map(({ target }) => ({ id: target, entity: entitiesById.get(target) }));
+			return {
+				selection,
+				available,
+				entity,
+				structure: inspectStructure(graph, tree, entitiesById, entity.id),
+				incidentRelationships: incident.filter(({ id }) => drawn.has(id)).map(inspect),
+				undrawnRelationships: incident.filter(({ id }) => !drawn.has(id)).map(inspect),
+				alsoClaimedBy: (entity.otherParentIds ?? []).map((id) => ({
+					id,
+					entity: entitiesById.get(id),
+				})),
+				builtFrom,
+			};
 		}
 		case "relationship": {
 			const relationship = relationshipsById.get(selection.relationshipId);
@@ -129,7 +168,7 @@ export const resolveInspection = (graph: GraphSubset, selection: MapSelection | 
 				selection,
 				available,
 				relationship: relationship ? inspectedRelationship(relationship, entitiesById) : undefined,
-				incidentRelationships: [],
+				...empty,
 			};
 		}
 		case "summary": {
@@ -154,7 +193,7 @@ export const resolveInspection = (graph: GraphSubset, selection: MapSelection | 
 					missingRelationshipIds,
 					distinctContributorCount: relationshipIds.length,
 				},
-				incidentRelationships: [],
+				...empty,
 			};
 		}
 	}

@@ -75,7 +75,7 @@
 <div class="flex flex-col gap-1 bg-card">
 	{#snippet systemContextEditor(node: SystemAnalysisNode)}
 		{@const attrs = node.attributes.knowledgeEntity.attributes}
-		<span class="text-lg">{attrs.latestState?.displayName ?? "Unknown entity"}</span>
+		<span class="text-lg">{attrs.state.displayName ?? "Unknown entity"}</span>
 
 		<span>relationship select</span>
 	{/snippet}
@@ -96,7 +96,7 @@
 		{#each analysisNodes as node (node.id)}
 			{@const attr = node.attributes.knowledgeEntity.attributes}
 			<button type="button" class="text-left" onclick={() => (selectedNode = node)}>
-				{attr.latestState?.displayName ?? "Unknown entity"}
+				{attr.state.displayName ?? "Unknown entity"}
 			</button>
 		{/each}
 
@@ -127,7 +127,7 @@
 		{#each attributes.systemContext as cx (cx.id)}
 			{@const node = getContextNode(cx)}
 			<button type="button" class="text-left" onclick={() => setEditing(cx)}>
-				{node?.attributes.knowledgeEntity.attributes.latestState?.displayName ?? "Unknown Entity"}
+				{node?.attributes.knowledgeEntity.attributes.state.displayName ?? "Unknown Entity"}
 			</button>
 		{/each}
 

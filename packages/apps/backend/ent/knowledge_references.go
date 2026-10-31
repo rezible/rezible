@@ -268,6 +268,7 @@ var KnowledgeForeignKeyConstraints = []string{
 	"discussion_threads_knowledge_r_ffaf506c4baef0b857b7dfa76ee423ab",
 	"incident_impacts_knowledge_entities_knowledge_entity",
 	"incidents_knowledge_entities_knowledge_entity",
+	"knowledge_entities_knowledge_entities_children",
 	"knowledge_entity_linking_attributes_knowledge_entities_entity",
 	"knowledge_relationships_knowledge_entities_source_entity",
 	"knowledge_relationships_knowledge_entities_target_entity",

@@ -1,36 +1,20 @@
 import { Context, watch } from "runed";
 import { useSearchParams } from "runed/kit";
 import { onDestroy, tick } from "svelte";
-import { useQueryClient } from "@tanstack/svelte-query";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { z } from "zod";
 
-import { type KnowledgeGraphEntitySummary } from "$lib/api";
 import type { SystemMapHandle } from "$features/system/components/system-map";
-import { getMapCategoryDisplay, isArchitectureCategory } from "$features/system/lib/system-map/category";
+import { knowledgeModelOptions } from "$features/system/lib/knowledge-model";
+import { getMapCategoryDisplay } from "$features/system/lib/system-map/category";
 import type { GraphSubset } from "$features/system/lib/system-map/graph";
+import { emptyMapModel, mapCategories, mapModel } from "$features/system/lib/system-map/model";
 import type { MapSelection } from "$features/system/lib/system-map/presentation";
 import { reconcileSelection } from "$features/system/lib/system-map/selection";
 import { GraphQueryController, type PublishedGraph, type StandaloneGraphQuery } from "./loader.svelte";
 
-type EntityCategory = KnowledgeGraphEntitySummary["category"];
-
-export const systemMapCategoryOptions = [
-	"system_function",
-	"system",
-	"container",
-	"infrastructure",
-	"component",
-	"code",
-	"actor",
-	"process",
-	"concern",
-	"decision",
-	"event",
-	"signal",
-] as const satisfies readonly EntityCategory[];
-
 const filterSchema = z.object({
-	categories: z.array(z.enum(systemMapCategoryOptions)).default([]).catch([]),
+	categories: z.array(z.string()).default([]).catch([]),
 	kinds: z.array(z.string()).default([]).catch([]),
 	/** Structure is the default and leaves the URL; the back button returns to it from deployment. */
 	view: z.enum(["structure", "deployment"]).default("structure").catch("structure"),
@@ -39,6 +23,7 @@ const filterSchema = z.object({
 export type MapViewKind = z.infer<typeof filterSchema>["view"];
 
 const emptyGraph: GraphSubset = {
+	model: emptyMapModel,
 	entities: [],
 	relationships: [],
 	unresolvedRelationships: [],
@@ -55,7 +40,7 @@ const queryKey = (query: StandaloneGraphQuery) => JSON.stringify([query.categori
 const queryDescription = (query: StandaloneGraphQuery): string => {
 	const categories = query.categories.length
 		? query.categories.map((category) => getMapCategoryDisplay(category).categoryLabel).join(", ")
-		: "all categories";
+		: "structure and deployment categories";
 	const kinds = query.kinds.length ? query.kinds.join(", ") : "all kinds";
 	return `${categories}; ${kinds}`;
 };
@@ -69,6 +54,7 @@ const stopReasonDescription: Record<GraphSubset["enumeration"]["stopReason"], st
 
 export class SystemMapViewController {
 	readonly graphQuery = new GraphQueryController(useQueryClient());
+	private modelQuery = createQuery(() => knowledgeModelOptions());
 	private params = useSearchParams(filterSchema, { noScroll: true });
 
 	filters = $derived(filterSchema.parse(this.params));
@@ -79,8 +65,13 @@ export class SystemMapViewController {
 	published = $derived(this.graphQuery.published);
 	graph = $derived(this.published?.graph ?? emptyGraph);
 	loaded = $derived(this.graphQuery.loaded);
-	hasArchitecturalEntities = $derived(
-		this.graph.entities.some((entity) => isArchitectureCategory(entity.category))
+	hasArchitecturalEntities = $derived.by(() => {
+		const categories = new Set(mapCategories(this.graph.model));
+		return this.graph.entities.some((entity) => categories.has(entity.category));
+	});
+	/** Every category the model knows, for the filter. */
+	categoryOptions = $derived(
+		this.modelQuery.data ? [...mapModel(this.modelQuery.data.data).categories.keys()] : []
 	);
 	selection = $state<MapSelection>();
 	inspectorOpen = $state(true);
@@ -131,11 +122,11 @@ export class SystemMapViewController {
 		onDestroy(() => this.dispose());
 	}
 
-	isCategorySelected(category: EntityCategory): boolean {
+	isCategorySelected(category: string): boolean {
 		return this.filters.categories.includes(category);
 	}
 
-	categoryChanged = (category: EntityCategory, checked: boolean) => {
+	categoryChanged = (category: string, checked: boolean) => {
 		const categories = new Set(this.filters.categories);
 		if (checked) categories.add(category);
 		else categories.delete(category);

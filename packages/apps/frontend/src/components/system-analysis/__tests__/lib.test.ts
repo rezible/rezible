@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import type { SystemAnalysisEdge, SystemAnalysisEntry, SystemAnalysisNode } from "$lib/api";
-import { buildAnalysisGraph, mapEntryAttachments } from "../lib";
+import { testModel } from "$features/system/lib/system-map/__tests__/test-model";
+import { buildAnalysisGraph as buildGraph, mapEntryAttachments } from "../lib";
+
+const buildAnalysisGraph = (nodes: SystemAnalysisNode[], edges: SystemAnalysisEdge[]) =>
+	buildGraph(testModel, nodes, edges);
 
 const node = (id: string, entityId: string, category = "system", kind = "service"): SystemAnalysisNode =>
 	({
@@ -61,8 +65,8 @@ describe("analysis graph adaptation", () => {
 		);
 
 		expect(model.graph.entities).toEqual([
-			{ id: "entity-1", category: "system", kind: "service", name: "entity-1" },
-			{ id: "entity-2", category: "system", kind: "service", name: "entity-2" },
+			{ id: "entity-1", category: "system", kind: "service", name: "entity-1", otherParentIds: [] },
+			{ id: "entity-2", category: "system", kind: "service", name: "entity-2", otherParentIds: [] },
 		]);
 		expect(model.graph.relationships).toEqual([
 			{ id: "relationship-1", source: "entity-1", target: "entity-2", predicate: "calls" },
@@ -87,6 +91,7 @@ describe("analysis graph adaptation", () => {
 		expect(model.graph.relationships.map(({ id }) => id)).toEqual(["resolved"]);
 		expect(model.graph.unresolvedRelationships.map(({ id }) => id)).toEqual(["unresolved"]);
 		expect(buildAnalysisGraph([], []).graph).toEqual({
+			model: testModel,
 			entities: [],
 			relationships: [],
 			unresolvedRelationships: [],

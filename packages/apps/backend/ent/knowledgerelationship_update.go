@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // KnowledgeRelationshipUpdate is the builder for updating KnowledgeRelationship entities.
@@ -49,6 +50,126 @@ func (_u *KnowledgeRelationshipUpdate) SetNillableCreatedAt(v *time.Time) *Knowl
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *KnowledgeRelationshipUpdate) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetState sets the "state" field.
+func (_u *KnowledgeRelationshipUpdate) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetState(v)
+	return _u
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdate) SetNillableState(v *schematypes.KnowledgeGraphSubjectState) *KnowledgeRelationshipUpdate {
+	if v != nil {
+		_u.SetState(*v)
+	}
+	return _u
+}
+
+// ClearState clears the value of the "state" field.
+func (_u *KnowledgeRelationshipUpdate) ClearState() *KnowledgeRelationshipUpdate {
+	_u.mutation.ClearState()
+	return _u
+}
+
+// SetStateSources sets the "state_sources" field.
+func (_u *KnowledgeRelationshipUpdate) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetStateSources(v)
+	return _u
+}
+
+// SetNillableStateSources sets the "state_sources" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdate) SetNillableStateSources(v *schematypes.KnowledgeStateSources) *KnowledgeRelationshipUpdate {
+	if v != nil {
+		_u.SetStateSources(*v)
+	}
+	return _u
+}
+
+// ClearStateSources clears the value of the "state_sources" field.
+func (_u *KnowledgeRelationshipUpdate) ClearStateSources() *KnowledgeRelationshipUpdate {
+	_u.mutation.ClearStateSources()
+	return _u
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (_u *KnowledgeRelationshipUpdate) SetStateEffectiveAt(v time.Time) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetStateEffectiveAt(v)
+	return _u
+}
+
+// SetNillableStateEffectiveAt sets the "state_effective_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdate) SetNillableStateEffectiveAt(v *time.Time) *KnowledgeRelationshipUpdate {
+	if v != nil {
+		_u.SetStateEffectiveAt(*v)
+	}
+	return _u
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (_u *KnowledgeRelationshipUpdate) ClearStateEffectiveAt() *KnowledgeRelationshipUpdate {
+	_u.mutation.ClearStateEffectiveAt()
+	return _u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_u *KnowledgeRelationshipUpdate) SetLastObservedAt(v time.Time) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdate) SetNillableLastObservedAt(v *time.Time) *KnowledgeRelationshipUpdate {
+	if v != nil {
+		_u.SetLastObservedAt(*v)
+	}
+	return _u
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (_u *KnowledgeRelationshipUpdate) ClearLastObservedAt() *KnowledgeRelationshipUpdate {
+	_u.mutation.ClearLastObservedAt()
+	return _u
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (_u *KnowledgeRelationshipUpdate) SetWithdrawnAt(v time.Time) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetWithdrawnAt(v)
+	return _u
+}
+
+// SetNillableWithdrawnAt sets the "withdrawn_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdate) SetNillableWithdrawnAt(v *time.Time) *KnowledgeRelationshipUpdate {
+	if v != nil {
+		_u.SetWithdrawnAt(*v)
+	}
+	return _u
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (_u *KnowledgeRelationshipUpdate) ClearWithdrawnAt() *KnowledgeRelationshipUpdate {
+	_u.mutation.ClearWithdrawnAt()
+	return _u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_u *KnowledgeRelationshipUpdate) SetExpiresAt(v time.Time) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetExpiresAt(v)
+	return _u
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdate) SetNillableExpiresAt(v *time.Time) *KnowledgeRelationshipUpdate {
+	if v != nil {
+		_u.SetExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (_u *KnowledgeRelationshipUpdate) ClearExpiresAt() *KnowledgeRelationshipUpdate {
+	_u.mutation.ClearExpiresAt()
 	return _u
 }
 
@@ -217,6 +338,42 @@ func (_u *KnowledgeRelationshipUpdate) sqlSave(ctx context.Context) (_node int, 
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.State(); ok {
+		_spec.SetField(knowledgerelationship.FieldState, field.TypeJSON, value)
+	}
+	if _u.mutation.StateCleared() {
+		_spec.ClearField(knowledgerelationship.FieldState, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StateSources(); ok {
+		_spec.SetField(knowledgerelationship.FieldStateSources, field.TypeJSON, value)
+	}
+	if _u.mutation.StateSourcesCleared() {
+		_spec.ClearField(knowledgerelationship.FieldStateSources, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StateEffectiveAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldStateEffectiveAt, field.TypeTime, value)
+	}
+	if _u.mutation.StateEffectiveAtCleared() {
+		_spec.ClearField(knowledgerelationship.FieldStateEffectiveAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.LastObservedAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldLastObservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastObservedAtCleared() {
+		_spec.ClearField(knowledgerelationship.FieldLastObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.WithdrawnAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldWithdrawnAt, field.TypeTime, value)
+	}
+	if _u.mutation.WithdrawnAtCleared() {
+		_spec.ClearField(knowledgerelationship.FieldWithdrawnAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ExpiresAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.ExpiresAtCleared() {
+		_spec.ClearField(knowledgerelationship.FieldExpiresAt, field.TypeTime)
+	}
 	if _u.mutation.SourceEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -366,6 +523,126 @@ func (_u *KnowledgeRelationshipUpdateOne) SetNillableCreatedAt(v *time.Time) *Kn
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *KnowledgeRelationshipUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetState sets the "state" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetState(v)
+	return _u
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdateOne) SetNillableState(v *schematypes.KnowledgeGraphSubjectState) *KnowledgeRelationshipUpdateOne {
+	if v != nil {
+		_u.SetState(*v)
+	}
+	return _u
+}
+
+// ClearState clears the value of the "state" field.
+func (_u *KnowledgeRelationshipUpdateOne) ClearState() *KnowledgeRelationshipUpdateOne {
+	_u.mutation.ClearState()
+	return _u
+}
+
+// SetStateSources sets the "state_sources" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetStateSources(v)
+	return _u
+}
+
+// SetNillableStateSources sets the "state_sources" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdateOne) SetNillableStateSources(v *schematypes.KnowledgeStateSources) *KnowledgeRelationshipUpdateOne {
+	if v != nil {
+		_u.SetStateSources(*v)
+	}
+	return _u
+}
+
+// ClearStateSources clears the value of the "state_sources" field.
+func (_u *KnowledgeRelationshipUpdateOne) ClearStateSources() *KnowledgeRelationshipUpdateOne {
+	_u.mutation.ClearStateSources()
+	return _u
+}
+
+// SetStateEffectiveAt sets the "state_effective_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetStateEffectiveAt(v time.Time) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetStateEffectiveAt(v)
+	return _u
+}
+
+// SetNillableStateEffectiveAt sets the "state_effective_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdateOne) SetNillableStateEffectiveAt(v *time.Time) *KnowledgeRelationshipUpdateOne {
+	if v != nil {
+		_u.SetStateEffectiveAt(*v)
+	}
+	return _u
+}
+
+// ClearStateEffectiveAt clears the value of the "state_effective_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) ClearStateEffectiveAt() *KnowledgeRelationshipUpdateOne {
+	_u.mutation.ClearStateEffectiveAt()
+	return _u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetLastObservedAt(v time.Time) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdateOne) SetNillableLastObservedAt(v *time.Time) *KnowledgeRelationshipUpdateOne {
+	if v != nil {
+		_u.SetLastObservedAt(*v)
+	}
+	return _u
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) ClearLastObservedAt() *KnowledgeRelationshipUpdateOne {
+	_u.mutation.ClearLastObservedAt()
+	return _u
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetWithdrawnAt(v time.Time) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetWithdrawnAt(v)
+	return _u
+}
+
+// SetNillableWithdrawnAt sets the "withdrawn_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdateOne) SetNillableWithdrawnAt(v *time.Time) *KnowledgeRelationshipUpdateOne {
+	if v != nil {
+		_u.SetWithdrawnAt(*v)
+	}
+	return _u
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) ClearWithdrawnAt() *KnowledgeRelationshipUpdateOne {
+	_u.mutation.ClearWithdrawnAt()
+	return _u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetExpiresAt(v time.Time) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetExpiresAt(v)
+	return _u
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdateOne) SetNillableExpiresAt(v *time.Time) *KnowledgeRelationshipUpdateOne {
+	if v != nil {
+		_u.SetExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) ClearExpiresAt() *KnowledgeRelationshipUpdateOne {
+	_u.mutation.ClearExpiresAt()
 	return _u
 }
 
@@ -563,6 +840,42 @@ func (_u *KnowledgeRelationshipUpdateOne) sqlSave(ctx context.Context) (_node *K
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.State(); ok {
+		_spec.SetField(knowledgerelationship.FieldState, field.TypeJSON, value)
+	}
+	if _u.mutation.StateCleared() {
+		_spec.ClearField(knowledgerelationship.FieldState, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StateSources(); ok {
+		_spec.SetField(knowledgerelationship.FieldStateSources, field.TypeJSON, value)
+	}
+	if _u.mutation.StateSourcesCleared() {
+		_spec.ClearField(knowledgerelationship.FieldStateSources, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StateEffectiveAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldStateEffectiveAt, field.TypeTime, value)
+	}
+	if _u.mutation.StateEffectiveAtCleared() {
+		_spec.ClearField(knowledgerelationship.FieldStateEffectiveAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.LastObservedAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldLastObservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastObservedAtCleared() {
+		_spec.ClearField(knowledgerelationship.FieldLastObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.WithdrawnAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldWithdrawnAt, field.TypeTime, value)
+	}
+	if _u.mutation.WithdrawnAtCleared() {
+		_spec.ClearField(knowledgerelationship.FieldWithdrawnAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ExpiresAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.ExpiresAtCleared() {
+		_spec.ClearField(knowledgerelationship.FieldExpiresAt, field.TypeTime)
 	}
 	if _u.mutation.SourceEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{

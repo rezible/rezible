@@ -47,6 +47,7 @@ func (s *KnowledgeGraphIngestionService) MergeEntities(ctx context.Context, para
 		}
 
 		m := &knowledgeEntityMerge{
+			ingestion:  s,
 			tx:         tx,
 			proposalID: proposal.ID,
 			survivor:   survivor,
@@ -123,6 +124,7 @@ func checkMergeableKinds(survivor, other *ent.KnowledgeEntity) error {
 // knowledgeEntityMerge moves everything of other onto survivor and deletes other. Both rows are locked, so every
 // move is a set-based update of what refers to them now.
 type knowledgeEntityMerge struct {
+	ingestion  *KnowledgeGraphIngestionService
 	tx         *ent.Client
 	proposalID uuid.UUID
 	survivor   *ent.KnowledgeEntity
@@ -145,7 +147,8 @@ func (m *knowledgeEntityMerge) run(ctx context.Context) error {
 		return fmt.Errorf("move aliases: %w", moveErr)
 	}
 
-	if relationshipsErr := m.moveRelationships(ctx); relationshipsErr != nil {
+	foldedInto, relationshipsErr := m.moveRelationships(ctx)
+	if relationshipsErr != nil {
 		return fmt.Errorf("move relationships: %w", relationshipsErr)
 	}
 
@@ -158,12 +161,23 @@ func (m *knowledgeEntityMerge) run(ctx context.Context) error {
 		}
 	}
 
-	if stateErr := m.foldState(ctx); stateErr != nil {
-		return fmt.Errorf("fold state: %w", stateErr)
-	}
-
 	if deleteErr := m.tx.KnowledgeEntity.DeleteOneID(m.other.ID).Exec(ctx); deleteErr != nil {
 		return fmt.Errorf("delete merged entity: %w", deleteErr)
+	}
+
+	// The survivor and the relationships that gained aliases are merged again from their aliases.
+	if stateErr := m.ingestion.mergeEntityState(ctx, m.survivor.ID); stateErr != nil {
+		return fmt.Errorf("merge survivor state: %w", stateErr)
+	}
+	for _, kept := range foldedInto {
+		if _, stateErr := m.ingestion.mergeRelationshipState(ctx, kept); stateErr != nil {
+			return fmt.Errorf("merge relationship state: %w", stateErr)
+		}
+	}
+	// Every entity whose parent was either merged entity is now contained by the survivor, and the moved claims
+	// may change the survivor's own parent. A survivor that now contains itself is never its own parent.
+	if parentErr := m.ingestion.recomputeParentsAround(ctx, m.survivor.ID); parentErr != nil {
+		return fmt.Errorf("recompute parents: %w", parentErr)
 	}
 	return nil
 }
@@ -179,17 +193,18 @@ type knowledgeRelationshipKey struct {
 // repeat one the survivor already has, or another moved one, is folded into it: its aliases and references move
 // onto that relationship, and it is deleted. A relationship between the two becomes one from the survivor to
 // itself. The relationships it reads to find duplicates cannot change meanwhile: each has one of the two locked
-// entities as an endpoint, and inserting or re-pointing one takes a key-share lock on its endpoints.
-func (m *knowledgeEntityMerge) moveRelationships(ctx context.Context) error {
+// entities as an endpoint, and inserting or re-pointing one takes a key-share lock on its endpoints. It returns
+// the relationships others were folded into.
+func (m *knowledgeEntityMerge) moveRelationships(ctx context.Context) ([]uuid.UUID, error) {
 	queryMoving := m.tx.KnowledgeRelationship.Query().
 		Where(knr.Or(knr.SourceEntityID(m.other.ID), knr.TargetEntityID(m.other.ID))).
 		Order(knr.ByCreatedAt(), knr.ByID())
 	moving, movingErr := queryMoving.All(ctx)
 	if movingErr != nil {
-		return fmt.Errorf("query relationships: %w", movingErr)
+		return nil, fmt.Errorf("query relationships: %w", movingErr)
 	}
 	if len(moving) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	movedKey := func(relationship *ent.KnowledgeRelationship) knowledgeRelationshipKey {
@@ -219,7 +234,7 @@ func (m *knowledgeEntityMerge) moveRelationships(ctx context.Context) error {
 		Where(knr.Or(existingPreds...))
 	existing, existingErr := queryExisting.All(ctx)
 	if existingErr != nil {
-		return fmt.Errorf("query survivor relationships: %w", existingErr)
+		return nil, fmt.Errorf("query survivor relationships: %w", existingErr)
 	}
 
 	keptByKey := make(map[knowledgeRelationshipKey]uuid.UUID, len(existing)+len(moving))
@@ -242,11 +257,11 @@ func (m *knowledgeEntityMerge) moveRelationships(ctx context.Context) error {
 	}
 
 	if lockErr := m.lockFoldedRelationships(ctx, foldedInto); lockErr != nil {
-		return lockErr
+		return nil, lockErr
 	}
 	for _, kept := range keptOrder {
 		if foldErr := m.foldRelationships(ctx, kept, foldedInto[kept]); foldErr != nil {
-			return foldErr
+			return nil, foldErr
 		}
 	}
 
@@ -254,15 +269,15 @@ func (m *knowledgeEntityMerge) moveRelationships(ctx context.Context) error {
 		Where(knr.SourceEntityID(m.other.ID)).
 		SetSourceEntityID(m.survivor.ID)
 	if moveErr := moveSources.Exec(ctx); moveErr != nil {
-		return fmt.Errorf("move relationship sources: %w", moveErr)
+		return nil, fmt.Errorf("move relationship sources: %w", moveErr)
 	}
 	moveTargets := m.tx.KnowledgeRelationship.Update().
 		Where(knr.TargetEntityID(m.other.ID)).
 		SetTargetEntityID(m.survivor.ID)
 	if moveErr := moveTargets.Exec(ctx); moveErr != nil {
-		return fmt.Errorf("move relationship targets: %w", moveErr)
+		return nil, fmt.Errorf("move relationship targets: %w", moveErr)
 	}
-	return nil
+	return keptOrder, nil
 }
 
 // lockFoldedRelationships locks the relationships to be folded and those they fold into FOR UPDATE, in ID order,
@@ -311,19 +326,6 @@ func (m *knowledgeEntityMerge) foldRelationships(ctx context.Context, kept uuid.
 		return fmt.Errorf("delete duplicate relationships: %w", deleteErr)
 	}
 	return nil
-}
-
-// foldState sets the survivor's state to the two states folded, the newer applied last, with the later time.
-func (m *knowledgeEntityMerge) foldState(ctx context.Context) error {
-	older, newer := m.other, m.survivor
-	if m.other.StateEffectiveAt != nil &&
-		(m.survivor.StateEffectiveAt == nil || m.other.StateEffectiveAt.After(*m.survivor.StateEffectiveAt)) {
-		older, newer = m.survivor, m.other
-	}
-	updateState := m.tx.KnowledgeEntity.UpdateOneID(m.survivor.ID).
-		SetState(older.State.MergeFrom(newer.State)).
-		SetNillableStateEffectiveAt(newer.StateEffectiveAt)
-	return updateState.Exec(ctx)
 }
 
 // mergeSituationMatching keeps an open situation attracting signals through the survivor when either entity did:

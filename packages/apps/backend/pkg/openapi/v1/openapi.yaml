@@ -3319,6 +3319,21 @@ components:
       required:
         - data
       type: object
+    GetKnowledgeGraphModelResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetKnowledgeGraphModelResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/KnowledgeGraphModel"
+      required:
+        - data
+      type: object
     GetKnowledgeGraphRelationshipResponseBody:
       additionalProperties: false
       properties:
@@ -4970,6 +4985,58 @@ components:
       required:
         - proposalId
       type: object
+    KnowledgeGraphAliasState:
+      additionalProperties: false
+      properties:
+        description:
+          $ref: "#/components/schemas/KnowledgeGraphStateValue"
+        displayName:
+          $ref: "#/components/schemas/KnowledgeGraphStateValue"
+        properties:
+          additionalProperties:
+            $ref: "#/components/schemas/KnowledgeGraphStateValue"
+          type: object
+        replacedAt:
+          format: date-time
+          type: string
+      required:
+        - properties
+      type: object
+    KnowledgeGraphCategorySpec:
+      additionalProperties: false
+      properties:
+        hierarchy:
+          enum:
+            - logical
+            - deployment
+            - code
+            - organization
+            - process
+            - concern
+            - decision
+            - monitoring
+          type: string
+        level:
+          format: int64
+          type: integer
+        value:
+          enum:
+            - system_function
+            - system
+            - container
+            - component
+            - infrastructure
+            - code
+            - actor
+            - process
+            - concern
+            - decision
+            - signal
+            - event
+          type: string
+      required:
+        - value
+      type: object
     KnowledgeGraphEntitiesPage:
       additionalProperties: false
       properties:
@@ -5025,20 +5092,24 @@ components:
           items:
             $ref: "#/components/schemas/KnowledgeGraphEntityAlias"
           type: array
+        ancestors:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphEntitySummary"
+          type: array
         category:
           enum:
             - system_function
-            - actor
             - system
             - container
-            - infrastructure
             - component
+            - infrastructure
             - code
+            - actor
             - process
             - concern
             - decision
-            - event
             - signal
+            - event
           type: string
         createdAt:
           format: date-time
@@ -5047,13 +5118,29 @@ components:
           type: string
         kind:
           type: string
-        latestState:
-          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
+        lastObservedAt:
+          format: date-time
+          type: string
         linkingAttributes:
           items:
             $ref: "#/components/schemas/KnowledgeGraphLinkingAttribute"
           type: array
+        otherParentClaims:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphParentClaim"
+          type: array
+        parentId:
+          type: string
+        stale:
+          type: boolean
+        state:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
+        stateSources:
+          $ref: "#/components/schemas/KnowledgeGraphStateSources"
         updatedAt:
+          format: date-time
+          type: string
+        withdrawnAt:
           format: date-time
           type: string
       required:
@@ -5064,6 +5151,9 @@ components:
         - aliases
         - createdAt
         - updatedAt
+        - state
+        - stateSources
+        - stale
       type: object
     KnowledgeGraphEntitySummary:
       additionalProperties: false
@@ -5071,17 +5161,17 @@ components:
         category:
           enum:
             - system_function
-            - actor
             - system
             - container
-            - infrastructure
             - component
+            - infrastructure
             - code
+            - actor
             - process
             - concern
             - decision
-            - event
             - signal
+            - event
           type: string
         displayName:
           type: string
@@ -5089,11 +5179,21 @@ components:
           type: string
         kind:
           type: string
+        otherParentIds:
+          items:
+            type: string
+          type: array
+        parentId:
+          type: string
+        stale:
+          type: boolean
       required:
         - id
         - category
         - kind
         - displayName
+        - stale
+        - otherParentIds
       type: object
     KnowledgeGraphEvidence:
       additionalProperties: false
@@ -5137,6 +5237,41 @@ components:
         - subjectAliasId
         - subjectState
       type: object
+    KnowledgeGraphHierarchy:
+      additionalProperties: false
+      properties:
+        categories:
+          items:
+            enum:
+              - system_function
+              - system
+              - container
+              - component
+              - infrastructure
+              - code
+              - actor
+              - process
+              - concern
+              - decision
+              - signal
+              - event
+            type: string
+          type: array
+        value:
+          enum:
+            - logical
+            - deployment
+            - code
+            - organization
+            - process
+            - concern
+            - decision
+            - monitoring
+          type: string
+      required:
+        - value
+        - categories
+      type: object
     KnowledgeGraphLinkingAttribute:
       additionalProperties: false
       properties:
@@ -5147,6 +5282,135 @@ components:
       required:
         - attribute
         - value
+      type: object
+    KnowledgeGraphModel:
+      additionalProperties: false
+      properties:
+        categories:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphCategorySpec"
+          type: array
+        hierarchies:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphHierarchy"
+          type: array
+        predicates:
+          items:
+            $ref: "#/components/schemas/KnowledgeGraphPredicateSpec"
+          type: array
+      required:
+        - hierarchies
+        - categories
+        - predicates
+      type: object
+    KnowledgeGraphParentClaim:
+      additionalProperties: false
+      properties:
+        parent:
+          $ref: "#/components/schemas/KnowledgeGraphEntitySummary"
+        providers:
+          items:
+            type: string
+          type: array
+        relationship:
+          $ref: "#/components/schemas/KnowledgeGraphRelationshipSummary"
+      required:
+        - relationship
+        - parent
+        - providers
+      type: object
+    KnowledgeGraphPredicateSpec:
+      additionalProperties: false
+      properties:
+        dependency:
+          enum:
+            - source_on_target
+            - target_on_source
+            - mutual
+            - none
+          type: string
+        family:
+          enum:
+            - structure
+            - placement
+            - implementation
+            - ownership
+            - membership
+            - support
+            - flow
+            - observation
+            - governance
+            - occurrence
+          type: string
+        rollsUp:
+          type: boolean
+        sameHierarchy:
+          type: boolean
+        sourceCategories:
+          items:
+            enum:
+              - system_function
+              - system
+              - container
+              - component
+              - infrastructure
+              - code
+              - actor
+              - process
+              - concern
+              - decision
+              - signal
+              - event
+            type: string
+          type: array
+        targetCategories:
+          items:
+            enum:
+              - system_function
+              - system
+              - container
+              - component
+              - infrastructure
+              - code
+              - actor
+              - process
+              - concern
+              - decision
+              - signal
+              - event
+            type: string
+          type: array
+        value:
+          enum:
+            - contains
+            - runs_on
+            - built_from
+            - owns
+            - member_of
+            - participates_in
+            - uses
+            - supports
+            - calls
+            - reads_from
+            - writes_to
+            - publishes_to
+            - consumes_from
+            - depends_on
+            - observes
+            - constrains
+            - addresses
+            - mitigates
+            - impacts
+            - touches
+          type: string
+      required:
+        - value
+        - family
+        - dependency
+        - rollsUp
+        - sameHierarchy
+        - sourceCategories
+        - targetCategories
       type: object
     KnowledgeGraphRelationship:
       additionalProperties: false
@@ -5169,15 +5433,46 @@ components:
         createdAt:
           format: date-time
           type: string
-        latestState:
-          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
+        lastObservedAt:
+          format: date-time
+          type: string
         predicate:
+          enum:
+            - contains
+            - runs_on
+            - built_from
+            - owns
+            - member_of
+            - participates_in
+            - uses
+            - supports
+            - calls
+            - reads_from
+            - writes_to
+            - publishes_to
+            - consumes_from
+            - depends_on
+            - observes
+            - constrains
+            - addresses
+            - mitigates
+            - impacts
+            - touches
           type: string
         sourceEntityId:
           type: string
+        stale:
+          type: boolean
+        state:
+          $ref: "#/components/schemas/KnowledgeGraphSubjectState"
+        stateSources:
+          $ref: "#/components/schemas/KnowledgeGraphStateSources"
         targetEntityId:
           type: string
         updatedAt:
+          format: date-time
+          type: string
+        withdrawnAt:
           format: date-time
           type: string
       required:
@@ -5187,6 +5482,9 @@ components:
         - aliases
         - createdAt
         - updatedAt
+        - state
+        - stateSources
+        - stale
       type: object
     KnowledgeGraphRelationshipSummary:
       additionalProperties: false
@@ -5196,36 +5494,30 @@ components:
         predicate:
           enum:
             - contains
-            - interacts_with
+            - runs_on
+            - built_from
+            - owns
+            - member_of
+            - participates_in
+            - uses
+            - supports
             - calls
             - reads_from
             - writes_to
             - publishes_to
             - consumes_from
             - depends_on
-            - runs_on
-            - owns
-            - supports
-            - participates_in
-            - member_of
-            - controls
             - observes
-            - influences
             - constrains
             - addresses
+            - mitigates
             - impacts
             - touches
-            - uses
-            - processes
-            - indexes
-            - stores
-            - indicates
-            - classified_as
-            - responds_to
-            - mitigates
           type: string
         sourceId:
           type: string
+        stale:
+          type: boolean
         targetId:
           type: string
       required:
@@ -5233,6 +5525,7 @@ components:
         - sourceId
         - targetId
         - predicate
+        - stale
       type: object
     KnowledgeGraphRelationshipsPage:
       additionalProperties: false
@@ -5245,6 +5538,45 @@ components:
           type: array
       required:
         - relationships
+      type: object
+    KnowledgeGraphStateSource:
+      additionalProperties: false
+      properties:
+        aliasId:
+          type: string
+        effectiveAt:
+          format: date-time
+          type: string
+      required:
+        - aliasId
+        - effectiveAt
+      type: object
+    KnowledgeGraphStateSources:
+      additionalProperties: false
+      properties:
+        description:
+          $ref: "#/components/schemas/KnowledgeGraphStateSource"
+        displayName:
+          $ref: "#/components/schemas/KnowledgeGraphStateSource"
+        properties:
+          additionalProperties:
+            $ref: "#/components/schemas/KnowledgeGraphStateSource"
+          type: object
+      required:
+        - properties
+      type: object
+    KnowledgeGraphStateValue:
+      additionalProperties: false
+      properties:
+        effectiveAt:
+          format: date-time
+          type: string
+        unset:
+          type: boolean
+        value: {}
+      required:
+        - unset
+        - effectiveAt
       type: object
     KnowledgeGraphSubjectAlias:
       additionalProperties: false
@@ -5260,16 +5592,34 @@ components:
     KnowledgeGraphSubjectAliasAttributes:
       additionalProperties: false
       properties:
+        expiresAt:
+          format: date-time
+          type: string
+        firstObservedAt:
+          format: date-time
+          type: string
         kind:
           enum:
             - entity
             - relationship
           type: string
+        lastObservedAt:
+          format: date-time
+          type: string
         resourceRef:
           $ref: "#/components/schemas/ProviderResourceRef"
+        stale:
+          type: boolean
+        state:
+          $ref: "#/components/schemas/KnowledgeGraphAliasState"
+        withdrawnAt:
+          format: date-time
+          type: string
       required:
         - kind
         - resourceRef
+        - state
+        - stale
       type: object
     KnowledgeGraphSubjectState:
       additionalProperties: false
@@ -5305,17 +5655,17 @@ components:
         category:
           enum:
             - system_function
-            - actor
             - system
             - container
-            - infrastructure
             - component
+            - infrastructure
             - code
+            - actor
             - process
             - concern
             - decision
-            - event
             - signal
+            - event
           type: string
         createdAt:
           format: date-time
@@ -17201,17 +17551,17 @@ paths:
             items:
               enum:
                 - system_function
-                - actor
                 - system
                 - container
-                - infrastructure
                 - component
+                - infrastructure
                 - code
+                - actor
                 - process
                 - concern
                 - decision
-                - event
                 - signal
+                - event
               type: string
             type: array
         - explode: false
@@ -17480,17 +17830,17 @@ paths:
             items:
               enum:
                 - system_function
-                - actor
                 - system
                 - container
-                - infrastructure
                 - component
+                - infrastructure
                 - code
+                - actor
                 - process
                 - concern
                 - decision
-                - event
                 - signal
+                - event
               type: string
             type: array
         - explode: false
@@ -17574,33 +17924,25 @@ paths:
             items:
               enum:
                 - contains
-                - interacts_with
+                - runs_on
+                - built_from
+                - owns
+                - member_of
+                - participates_in
+                - uses
+                - supports
                 - calls
                 - reads_from
                 - writes_to
                 - publishes_to
                 - consumes_from
                 - depends_on
-                - runs_on
-                - owns
-                - supports
-                - participates_in
-                - member_of
-                - controls
                 - observes
-                - influences
                 - constrains
                 - addresses
+                - mitigates
                 - impacts
                 - touches
-                - uses
-                - processes
-                - indexes
-                - stores
-                - indicates
-                - classified_as
-                - responds_to
-                - mitigates
               type: string
             type: array
         - explode: false
@@ -17658,6 +18000,56 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Expand Knowledge Graph Relationships
+      tags:
+        - Knowledge Graph
+  /knowledge/model:
+    get:
+      description: The hierarchies, category specs and predicate specs every knowledge graph reader shares.
+      operationId: get-knowledge-graph-model
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetKnowledgeGraphModelResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get the Knowledge Graph Model
       tags:
         - Knowledge Graph
   /knowledge/proposals:

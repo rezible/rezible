@@ -1,4 +1,4 @@
-import { createInfiniteQuery } from "@tanstack/svelte-query";
+import { createInfiniteQuery, createQuery } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import {
 	listSystemAnalysisEdgesInfiniteOptions,
@@ -9,6 +9,8 @@ import {
 } from "$lib/api";
 import { getNextPageParam } from "$lib/api/utils";
 import { formatTime } from "$lib/time";
+import { knowledgeModelOptions } from "$features/system/lib/knowledge-model";
+import { mapModel } from "$features/system/lib/system-map/model";
 import { reconcileSelection } from "$features/system/lib/system-map/selection";
 import type { MapHighlights, MapSelection } from "$features/system/lib/system-map/presentation";
 import { buildAnalysisGraph, flattenPages, mapEntryAttachments, type AnalysisGraph } from "./lib";
@@ -67,6 +69,7 @@ export class SystemAnalysisController {
 					this.edgesQuery.isSuccess,
 					this.edgesQuery.isFetching,
 					this.edgesQuery.hasNextPage,
+					this.modelQuery.data,
 				] as const,
 			() => this.publishCompletedGraph()
 		);
@@ -90,6 +93,8 @@ export class SystemAnalysisController {
 	}
 
 	private analysisPath = $derived({ id: this.analysisId ?? "" });
+
+	private modelQuery = createQuery(() => knowledgeModelOptions());
 
 	nodesQuery = createInfiniteQuery(() => ({
 		...listSystemAnalysisNodesInfiniteOptions({
@@ -183,8 +188,10 @@ export class SystemAnalysisController {
 
 	private publishCompletedGraph() {
 		const analysisId = this.analysisId;
+		const model = this.modelQuery.data?.data;
 		if (
 			!analysisId ||
+			!model ||
 			!this.nodesQuery.isSuccess ||
 			this.nodesQuery.isFetching ||
 			this.nodesQuery.hasNextPage ||
@@ -195,7 +202,7 @@ export class SystemAnalysisController {
 			return;
 		}
 
-		const graph = buildAnalysisGraph(this.analysisNodes, this.analysisEdges);
+		const graph = buildAnalysisGraph(mapModel(model), this.analysisNodes, this.analysisEdges);
 		if (this.analysisId === analysisId) {
 			this.publishedAnalysis = { analysisId, ...graph };
 		}

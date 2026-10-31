@@ -1,68 +1,45 @@
 import { expect, test } from "bun:test";
-import { fullFixture } from "$features/dev/views/system-map-fixture/terrain-fixture";
-import type { GraphSubset } from "../graph";
+import { fullFixture as fixture } from "$features/dev/views/system-map-fixture/terrain-fixture";
 import {
+	breadcrumb,
 	isPlacementUnknown,
-	placementChips,
-	placementCountLine,
 	placementFootprint,
+	placementSources,
 	placementTargets,
 } from "../placement";
 import { buildStructureTree } from "../structure";
+import { withTestModel } from "./test-model";
 
-const graph: GraphSubset = {
-	...fullFixture,
-	relationships: [
-		...fullFixture.relationships,
-		{ id: "on-index", source: "rt-checkout-api", target: "rt-search-index", predicate: "runs_on" },
-	],
-	unresolvedRelationships: [
-		{ id: "on-missing", source: "rt-checkout-api", target: "rt-missing", predicate: "runs_on" },
-	],
-};
+const graph = withTestModel(fixture);
+const entities = new Map(graph.entities.map((entity) => [entity.id, entity]));
 
-test("a card shows its first two targets by display name as chips and collapses the rest", () => {
-	const targets = placementTargets(graph);
-	const chips = placementChips(targets.get("rt-checkout-api")!);
+test("a source shows only its most specific placements, each with its infrastructure ancestry", () => {
+	const targets = placementTargets(graph).get("rt-checkout")!;
 
-	expect(chips.shown.map(({ id }) => id)).toEqual(["rt-production-cluster", "rt-search-index"]);
-	expect(chips.collapsed.map(({ id }) => id)).toEqual(["rt-standby-cluster"]);
-	expect(placementChips(targets.get("rt-payment-worker")!).collapsed).toEqual([]);
-	expect(targets.has("rt-checkout-db")).toBe(false);
-});
-
-test("the popover counts the loaded entities that run on a target", () => {
-	expect(placementCountLine(graph, "rt-production-cluster")).toBe("3 entities run here");
-	expect(placementCountLine(graph, "rt-standby-cluster")).toBe("1 entity runs here");
-});
-
-test("on a partial graph the count is a lower bound", () => {
-	const partial: GraphSubset = { ...graph, enumeration: { scope: "query", stopReason: "entity-limit" } };
-
-	expect(placementCountLine(partial, "rt-production-cluster")).toBe("At least 3 entities run here");
+	// checkout also runs_on production, which its namespaces imply.
+	expect(targets.map(({ id }) => id)).toEqual(["ns-commerce", "ns-commerce-eu"]);
+	expect(targets.map(({ id }) => breadcrumb(entities, id))).toEqual([
+		"production › prod-use1",
+		"production › prod-euw1",
+	]);
+	expect(placementSources(graph, placementTargets(graph)).has("env-production")).toBe(false);
 });
 
 test("placement is unknown only for containers without a loaded target", () => {
 	const targets = placementTargets(graph);
-	const unknown = (id: string) =>
-		isPlacementUnknown(
-			graph.entities.find((entity) => entity.id === id)!,
-			targets.get(id)
-		);
+	const unknown = (id: string) => isPlacementUnknown(graph, entities.get(id)!, targets.get(id));
 
-	expect(unknown("rt-search-api")).toBe(true);
-	expect(unknown("rt-checkout-api")).toBe(false);
-	// Infrastructure is not expected to run anywhere.
-	expect(unknown("rt-checkout-db")).toBe(false);
-	expect(unknown("sys-checkout")).toBe(false);
+	expect(unknown("rt-crawler")).toBe(true);
+	expect(unknown("rt-checkout")).toBe(false);
+	expect(unknown("db-orders")).toBe(false);
+	expect(unknown("sys-search")).toBe(false);
 });
 
-test("the footprint marks the cards that run on a target, or their systems at the landscape band", () => {
-	const tree = buildStructureTree(fullFixture);
+test("the footprint marks the cards that run on a target, or their regions at the landscape band", () => {
+	const tree = buildStructureTree(graph);
 	const footprint = (band: "landscape" | "runtime") =>
-		[...placementFootprint(fullFixture, tree, "rt-production-cluster", band)].sort();
+		[...placementFootprint(graph, tree, "ns-commerce", band)].sort();
 
-	expect(footprint("runtime")).toEqual(["rt-checkout-api", "rt-payment-service", "rt-payment-worker"]);
-	expect(footprint("landscape")).toEqual(["sys-checkout", "sys-payments"]);
-	expect(placementFootprint(fullFixture, tree, "rt-checkout-api", "runtime").size).toBe(0);
+	expect(footprint("runtime")).toEqual(["rt-checkout", "rt-payment-service", "rt-payment-worker"]);
+	expect(footprint("landscape")).toEqual(["sys-commerce-core", "sys-payments"]);
 });

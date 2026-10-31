@@ -34,6 +34,10 @@
 		}
 	}
 
+	/** Chips read as the placement's path, such as "production › prod-use1 › commerce". */
+	const chipPath = (target: CardPlacement) =>
+		target.breadcrumb ? `${target.breadcrumb} › ${target.label}` : target.label;
+
 	function selectTarget(target: CardPlacement) {
 		openChip = undefined;
 		controller.selectEntity(target.entity.id);
@@ -55,6 +59,11 @@
 			<div class="flex min-w-0 flex-col">
 				<span class="truncate font-medium" title={target.label}>{target.label}</span>
 				<span class="text-muted-foreground truncate text-xs">{target.entity.kind}</span>
+				{#if target.breadcrumb}
+					<span class="text-muted-foreground truncate text-xs" title={target.breadcrumb}>
+						{target.breadcrumb}
+					</span>
+				{/if}
 			</div>
 		</div>
 		<p class="text-muted-foreground text-xs">{target.countLine}</p>
@@ -105,7 +114,7 @@
 <div class="flex max-w-full min-w-0 flex-col items-center gap-1" aria-label="Runs on" role="group">
 	{#each placement.shown as target, index (target.entity.id)}
 		<div class="flex max-w-full min-w-0 items-center gap-1">
-			{@render chip(target.entity.id, target.label, `Runs on ${target.label}`, [target])}
+			{@render chip(target.entity.id, chipPath(target), `Runs on ${chipPath(target)}`, [target])}
 			{#if index === placement.shown.length - 1 && placement.collapsed.length > 0}
 				{@const count = placement.collapsed.length}
 				{@render chip("collapsed", `+${count}`, `Runs on ${count} more`, placement.targets)}

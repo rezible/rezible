@@ -107,6 +107,8 @@ describe("aliases", () => {
 				attributes: {
 					kind: "entity",
 					resourceRef: { provider: "webhook", providerNamespace: "", resourceRef: "checkout" },
+					state: { properties: {} },
+					stale: false,
 				},
 				integrationDisplayName: "",
 				provider: "webhook",
@@ -123,6 +125,8 @@ describe("aliases", () => {
 				attributes: {
 					kind: "entity",
 					resourceRef: { provider: "webhook", providerNamespace: "", resourceRef: "checkout-api" },
+					state: { properties: {} },
+					stale: false,
 				},
 				integrationDisplayName: "Monitoring",
 				provider: "monitoring",
@@ -202,6 +206,9 @@ describe("entity rows", () => {
 			displayName,
 			linkingAttributes: values.map((value) => ({ attribute: "service.name", value })),
 			aliases: [],
+			state: { displayName, description: "", properties: {} },
+			stateSources: { properties: {} },
+			stale: false,
 			createdAt: "2026-10-16T11:00:00Z",
 			updatedAt: "2026-10-16T11:00:00Z",
 		},

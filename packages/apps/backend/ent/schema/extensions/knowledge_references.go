@@ -81,6 +81,7 @@ var coreColumns = map[column]bool{
 	{"knowledge_subject_alias", "relationship_id"}:       true,
 	{"knowledge_relationships", "source_entity_id"}:      true,
 	{"knowledge_relationships", "target_entity_id"}:      true,
+	{"knowledge_entities", "parent_id"}:                  true,
 }
 
 // reference is a generated reference descriptor.

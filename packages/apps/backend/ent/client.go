@@ -10877,6 +10877,44 @@ func (c *KnowledgeEntityClient) QueryTargetRelationships(_m *KnowledgeEntity) *K
 	return query
 }
 
+// QueryParent queries the parent edge of a KnowledgeEntity.
+func (c *KnowledgeEntityClient) QueryParent(_m *KnowledgeEntity) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, knowledgeentity.ParentTable, knowledgeentity.ParentColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChildren queries the children edge of a KnowledgeEntity.
+func (c *KnowledgeEntityClient) QueryChildren(_m *KnowledgeEntity) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgeentity.Table, knowledgeentity.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, knowledgeentity.ChildrenTable, knowledgeentity.ChildrenColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.KnowledgeEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *KnowledgeEntityClient) Hooks() []Hook {
 	hooks := c.hooks.KnowledgeEntity

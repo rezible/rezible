@@ -7,12 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // KnowledgeSubjectAliasMutation represents an operation that mutates the KnowledgeSubjectAlias nodes in the graph.
@@ -25,6 +27,12 @@ type KnowledgeSubjectAliasMutation struct {
 	provider_namespace        *string
 	provider_resource_ref     *string
 	subject_kind              *knowledgesubjectalias.SubjectKind
+	created_at                *time.Time
+	state                     *schematypes.KnowledgeAliasState
+	first_observed_at         *time.Time
+	last_observed_at          *time.Time
+	withdrawn_at              *time.Time
+	expires_at                *time.Time
 	clearedFields             map[string]struct{}
 	tenant                    *int
 	clearedtenant             bool
@@ -473,6 +481,287 @@ func (m *KnowledgeSubjectAliasMutation) ResetMergedByProposalID() {
 	delete(m.clearedFields, knowledgesubjectalias.FieldMergedByProposalID)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *KnowledgeSubjectAliasMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the KnowledgeSubjectAlias entity.
+// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeSubjectAliasMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *KnowledgeSubjectAliasMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetState sets the "state" field.
+func (m *KnowledgeSubjectAliasMutation) SetState(sas schematypes.KnowledgeAliasState) {
+	m.state = &sas
+}
+
+// State returns the value of the "state" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) State() (r schematypes.KnowledgeAliasState, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldState returns the old "state" field's value of the KnowledgeSubjectAlias entity.
+// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeSubjectAliasMutation) OldState(ctx context.Context) (v schematypes.KnowledgeAliasState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldState: %w", err)
+	}
+	return oldValue.State, nil
+}
+
+// ClearState clears the value of the "state" field.
+func (m *KnowledgeSubjectAliasMutation) ClearState() {
+	m.state = nil
+	m.clearedFields[knowledgesubjectalias.FieldState] = struct{}{}
+}
+
+// StateCleared returns if the "state" field was cleared in this mutation.
+func (m *KnowledgeSubjectAliasMutation) StateCleared() bool {
+	_, ok := m.clearedFields[knowledgesubjectalias.FieldState]
+	return ok
+}
+
+// ResetState resets all changes to the "state" field.
+func (m *KnowledgeSubjectAliasMutation) ResetState() {
+	m.state = nil
+	delete(m.clearedFields, knowledgesubjectalias.FieldState)
+}
+
+// SetFirstObservedAt sets the "first_observed_at" field.
+func (m *KnowledgeSubjectAliasMutation) SetFirstObservedAt(t time.Time) {
+	m.first_observed_at = &t
+}
+
+// FirstObservedAt returns the value of the "first_observed_at" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) FirstObservedAt() (r time.Time, exists bool) {
+	v := m.first_observed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFirstObservedAt returns the old "first_observed_at" field's value of the KnowledgeSubjectAlias entity.
+// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeSubjectAliasMutation) OldFirstObservedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFirstObservedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFirstObservedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFirstObservedAt: %w", err)
+	}
+	return oldValue.FirstObservedAt, nil
+}
+
+// ClearFirstObservedAt clears the value of the "first_observed_at" field.
+func (m *KnowledgeSubjectAliasMutation) ClearFirstObservedAt() {
+	m.first_observed_at = nil
+	m.clearedFields[knowledgesubjectalias.FieldFirstObservedAt] = struct{}{}
+}
+
+// FirstObservedAtCleared returns if the "first_observed_at" field was cleared in this mutation.
+func (m *KnowledgeSubjectAliasMutation) FirstObservedAtCleared() bool {
+	_, ok := m.clearedFields[knowledgesubjectalias.FieldFirstObservedAt]
+	return ok
+}
+
+// ResetFirstObservedAt resets all changes to the "first_observed_at" field.
+func (m *KnowledgeSubjectAliasMutation) ResetFirstObservedAt() {
+	m.first_observed_at = nil
+	delete(m.clearedFields, knowledgesubjectalias.FieldFirstObservedAt)
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (m *KnowledgeSubjectAliasMutation) SetLastObservedAt(t time.Time) {
+	m.last_observed_at = &t
+}
+
+// LastObservedAt returns the value of the "last_observed_at" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) LastObservedAt() (r time.Time, exists bool) {
+	v := m.last_observed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastObservedAt returns the old "last_observed_at" field's value of the KnowledgeSubjectAlias entity.
+// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeSubjectAliasMutation) OldLastObservedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastObservedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastObservedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastObservedAt: %w", err)
+	}
+	return oldValue.LastObservedAt, nil
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (m *KnowledgeSubjectAliasMutation) ClearLastObservedAt() {
+	m.last_observed_at = nil
+	m.clearedFields[knowledgesubjectalias.FieldLastObservedAt] = struct{}{}
+}
+
+// LastObservedAtCleared returns if the "last_observed_at" field was cleared in this mutation.
+func (m *KnowledgeSubjectAliasMutation) LastObservedAtCleared() bool {
+	_, ok := m.clearedFields[knowledgesubjectalias.FieldLastObservedAt]
+	return ok
+}
+
+// ResetLastObservedAt resets all changes to the "last_observed_at" field.
+func (m *KnowledgeSubjectAliasMutation) ResetLastObservedAt() {
+	m.last_observed_at = nil
+	delete(m.clearedFields, knowledgesubjectalias.FieldLastObservedAt)
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (m *KnowledgeSubjectAliasMutation) SetWithdrawnAt(t time.Time) {
+	m.withdrawn_at = &t
+}
+
+// WithdrawnAt returns the value of the "withdrawn_at" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) WithdrawnAt() (r time.Time, exists bool) {
+	v := m.withdrawn_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWithdrawnAt returns the old "withdrawn_at" field's value of the KnowledgeSubjectAlias entity.
+// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeSubjectAliasMutation) OldWithdrawnAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWithdrawnAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWithdrawnAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWithdrawnAt: %w", err)
+	}
+	return oldValue.WithdrawnAt, nil
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (m *KnowledgeSubjectAliasMutation) ClearWithdrawnAt() {
+	m.withdrawn_at = nil
+	m.clearedFields[knowledgesubjectalias.FieldWithdrawnAt] = struct{}{}
+}
+
+// WithdrawnAtCleared returns if the "withdrawn_at" field was cleared in this mutation.
+func (m *KnowledgeSubjectAliasMutation) WithdrawnAtCleared() bool {
+	_, ok := m.clearedFields[knowledgesubjectalias.FieldWithdrawnAt]
+	return ok
+}
+
+// ResetWithdrawnAt resets all changes to the "withdrawn_at" field.
+func (m *KnowledgeSubjectAliasMutation) ResetWithdrawnAt() {
+	m.withdrawn_at = nil
+	delete(m.clearedFields, knowledgesubjectalias.FieldWithdrawnAt)
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *KnowledgeSubjectAliasMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the KnowledgeSubjectAlias entity.
+// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeSubjectAliasMutation) OldExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (m *KnowledgeSubjectAliasMutation) ClearExpiresAt() {
+	m.expires_at = nil
+	m.clearedFields[knowledgesubjectalias.FieldExpiresAt] = struct{}{}
+}
+
+// ExpiresAtCleared returns if the "expires_at" field was cleared in this mutation.
+func (m *KnowledgeSubjectAliasMutation) ExpiresAtCleared() bool {
+	_, ok := m.clearedFields[knowledgesubjectalias.FieldExpiresAt]
+	return ok
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *KnowledgeSubjectAliasMutation) ResetExpiresAt() {
+	m.expires_at = nil
+	delete(m.clearedFields, knowledgesubjectalias.FieldExpiresAt)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *KnowledgeSubjectAliasMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -669,7 +958,7 @@ func (m *KnowledgeSubjectAliasMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeSubjectAliasMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 14)
 	if m.tenant != nil {
 		fields = append(fields, knowledgesubjectalias.FieldTenantID)
 	}
@@ -693,6 +982,24 @@ func (m *KnowledgeSubjectAliasMutation) Fields() []string {
 	}
 	if m.merged_by_proposal != nil {
 		fields = append(fields, knowledgesubjectalias.FieldMergedByProposalID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, knowledgesubjectalias.FieldCreatedAt)
+	}
+	if m.state != nil {
+		fields = append(fields, knowledgesubjectalias.FieldState)
+	}
+	if m.first_observed_at != nil {
+		fields = append(fields, knowledgesubjectalias.FieldFirstObservedAt)
+	}
+	if m.last_observed_at != nil {
+		fields = append(fields, knowledgesubjectalias.FieldLastObservedAt)
+	}
+	if m.withdrawn_at != nil {
+		fields = append(fields, knowledgesubjectalias.FieldWithdrawnAt)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, knowledgesubjectalias.FieldExpiresAt)
 	}
 	return fields
 }
@@ -718,6 +1025,18 @@ func (m *KnowledgeSubjectAliasMutation) Field(name string) (ent.Value, bool) {
 		return m.RelationshipID()
 	case knowledgesubjectalias.FieldMergedByProposalID:
 		return m.MergedByProposalID()
+	case knowledgesubjectalias.FieldCreatedAt:
+		return m.CreatedAt()
+	case knowledgesubjectalias.FieldState:
+		return m.State()
+	case knowledgesubjectalias.FieldFirstObservedAt:
+		return m.FirstObservedAt()
+	case knowledgesubjectalias.FieldLastObservedAt:
+		return m.LastObservedAt()
+	case knowledgesubjectalias.FieldWithdrawnAt:
+		return m.WithdrawnAt()
+	case knowledgesubjectalias.FieldExpiresAt:
+		return m.ExpiresAt()
 	}
 	return nil, false
 }
@@ -743,6 +1062,18 @@ func (m *KnowledgeSubjectAliasMutation) OldField(ctx context.Context, name strin
 		return m.OldRelationshipID(ctx)
 	case knowledgesubjectalias.FieldMergedByProposalID:
 		return m.OldMergedByProposalID(ctx)
+	case knowledgesubjectalias.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case knowledgesubjectalias.FieldState:
+		return m.OldState(ctx)
+	case knowledgesubjectalias.FieldFirstObservedAt:
+		return m.OldFirstObservedAt(ctx)
+	case knowledgesubjectalias.FieldLastObservedAt:
+		return m.OldLastObservedAt(ctx)
+	case knowledgesubjectalias.FieldWithdrawnAt:
+		return m.OldWithdrawnAt(ctx)
+	case knowledgesubjectalias.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeSubjectAlias field %s", name)
 }
@@ -808,6 +1139,48 @@ func (m *KnowledgeSubjectAliasMutation) SetField(name string, value ent.Value) e
 		}
 		m.SetMergedByProposalID(v)
 		return nil
+	case knowledgesubjectalias.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case knowledgesubjectalias.FieldState:
+		v, ok := value.(schematypes.KnowledgeAliasState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetState(v)
+		return nil
+	case knowledgesubjectalias.FieldFirstObservedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFirstObservedAt(v)
+		return nil
+	case knowledgesubjectalias.FieldLastObservedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastObservedAt(v)
+		return nil
+	case knowledgesubjectalias.FieldWithdrawnAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWithdrawnAt(v)
+		return nil
+	case knowledgesubjectalias.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeSubjectAlias field %s", name)
 }
@@ -850,6 +1223,21 @@ func (m *KnowledgeSubjectAliasMutation) ClearedFields() []string {
 	if m.FieldCleared(knowledgesubjectalias.FieldMergedByProposalID) {
 		fields = append(fields, knowledgesubjectalias.FieldMergedByProposalID)
 	}
+	if m.FieldCleared(knowledgesubjectalias.FieldState) {
+		fields = append(fields, knowledgesubjectalias.FieldState)
+	}
+	if m.FieldCleared(knowledgesubjectalias.FieldFirstObservedAt) {
+		fields = append(fields, knowledgesubjectalias.FieldFirstObservedAt)
+	}
+	if m.FieldCleared(knowledgesubjectalias.FieldLastObservedAt) {
+		fields = append(fields, knowledgesubjectalias.FieldLastObservedAt)
+	}
+	if m.FieldCleared(knowledgesubjectalias.FieldWithdrawnAt) {
+		fields = append(fields, knowledgesubjectalias.FieldWithdrawnAt)
+	}
+	if m.FieldCleared(knowledgesubjectalias.FieldExpiresAt) {
+		fields = append(fields, knowledgesubjectalias.FieldExpiresAt)
+	}
 	return fields
 }
 
@@ -872,6 +1260,21 @@ func (m *KnowledgeSubjectAliasMutation) ClearField(name string) error {
 		return nil
 	case knowledgesubjectalias.FieldMergedByProposalID:
 		m.ClearMergedByProposalID()
+		return nil
+	case knowledgesubjectalias.FieldState:
+		m.ClearState()
+		return nil
+	case knowledgesubjectalias.FieldFirstObservedAt:
+		m.ClearFirstObservedAt()
+		return nil
+	case knowledgesubjectalias.FieldLastObservedAt:
+		m.ClearLastObservedAt()
+		return nil
+	case knowledgesubjectalias.FieldWithdrawnAt:
+		m.ClearWithdrawnAt()
+		return nil
+	case knowledgesubjectalias.FieldExpiresAt:
+		m.ClearExpiresAt()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeSubjectAlias nullable field %s", name)
@@ -904,6 +1307,24 @@ func (m *KnowledgeSubjectAliasMutation) ResetField(name string) error {
 		return nil
 	case knowledgesubjectalias.FieldMergedByProposalID:
 		m.ResetMergedByProposalID()
+		return nil
+	case knowledgesubjectalias.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case knowledgesubjectalias.FieldState:
+		m.ResetState()
+		return nil
+	case knowledgesubjectalias.FieldFirstObservedAt:
+		m.ResetFirstObservedAt()
+		return nil
+	case knowledgesubjectalias.FieldLastObservedAt:
+		m.ResetLastObservedAt()
+		return nil
+	case knowledgesubjectalias.FieldWithdrawnAt:
+		m.ResetWithdrawnAt()
+		return nil
+	case knowledgesubjectalias.FieldExpiresAt:
+		m.ResetExpiresAt()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeSubjectAlias field %s", name)

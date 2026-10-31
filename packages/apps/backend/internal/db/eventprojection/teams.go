@@ -3,11 +3,13 @@ package eventprojection
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	entschema "github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/schema/schematypes"
@@ -30,12 +32,13 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 	}
 	teamEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryActor,
-		Kind:                knowledgeEntityKindTeam,
+		Kind:                knowledgegraph.EntityKindTeam,
 		ProviderResourceRef: teamResourceRef,
 	}
 	evidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(e.Event),
 		Assertion:   knowledgeAssertionTeamObserved,
+		StateMode:   ke.StateModeReplace,
 		EffectiveAt: e.Event.OccurredAt,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.Name,
@@ -62,7 +65,7 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
-			Kind: knowledgeEntityKindTeam,
+			Kind: knowledgegraph.EntityKindTeam,
 			Id:   teamId,
 		})
 		return projected, nil
@@ -105,14 +108,14 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 
 	userEntity := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryActor,
-		Kind:                knowledgeEntityKindUser,
+		Kind:                knowledgegraph.EntityKindUser,
 		ProviderResourceRef: attrs.User.ProviderResourceRef,
 		LinkingAttributes:   projections.UserEntityLinkingAttributes{Email: attrs.User.Email},
 	}
 
 	teamEntity := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryActor,
-		Kind:                knowledgeEntityKindTeam,
+		Kind:                knowledgegraph.EntityKindTeam,
 		ProviderResourceRef: attrs.Team.ProviderResourceRef,
 	}
 	userEvidenceRef := rez.KnowledgeEvidenceRef{
@@ -190,7 +193,7 @@ func (s *ProjectionService) setTeamMembershipFromProjection(ctx context.Context,
 
 	userEntityId := rel.SourceEntityID
 	teamEntityId := rel.TargetEntityID
-	if rel.Edges.TargetEntity != nil && rel.Edges.TargetEntity.Kind == knowledgeEntityKindUser {
+	if rel.Edges.TargetEntity != nil && rel.Edges.TargetEntity.Kind == knowledgegraph.EntityKindUser {
 		userEntityId = rel.TargetEntityID
 		teamEntityId = rel.SourceEntityID
 	}

@@ -3,6 +3,7 @@ package eventprojection
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -29,7 +30,7 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 	}
 	userEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryActor,
-		Kind:                knowledgeEntityKindUser,
+		Kind:                knowledgegraph.EntityKindUser,
 		ProviderResourceRef: userResourceRef,
 		LinkingAttributes:   projections.UserEntityLinkingAttributes{Email: attributes.Email},
 	}
@@ -60,7 +61,7 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 		}
 
 		projected = append(projected, rez.ProjectedEntityRef{
-			Kind: knowledgeEntityKindUser,
+			Kind: knowledgegraph.EntityKindUser,
 			Id:   userId,
 		})
 

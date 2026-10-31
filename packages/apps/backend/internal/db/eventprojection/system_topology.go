@@ -3,9 +3,9 @@ package eventprojection
 import (
 	"context"
 	"fmt"
-	"maps"
 
 	rez "github.com/rezible/rezible"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -19,10 +19,6 @@ const (
 func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *projections.SystemComponentEvent) ([]rez.ProjectedEntityRef, error) {
 	event := e.Event
 	attrs := e.Attributes
-
-	properties := make(map[string]any, len(attrs.Properties)+1)
-	maps.Copy(properties, attrs.Properties)
-	properties["component_kind"] = attrs.Kind
 
 	componentResourceRef := rez.ProviderResourceRef{
 		Provider:          event.Provider,
@@ -39,12 +35,18 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionSystemComponentExists,
 		EffectiveAt: event.OccurredAt,
+		StateMode:   ke.StateModeReplace,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.DisplayName,
 			Description: attrs.Description,
-			Properties:  properties,
+			Properties:  attrs.Properties,
 		},
 		Subject: rez.KnowledgeSubjectRef{Entity: &componentEntityRef},
+	}
+	if attrs.Listing {
+		evidence.StateMode = ke.StateModeMerge
+		evidence.SubjectState = schematypes.KnowledgeGraphSubjectState{DisplayName: attrs.DisplayName}
+		evidence.ValidFor = attrs.ValidFor
 	}
 
 	if ingestErr := s.knowledge.IngestEvidence(ctx, event, evidence); ingestErr != nil {
@@ -98,6 +100,7 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionSystemRelationshipExists,
 		EffectiveAt: event.OccurredAt,
+		StateMode:   ke.StateModeReplace,
 		Subject:     rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.DisplayName,

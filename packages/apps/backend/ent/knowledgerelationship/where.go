@@ -72,6 +72,26 @@ func UpdatedAt(v time.Time) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// StateEffectiveAt applies equality check predicate on the "state_effective_at" field. It's identical to StateEffectiveAtEQ.
+func StateEffectiveAt(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldStateEffectiveAt, v))
+}
+
+// LastObservedAt applies equality check predicate on the "last_observed_at" field. It's identical to LastObservedAtEQ.
+func LastObservedAt(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldLastObservedAt, v))
+}
+
+// WithdrawnAt applies equality check predicate on the "withdrawn_at" field. It's identical to WithdrawnAtEQ.
+func WithdrawnAt(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldWithdrawnAt, v))
+}
+
+// ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
+func ExpiresAt(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldExpiresAt, v))
+}
+
 // SourceEntityID applies equality check predicate on the "source_entity_id" field. It's identical to SourceEntityIDEQ.
 func SourceEntityID(v uuid.UUID) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldSourceEntityID, v))
@@ -180,6 +200,226 @@ func UpdatedAtLT(v time.Time) predicate.KnowledgeRelationship {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// StateIsNil applies the IsNil predicate on the "state" field.
+func StateIsNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldState))
+}
+
+// StateNotNil applies the NotNil predicate on the "state" field.
+func StateNotNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldState))
+}
+
+// StateSourcesIsNil applies the IsNil predicate on the "state_sources" field.
+func StateSourcesIsNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldStateSources))
+}
+
+// StateSourcesNotNil applies the NotNil predicate on the "state_sources" field.
+func StateSourcesNotNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldStateSources))
+}
+
+// StateEffectiveAtEQ applies the EQ predicate on the "state_effective_at" field.
+func StateEffectiveAtEQ(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtNEQ applies the NEQ predicate on the "state_effective_at" field.
+func StateEffectiveAtNEQ(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtIn applies the In predicate on the "state_effective_at" field.
+func StateEffectiveAtIn(vs ...time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIn(FieldStateEffectiveAt, vs...))
+}
+
+// StateEffectiveAtNotIn applies the NotIn predicate on the "state_effective_at" field.
+func StateEffectiveAtNotIn(vs ...time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldStateEffectiveAt, vs...))
+}
+
+// StateEffectiveAtGT applies the GT predicate on the "state_effective_at" field.
+func StateEffectiveAtGT(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGT(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtGTE applies the GTE predicate on the "state_effective_at" field.
+func StateEffectiveAtGTE(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtLT applies the LT predicate on the "state_effective_at" field.
+func StateEffectiveAtLT(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLT(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtLTE applies the LTE predicate on the "state_effective_at" field.
+func StateEffectiveAtLTE(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldStateEffectiveAt, v))
+}
+
+// StateEffectiveAtIsNil applies the IsNil predicate on the "state_effective_at" field.
+func StateEffectiveAtIsNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldStateEffectiveAt))
+}
+
+// StateEffectiveAtNotNil applies the NotNil predicate on the "state_effective_at" field.
+func StateEffectiveAtNotNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldStateEffectiveAt))
+}
+
+// LastObservedAtEQ applies the EQ predicate on the "last_observed_at" field.
+func LastObservedAtEQ(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldLastObservedAt, v))
+}
+
+// LastObservedAtNEQ applies the NEQ predicate on the "last_observed_at" field.
+func LastObservedAtNEQ(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldLastObservedAt, v))
+}
+
+// LastObservedAtIn applies the In predicate on the "last_observed_at" field.
+func LastObservedAtIn(vs ...time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIn(FieldLastObservedAt, vs...))
+}
+
+// LastObservedAtNotIn applies the NotIn predicate on the "last_observed_at" field.
+func LastObservedAtNotIn(vs ...time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldLastObservedAt, vs...))
+}
+
+// LastObservedAtGT applies the GT predicate on the "last_observed_at" field.
+func LastObservedAtGT(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGT(FieldLastObservedAt, v))
+}
+
+// LastObservedAtGTE applies the GTE predicate on the "last_observed_at" field.
+func LastObservedAtGTE(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldLastObservedAt, v))
+}
+
+// LastObservedAtLT applies the LT predicate on the "last_observed_at" field.
+func LastObservedAtLT(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLT(FieldLastObservedAt, v))
+}
+
+// LastObservedAtLTE applies the LTE predicate on the "last_observed_at" field.
+func LastObservedAtLTE(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldLastObservedAt, v))
+}
+
+// LastObservedAtIsNil applies the IsNil predicate on the "last_observed_at" field.
+func LastObservedAtIsNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldLastObservedAt))
+}
+
+// LastObservedAtNotNil applies the NotNil predicate on the "last_observed_at" field.
+func LastObservedAtNotNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldLastObservedAt))
+}
+
+// WithdrawnAtEQ applies the EQ predicate on the "withdrawn_at" field.
+func WithdrawnAtEQ(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtNEQ applies the NEQ predicate on the "withdrawn_at" field.
+func WithdrawnAtNEQ(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtIn applies the In predicate on the "withdrawn_at" field.
+func WithdrawnAtIn(vs ...time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIn(FieldWithdrawnAt, vs...))
+}
+
+// WithdrawnAtNotIn applies the NotIn predicate on the "withdrawn_at" field.
+func WithdrawnAtNotIn(vs ...time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldWithdrawnAt, vs...))
+}
+
+// WithdrawnAtGT applies the GT predicate on the "withdrawn_at" field.
+func WithdrawnAtGT(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGT(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtGTE applies the GTE predicate on the "withdrawn_at" field.
+func WithdrawnAtGTE(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtLT applies the LT predicate on the "withdrawn_at" field.
+func WithdrawnAtLT(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLT(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtLTE applies the LTE predicate on the "withdrawn_at" field.
+func WithdrawnAtLTE(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtIsNil applies the IsNil predicate on the "withdrawn_at" field.
+func WithdrawnAtIsNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldWithdrawnAt))
+}
+
+// WithdrawnAtNotNil applies the NotNil predicate on the "withdrawn_at" field.
+func WithdrawnAtNotNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldWithdrawnAt))
+}
+
+// ExpiresAtEQ applies the EQ predicate on the "expires_at" field.
+func ExpiresAtEQ(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtNEQ applies the NEQ predicate on the "expires_at" field.
+func ExpiresAtNEQ(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtIn applies the In predicate on the "expires_at" field.
+func ExpiresAtIn(vs ...time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtNotIn applies the NotIn predicate on the "expires_at" field.
+func ExpiresAtNotIn(vs ...time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtGT applies the GT predicate on the "expires_at" field.
+func ExpiresAtGT(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGT(FieldExpiresAt, v))
+}
+
+// ExpiresAtGTE applies the GTE predicate on the "expires_at" field.
+func ExpiresAtGTE(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldGTE(FieldExpiresAt, v))
+}
+
+// ExpiresAtLT applies the LT predicate on the "expires_at" field.
+func ExpiresAtLT(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLT(FieldExpiresAt, v))
+}
+
+// ExpiresAtLTE applies the LTE predicate on the "expires_at" field.
+func ExpiresAtLTE(v time.Time) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldLTE(FieldExpiresAt, v))
+}
+
+// ExpiresAtIsNil applies the IsNil predicate on the "expires_at" field.
+func ExpiresAtIsNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldExpiresAt))
+}
+
+// ExpiresAtNotNil applies the NotNil predicate on the "expires_at" field.
+func ExpiresAtNotNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldExpiresAt))
 }
 
 // PredicateEQ applies the EQ predicate on the "predicate" field.

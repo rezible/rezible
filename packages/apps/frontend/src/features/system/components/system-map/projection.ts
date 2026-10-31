@@ -18,9 +18,11 @@ import type { GraphEntity, GraphSubset } from "$features/system/lib/system-map/g
 import { entityLabel, relationshipPredicateLabel } from "$features/system/lib/system-map/labels";
 import { layoutStructure } from "$features/system/lib/system-map/layout";
 import {
+	breadcrumb,
 	placementChips,
 	placementCountLine,
 	placementFootprint,
+	placementSources,
 	placementTargets,
 } from "$features/system/lib/system-map/placement";
 import type { MapHighlights, MapSelection } from "$features/system/lib/system-map/presentation";
@@ -58,10 +60,12 @@ export type RegionNodeData = NodeState & {
 	path: string;
 };
 
-/** A loaded target the card's entity runs on. */
+/** A most specific loaded target the card's entity runs on. */
 export type CardPlacement = {
 	entity: GraphEntity;
 	label: string;
+	/** The target's infrastructure ancestry: "production › prod-use1". */
+	breadcrumb: string;
 	/** "3 entities run here", or "At least 3" on a partial graph. */
 	countLine: string;
 };
@@ -75,8 +79,10 @@ export type CardNodeData = NodeState & {
 		shown: readonly CardPlacement[];
 		collapsed: readonly CardPlacement[];
 	};
-	/** "Also in Payments" when the entity has structural parents besides the one it is drawn in. */
-	alsoInLabel?: string;
+	/** "Part of Checkout" when the container's parent is a container. */
+	partOfLabel?: string;
+	/** "Also claimed by Payments" when other sources place the entity under another parent. */
+	alsoClaimedLabel?: string;
 };
 
 export type RegionFlowNode = Node<RegionNodeData, "system-map-region">;
@@ -144,13 +150,13 @@ function cardNode(
 ): CardFlowNode {
 	const label = entityLabel(card.entity);
 
-	let alsoInLabel: string | undefined;
-	if (card.alsoIn.length > 0) {
-		const parents = card.alsoIn.map((id) => {
+	let alsoClaimedLabel: string | undefined;
+	if (card.otherParentIds.length > 0) {
+		const parents = card.otherParentIds.map((id) => {
 			const parent = entities.get(id);
 			return parent ? entityLabel(parent) : id;
 		});
-		alsoInLabel = `Also in ${parents.join(", ")}`;
+		alsoClaimedLabel = `Also claimed by ${parents.join(", ")}`;
 	}
 
 	return {
@@ -166,7 +172,8 @@ function cardNode(
 			card,
 			label,
 			placement: { targets, ...placementChips(targets) },
-			alsoInLabel,
+			partOfLabel: card.partOf ? `Part of ${entityLabel(card.partOf)}` : undefined,
+			alsoClaimedLabel,
 		},
 	};
 }
@@ -216,6 +223,7 @@ export function projectMap(graph: GraphSubset): MapProjection {
 	const layout = layoutStructure(tree);
 	const entities = new Map(graph.entities.map((entity) => [entity.id, entity]));
 	const targets = placementTargets(graph);
+	const sources = placementSources(graph, targets);
 	const placements = new Map<string, CardPlacement>();
 	const cardPlacements = (id: string) =>
 		(targets.get(id) ?? []).map((entity) => {
@@ -224,7 +232,8 @@ export function projectMap(graph: GraphSubset): MapProjection {
 				placement = {
 					entity,
 					label: entityLabel(entity),
-					countLine: placementCountLine(graph, entity.id),
+					breadcrumb: breadcrumb(entities, entity.id),
+					countLine: placementCountLine(graph, sources.get(entity.id)?.length ?? 0),
 				};
 				placements.set(entity.id, placement);
 			}

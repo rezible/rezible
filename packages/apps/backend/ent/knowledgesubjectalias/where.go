@@ -3,6 +3,8 @@
 package knowledgesubjectalias
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -88,6 +90,31 @@ func RelationshipID(v uuid.UUID) predicate.KnowledgeSubjectAlias {
 // MergedByProposalID applies equality check predicate on the "merged_by_proposal_id" field. It's identical to MergedByProposalIDEQ.
 func MergedByProposalID(v uuid.UUID) predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldMergedByProposalID, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// FirstObservedAt applies equality check predicate on the "first_observed_at" field. It's identical to FirstObservedAtEQ.
+func FirstObservedAt(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldFirstObservedAt, v))
+}
+
+// LastObservedAt applies equality check predicate on the "last_observed_at" field. It's identical to LastObservedAtEQ.
+func LastObservedAt(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldLastObservedAt, v))
+}
+
+// WithdrawnAt applies equality check predicate on the "withdrawn_at" field. It's identical to WithdrawnAtEQ.
+func WithdrawnAt(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldWithdrawnAt, v))
+}
+
+// ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
+func ExpiresAt(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldExpiresAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -413,6 +440,256 @@ func MergedByProposalIDIsNil() predicate.KnowledgeSubjectAlias {
 // MergedByProposalIDNotNil applies the NotNil predicate on the "merged_by_proposal_id" field.
 func MergedByProposalIDNotNil() predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldMergedByProposalID))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// StateIsNil applies the IsNil predicate on the "state" field.
+func StateIsNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIsNull(FieldState))
+}
+
+// StateNotNil applies the NotNil predicate on the "state" field.
+func StateNotNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldState))
+}
+
+// FirstObservedAtEQ applies the EQ predicate on the "first_observed_at" field.
+func FirstObservedAtEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldFirstObservedAt, v))
+}
+
+// FirstObservedAtNEQ applies the NEQ predicate on the "first_observed_at" field.
+func FirstObservedAtNEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldFirstObservedAt, v))
+}
+
+// FirstObservedAtIn applies the In predicate on the "first_observed_at" field.
+func FirstObservedAtIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldFirstObservedAt, vs...))
+}
+
+// FirstObservedAtNotIn applies the NotIn predicate on the "first_observed_at" field.
+func FirstObservedAtNotIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldFirstObservedAt, vs...))
+}
+
+// FirstObservedAtGT applies the GT predicate on the "first_observed_at" field.
+func FirstObservedAtGT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldFirstObservedAt, v))
+}
+
+// FirstObservedAtGTE applies the GTE predicate on the "first_observed_at" field.
+func FirstObservedAtGTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldFirstObservedAt, v))
+}
+
+// FirstObservedAtLT applies the LT predicate on the "first_observed_at" field.
+func FirstObservedAtLT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldFirstObservedAt, v))
+}
+
+// FirstObservedAtLTE applies the LTE predicate on the "first_observed_at" field.
+func FirstObservedAtLTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldFirstObservedAt, v))
+}
+
+// FirstObservedAtIsNil applies the IsNil predicate on the "first_observed_at" field.
+func FirstObservedAtIsNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIsNull(FieldFirstObservedAt))
+}
+
+// FirstObservedAtNotNil applies the NotNil predicate on the "first_observed_at" field.
+func FirstObservedAtNotNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldFirstObservedAt))
+}
+
+// LastObservedAtEQ applies the EQ predicate on the "last_observed_at" field.
+func LastObservedAtEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldLastObservedAt, v))
+}
+
+// LastObservedAtNEQ applies the NEQ predicate on the "last_observed_at" field.
+func LastObservedAtNEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldLastObservedAt, v))
+}
+
+// LastObservedAtIn applies the In predicate on the "last_observed_at" field.
+func LastObservedAtIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldLastObservedAt, vs...))
+}
+
+// LastObservedAtNotIn applies the NotIn predicate on the "last_observed_at" field.
+func LastObservedAtNotIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldLastObservedAt, vs...))
+}
+
+// LastObservedAtGT applies the GT predicate on the "last_observed_at" field.
+func LastObservedAtGT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldLastObservedAt, v))
+}
+
+// LastObservedAtGTE applies the GTE predicate on the "last_observed_at" field.
+func LastObservedAtGTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldLastObservedAt, v))
+}
+
+// LastObservedAtLT applies the LT predicate on the "last_observed_at" field.
+func LastObservedAtLT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldLastObservedAt, v))
+}
+
+// LastObservedAtLTE applies the LTE predicate on the "last_observed_at" field.
+func LastObservedAtLTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldLastObservedAt, v))
+}
+
+// LastObservedAtIsNil applies the IsNil predicate on the "last_observed_at" field.
+func LastObservedAtIsNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIsNull(FieldLastObservedAt))
+}
+
+// LastObservedAtNotNil applies the NotNil predicate on the "last_observed_at" field.
+func LastObservedAtNotNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldLastObservedAt))
+}
+
+// WithdrawnAtEQ applies the EQ predicate on the "withdrawn_at" field.
+func WithdrawnAtEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtNEQ applies the NEQ predicate on the "withdrawn_at" field.
+func WithdrawnAtNEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtIn applies the In predicate on the "withdrawn_at" field.
+func WithdrawnAtIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldWithdrawnAt, vs...))
+}
+
+// WithdrawnAtNotIn applies the NotIn predicate on the "withdrawn_at" field.
+func WithdrawnAtNotIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldWithdrawnAt, vs...))
+}
+
+// WithdrawnAtGT applies the GT predicate on the "withdrawn_at" field.
+func WithdrawnAtGT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtGTE applies the GTE predicate on the "withdrawn_at" field.
+func WithdrawnAtGTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtLT applies the LT predicate on the "withdrawn_at" field.
+func WithdrawnAtLT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtLTE applies the LTE predicate on the "withdrawn_at" field.
+func WithdrawnAtLTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldWithdrawnAt, v))
+}
+
+// WithdrawnAtIsNil applies the IsNil predicate on the "withdrawn_at" field.
+func WithdrawnAtIsNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIsNull(FieldWithdrawnAt))
+}
+
+// WithdrawnAtNotNil applies the NotNil predicate on the "withdrawn_at" field.
+func WithdrawnAtNotNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldWithdrawnAt))
+}
+
+// ExpiresAtEQ applies the EQ predicate on the "expires_at" field.
+func ExpiresAtEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtNEQ applies the NEQ predicate on the "expires_at" field.
+func ExpiresAtNEQ(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldExpiresAt, v))
+}
+
+// ExpiresAtIn applies the In predicate on the "expires_at" field.
+func ExpiresAtIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtNotIn applies the NotIn predicate on the "expires_at" field.
+func ExpiresAtNotIn(vs ...time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldExpiresAt, vs...))
+}
+
+// ExpiresAtGT applies the GT predicate on the "expires_at" field.
+func ExpiresAtGT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldExpiresAt, v))
+}
+
+// ExpiresAtGTE applies the GTE predicate on the "expires_at" field.
+func ExpiresAtGTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldExpiresAt, v))
+}
+
+// ExpiresAtLT applies the LT predicate on the "expires_at" field.
+func ExpiresAtLT(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldExpiresAt, v))
+}
+
+// ExpiresAtLTE applies the LTE predicate on the "expires_at" field.
+func ExpiresAtLTE(v time.Time) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldExpiresAt, v))
+}
+
+// ExpiresAtIsNil applies the IsNil predicate on the "expires_at" field.
+func ExpiresAtIsNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIsNull(FieldExpiresAt))
+}
+
+// ExpiresAtNotNil applies the NotNil predicate on the "expires_at" field.
+func ExpiresAtNotNil() predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotNull(FieldExpiresAt))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

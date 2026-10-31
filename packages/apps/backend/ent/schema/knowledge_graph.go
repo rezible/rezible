@@ -9,55 +9,49 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"entgo.io/ent/schema/mixin"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 var (
 	knowledgeEntityCategories = []string{
-		"system_function", // What a system does independently of its implementation; e.g. online commerce.
-		"actor",           // Human or organizational participant; e.g. customer, on-call team.
-		"system",          // Top-level software or business system; e.g. ecommerce platform, billing system.
-		"container",       // Independently deployable or runnable unit; e.g. service, database.
-		"infrastructure",  // Runtime or platform resource; e.g. Kubernetes cluster, namespace.
-		"component",       // Internal module or in-process job within a container/system.
-		"code",            // Source-code artifact; e.g. repository, package.
-		"process",         // Business or operational workflow; e.g. checkout flow, deploy process.
-		"concern",         // External force, risk, or requirement; e.g. compliance rule, latency target.
-		"decision",        // Chosen design or operating tradeoff; e.g. ADR, mitigation choice.
-		"event",           // Time-bound occurrence; e.g. incident, deploy.
-		"signal",          // Observable telemetry or notification; e.g. alert, metric.
+		"system_function", // What the business needs done, whatever implements it; e.g. capability.
+		"system",          // A coherent software or business system, including external ones; e.g. subsystem, external_system.
+		"container",       // An independently deployable or runnable unit; e.g. service, worker, database, cache, message_queue, web_app, gateway.
+		"component",       // A part inside a container; e.g. module, handler, scheduled_job.
+		"infrastructure",  // Where things run or are deployed; e.g. environment, cloud_account, region, kubernetes_cluster, kubernetes_namespace, load_balancer.
+		"code",            // A source artifact; e.g. repository, package, source_file.
+		"actor",           // A person or a group of people; e.g. user, team, department, customer_segment, vendor.
+		"process",         // A business or operational workflow, or one of its steps; e.g. business_process, operational_process, step.
+		"concern",         // A force on the system: risk, hazard, requirement, regulation, target; e.g. system_hazard, risk, regulation, policy, slo.
+		"decision",        // A chosen design or operating trade-off; e.g. adr, mitigation_choice.
+		"signal",          // A definition that watches something; e.g. alert, synthetic_check, dashboard.
+		"event",           // A time-bound occurrence; e.g. deployment, code_change, incident.
 	}
 
+	// Each predicate's family, dependency, roll-up and allowed endpoints live in pkg/knowledgegraph/model.go.
 	knowledgeRelationshipPredicates = []string{
-		"contains",        // Structural containment; e.g. system contains service or namespace contains pod.
-		"interacts_with",  // Runtime or logical interaction; e.g. service calls API or worker reads queue.
-		"calls",           // Request interaction; e.g. frontend calls API.
-		"reads_from",      // Data read; e.g. service reads from database.
-		"writes_to",       // Data write; e.g. service writes to database.
-		"publishes_to",    // Message publication; e.g. service publishes to queue.
-		"consumes_from",   // Message consumption; e.g. worker consumes from queue.
-		"depends_on",      // Required dependency; e.g. service depends on database or provider.
-		"runs_on",         // Runtime placement; e.g. service runs on cluster or pod runs on node.
-		"owns",            // Accountability or stewardship; e.g. team owns service or group owns process.
-		"supports",        // Capability or dependency support; e.g. service supports checkout flow.
-		"participates_in", // Actor or object participation; e.g. user in team or service in process.
-		"member_of",       // Membership; e.g. user is a member of team.
-		"controls",        // Control exerted over another subject; e.g. runbook controls recovery or rate limit controls API.
-		"observes",        // Telemetry or observation path; e.g. alert observes service or dashboard observes queue.
-		"influences",      // Non-binding causal pressure; e.g. regulation influences decision.
-		"constrains",      // Hard limit or rule; e.g. SLO constrains design or policy constrains access.
-		"addresses",       // Response to concern or risk; e.g. decision addresses hazard.
-		"impacts",         // Effect or consequence; e.g. incident impacts customer or deploy impacts service.
-		"touches",         // Change contact; e.g. code change touches repository.
-		"uses",            // General use when a more precise interaction predicate is unavailable.
-		"processes",       // Domain processing; e.g. service processes order.
-		"indexes",         // Indexing; e.g. worker indexes product.
-		"stores",          // Storage; e.g. database stores customer.
-		"indicates",       // Evidence signal; e.g. alert episode indicates operational situation.
-		"classified_as",   // Classification; e.g. operational situation is classified as hazard.
-		"responds_to",     // Response linkage; e.g. incident responds to operational situation.
-		"mitigates",       // Risk reduction; e.g. control mitigates hazard.
+		"contains",        // The target is part of the source's structure; e.g. Commerce Core contains checkout.
+		"runs_on",         // The source executes or is deployed there; e.g. checkout runs_on prod-use1/commerce.
+		"built_from",      // The code produces the source; e.g. checkout built_from checkout-service.
+		"owns",            // The actor is accountable for it; e.g. Commerce Team owns checkout.
+		"member_of",       // A person belongs to a group (several allowed); e.g. Ava member_of Search Platform.
+		"participates_in", // The actor takes part in the workflow; e.g. Commerce Team participates_in Checkout flow.
+		"uses",            // People rely on it directly; e.g. Customers uses Customer Web App.
+		"supports",        // The workflow needs it; e.g. checkout supports Checkout flow.
+		"calls",           // Request and response; e.g. web_app calls public_api_gateway.
+		"reads_from",      // The source reads its data; e.g. search_api reads_from elasticsearch_catalog.
+		"writes_to",       // The source writes its data; e.g. orders_service writes_to orders_postgres.
+		"publishes_to",    // The source sends messages to it; e.g. orders_service publishes_to order_events_queue.
+		"consumes_from",   // The source takes messages from it; e.g. fulfilment_worker consumes_from order_events_queue.
+		"depends_on",      // The source needs it, and no flow predicate above fits; e.g. checkout depends_on feature_flags.
+		"observes",        // The monitor watches it; e.g. "Checkout error rate" observes checkout.
+		"constrains",      // A rule or choice limits it; e.g. "Checkout p99 under 800 ms" constrains checkout.
+		"addresses",       // The decision responds to the concern; e.g. ADR-12 addresses Duplicate payment capture.
+		"mitigates",       // The source reduces the risk; e.g. payments_service mitigates Duplicate payment capture.
+		"impacts",         // The occurrence affected it; e.g. deploy impacts checkout.
+		"touches",         // The change modified it; e.g. code change touches checkout-service.
 	}
 )
 
@@ -70,6 +64,7 @@ func (KnowledgeEntity) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
+		KnowledgeSubjectStateMixin{},
 	}
 }
 
@@ -83,14 +78,10 @@ func (KnowledgeEntity) Fields() []ent.Field {
 		field.String("kind").NotEmpty().
 			Comment("Canonical domain type within the entity category.").
 			Immutable(),
-		field.JSON("state", schematypes.KnowledgeGraphSubjectState{}).
-			Optional().
-			SchemaType(schemaTypeJsonB).
-			Comment("Current display name, description and properties, merged from observed evidence."),
-		field.Time("state_effective_at").
+		field.UUID("parent_id", uuid.UUID{}).
 			Optional().
 			Nillable().
-			Comment("Effective time of the evidence that last changed the state. For event entities this is when the event happened, as currently known: projections set an event's evidence effective time to the event's own time."),
+			Comment("Source of the one current contains relationship chosen as the entity's parent; every reader of the tree uses it. Kept current on every write that can change the choice."),
 	}
 }
 
@@ -104,6 +95,11 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 			Ref("source_entity"),
 		edge.From("target_relationships", KnowledgeRelationship.Type).
 			Ref("target_entity"),
+		edge.To("children", KnowledgeEntity.Type).
+			From("parent").
+			Unique().
+			Field("parent_id").
+			Annotations(entsql.OnDelete(entsql.SetNull)),
 	}
 }
 
@@ -111,6 +107,8 @@ func (KnowledgeEntity) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "category", "kind"),
 		index.Fields("tenant_id", "kind", "state_effective_at"),
+		index.Fields("tenant_id", "withdrawn_at"),
+		index.Fields("tenant_id", "parent_id"),
 	}
 }
 
@@ -159,6 +157,7 @@ func (KnowledgeRelationship) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
+		KnowledgeSubjectStateMixin{},
 	}
 }
 
@@ -197,6 +196,7 @@ func (KnowledgeRelationship) Indexes() []ent.Index {
 		index.Fields("tenant_id", "source_entity_id"),
 		index.Fields("tenant_id", "target_entity_id"),
 		index.Fields("tenant_id", "predicate"),
+		index.Fields("tenant_id", "withdrawn_at"),
 	}
 }
 
@@ -238,6 +238,18 @@ func (KnowledgeSubjectAlias) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Comment("The confirmed proposal whose merge moved the alias to its current subject."),
+		field.Time("created_at").Default(time.Now).Immutable(),
+
+		field.JSON("state", schematypes.KnowledgeAliasState{}).
+			Optional().
+			SchemaType(schemaTypeJsonB).
+			Comment("What this alias's evidence says, field by field, with each field's effective time."),
+		field.Time("first_observed_at").Optional().Nillable(),
+		field.Time("last_observed_at").Optional().Nillable(),
+		field.Time("withdrawn_at").Optional().Nillable().
+			Comment("Set when the alias's latest evidence says the subject no longer exists."),
+		field.Time("expires_at").Optional().Nillable().
+			Comment("When the latest observation stops holding unless observed again; null never expires."),
 	}
 }
 
@@ -303,6 +315,12 @@ func (KnowledgeEvidence) Fields() []ent.Field {
 		field.JSON("subject_state", schematypes.KnowledgeGraphSubjectState{}).
 			SchemaType(schemaTypeJsonB).
 			Immutable(),
+		field.Enum("state_mode").Immutable().
+			Values("merge", "replace").
+			Default("merge").
+			Comment("merge sets the fields stated; replace is a full snapshot that also unsets the properties it omits."),
+		field.Time("expires_at").Optional().Nillable().Immutable().
+			Comment("Effective time plus the producer's validity: the observation holds until then unless observed again."),
 	}
 }
 
@@ -322,5 +340,32 @@ func (KnowledgeEvidence) Indexes() []ent.Index {
 		index.Fields("tenant_id", "event_id", "subject_alias_id").Unique(),
 		index.Fields("tenant_id", "subject_alias_id", "effective_at"),
 		index.Fields("tenant_id", "event_id"),
+	}
+}
+
+// KnowledgeSubjectStateMixin holds a subject's state merged from its aliases, and its observation times.
+type KnowledgeSubjectStateMixin struct {
+	mixin.Schema
+}
+
+func (KnowledgeSubjectStateMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.JSON("state", schematypes.KnowledgeGraphSubjectState{}).
+			Optional().
+			SchemaType(schemaTypeJsonB).
+			Comment("Display name, description and properties, merged key by key from the live aliases."),
+		field.JSON("state_sources", schematypes.KnowledgeStateSources{}).
+			Optional().
+			SchemaType(schemaTypeJsonB).
+			Comment("For each field of the state, the alias that supplied it and its effective time."),
+		field.Time("state_effective_at").
+			Optional().
+			Nillable().
+			Comment("Latest effective time among the state's fields. For event entities this is when the event happened, as currently known: projections set an event's evidence effective time to the event's own time."),
+		field.Time("last_observed_at").Optional().Nillable(),
+		field.Time("withdrawn_at").Optional().Nillable().
+			Comment("Set when the subject has aliases and all are withdrawn. Default reads exclude withdrawn subjects."),
+		field.Time("expires_at").Optional().Nillable().
+			Comment("When the subject goes stale; null when any live alias never expires."),
 	}
 }

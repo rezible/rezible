@@ -2,84 +2,80 @@ package demoprovider
 
 import (
 	"encoding/json"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
+	mapset "github.com/deckarep/golang-set/v2"
+
 	rez "github.com/rezible/rezible"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
-func TestDemoTopologyCoversMapLevelsAndPreservesReferences(t *testing.T) {
+func TestDemoTopologyFollowsTheModel(t *testing.T) {
 	components := makeDemoTopologyComponents()
 	byRef := make(map[string]topologyComponentObservedPayload, len(components))
-	seenCategories := make(map[kne.Category]bool)
+	hierarchies := mapset.NewSet[knowledgegraph.Hierarchy]()
 	for _, component := range components {
 		if _, exists := byRef[component.ResourceRef]; exists {
 			t.Fatalf("duplicate demo component resource ref %q", component.ResourceRef)
 		}
 		byRef[component.ResourceRef] = component
-		seenCategories[component.Category] = true
-		if component.Category == kne.Category("domain_object") {
-			t.Fatalf("demo topology still emits removed domain_object category for %q", component.ResourceRef)
+		hierarchies.Add(knowledgegraph.CategorySpecOf(component.Category).Hierarchy)
+	}
+	for _, hierarchy := range knowledgegraph.Hierarchies {
+		if !hierarchies.Contains(hierarchy) {
+			t.Errorf("demo topology has no entity in the %s hierarchy", hierarchy)
 		}
 	}
 
-	for _, category := range []kne.Category{
-		kne.CategorySystemFunction,
-		kne.CategorySystem,
-		kne.CategoryContainer,
-		kne.CategoryInfrastructure,
-		kne.CategoryComponent,
-		kne.CategoryCode,
-	} {
-		if !seenCategories[category] {
-			t.Errorf("demo topology does not cover category %q", category)
-		}
+	namesAnotherEntity := func(key string, value any) bool {
+		text, isText := value.(string)
+		_, isRef := byRef[text]
+		return strings.HasSuffix(key, "_ref") || strings.HasSuffix(key, "_team") || (isText && isRef)
 	}
-
-	for _, id := range []string{"search_indexer", "order_fulfillment_worker", "email_dispatch_worker"} {
-		component, exists := byRef[componentRef(id)]
-		if !exists {
-			t.Errorf("missing independently running demo worker %q", id)
-			continue
+	for _, component := range components {
+		for key, value := range component.Properties {
+			if namesAnotherEntity(key, value) {
+				t.Errorf("component %q property %q names another entity", component.ResourceRef, key)
+			}
 		}
-		if component.Category != kne.CategoryContainer {
-			t.Errorf("demo worker %q has category %q, want container", id, component.Category)
-		}
-	}
-
-	searchRepository, exists := byRef["demo:code_repositories:search-api"]
-	if !exists || searchRepository.Category != kne.CategoryCode {
-		t.Fatalf("demo search repository is not a code entity: %#v", searchRepository)
-	}
-	if demoCodeChangeEvents[0].RepositoryRef != demoCodeRepositoryEvents[0].resourceRef() {
-		t.Fatalf("demo code change does not reference the observed repository resource")
 	}
 
 	relationships := makeDemoTopologyRelationships(components)
-	seenRelationshipRefs := make(map[string]bool, len(relationships))
-	containsMemberships := make(map[string]int)
+	seenRelationshipRefs := mapset.NewSet[string]()
+	usedPredicates := mapset.NewSet[knr.Predicate]()
+	parents := make(map[string]int)
 	for _, relationship := range relationships {
-		if seenRelationshipRefs[relationship.ResourceRef] {
+		if !seenRelationshipRefs.Add(relationship.ResourceRef) {
 			t.Fatalf("duplicate demo relationship resource ref %q", relationship.ResourceRef)
 		}
-		seenRelationshipRefs[relationship.ResourceRef] = true
-		if _, exists := byRef[relationship.Source.ResourceRef]; !exists {
-			t.Errorf("relationship %q has unknown source %q", relationship.ResourceRef, relationship.Source.ResourceRef)
-		}
-		if _, exists := byRef[relationship.Target.ResourceRef]; !exists {
-			t.Errorf("relationship %q has unknown target %q", relationship.ResourceRef, relationship.Target.ResourceRef)
+		usedPredicates.Add(relationship.Predicate)
+		validErr := knowledgegraph.ValidateRelationship(relationship.Predicate, relationship.Source.Category, relationship.Target.Category)
+		if validErr != nil {
+			t.Errorf("relationship %q: %v", relationship.ResourceRef, validErr)
 		}
 		if relationship.Predicate == knr.PredicateContains {
-			containsMemberships[relationship.Target.ResourceRef]++
+			parents[relationship.Target.ResourceRef]++
+		}
+		for key, value := range relationship.Properties {
+			if namesAnotherEntity(key, value) {
+				t.Errorf("relationship %q property %q names another entity", relationship.ResourceRef, key)
+			}
 		}
 	}
-
-	for _, id := range []string{"search_api", "order_events_queue", "production_cluster"} {
-		if containsMemberships[componentRef(id)] < 2 {
-			t.Errorf("demo shared member %q has fewer than two explicit contains memberships", id)
+	for ref, count := range parents {
+		if count > 1 {
+			t.Errorf("entity %q has %d contains parents", ref, count)
+		}
+	}
+	notFromTopology := []knr.Predicate{knr.PredicateMemberOf, knr.PredicateImpacts, knr.PredicateTouches}
+	for _, spec := range knowledgegraph.PredicateSpecs() {
+		if !usedPredicates.Contains(spec.Predicate) && !slices.Contains(notFromTopology, spec.Predicate) {
+			t.Errorf("demo topology does not use %s", spec.Predicate)
 		}
 	}
 }

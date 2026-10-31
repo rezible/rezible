@@ -195,14 +195,7 @@ func (h *knowledgeGraphHandler) SelectKnowledgeGraphEntities(ctx context.Context
 	}
 
 	var resp oapi.SelectKnowledgeGraphEntitiesResponse
-	data := oapi.KnowledgeGraphEntitiesPage{
-		Entities:           oapi.ConvertSlice(page.Entities, oapi.KnowledgeGraphEntitySummaryFromEnt),
-		EntitySelectionRef: string(page.EntitySelectionRef),
-	}
-	if page.NextCursor != nil {
-		data.NextCursor = new(string(*page.NextCursor))
-	}
-	resp.Body.Data = data
+	resp.Body.Data = oapi.KnowledgeGraphEntitiesPageFromRez(page)
 	return &resp, nil
 }
 
@@ -288,5 +281,11 @@ func (h *knowledgeGraphHandler) RejectKnowledgeProposal(ctx context.Context, req
 	}
 	var response oapi.RejectKnowledgeProposalResponse
 	response.Body.Data = oapi.KnowledgeProposalFromRez(proposal)
+	return &response, nil
+}
+
+func (h *knowledgeGraphHandler) GetKnowledgeGraphModel(ctx context.Context, request *oapi.GetKnowledgeGraphModelRequest) (*oapi.GetKnowledgeGraphModelResponse, error) {
+	var response oapi.GetKnowledgeGraphModelResponse
+	response.Body.Data = oapi.KnowledgeGraphModelFromSpecs()
 	return &response, nil
 }

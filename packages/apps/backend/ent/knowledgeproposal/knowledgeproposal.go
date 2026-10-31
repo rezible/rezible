@@ -133,17 +133,17 @@ type Category string
 // Category values.
 const (
 	CategorySystemFunction Category = "system_function"
-	CategoryActor          Category = "actor"
 	CategorySystem         Category = "system"
 	CategoryContainer      Category = "container"
-	CategoryInfrastructure Category = "infrastructure"
 	CategoryComponent      Category = "component"
+	CategoryInfrastructure Category = "infrastructure"
 	CategoryCode           Category = "code"
+	CategoryActor          Category = "actor"
 	CategoryProcess        Category = "process"
 	CategoryConcern        Category = "concern"
 	CategoryDecision       Category = "decision"
-	CategoryEvent          Category = "event"
 	CategorySignal         Category = "signal"
+	CategoryEvent          Category = "event"
 )
 
 func (c Category) String() string {
@@ -153,7 +153,7 @@ func (c Category) String() string {
 // CategoryValidator is a validator for the "category" field enum values. It is called by the builders before save.
 func CategoryValidator(c Category) error {
 	switch c {
-	case CategorySystemFunction, CategoryActor, CategorySystem, CategoryContainer, CategoryInfrastructure, CategoryComponent, CategoryCode, CategoryProcess, CategoryConcern, CategoryDecision, CategoryEvent, CategorySignal:
+	case CategorySystemFunction, CategorySystem, CategoryContainer, CategoryComponent, CategoryInfrastructure, CategoryCode, CategoryActor, CategoryProcess, CategoryConcern, CategoryDecision, CategorySignal, CategoryEvent:
 		return nil
 	default:
 		return fmt.Errorf("knowledgeproposal: invalid enum value for category field: %q", c)
@@ -330,17 +330,17 @@ func newDecisionsStep() *sqlgraph.Step {
 // CategoryValues contains all permitted values. Treat this slice as read-only.
 var CategoryValues = []string{
 	"system_function",
-	"actor",
 	"system",
 	"container",
-	"infrastructure",
 	"component",
+	"infrastructure",
 	"code",
+	"actor",
 	"process",
 	"concern",
 	"decision",
-	"event",
 	"signal",
+	"event",
 }
 
 // StatusValues contains all permitted values. Treat this slice as read-only.

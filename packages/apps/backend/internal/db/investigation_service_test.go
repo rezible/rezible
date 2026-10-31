@@ -91,7 +91,7 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationUsesPreparedAnalysisA
 	s.Require().NoError(targetErr)
 
 	createRelationship := client.KnowledgeRelationship.Create().
-		SetPredicate(knr.PredicateUses).
+		SetPredicate(knr.PredicateDependsOn).
 		SetSourceEntityID(source.ID).
 		SetTargetEntityID(target.ID)
 	relationship, relationshipErr := createRelationship.Save(ctx)

@@ -39,6 +39,10 @@ type KnowledgeEvidence struct {
 	EffectiveAt time.Time `json:"effective_at,omitempty"`
 	// SubjectState holds the value of the "subject_state" field.
 	SubjectState schematypes.KnowledgeGraphSubjectState `json:"subject_state,omitempty"`
+	// merge sets the fields stated; replace is a full snapshot that also unsets the properties it omits.
+	StateMode knowledgeevidence.StateMode `json:"state_mode,omitempty"`
+	// Effective time plus the producer's validity: the observation holds until then unless observed again.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEvidenceQuery when eager-loading is set.
 	Edges        KnowledgeEvidenceEdges `json:"edges"`
@@ -100,9 +104,9 @@ func (*KnowledgeEvidence) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case knowledgeevidence.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgeevidence.FieldKind, knowledgeevidence.FieldAssertion:
+		case knowledgeevidence.FieldKind, knowledgeevidence.FieldAssertion, knowledgeevidence.FieldStateMode:
 			values[i] = new(sql.NullString)
-		case knowledgeevidence.FieldCreatedAt, knowledgeevidence.FieldEffectiveAt:
+		case knowledgeevidence.FieldCreatedAt, knowledgeevidence.FieldEffectiveAt, knowledgeevidence.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
 		case knowledgeevidence.FieldID, knowledgeevidence.FieldEventID, knowledgeevidence.FieldSubjectAliasID:
 			values[i] = new(uuid.UUID)
@@ -176,6 +180,19 @@ func (_m *KnowledgeEvidence) assignValues(columns []string, values []any) error 
 				if err := json.Unmarshal(*value, &_m.SubjectState); err != nil {
 					return fmt.Errorf("unmarshal field subject_state: %w", err)
 				}
+			}
+		case knowledgeevidence.FieldStateMode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field state_mode", values[i])
+			} else if value.Valid {
+				_m.StateMode = knowledgeevidence.StateMode(value.String)
+			}
+		case knowledgeevidence.FieldExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field expires_at", values[i])
+			} else if value.Valid {
+				_m.ExpiresAt = new(time.Time)
+				*_m.ExpiresAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -251,6 +268,14 @@ func (_m *KnowledgeEvidence) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("subject_state=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SubjectState))
+	builder.WriteString(", ")
+	builder.WriteString("state_mode=")
+	builder.WriteString(fmt.Sprintf("%v", _m.StateMode))
+	builder.WriteString(", ")
+	if v := _m.ExpiresAt; v != nil {
+		builder.WriteString("expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -33,6 +33,10 @@ const (
 	FieldEffectiveAt = "effective_at"
 	// FieldSubjectState holds the string denoting the subject_state field in the database.
 	FieldSubjectState = "subject_state"
+	// FieldStateMode holds the string denoting the state_mode field in the database.
+	FieldStateMode = "state_mode"
+	// FieldExpiresAt holds the string denoting the expires_at field in the database.
+	FieldExpiresAt = "expires_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
@@ -75,6 +79,8 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldEffectiveAt,
 	FieldSubjectState,
+	FieldStateMode,
+	FieldExpiresAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -126,6 +132,32 @@ func KindValidator(k Kind) error {
 	}
 }
 
+// StateMode defines the type for the "state_mode" enum field.
+type StateMode string
+
+// StateModeMerge is the default value of the StateMode enum.
+const DefaultStateMode = StateModeMerge
+
+// StateMode values.
+const (
+	StateModeMerge   StateMode = "merge"
+	StateModeReplace StateMode = "replace"
+)
+
+func (sm StateMode) String() string {
+	return string(sm)
+}
+
+// StateModeValidator is a validator for the "state_mode" field enum values. It is called by the builders before save.
+func StateModeValidator(sm StateMode) error {
+	switch sm {
+	case StateModeMerge, StateModeReplace:
+		return nil
+	default:
+		return fmt.Errorf("knowledgeevidence: invalid enum value for state_mode field: %q", sm)
+	}
+}
+
 // OrderOption defines the ordering options for the KnowledgeEvidence queries.
 type OrderOption func(*sql.Selector)
 
@@ -167,6 +199,16 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByEffectiveAt orders the results by the effective_at field.
 func ByEffectiveAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEffectiveAt, opts...).ToFunc()
+}
+
+// ByStateMode orders the results by the state_mode field.
+func ByStateMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStateMode, opts...).ToFunc()
+}
+
+// ByExpiresAt orders the results by the expires_at field.
+func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -215,4 +257,10 @@ func newSubjectAliasStep() *sqlgraph.Step {
 var KindValues = []string{
 	"observed",
 	"deleted",
+}
+
+// StateModeValues contains all permitted values. Treat this slice as read-only.
+var StateModeValues = []string{
+	"merge",
+	"replace",
 }

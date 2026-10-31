@@ -3,9 +3,11 @@ package eventprojection
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 
 	rez "github.com/rezible/rezible"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
@@ -31,13 +33,14 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 	}
 	repositoryEntityRef := rez.KnowledgeEntityRef{
 		Category:            kne.CategoryCode,
-		Kind:                knowledgeEntityKindRepository,
+		Kind:                knowledgegraph.EntityKindRepository,
 		ProviderResourceRef: repositoryResourceRef,
 		LinkingAttributes:   event.Attributes.LinkingAttributes,
 	}
 	evidence := rez.KnowledgeEvidenceRef{
 		Kind:        projectionEvidenceKind(event.Event),
 		Assertion:   knowledgeAssertionCodeRepositoryObserved,
+		StateMode:   ke.StateModeReplace,
 		EffectiveAt: event.Event.OccurredAt,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: event.Attributes.DisplayName,

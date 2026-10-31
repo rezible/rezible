@@ -2,6 +2,7 @@ package eventprojection
 
 import (
 	"context"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"time"
 
 	"github.com/google/uuid"
@@ -110,7 +111,7 @@ func (s *ProjectionServiceSuite) TestAlertEntityCarriesRunbookURL() {
 	_, projectErr := runProjection(ctx, service, event)
 	s.Require().NoError(projectErr)
 
-	alerts := s.entitiesOfKind(ctx, tdb, kne.CategorySignal, knowledgeEntityKindAlert)
+	alerts := s.entitiesOfKind(ctx, tdb, kne.CategorySignal, knowledgegraph.EntityKindAlert)
 	s.Require().Len(alerts, 1)
 	s.Equal(map[string]any{
 		"definition":  attrs.Definition,

@@ -6,6 +6,8 @@ import {
 } from "$lib/api";
 import type { QueryClient } from "@tanstack/svelte-query";
 import type { GraphEntity, GraphRelationship, GraphSubset } from "$features/system/lib/system-map/graph";
+import { mapCategories, mapModel, type MapModel } from "$features/system/lib/system-map/model";
+import { knowledgeModelOptions } from "$features/system/lib/knowledge-model";
 
 const ENTITY_PAGE_LIMIT = 100;
 const RELATIONSHIP_PAGE_LIMIT = 200;
@@ -16,8 +18,9 @@ const MAX_REQUESTS = 30;
 type EntityCategory = KnowledgeGraphEntitySummary["category"];
 type GraphQueryStatus = "idle" | "loading" | "success" | "error";
 
+/** No categories loads the categories the map draws. */
 export type StandaloneGraphQuery = {
-	readonly categories: readonly EntityCategory[];
+	readonly categories: readonly string[];
 	readonly kinds: readonly string[];
 };
 
@@ -64,6 +67,9 @@ function retainEntities(
 			category: entity.category,
 			kind: entity.kind,
 			name: entity.displayName,
+			parentId: entity.parentId,
+			otherParentIds: Object.freeze([...entity.otherParentIds]),
+			stale: entity.stale,
 		});
 		if (retained.has(record.id)) {
 			retained.set(record.id, record);
@@ -82,6 +88,7 @@ function retainRelationships(
 		sourceId: string;
 		targetId: string;
 		predicate: string;
+		stale: boolean;
 	}[],
 	retained: Map<string, GraphRelationship>
 ): boolean {
@@ -92,6 +99,7 @@ function retainRelationships(
 			source: relationship.sourceId,
 			target: relationship.targetId,
 			predicate: relationship.predicate,
+			stale: relationship.stale,
 		});
 		if (retained.has(record.id)) {
 			retained.set(record.id, record);
@@ -131,6 +139,7 @@ function toLoaderError(error: unknown): ApiError {
 }
 
 function makeGraph(
+	model: MapModel,
 	entitiesById: Map<string, GraphEntity>,
 	relationshipsById: Map<string, GraphRelationship>,
 	stopReason: GraphSubset["enumeration"]["stopReason"]
@@ -147,6 +156,7 @@ function makeGraph(
 		}
 	}
 	return Object.freeze({
+		model,
 		entities,
 		relationships: Object.freeze(relationships),
 		unresolvedRelationships: Object.freeze(unresolvedRelationships),
@@ -248,6 +258,10 @@ export class GraphQueryController {
 			await previousCancellation;
 			if (!this.isCurrent(run)) return;
 
+			const model = mapModel((await this.queryClient.fetchQuery(knowledgeModelOptions())).data);
+			if (!this.isCurrent(run)) return;
+			const categories = query.categories.length > 0 ? query.categories : mapCategories(model);
+
 			const entitiesById = new Map<string, GraphEntity>();
 			const relationshipsById = new Map<string, GraphRelationship>();
 			let entityCursor: string | undefined;
@@ -262,7 +276,12 @@ export class GraphQueryController {
 					break;
 				}
 
-				const entityPageResponse = await this.fetchEntityPage(run, query, entityCursor);
+				const entityPageResponse = await this.fetchEntityPage(
+					run,
+					categories,
+					query.kinds,
+					entityCursor
+				);
 				if (!this.isCurrent(run)) return;
 				const entityPage = entityPageResponse.data;
 				entityOverflow ||= retainEntities(entityPage.entities, entitiesById);
@@ -327,7 +346,7 @@ export class GraphQueryController {
 					: entityLimit
 						? "entity-limit"
 						: "exhausted";
-			const graph = makeGraph(entitiesById, relationshipsById, stopReason);
+			const graph = makeGraph(model, entitiesById, relationshipsById, stopReason);
 			if (!this.isCurrent(run)) return;
 			this.currentPublished = Object.freeze({ query, graph });
 			if (this.isCurrent(run)) this.currentStatus = "success";
@@ -340,11 +359,16 @@ export class GraphQueryController {
 		}
 	}
 
-	private async fetchEntityPage(run: LoadRun, query: StandaloneGraphQuery, cursor: string | undefined) {
+	private async fetchEntityPage(
+		run: LoadRun,
+		categories: readonly string[],
+		kinds: readonly string[],
+		cursor: string | undefined
+	) {
 		const options = selectKnowledgeGraphEntitiesOptions({
 			query: {
-				...(query.categories.length > 0 ? { category: [...query.categories] } : {}),
-				...(query.kinds.length > 0 ? { kind: [...query.kinds] } : {}),
+				category: [...categories] as EntityCategory[],
+				...(kinds.length > 0 ? { kind: [...kinds] } : {}),
 				...(hasCursor(cursor) ? { cursor } : {}),
 				limit: ENTITY_PAGE_LIMIT,
 			},

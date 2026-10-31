@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -18,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // KnowledgeSubjectAliasUpdate is the builder for updating KnowledgeSubjectAlias entities.
@@ -90,6 +92,106 @@ func (_u *KnowledgeSubjectAliasUpdate) SetNillableMergedByProposalID(v *uuid.UUI
 // ClearMergedByProposalID clears the value of the "merged_by_proposal_id" field.
 func (_u *KnowledgeSubjectAliasUpdate) ClearMergedByProposalID() *KnowledgeSubjectAliasUpdate {
 	_u.mutation.ClearMergedByProposalID()
+	return _u
+}
+
+// SetState sets the "state" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetState(v schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetState(v)
+	return _u
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableState(v *schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetState(*v)
+	}
+	return _u
+}
+
+// ClearState clears the value of the "state" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearState() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearState()
+	return _u
+}
+
+// SetFirstObservedAt sets the "first_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetFirstObservedAt(v)
+	return _u
+}
+
+// SetNillableFirstObservedAt sets the "first_observed_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableFirstObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetFirstObservedAt(*v)
+	}
+	return _u
+}
+
+// ClearFirstObservedAt clears the value of the "first_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearFirstObservedAt() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearFirstObservedAt()
+	return _u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableLastObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetLastObservedAt(*v)
+	}
+	return _u
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearLastObservedAt() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearLastObservedAt()
+	return _u
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetWithdrawnAt(v time.Time) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetWithdrawnAt(v)
+	return _u
+}
+
+// SetNillableWithdrawnAt sets the "withdrawn_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableWithdrawnAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetWithdrawnAt(*v)
+	}
+	return _u
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearWithdrawnAt() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearWithdrawnAt()
+	return _u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetExpiresAt(v time.Time) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetExpiresAt(v)
+	return _u
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableExpiresAt(v *time.Time) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (_u *KnowledgeSubjectAliasUpdate) ClearExpiresAt() *KnowledgeSubjectAliasUpdate {
+	_u.mutation.ClearExpiresAt()
 	return _u
 }
 
@@ -213,6 +315,36 @@ func (_u *KnowledgeSubjectAliasUpdate) sqlSave(ctx context.Context) (_node int, 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.State(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldState, field.TypeJSON, value)
+	}
+	if _u.mutation.StateCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldState, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.FirstObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.FirstObservedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.LastObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastObservedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.WithdrawnAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldWithdrawnAt, field.TypeTime, value)
+	}
+	if _u.mutation.WithdrawnAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldWithdrawnAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ExpiresAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.ExpiresAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldExpiresAt, field.TypeTime)
 	}
 	if _u.mutation.EntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -437,6 +569,106 @@ func (_u *KnowledgeSubjectAliasUpdateOne) ClearMergedByProposalID() *KnowledgeSu
 	return _u
 }
 
+// SetState sets the "state" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetState(v schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetState(v)
+	return _u
+}
+
+// SetNillableState sets the "state" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableState(v *schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetState(*v)
+	}
+	return _u
+}
+
+// ClearState clears the value of the "state" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearState() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearState()
+	return _u
+}
+
+// SetFirstObservedAt sets the "first_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetFirstObservedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetFirstObservedAt(v)
+	return _u
+}
+
+// SetNillableFirstObservedAt sets the "first_observed_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableFirstObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetFirstObservedAt(*v)
+	}
+	return _u
+}
+
+// ClearFirstObservedAt clears the value of the "first_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearFirstObservedAt() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearFirstObservedAt()
+	return _u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetLastObservedAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetLastObservedAt(v)
+	return _u
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableLastObservedAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetLastObservedAt(*v)
+	}
+	return _u
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearLastObservedAt() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearLastObservedAt()
+	return _u
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetWithdrawnAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetWithdrawnAt(v)
+	return _u
+}
+
+// SetNillableWithdrawnAt sets the "withdrawn_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableWithdrawnAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetWithdrawnAt(*v)
+	}
+	return _u
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearWithdrawnAt() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearWithdrawnAt()
+	return _u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetExpiresAt(v time.Time) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetExpiresAt(v)
+	return _u
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableExpiresAt(v *time.Time) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) ClearExpiresAt() *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.ClearExpiresAt()
+	return _u
+}
+
 // SetEntity sets the "entity" edge to the KnowledgeEntity entity.
 func (_u *KnowledgeSubjectAliasUpdateOne) SetEntity(v *KnowledgeEntity) *KnowledgeSubjectAliasUpdateOne {
 	return _u.SetEntityID(v.ID)
@@ -587,6 +819,36 @@ func (_u *KnowledgeSubjectAliasUpdateOne) sqlSave(ctx context.Context) (_node *K
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.State(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldState, field.TypeJSON, value)
+	}
+	if _u.mutation.StateCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldState, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.FirstObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.FirstObservedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldFirstObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.LastObservedAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.LastObservedAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldLastObservedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.WithdrawnAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldWithdrawnAt, field.TypeTime, value)
+	}
+	if _u.mutation.WithdrawnAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldWithdrawnAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ExpiresAt(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.ExpiresAtCleared() {
+		_spec.ClearField(knowledgesubjectalias.FieldExpiresAt, field.TypeTime)
 	}
 	if _u.mutation.EntityCleared() {
 		edge := &sqlgraph.EdgeSpec{

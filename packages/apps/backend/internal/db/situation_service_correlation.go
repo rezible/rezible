@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"slices"
 	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
@@ -165,10 +164,7 @@ func (s *SituationService) correlationRelationships(ctx context.Context, entityI
 		return nil, nil
 	}
 	ids := entityIDs.ToSlice()
-	classPredicates := slices.Concat(
-		knowledgegraph.RelationshipClassDependsOn.Predicates(),
-		knowledgegraph.RelationshipClassAdjacent.Predicates(),
-	)
+	classPredicates := knowledgegraph.PredicatesWithDependency(knowledgegraph.DependencySourceOnTarget, knowledgegraph.DependencyMutual)
 	listParams := rez.ListKnowledgeRelationshipsParams{
 		PageSize: observationGraphPageSize,
 		Predicates: []predicate.KnowledgeRelationship{

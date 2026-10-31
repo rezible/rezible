@@ -48,6 +48,13 @@ func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 		proposals:     mocks.NewMockKnowledgeProposalService(s.T()),
 		sessions:      mocks.NewMockAiAgentSessionService(s.T()),
 	}
+	// Entities have no structure unless a test says so.
+	h.knowledge.EXPECT().ListAncestors(mock.Anything, mock.Anything).
+		Return(map[uuid.UUID][]*ent.KnowledgeEntity{}, nil).
+		Maybe()
+	h.knowledge.EXPECT().ListParentClaims(mock.Anything, mock.Anything).
+		Return(map[uuid.UUID][]*ent.KnowledgeRelationship{}, nil).
+		Maybe()
 	deps := investigationDependencies{
 		clock:         h.clock,
 		outputs:       h.outputs,
@@ -427,6 +434,19 @@ func (s *AiRuntimeSuite) TestReadEntityRendering() {
 		Return(summaries(backstageSummary, aliasSummary, githubSummary), nil)
 	h.knowledge.EXPECT().ListRelationships(mock.Anything, eventsParams).
 		Return(&ent.ListResult[ent.KnowledgeRelationship]{Total: 12}, nil)
+	commerce := &ent.KnowledgeEntity{ID: uuid.New(), Category: kne.CategorySystemFunction, State: schematypes.KnowledgeGraphSubjectState{DisplayName: "Online Commerce"}}
+	core := &ent.KnowledgeEntity{ID: uuid.New(), Category: kne.CategorySystem, State: schematypes.KnowledgeGraphSubjectState{DisplayName: "Commerce Core"}}
+	experience := &ent.KnowledgeEntity{ID: uuid.New(), Category: kne.CategorySystem, State: schematypes.KnowledgeGraphSubjectState{DisplayName: "Customer Experience"}}
+	h.knowledge.EXPECT().ListAncestors(mock.Anything, mock.Anything).Unset()
+	h.knowledge.EXPECT().ListAncestors(mock.Anything, []uuid.UUID{checkout.ID}).
+		Return(map[uuid.UUID][]*ent.KnowledgeEntity{checkout.ID: {core, commerce}}, nil)
+	h.knowledge.EXPECT().ListParentClaims(mock.Anything, mock.Anything).Unset()
+	claim := &ent.KnowledgeRelationship{SourceEntityID: experience.ID, Edges: ent.KnowledgeRelationshipEdges{
+		SourceEntity: experience,
+		Aliases:      []*ent.KnowledgeSubjectAlias{{Provider: "backstage"}},
+	}}
+	h.knowledge.EXPECT().ListParentClaims(mock.Anything, []uuid.UUID{checkout.ID}).
+		Return(map[uuid.UUID][]*ent.KnowledgeRelationship{checkout.ID: {claim}}, nil)
 
 	var result rezai.TextToolResult
 	input := rezai.ReadEntityArgs{Ref: checkout.ID.String()}
@@ -435,10 +455,12 @@ func (s *AiRuntimeSuite) TestReadEntityRendering() {
 	s.Contains(result.Text, "entity "+checkout.ID.String()+" checkout-api [container/service]")
 	s.Contains(result.Text, "linking_attribute service.name=checkout-api")
 	s.Contains(result.Text, "alias kubernetes/prod resource_ref=deployment/checkout-api latest_evidence_at=2026-06-01T10:00:00Z")
-	expectedRelationship := fmt.Sprintf("relationship %s owns direction=incoming other=%s Payments [actor/team] evidence=2 latest=2026-06-01T10:00:00Z latest_evidence=%s",
+	expectedRelationship := fmt.Sprintf("relationship %s owns direction=incoming other=%s Payments [actor/team] family=ownership dependency=none evidence=2 latest=2026-06-01T10:00:00Z latest_evidence=%s",
 		owns.ID, team.ID, backstageSummary.LatestID)
 	s.Contains(result.Text, expectedRelationship)
 	s.Contains(result.Text, "event_relationships=12 (not listed; use list_entity_evidence)")
+	s.Contains(result.Text, fmt.Sprintf("ancestors=%s Online Commerce > %s Commerce Core", commerce.ID, core.ID))
+	s.Contains(result.Text, fmt.Sprintf("other_parent_claim %s Customer Experience providers=backstage", experience.ID))
 }
 
 func (s *AiRuntimeSuite) TestListEntityEvidenceRendering() {
@@ -489,7 +511,7 @@ func (s *AiRuntimeSuite) TestListEntityEvidenceRendering() {
 	input := rezai.ListEntityEvidenceArgs{Ref: checkout.ID.String()}
 	s.runInvestigationTool(ctx, h, rezai.ListEntityEvidenceTool.Name(), input, &result)
 
-	expectedLine := fmt.Sprintf("relationship %s observes direction=incoming other=%s CheckoutErrors [signal/alert] assertion=alert_observes_service first=2026-06-01T09:00:00Z evidence=40 latest=2026-06-01T10:00:00Z latest_evidence=%s source=alertmanager/tests stated_name=\"CheckoutErrors firing\"",
+	expectedLine := fmt.Sprintf("relationship %s observes direction=incoming other=%s CheckoutErrors [signal/alert] family=observation dependency=none assertion=alert_observes_service first=2026-06-01T09:00:00Z evidence=40 latest=2026-06-01T10:00:00Z latest_evidence=%s source=alertmanager/tests stated_name=\"CheckoutErrors firing\"",
 		observes.ID, alert.ID, summary.LatestID)
 	s.Contains(result.Text, expectedLine)
 }

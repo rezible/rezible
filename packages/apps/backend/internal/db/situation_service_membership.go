@@ -21,7 +21,6 @@ import (
 	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	sitog "github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/pkg/errs"
-	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/situations"
 )
 
@@ -198,17 +197,12 @@ func (s *SituationService) observationRuntimeEntities(ctx context.Context, obser
 	if named.IsEmpty() {
 		return runtime, nil
 	}
-	resolveParams := rez.ResolveStructureParams{
-		EntityIDs:        named.ToSlice(),
-		TargetCategories: knowledgegraph.StructureLevelRuntime.Categories(),
-		MaxDepth:         situations.EntityResolutionDepth,
-	}
-	resolved, resolveErr := s.graph.ResolveStructure(ctx, resolveParams)
+	representatives, resolveErr := s.graph.ResolveRepresentatives(ctx, named.ToSlice(), situations.RepresentativeCategories, situations.EntityResolutionDepth)
 	if resolveErr != nil {
 		return nil, fmt.Errorf("resolve observation entities: %w", resolveErr)
 	}
-	for _, representatives := range resolved {
-		runtime.Append(representatives...)
+	for _, representative := range representatives {
+		runtime.Add(representative)
 	}
 	return runtime, nil
 }

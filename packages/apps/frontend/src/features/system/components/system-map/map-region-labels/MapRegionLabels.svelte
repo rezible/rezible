@@ -12,8 +12,9 @@
 	const { nodes }: Props = $props();
 
 	/**
-	 * Landscape names sit top-left inside the outline, on the bottom of the label band so a name taller than
-	 * the band grows into the margin above it rather than over the first system. System names are centred.
+	 * Landscape names, and the names of systems holding subsystems, sit top-left inside the outline, on the
+	 * bottom of the label band so a name taller than the band grows into the margin above it rather than over
+	 * the first child region. Other system names are centred.
 	 */
 	const labels = $derived(
 		nodes
@@ -21,23 +22,26 @@
 			.map((region) => {
 				const box = { ...region.position, width: region.width ?? 0, height: region.height ?? 0 };
 				const level = region.data.region.level;
+				const top =
+					level === "landscape" ||
+					region.data.region.children.some((child) => child.type === "region");
 				let area = box;
-				if (level === "landscape") {
+				if (top) {
 					const content = regionContentBox(box);
 					area = { ...content, height: REGION_PADDING + REGION_LABEL_HEIGHT };
 				}
-				return { id: region.id, label: region.data.label, level, area };
+				return { id: region.id, label: region.data.label, level, top, area };
 			})
 	);
 </script>
 
 <!-- Drawn over the regions at the landscape band, where a label band is too small to read on screen. -->
 <ViewportPortal target="front" class="pointer-events-none absolute inset-0" style="z-index: {REGION_LABEL_Z}">
-	{#each labels as { id, label, level, area } (id)}
+	{#each labels as { id, label, level, top, area } (id)}
 		<div
 			class={cn(
 				"region-labels absolute flex",
-				level === "landscape" ? "items-end justify-start" : "items-center justify-center"
+				top ? "items-end justify-start" : "items-center justify-center"
 			)}
 			style:left="{area.x}px"
 			style:top="{area.y}px"

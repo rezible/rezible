@@ -63,18 +63,6 @@ func (_c *KnowledgeEntityCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEn
 	return _c
 }
 
-// SetCategory sets the "category" field.
-func (_c *KnowledgeEntityCreate) SetCategory(v knowledgeentity.Category) *KnowledgeEntityCreate {
-	_c.mutation.SetCategory(v)
-	return _c
-}
-
-// SetKind sets the "kind" field.
-func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
-	_c.mutation.SetKind(v)
-	return _c
-}
-
 // SetState sets the "state" field.
 func (_c *KnowledgeEntityCreate) SetState(v schematypes.KnowledgeGraphSubjectState) *KnowledgeEntityCreate {
 	_c.mutation.SetState(v)
@@ -89,6 +77,20 @@ func (_c *KnowledgeEntityCreate) SetNillableState(v *schematypes.KnowledgeGraphS
 	return _c
 }
 
+// SetStateSources sets the "state_sources" field.
+func (_c *KnowledgeEntityCreate) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeEntityCreate {
+	_c.mutation.SetStateSources(v)
+	return _c
+}
+
+// SetNillableStateSources sets the "state_sources" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableStateSources(v *schematypes.KnowledgeStateSources) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetStateSources(*v)
+	}
+	return _c
+}
+
 // SetStateEffectiveAt sets the "state_effective_at" field.
 func (_c *KnowledgeEntityCreate) SetStateEffectiveAt(v time.Time) *KnowledgeEntityCreate {
 	_c.mutation.SetStateEffectiveAt(v)
@@ -99,6 +101,74 @@ func (_c *KnowledgeEntityCreate) SetStateEffectiveAt(v time.Time) *KnowledgeEnti
 func (_c *KnowledgeEntityCreate) SetNillableStateEffectiveAt(v *time.Time) *KnowledgeEntityCreate {
 	if v != nil {
 		_c.SetStateEffectiveAt(*v)
+	}
+	return _c
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (_c *KnowledgeEntityCreate) SetLastObservedAt(v time.Time) *KnowledgeEntityCreate {
+	_c.mutation.SetLastObservedAt(v)
+	return _c
+}
+
+// SetNillableLastObservedAt sets the "last_observed_at" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableLastObservedAt(v *time.Time) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetLastObservedAt(*v)
+	}
+	return _c
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (_c *KnowledgeEntityCreate) SetWithdrawnAt(v time.Time) *KnowledgeEntityCreate {
+	_c.mutation.SetWithdrawnAt(v)
+	return _c
+}
+
+// SetNillableWithdrawnAt sets the "withdrawn_at" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableWithdrawnAt(v *time.Time) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetWithdrawnAt(*v)
+	}
+	return _c
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (_c *KnowledgeEntityCreate) SetExpiresAt(v time.Time) *KnowledgeEntityCreate {
+	_c.mutation.SetExpiresAt(v)
+	return _c
+}
+
+// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableExpiresAt(v *time.Time) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetExpiresAt(*v)
+	}
+	return _c
+}
+
+// SetCategory sets the "category" field.
+func (_c *KnowledgeEntityCreate) SetCategory(v knowledgeentity.Category) *KnowledgeEntityCreate {
+	_c.mutation.SetCategory(v)
+	return _c
+}
+
+// SetKind sets the "kind" field.
+func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
+	_c.mutation.SetKind(v)
+	return _c
+}
+
+// SetParentID sets the "parent_id" field.
+func (_c *KnowledgeEntityCreate) SetParentID(v uuid.UUID) *KnowledgeEntityCreate {
+	_c.mutation.SetParentID(v)
+	return _c
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableParentID(v *uuid.UUID) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetParentID(*v)
 	}
 	return _c
 }
@@ -180,6 +250,26 @@ func (_c *KnowledgeEntityCreate) AddTargetRelationships(v ...*KnowledgeRelations
 		ids[i] = v[i].ID
 	}
 	return _c.AddTargetRelationshipIDs(ids...)
+}
+
+// SetParent sets the "parent" edge to the KnowledgeEntity entity.
+func (_c *KnowledgeEntityCreate) SetParent(v *KnowledgeEntity) *KnowledgeEntityCreate {
+	return _c.SetParentID(v.ID)
+}
+
+// AddChildIDs adds the "children" edge to the KnowledgeEntity entity by IDs.
+func (_c *KnowledgeEntityCreate) AddChildIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
+	_c.mutation.AddChildIDs(ids...)
+	return _c
+}
+
+// AddChildren adds the "children" edges to the KnowledgeEntity entity.
+func (_c *KnowledgeEntityCreate) AddChildren(v ...*KnowledgeEntity) *KnowledgeEntityCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddChildIDs(ids...)
 }
 
 // Mutation returns the KnowledgeEntityMutation object of the builder.
@@ -318,6 +408,30 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := _c.mutation.State(); ok {
+		_spec.SetField(knowledgeentity.FieldState, field.TypeJSON, value)
+		_node.State = value
+	}
+	if value, ok := _c.mutation.StateSources(); ok {
+		_spec.SetField(knowledgeentity.FieldStateSources, field.TypeJSON, value)
+		_node.StateSources = value
+	}
+	if value, ok := _c.mutation.StateEffectiveAt(); ok {
+		_spec.SetField(knowledgeentity.FieldStateEffectiveAt, field.TypeTime, value)
+		_node.StateEffectiveAt = &value
+	}
+	if value, ok := _c.mutation.LastObservedAt(); ok {
+		_spec.SetField(knowledgeentity.FieldLastObservedAt, field.TypeTime, value)
+		_node.LastObservedAt = &value
+	}
+	if value, ok := _c.mutation.WithdrawnAt(); ok {
+		_spec.SetField(knowledgeentity.FieldWithdrawnAt, field.TypeTime, value)
+		_node.WithdrawnAt = &value
+	}
+	if value, ok := _c.mutation.ExpiresAt(); ok {
+		_spec.SetField(knowledgeentity.FieldExpiresAt, field.TypeTime, value)
+		_node.ExpiresAt = &value
+	}
 	if value, ok := _c.mutation.Category(); ok {
 		_spec.SetField(knowledgeentity.FieldCategory, field.TypeEnum, value)
 		_node.Category = value
@@ -325,14 +439,6 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
 		_node.Kind = value
-	}
-	if value, ok := _c.mutation.State(); ok {
-		_spec.SetField(knowledgeentity.FieldState, field.TypeJSON, value)
-		_node.State = value
-	}
-	if value, ok := _c.mutation.StateEffectiveAt(); ok {
-		_spec.SetField(knowledgeentity.FieldStateEffectiveAt, field.TypeTime, value)
-		_node.StateEffectiveAt = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -415,6 +521,41 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 			},
 		}
 		edge.Schema = _c.schemaConfig.KnowledgeRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   knowledgeentity.ParentTable,
+			Columns: []string{knowledgeentity.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.KnowledgeEntity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ParentID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   knowledgeentity.ChildrenTable,
+			Columns: []string{knowledgeentity.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.KnowledgeEntity
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -514,6 +655,24 @@ func (u *KnowledgeEntityUpsert) ClearState() *KnowledgeEntityUpsert {
 	return u
 }
 
+// SetStateSources sets the "state_sources" field.
+func (u *KnowledgeEntityUpsert) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldStateSources, v)
+	return u
+}
+
+// UpdateStateSources sets the "state_sources" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateStateSources() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldStateSources)
+	return u
+}
+
+// ClearStateSources clears the value of the "state_sources" field.
+func (u *KnowledgeEntityUpsert) ClearStateSources() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldStateSources)
+	return u
+}
+
 // SetStateEffectiveAt sets the "state_effective_at" field.
 func (u *KnowledgeEntityUpsert) SetStateEffectiveAt(v time.Time) *KnowledgeEntityUpsert {
 	u.Set(knowledgeentity.FieldStateEffectiveAt, v)
@@ -529,6 +688,78 @@ func (u *KnowledgeEntityUpsert) UpdateStateEffectiveAt() *KnowledgeEntityUpsert 
 // ClearStateEffectiveAt clears the value of the "state_effective_at" field.
 func (u *KnowledgeEntityUpsert) ClearStateEffectiveAt() *KnowledgeEntityUpsert {
 	u.SetNull(knowledgeentity.FieldStateEffectiveAt)
+	return u
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *KnowledgeEntityUpsert) SetLastObservedAt(v time.Time) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldLastObservedAt, v)
+	return u
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateLastObservedAt() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldLastObservedAt)
+	return u
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (u *KnowledgeEntityUpsert) ClearLastObservedAt() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldLastObservedAt)
+	return u
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (u *KnowledgeEntityUpsert) SetWithdrawnAt(v time.Time) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldWithdrawnAt, v)
+	return u
+}
+
+// UpdateWithdrawnAt sets the "withdrawn_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateWithdrawnAt() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldWithdrawnAt)
+	return u
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (u *KnowledgeEntityUpsert) ClearWithdrawnAt() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldWithdrawnAt)
+	return u
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *KnowledgeEntityUpsert) SetExpiresAt(v time.Time) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldExpiresAt, v)
+	return u
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateExpiresAt() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldExpiresAt)
+	return u
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *KnowledgeEntityUpsert) ClearExpiresAt() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldExpiresAt)
+	return u
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *KnowledgeEntityUpsert) SetParentID(v uuid.UUID) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldParentID, v)
+	return u
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateParentID() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldParentID)
+	return u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *KnowledgeEntityUpsert) ClearParentID() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldParentID)
 	return u
 }
 
@@ -638,6 +869,27 @@ func (u *KnowledgeEntityUpsertOne) ClearState() *KnowledgeEntityUpsertOne {
 	})
 }
 
+// SetStateSources sets the "state_sources" field.
+func (u *KnowledgeEntityUpsertOne) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetStateSources(v)
+	})
+}
+
+// UpdateStateSources sets the "state_sources" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateStateSources() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateStateSources()
+	})
+}
+
+// ClearStateSources clears the value of the "state_sources" field.
+func (u *KnowledgeEntityUpsertOne) ClearStateSources() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearStateSources()
+	})
+}
+
 // SetStateEffectiveAt sets the "state_effective_at" field.
 func (u *KnowledgeEntityUpsertOne) SetStateEffectiveAt(v time.Time) *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
@@ -656,6 +908,90 @@ func (u *KnowledgeEntityUpsertOne) UpdateStateEffectiveAt() *KnowledgeEntityUpse
 func (u *KnowledgeEntityUpsertOne) ClearStateEffectiveAt() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.ClearStateEffectiveAt()
+	})
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *KnowledgeEntityUpsertOne) SetLastObservedAt(v time.Time) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetLastObservedAt(v)
+	})
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateLastObservedAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateLastObservedAt()
+	})
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (u *KnowledgeEntityUpsertOne) ClearLastObservedAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearLastObservedAt()
+	})
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (u *KnowledgeEntityUpsertOne) SetWithdrawnAt(v time.Time) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetWithdrawnAt(v)
+	})
+}
+
+// UpdateWithdrawnAt sets the "withdrawn_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateWithdrawnAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateWithdrawnAt()
+	})
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (u *KnowledgeEntityUpsertOne) ClearWithdrawnAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearWithdrawnAt()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *KnowledgeEntityUpsertOne) SetExpiresAt(v time.Time) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateExpiresAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *KnowledgeEntityUpsertOne) ClearExpiresAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearExpiresAt()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *KnowledgeEntityUpsertOne) SetParentID(v uuid.UUID) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateParentID() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *KnowledgeEntityUpsertOne) ClearParentID() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearParentID()
 	})
 }
 
@@ -932,6 +1268,27 @@ func (u *KnowledgeEntityUpsertBulk) ClearState() *KnowledgeEntityUpsertBulk {
 	})
 }
 
+// SetStateSources sets the "state_sources" field.
+func (u *KnowledgeEntityUpsertBulk) SetStateSources(v schematypes.KnowledgeStateSources) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetStateSources(v)
+	})
+}
+
+// UpdateStateSources sets the "state_sources" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateStateSources() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateStateSources()
+	})
+}
+
+// ClearStateSources clears the value of the "state_sources" field.
+func (u *KnowledgeEntityUpsertBulk) ClearStateSources() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearStateSources()
+	})
+}
+
 // SetStateEffectiveAt sets the "state_effective_at" field.
 func (u *KnowledgeEntityUpsertBulk) SetStateEffectiveAt(v time.Time) *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
@@ -950,6 +1307,90 @@ func (u *KnowledgeEntityUpsertBulk) UpdateStateEffectiveAt() *KnowledgeEntityUps
 func (u *KnowledgeEntityUpsertBulk) ClearStateEffectiveAt() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.ClearStateEffectiveAt()
+	})
+}
+
+// SetLastObservedAt sets the "last_observed_at" field.
+func (u *KnowledgeEntityUpsertBulk) SetLastObservedAt(v time.Time) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetLastObservedAt(v)
+	})
+}
+
+// UpdateLastObservedAt sets the "last_observed_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateLastObservedAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateLastObservedAt()
+	})
+}
+
+// ClearLastObservedAt clears the value of the "last_observed_at" field.
+func (u *KnowledgeEntityUpsertBulk) ClearLastObservedAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearLastObservedAt()
+	})
+}
+
+// SetWithdrawnAt sets the "withdrawn_at" field.
+func (u *KnowledgeEntityUpsertBulk) SetWithdrawnAt(v time.Time) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetWithdrawnAt(v)
+	})
+}
+
+// UpdateWithdrawnAt sets the "withdrawn_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateWithdrawnAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateWithdrawnAt()
+	})
+}
+
+// ClearWithdrawnAt clears the value of the "withdrawn_at" field.
+func (u *KnowledgeEntityUpsertBulk) ClearWithdrawnAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearWithdrawnAt()
+	})
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (u *KnowledgeEntityUpsertBulk) SetExpiresAt(v time.Time) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetExpiresAt(v)
+	})
+}
+
+// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateExpiresAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateExpiresAt()
+	})
+}
+
+// ClearExpiresAt clears the value of the "expires_at" field.
+func (u *KnowledgeEntityUpsertBulk) ClearExpiresAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearExpiresAt()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *KnowledgeEntityUpsertBulk) SetParentID(v uuid.UUID) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateParentID() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *KnowledgeEntityUpsertBulk) ClearParentID() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.ClearParentID()
 	})
 }
 

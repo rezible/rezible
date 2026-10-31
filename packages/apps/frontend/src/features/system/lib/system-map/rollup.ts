@@ -1,7 +1,7 @@
 import type { DetailBand } from "./detail";
 import type { GraphRelationship, GraphSubset } from "./graph";
-import { PLACEMENT_PREDICATE } from "./placement";
-import { structureLevel, type StructureNode, type StructureTree } from "./structure";
+import { rollsUp } from "./model";
+import type { StructureNode, StructureTree } from "./structure";
 
 /** The level connections attach to: endpoints below it roll up to their ancestor at it. */
 export type ConnectionLevel = "system" | "runtime";
@@ -12,8 +12,6 @@ export type MapConnection = {
 	target: string;
 	predicates: string[];
 	relationshipIds: string[];
-	/** A placement drawn for its selected source; placements never roll up. */
-	placement: boolean;
 };
 
 export type RelationshipMode = "focused" | "all";
@@ -29,7 +27,7 @@ export type VisibleConnections = {
 	level: ConnectionLevel;
 	/** Every connection was drawn because it answers the focus. */
 	focused: boolean;
-	/** Behaviour relationships with an endpoint in the focused node's subtree. */
+	/** Drawable relationships with an endpoint in the focused node's subtree. */
 	incidentRelationshipIds: ReadonlySet<string>;
 };
 
@@ -38,50 +36,22 @@ const bandLevel = (band: DetailBand): ConnectionLevel => (band === "landscape" ?
 
 type Resolve = (entityId: string, level: ConnectionLevel) => string | undefined;
 
-/** Resolves an entity to its drawn node at a level, walking primary ancestry. */
-function endpointResolver(graph: GraphSubset, tree: StructureTree): Resolve {
-	const entities = new Map(graph.entities.map((entity) => [entity.id, entity]));
-	const systemLevelIds = new Map<string, string>();
-	const visit = (node: StructureNode, systemId?: string) => {
-		if (node.type === "card") {
-			// A runtime with no system ancestor has no node at the system level.
-			if (systemId) {
-				systemLevelIds.set(node.id, systemId);
-			}
-			return;
-		}
-
-		systemLevelIds.set(node.id, node.id);
-		const container = node.level === "system" ? node.id : systemId;
-		node.children.forEach((child) => visit(child, container));
-	};
-	tree.roots.forEach((node) => visit(node));
-
+/**
+ * Resolves an entity along its parent chain to its drawn node at a level: the nearest container card at the
+ * runtime level, and the nearest region at the system level. Entities outside the logical tree, such as
+ * infrastructure, and entities with no node at the level resolve to nothing.
+ */
+function endpointResolver(tree: StructureTree): Resolve {
 	return (entityId, level) => {
-		let entity = entities.get(entityId);
-		if (!entity || !structureLevel(entity.category)) {
+		const nodeId = tree.drawnNodes.get(entityId);
+		if (!nodeId) {
 			return undefined;
 		}
-		// Implementation entities must reach a runtime, even when contained directly by a region.
-		while (structureLevel(entity.category) === "implementation") {
-			const parentId = tree.primaryParents.get(entity.id);
-			entity = parentId ? entities.get(parentId) : undefined;
-			if (!entity) {
-				return undefined;
-			}
-			const parentLevel = structureLevel(entity.category);
-			if (parentLevel !== "implementation" && parentLevel !== "runtime") {
-				return undefined;
-			}
-		}
-
-		if (!tree.nodes.has(entity.id)) {
-			return undefined;
-		}
+		const isRegion = tree.nodes.get(nodeId)?.type === "region";
 		if (level === "runtime") {
-			return entity.id;
+			return isRegion ? undefined : nodeId;
 		}
-		return systemLevelIds.get(entity.id);
+		return isRegion ? nodeId : tree.enclosingRegions.get(nodeId);
 	};
 }
 
@@ -115,7 +85,6 @@ function groupConnections(
 				target,
 				predicates: [],
 				relationshipIds: [],
-				placement: relationship.predicate === PLACEMENT_PREDICATE,
 			};
 			connections.set(id, connection);
 		}
@@ -148,35 +117,41 @@ type VisibleConnectionOptions = {
 	focus: ConnectionFocus;
 };
 
+/** The relationships the structure view can draw: those that roll up, with both endpoints in the tree. */
+export function drawableRelationships(graph: GraphSubset, tree: StructureTree): GraphRelationship[] {
+	return graph.relationships.filter(
+		({ predicate, source, target }) =>
+			rollsUp(graph.model, predicate) && tree.drawnNodes.has(source) && tree.drawnNodes.has(target)
+	);
+}
+
 /**
- * The connections drawn for a band, relationship mode and focus. Placements are never rolled up or drawn in
- * All; Focused draws them only for a selected source at the runtime band.
+ * The connections drawn for a band, relationship mode and focus, always at the band's level. Only predicates
+ * that roll up are drawn.
  */
 export function visibleConnections(
 	graph: GraphSubset,
 	tree: StructureTree,
 	{ band, mode, focus }: VisibleConnectionOptions
 ): VisibleConnections {
-	const resolve = endpointResolver(graph, tree);
+	const resolve = endpointResolver(tree);
 	const level = bandLevel(band);
-	const behaviour = graph.relationships.filter(
-		({ predicate }) => predicate !== "contains" && predicate !== PLACEMENT_PREDICATE
-	);
+	const drawable = drawableRelationships(graph, tree);
 
 	let incident: GraphRelationship[] = [];
 	if (focus.kind === "node") {
 		const subtree = subtreeIds(tree, focus.nodeId);
 		const inSubtree = (entityId: string) => {
-			const nodeId = resolve(entityId, "runtime");
+			const nodeId = tree.drawnNodes.get(entityId);
 			return nodeId !== undefined && subtree.has(nodeId);
 		};
-		incident = behaviour.filter(({ source, target }) => inSubtree(source) || inSubtree(target));
+		incident = drawable.filter(({ source, target }) => inSubtree(source) || inSubtree(target));
 	}
 	const incidentRelationshipIds = new Set(incident.map((relationship) => relationship.id));
 
-	if (mode === "all") {
+	if (mode === "all" || focus.kind === "none") {
 		return {
-			connections: groupConnections(behaviour, resolve, level),
+			connections: groupConnections(drawable, resolve, level),
 			level,
 			focused: false,
 			incidentRelationshipIds,
@@ -184,44 +159,23 @@ export function visibleConnections(
 	}
 
 	if (focus.kind === "node") {
-		let relationships = incident;
-		if (level === "runtime") {
-			const placements = graph.relationships.filter(
-				(relationship) =>
-					relationship.predicate === PLACEMENT_PREDICATE &&
-					resolve(relationship.source, "runtime") === focus.nodeId
-			);
-			relationships = [...incident, ...placements];
-		}
 		return {
-			connections: groupConnections(relationships, resolve, level),
+			connections: groupConnections(incident, resolve, level),
 			level,
 			focused: true,
 			incidentRelationshipIds,
 		};
 	}
 
-	if (focus.kind === "relationships") {
-		const ids = new Set(focus.relationshipIds);
-		const relationships = graph.relationships.filter((relationship) => {
-			if (!ids.has(relationship.id) || relationship.predicate === "contains") {
-				return false;
-			}
-			return level === "runtime" || relationship.predicate !== PLACEMENT_PREDICATE;
-		});
-		return {
-			connections: groupConnections(relationships, resolve, level),
-			level,
-			focused: true,
-			incidentRelationshipIds,
-		};
-	}
-
-	// At rest the map shows how systems relate, at either band.
+	const ids = new Set(focus.relationshipIds);
 	return {
-		connections: groupConnections(behaviour, resolve, "system"),
-		level: "system",
-		focused: false,
+		connections: groupConnections(
+			drawable.filter((relationship) => ids.has(relationship.id)),
+			resolve,
+			level
+		),
+		level,
+		focused: true,
 		incidentRelationshipIds,
 	};
 }

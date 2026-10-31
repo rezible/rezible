@@ -28,6 +28,7 @@ import (
 	sar "github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
 )
@@ -257,6 +258,12 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestConfirmMergesEntities() {
 		s.Equal(start.Add(2*time.Minute), services[0].StateEffectiveAt.UTC())
 		s.False(client.KnowledgeEntity.Query().Where(kne.ID(otherID)).ExistX(ctx))
 
+		var survivorAliases []knowledgegraph.SubjectAlias
+		for _, alias := range client.KnowledgeSubjectAlias.Query().Where(ksa.EntityID(survivorID)).AllX(ctx) {
+			survivorAliases = append(survivorAliases, knowledgegraph.SubjectAlias{ID: alias.ID, CreatedAt: alias.CreatedAt, Record: aliasRecord(alias)})
+		}
+		s.Equal(knowledgegraph.MergeSubjectState(survivorAliases).State, services[0].State, "the survivor's state is a fresh merge of its aliases")
+
 		queryNames := client.KnowledgeEntityLinkingAttribute.Query().
 			Where(kela.EntityID(survivorID)).
 			Order(kela.ByValue())
@@ -414,6 +421,38 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestMergeKeepsARelationshipBetween
 	s.Equal(callsID, graph.relationshipID(ctx, calls), "its alias still names it, so its evidence stays citable")
 }
 
+// TestMergeRecomputesParents merges a container into the container that contains it: the contains between them
+// becomes a self-loop, which is never a parent, and the merged entity's child moves to the survivor.
+func (s *KnowledgeGraphIngestionServiceSuite) TestMergeRecomputesParents() {
+	ctx, tdb := s.SetupTestDatabase()
+	client := tdb.Client(ctx)
+	graph := newTestGraph(s.Require(), tdb)
+	start := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	checkoutAPI := graph.entity(kne.CategoryContainer, "service", "provider-a", "service:checkout-api")
+	checkoutAPI.LinkingAttributes = projections.LinkingAttributes{projections.LinkingAttributeServiceName: "checkout-api"}
+	checkout := graph.entity(kne.CategoryContainer, "service", "provider-b", "service:checkout")
+	checkout.LinkingAttributes = projections.LinkingAttributes{projections.LinkingAttributeServiceName: "checkout"}
+	orders := graph.entity(kne.CategoryComponent, "module", "provider-b", "module:orders")
+	graph.record(ctx, start, graph.observeEntity(checkoutAPI, "checkout-api"))
+	graph.record(ctx, start.Add(time.Minute),
+		graph.observeEntity(checkout, "checkout"),
+		graph.observeEntity(orders, "orders"),
+		graph.observeRelationship(graph.relationship(knr.PredicateContains, checkoutAPI, checkout)),
+		graph.observeRelationship(graph.relationship(knr.PredicateContains, checkout, orders)),
+	)
+	survivorID := graph.entityID(ctx, checkoutAPI)
+	ordersID := graph.entityID(ctx, orders)
+	proposals := s.proposals(ctx, tdb)
+	s.Require().Len(proposals, 1)
+	memberCtx, _ := s.memberContext(ctx, tdb)
+
+	_, confirmErr := s.makeProposalService(tdb).ConfirmProposal(memberCtx, proposals[0].ID)
+
+	s.Require().NoError(confirmErr)
+	s.Nil(client.KnowledgeEntity.GetX(ctx, survivorID).ParentID, "the self-loop is not a parent")
+	s.Equal(&survivorID, client.KnowledgeEntity.GetX(ctx, ordersID).ParentID)
+}
+
 func (s *KnowledgeGraphIngestionServiceSuite) TestMergeFailsWhenARepointedRowRepeatsAUniqueKey() {
 	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
@@ -557,6 +596,7 @@ func TestMergeHandlesEveryEntityReference(t *testing.T) {
 		tableColumn{ksa.Table, ksa.FieldRelationshipID},
 		tableColumn{knr.Table, knr.FieldSourceEntityID},
 		tableColumn{knr.Table, knr.FieldTargetEntityID},
+		tableColumn{kne.Table, kne.FieldParentID},
 	)
 	for _, reference := range append(ent.KnowledgeEntityReferences, ent.KnowledgeRelationshipReferences...) {
 		handled.Add(tableColumn{reference.Table, reference.Column})

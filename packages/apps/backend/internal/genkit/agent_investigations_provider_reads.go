@@ -59,9 +59,23 @@ func (i *investigationInvocation) listServices(ctx context.Context, input rezai.
 		}
 		return &rezai.TextToolResult{Text: text}, nil
 	}
+	serviceIDs := make([]uuid.UUID, len(services.Data))
+	for index, service := range services.Data {
+		serviceIDs[index] = service.ID
+	}
+	ancestors, ancestorsErr := i.knowledge.ListAncestors(ctx, serviceIDs)
+	if ancestorsErr != nil {
+		return nil, fmt.Errorf("list service ancestors: %w", ancestorsErr)
+	}
 	lines := make([]string, len(services.Data))
 	for index, service := range services.Data {
 		lines[index] = i.renderEntityLine(service)
+		for _, ancestor := range ancestors[service.ID] {
+			if ancestor.Category == kne.CategorySystem {
+				lines[index] += " system=" + i.renderEntityName(ancestor)
+				break
+			}
+		}
 	}
 	return i.textPageResult(strings.Join(lines, "\n"), page, services.Total, len(services.Data)), nil
 }
@@ -445,7 +459,8 @@ func (i *investigationInvocation) resolveService(ctx context.Context, value stri
 }
 
 // logSourceAliases returns the resource refs of the service's aliases from a log installation: the service
-// names it states, for the integration to choose the value its logs are read by.
+// names it states, for the integration to choose the value its logs are read by. Aliases the source has stopped
+// confirming past their expiry, or withdrawn, are left out.
 func (i *investigationInvocation) logSourceAliases(ctx context.Context, serviceID uuid.UUID, installation *ent.Integration) ([]string, error) {
 	params := rez.ListKnowledgeSubjectAliasesParams{
 		ListParams: ent.ListParams{PageSize: 50},
@@ -453,6 +468,8 @@ func (i *investigationInvocation) logSourceAliases(ctx context.Context, serviceI
 			ksa.EntityID(serviceID),
 			ksa.Provider(installation.Provider),
 			ksa.ProviderNamespace(installation.ID.String()),
+			ksa.WithdrawnAtIsNil(),
+			ksa.Or(ksa.ExpiresAtIsNil(), ksa.ExpiresAtGTE(i.clock.Now())),
 		},
 	}
 	aliases, listErr := i.knowledge.ListSubjectAliases(ctx, params)

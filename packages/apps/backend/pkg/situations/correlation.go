@@ -108,14 +108,14 @@ var correlationSteps = []correlationStep{
 		window: OneHopWindow,
 		ranked: true,
 		relates: func(r CorrelationRelationship, observation, matching mapset.Set[uuid.UUID]) bool {
-			return r.is(knowledgegraph.RelationshipClassDependsOn) && matching.Contains(r.SourceEntityID) && observation.Contains(r.TargetEntityID)
+			return r.has(knowledgegraph.DependencySourceOnTarget) && matching.Contains(r.SourceEntityID) && observation.Contains(r.TargetEntityID)
 		},
 	},
 	{
 		kind:   MatchKindDependent,
 		window: OneHopWindow,
 		relates: func(r CorrelationRelationship, observation, matching mapset.Set[uuid.UUID]) bool {
-			return r.is(knowledgegraph.RelationshipClassDependsOn) && observation.Contains(r.SourceEntityID) && matching.Contains(r.TargetEntityID)
+			return r.has(knowledgegraph.DependencySourceOnTarget) && observation.Contains(r.SourceEntityID) && matching.Contains(r.TargetEntityID)
 		},
 	},
 	{
@@ -124,13 +124,13 @@ var correlationSteps = []correlationStep{
 		relates: func(r CorrelationRelationship, observation, matching mapset.Set[uuid.UUID]) bool {
 			matchDirectionA := observation.Contains(r.SourceEntityID) && matching.Contains(r.TargetEntityID)
 			matchDirectionB := observation.Contains(r.TargetEntityID) && matching.Contains(r.SourceEntityID)
-			return r.is(knowledgegraph.RelationshipClassAdjacent) && (matchDirectionA || matchDirectionB)
+			return r.has(knowledgegraph.DependencyMutual) && (matchDirectionA || matchDirectionB)
 		},
 	},
 }
 
-func (r CorrelationRelationship) is(class knowledgegraph.RelationshipClass) bool {
-	return slices.Contains(class.Predicates(), r.Predicate)
+func (r CorrelationRelationship) has(dependency knowledgegraph.Dependency) bool {
+	return knowledgegraph.PredicateSpecOf(r.Predicate).Dependency == dependency
 }
 
 // DecideCorrelation places an observation. The first step with a match decides: a shared entity or dependency

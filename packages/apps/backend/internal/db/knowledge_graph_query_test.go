@@ -22,7 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/integrations"
-	"github.com/rezible/rezible/pkg/knowledgegraph"
+	"github.com/rezible/rezible/pkg/situations"
 	"github.com/rezible/rezible/test"
 )
 
@@ -198,11 +198,11 @@ func (s *KnowledgeGraphQueryServiceSuite) TestExpansionMatchesEitherEndpointAndR
 	selectedB := s.createEntity(ctx, database, queryTestUUID(2), kne.CategoryContainer, "service")
 	outsideA := s.createEntity(ctx, database, queryTestUUID(3), kne.CategoryContainer, "database")
 	outsideB := s.createEntity(ctx, database, queryTestUUID(4), kne.CategoryContainer, "database")
-	first := s.createRelationship(ctx, database, queryTestUUID(101), selectedA.ID, outsideA.ID, knr.PredicateUses)
+	first := s.createRelationship(ctx, database, queryTestUUID(101), selectedA.ID, outsideA.ID, knr.PredicateDependsOn)
 	second := s.createRelationship(ctx, database, queryTestUUID(102), outsideB.ID, selectedB.ID, knr.PredicateReadsFrom)
 	bothSelected := s.createRelationship(ctx, database, queryTestUUID(103), selectedA.ID, selectedB.ID, knr.PredicateDependsOn)
 	selfLoop := s.createRelationship(ctx, database, queryTestUUID(104), selectedA.ID, selectedA.ID, knr.PredicateObserves)
-	s.createRelationship(ctx, database, queryTestUUID(105), outsideA.ID, outsideB.ID, knr.PredicateUses)
+	s.createRelationship(ctx, database, queryTestUUID(105), outsideA.ID, outsideB.ID, knr.PredicateDependsOn)
 
 	entityLimit := 1
 	firstSelection := s.selectEntities(ctx, service, rez.SelectKnowledgeGraphEntitiesParams{
@@ -233,13 +233,13 @@ func (s *KnowledgeGraphQueryServiceSuite) TestRelationshipFiltersPaginationAndLi
 	ctx, database, service := s.newService()
 	selected := s.createEntity(ctx, database, queryTestUUID(1), kne.CategoryContainer, "service")
 	outside := s.createEntity(ctx, database, queryTestUUID(2), kne.CategoryContainer, "database")
-	first := s.createRelationship(ctx, database, queryTestUUID(10), selected.ID, outside.ID, knr.PredicateUses)
+	first := s.createRelationship(ctx, database, queryTestUUID(10), selected.ID, outside.ID, knr.PredicateDependsOn)
 	second := s.createRelationship(ctx, database, queryTestUUID(20), outside.ID, selected.ID, knr.PredicateContains)
 	s.createRelationship(ctx, database, queryTestUUID(25), selected.ID, outside.ID, knr.PredicateObserves)
 	selection := s.selectEntities(ctx, service, rez.SelectKnowledgeGraphEntitiesParams{
 		Filter: rez.KnowledgeEntityFilter{Kinds: []string{"service"}},
 	})
-	predicates := []knr.Predicate{knr.PredicateUses, knr.PredicateContains, knr.PredicateUses}
+	predicates := []knr.Predicate{knr.PredicateDependsOn, knr.PredicateContains, knr.PredicateDependsOn}
 	limit := 1
 	firstPage := s.expandRelationships(ctx, service, rez.ExpandKnowledgeGraphRelationshipsParams{
 		EntitySelectionRef: selection.EntitySelectionRef,
@@ -248,10 +248,10 @@ func (s *KnowledgeGraphQueryServiceSuite) TestRelationshipFiltersPaginationAndLi
 	})
 	s.Equal([]uuid.UUID{first.ID}, relationshipPageIDs(firstPage))
 	s.Require().NotNil(firstPage.NextCursor)
-	s.Equal([]knr.Predicate{knr.PredicateUses, knr.PredicateContains, knr.PredicateUses}, predicates)
+	s.Equal([]knr.Predicate{knr.PredicateDependsOn, knr.PredicateContains, knr.PredicateDependsOn}, predicates)
 
-	liveRelationship := s.createRelationship(ctx, database, queryTestUUID(15), outside.ID, selected.ID, knr.PredicateUses)
-	continuationPredicates := []knr.Predicate{knr.PredicateContains, knr.PredicateUses}
+	liveRelationship := s.createRelationship(ctx, database, queryTestUUID(15), outside.ID, selected.ID, knr.PredicateDependsOn)
+	continuationPredicates := []knr.Predicate{knr.PredicateContains, knr.PredicateDependsOn}
 	secondPage := s.expandRelationships(ctx, service, rez.ExpandKnowledgeGraphRelationshipsParams{
 		EntitySelectionRef: selection.EntitySelectionRef,
 		Predicates:         continuationPredicates,
@@ -260,11 +260,11 @@ func (s *KnowledgeGraphQueryServiceSuite) TestRelationshipFiltersPaginationAndLi
 	})
 	s.Equal([]uuid.UUID{liveRelationship.ID}, relationshipPageIDs(secondPage))
 	s.Require().NotNil(secondPage.NextCursor)
-	s.Equal([]knr.Predicate{knr.PredicateContains, knr.PredicateUses}, continuationPredicates)
+	s.Equal([]knr.Predicate{knr.PredicateContains, knr.PredicateDependsOn}, continuationPredicates)
 
 	thirdPage := s.expandRelationships(ctx, service, rez.ExpandKnowledgeGraphRelationshipsParams{
 		EntitySelectionRef: selection.EntitySelectionRef,
-		Predicates:         []knr.Predicate{knr.PredicateUses, knr.PredicateContains},
+		Predicates:         []knr.Predicate{knr.PredicateDependsOn, knr.PredicateContains},
 		Cursor:             secondPage.NextCursor,
 		Limit:              &limit,
 	})
@@ -292,7 +292,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestSelectionReplayTracksGraphChangesA
 
 	newEntity := s.createEntity(ctx, database, queryTestUUID(1), kne.CategoryContainer, "late_entity")
 	outside := s.createEntity(ctx, database, queryTestUUID(2), kne.CategoryContainer, "database")
-	newRelationship := s.createRelationship(ctx, database, queryTestUUID(101), outside.ID, newEntity.ID, knr.PredicateUses)
+	newRelationship := s.createRelationship(ctx, database, queryTestUUID(101), outside.ID, newEntity.ID, knr.PredicateDependsOn)
 	replayedExpansion := s.expandRelationships(ctx, service, rez.ExpandKnowledgeGraphRelationshipsParams{
 		EntitySelectionRef: selection.EntitySelectionRef,
 	})
@@ -315,7 +315,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestQueryLimits() {
 
 	selected := s.createEntity(ctx, database, queryTestUUID(1), kne.CategoryContainer, "service")
 	outside := s.createEntity(ctx, database, queryTestUUID(2), kne.CategoryContainer, "database")
-	s.createRelationship(ctx, database, queryTestUUID(10), selected.ID, outside.ID, knr.PredicateUses)
+	s.createRelationship(ctx, database, queryTestUUID(10), selected.ID, outside.ID, knr.PredicateDependsOn)
 	s.createRelationship(ctx, database, queryTestUUID(20), selected.ID, outside.ID, knr.PredicateContains)
 	selection := s.selectEntities(ctx, service, rez.SelectKnowledgeGraphEntitiesParams{
 		Filter: rez.KnowledgeEntityFilter{Kinds: []string{"service"}},
@@ -346,7 +346,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestQueryLimits() {
 			SetID(queryTestUUID(uint64(index + 1000))).
 			SetSourceEntityID(selected.ID).
 			SetTargetEntityID(targetID).
-			SetPredicate(knr.PredicateUses)
+			SetPredicate(knr.PredicateDependsOn)
 	}
 	createEntities := database.Client(ctx).KnowledgeEntity.CreateBulk(bulkEntities...)
 	s.Require().NoError(createEntities.Exec(ctx))
@@ -412,7 +412,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestQueryValidation() {
 	selected := s.createEntity(ctx, database, queryTestUUID(1), kne.CategoryContainer, "service")
 	outside := s.createEntity(ctx, database, queryTestUUID(2), kne.CategoryContainer, "database")
 	s.createEntity(ctx, database, queryTestUUID(3), kne.CategoryContainer, "service")
-	s.createRelationship(ctx, database, queryTestUUID(10), selected.ID, outside.ID, knr.PredicateUses)
+	s.createRelationship(ctx, database, queryTestUUID(10), selected.ID, outside.ID, knr.PredicateDependsOn)
 	s.createRelationship(ctx, database, queryTestUUID(20), selected.ID, outside.ID, knr.PredicateContains)
 	entityLimit := 1
 	entityPage := s.selectEntities(ctx, service, rez.SelectKnowledgeGraphEntitiesParams{
@@ -437,7 +437,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestQueryValidation() {
 	s.Require().NotNil(relationshipPage.NextCursor)
 	_, relationshipCursorErr := service.ExpandGraphRelationships(ctx, rez.ExpandKnowledgeGraphRelationshipsParams{
 		EntitySelectionRef: selection.EntitySelectionRef,
-		Predicates:         []knr.Predicate{knr.PredicateUses},
+		Predicates:         []knr.Predicate{knr.PredicateDependsOn},
 		Cursor:             relationshipPage.NextCursor,
 		Limit:              &relationshipLimit,
 	})
@@ -528,37 +528,76 @@ func (s *KnowledgeGraphQueryServiceSuite) ingestedEntityID(ctx context.Context, 
 	return id
 }
 
-func (s *KnowledgeGraphQueryServiceSuite) TestResolveStructureClimbsStoredRelationships() {
+func (s *KnowledgeGraphQueryServiceSuite) TestListAncestors() {
+	ctx, database := s.SetupTestDatabase()
+	service, serviceErr := NewKnowledgeGraphQueryService(database)
+	s.Require().NoError(serviceErr)
+	commerce := s.structureEntityRef("commerce", kne.CategorySystemFunction)
+	core := s.structureEntityRef("core", kne.CategorySystem)
+	checkout := s.structureEntityRef("checkout", kne.CategoryContainer)
+	orchestrator := s.structureEntityRef("orchestrator", kne.CategoryComponent)
+	s.ingestStructure(ctx, database,
+		s.observeEntity(commerce), s.observeEntity(core), s.observeEntity(checkout), s.observeEntity(orchestrator),
+		s.observeContains(commerce, core), s.observeContains(core, checkout), s.observeContains(checkout, orchestrator),
+	)
+	commerceID, coreID := s.ingestedEntityID(ctx, database, commerce), s.ingestedEntityID(ctx, database, core)
+	checkoutID, orchestratorID := s.ingestedEntityID(ctx, database, checkout), s.ingestedEntityID(ctx, database, orchestrator)
+
+	ancestors, listErr := service.ListAncestors(ctx, []uuid.UUID{orchestratorID, commerceID})
+	s.Require().NoError(listErr)
+	s.Require().Len(ancestors[orchestratorID], 3)
+	s.Equal([]uuid.UUID{checkoutID, coreID, commerceID}, []uuid.UUID{
+		ancestors[orchestratorID][0].ID, ancestors[orchestratorID][1].ID, ancestors[orchestratorID][2].ID,
+	}, "nearest first")
+	s.NotContains(ancestors, commerceID, "a root has no ancestors")
+
+	// The map reads the tree from the selection page.
+	page := s.selectEntities(ctx, service, rez.SelectKnowledgeGraphEntitiesParams{})
+	parents := make(map[uuid.UUID]*uuid.UUID)
+	for _, entity := range page.Entities {
+		parents[entity.ID] = entity.ParentID
+	}
+	s.Equal(&checkoutID, parents[orchestratorID])
+	s.Nil(parents[commerceID])
+
+	// Concurrent writes could leave a cycle; the read stops at the repeated entity.
+	database.Client(ctx).KnowledgeEntity.UpdateOneID(commerceID).SetParentID(orchestratorID).ExecX(ctx)
+	ancestors, listErr = service.ListAncestors(ctx, []uuid.UUID{orchestratorID})
+	s.Require().NoError(listErr)
+	s.Len(ancestors[orchestratorID], 3)
+}
+
+func (s *KnowledgeGraphQueryServiceSuite) TestResolveRepresentatives() {
 	ctx, database := s.SetupTestDatabase()
 	service, serviceErr := NewKnowledgeGraphQueryService(database)
 	s.Require().NoError(serviceErr)
 	checkout := s.structureEntityRef("checkout", kne.CategoryContainer)
 	orders := s.structureEntityRef("orders", kne.CategoryComponent)
 	pricing := s.structureEntityRef("pricing", kne.CategoryComponent)
+	cluster := s.structureEntityRef("cluster", kne.CategoryInfrastructure)
+	repository := s.structureEntityRef("repository", kne.CategoryCode)
 	s.ingestStructure(ctx, database,
-		s.observeEntity(checkout),
-		s.observeEntity(orders),
-		s.observeEntity(pricing),
-		s.observeContains(checkout, orders),
-		s.observeContains(orders, pricing),
+		s.observeEntity(checkout), s.observeEntity(orders), s.observeEntity(pricing),
+		s.observeEntity(cluster), s.observeEntity(repository),
+		s.observeContains(checkout, orders), s.observeContains(orders, pricing),
 	)
-	checkoutID := s.ingestedEntityID(ctx, database, checkout)
-	pricingID := s.ingestedEntityID(ctx, database, pricing)
+	checkoutID, pricingID := s.ingestedEntityID(ctx, database, checkout), s.ingestedEntityID(ctx, database, pricing)
+	clusterID, repositoryID := s.ingestedEntityID(ctx, database, cluster), s.ingestedEntityID(ctx, database, repository)
 
-	// The container is exactly MaxDepth steps away, so loading one step too few would miss it.
-	params := rez.ResolveStructureParams{
-		EntityIDs:        []uuid.UUID{pricingID, checkoutID},
-		TargetCategories: knowledgegraph.StructureLevelRuntime.Categories(),
-		MaxDepth:         2,
-	}
-	resolved, resolveErr := service.ResolveStructure(ctx, params)
+	resolved, resolveErr := service.ResolveRepresentatives(ctx, []uuid.UUID{pricingID, clusterID, repositoryID}, situations.RepresentativeCategories, 2)
 	s.Require().NoError(resolveErr)
+	s.Equal(map[uuid.UUID]uuid.UUID{pricingID: checkoutID, clusterID: clusterID}, resolved)
 
-	expected := map[uuid.UUID][]uuid.UUID{
-		pricingID:  {checkoutID},
-		checkoutID: {checkoutID},
-	}
-	s.Equal(expected, resolved)
+	resolved, resolveErr = service.ResolveRepresentatives(ctx, []uuid.UUID{pricingID}, situations.RepresentativeCategories, 1)
+	s.Require().NoError(resolveErr)
+	s.Empty(resolved, "the container is two steps away")
+
+	withdrawCluster := s.observeEntity(cluster)
+	withdrawCluster.Kind = ke.KindDeleted
+	s.ingestStructure(ctx, database, withdrawCluster)
+	resolved, resolveErr = service.ResolveRepresentatives(ctx, []uuid.UUID{clusterID}, situations.RepresentativeCategories, 2)
+	s.Require().NoError(resolveErr)
+	s.Empty(resolved, "a withdrawn entity represents nothing")
 }
 
 // relatedEventFixture is an entity related to a target, ingested with its state effective at a time.
@@ -570,8 +609,6 @@ type relatedEventFixture struct {
 	properties map[string]any
 	predicate  knr.Predicate
 	target     *rez.KnowledgeEntityRef
-	// reversed makes the target the relationship's source.
-	reversed bool
 }
 
 func (s *KnowledgeGraphQueryServiceSuite) ingestRelatedEvent(ctx context.Context, database rez.Database, fixture relatedEventFixture) uuid.UUID {
@@ -603,9 +640,6 @@ func (s *KnowledgeGraphQueryServiceSuite) ingestRelatedEvent(ctx context.Context
 		},
 		Source: *ref,
 		Target: *fixture.target,
-	}
-	if fixture.reversed {
-		relationship.Source, relationship.Target = relationship.Target, relationship.Source
 	}
 	relationshipEvidence := rez.KnowledgeEvidenceRef{
 		Kind:        ke.KindObserved,
@@ -666,23 +700,9 @@ func (s *KnowledgeGraphQueryServiceSuite) seedRelatedEvents(ctx context.Context,
 	otherService.target = search
 	s.ingestRelatedEvent(ctx, database, otherService)
 
-	otherPredicate := deployment("touches-checkout", time.Minute, "production", "succeeded")
-	otherPredicate.predicate = knr.PredicateTouches
-	s.ingestRelatedEvent(ctx, database, otherPredicate)
-
 	otherKind := deployment("code-change", time.Minute, "production", "succeeded")
 	otherKind.kind = "code_change"
 	s.ingestRelatedEvent(ctx, database, otherKind)
-
-	// The service impacts the event: the relationship runs the other way.
-	reversed := deployment("reversed", time.Minute, "production", "succeeded")
-	reversed.reversed = true
-	s.ingestRelatedEvent(ctx, database, reversed)
-
-	// A Kubernetes Deployment is a deployment that is not an event.
-	notAnEvent := deployment("kubernetes-deployment", time.Minute, "production", "succeeded")
-	notAnEvent.category = kne.CategoryContainer
-	s.ingestRelatedEvent(ctx, database, notAnEvent)
 
 	f.service = s.ingestedEntityID(ctx, database, checkout)
 	return f
@@ -1409,10 +1429,10 @@ func (s *KnowledgeGraphQueryServiceSuite) TestListEntityAliases() {
 	s.Equal("provider-a", newest.Alias.Provider)
 	s.Equal("Test Package", newest.IntegrationDisplayName)
 	s.Equal("checkout-api", newest.Name)
-	s.Equal(start.Add(2*time.Hour), newest.LastRecordedAt)
+	s.True(start.Add(2 * time.Hour).Equal(newest.LastRecordedAt))
 	s.Nil(newest.Alias.Edges.MergedByProposal)
 	s.Equal("provider-b", older.Alias.Provider)
 	s.Empty(older.IntegrationDisplayName, "a provider with no registered integration has no display name")
 	s.Equal("logs:service_name:checkout-api", older.Name, "an alias stating no name is named by its resource ref")
-	s.Equal(start.Add(time.Hour), older.LastRecordedAt)
+	s.True(start.Add(time.Hour).Equal(older.LastRecordedAt))
 }

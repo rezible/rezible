@@ -3,6 +3,7 @@ package eventprojection
 import (
 	"context"
 	"encoding/json"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"time"
 
 	"github.com/google/uuid"
@@ -67,7 +68,7 @@ func (r deploymentReportFixture) withRepository(fullName string) deploymentRepor
 			ResourceRef:       "repository:" + projections.NormalizeRepositoryFullName(fullName),
 		},
 		Category:          kne.CategoryCode,
-		Kind:              knowledgeEntityKindRepository,
+		Kind:              knowledgegraph.EntityKindRepository,
 		DisplayName:       fullName,
 		LinkingAttributes: projections.RepositoryLinkingAttributes(fullName),
 	}
@@ -202,8 +203,9 @@ func (s *ProjectionServiceSuite) TestDeploymentStateIsTheFinishedReportInEitherP
 
 			deployment := s.onlyDeployment(ctx, tdb)
 			s.Equal("checkout-api to production", deployment.State.DisplayName)
-			// The url only the started report sent is not kept: a report is complete.
+			// Reports merge: the url only the started report sent is kept, and the newer report's values win.
 			expectedProperties := map[string]any{
+				"url":         "https://ci.test/runs/1",
 				"environment": "production",
 				"status":      "succeeded",
 				"external_id": "run-1",
@@ -348,7 +350,7 @@ func (s *ProjectionServiceSuite) TestDeploymentImpactsItsServiceAndTouchesItsRep
 
 	deployment := s.onlyDeployment(ctx, tdb)
 	services := s.entitiesOfKind(ctx, tdb, kne.CategoryContainer, "service")
-	repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgeEntityKindRepository)
+	repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgegraph.EntityKindRepository)
 	s.Require().Len(services, 1)
 	s.Require().Len(repositories, 1)
 
@@ -425,7 +427,7 @@ func (s *ProjectionServiceSuite) TestDeploymentAndGithubResolveToOneRepository()
 }
 
 func (s *ProjectionServiceSuite) assertDeploymentAndGithubShareRepository(ctx context.Context, tdb rez.Database) {
-	repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgeEntityKindRepository)
+	repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgegraph.EntityKindRepository)
 	s.Require().Len(repositories, 1)
 	touches := s.relationshipsOf(ctx, tdb, knr.PredicateTouches)
 	s.Require().Len(touches, 2, "the GitHub change and the deployment touch the repository")

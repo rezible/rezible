@@ -9,10 +9,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	kpd "github.com/rezible/rezible/ent/knowledgeproposaldecision"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
-	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/pkg/integrations"
 )
 
@@ -52,30 +50,18 @@ func (s *KnowledgeEntityAliasService) ListEntityAliases(ctx context.Context, ent
 		return byEntity, nil
 	}
 
-	aliasIDs := make([]uuid.UUID, len(aliases))
-	for index, alias := range aliases {
-		aliasIDs[index] = alias.ID
-	}
-	grouping := knowledgeEvidenceGrouping{predicates: []predicate.KnowledgeEvidence{ke.SubjectAliasIDIn(aliasIDs...)}}
-	summaries, summarizeErr := s.query.summarizeEvidenceGroups(ctx, grouping, 0, 0)
-	if summarizeErr != nil {
-		return nil, fmt.Errorf("summarize alias evidence: %w", summarizeErr)
-	}
-	summaryByAlias := make(map[uuid.UUID]*rez.KnowledgeEvidenceSummary, len(summaries))
-	for _, summary := range summaries {
-		summaryByAlias[summary.SubjectAliasID] = summary
-	}
-
 	for _, alias := range aliases {
 		entityAlias := rez.KnowledgeEntityAlias{
 			Alias:                  alias,
 			IntegrationDisplayName: s.names.displayName(alias.Provider),
 			Name:                   alias.ProviderResourceRef,
 		}
-		if summary, recorded := summaryByAlias[alias.ID]; recorded {
-			entityAlias.LastRecordedAt = summary.LatestAt
-			if summary.LatestState.DisplayName != "" {
-				entityAlias.Name = summary.LatestState.DisplayName
+		if alias.LastObservedAt != nil {
+			entityAlias.LastRecordedAt = *alias.LastObservedAt
+		}
+		if name := alias.State.DisplayName; name != nil && !name.Unset {
+			if text, isText := name.Value.(string); isText && text != "" {
+				entityAlias.Name = text
 			}
 		}
 		byEntity[*alias.EntityID] = append(byEntity[*alias.EntityID], entityAlias)
@@ -122,5 +108,20 @@ func (s *KnowledgeEntityAliasService) GetEntityWithAliases(ctx context.Context, 
 	if aliasesErr != nil {
 		return nil, fmt.Errorf("list entity aliases: %w", aliasesErr)
 	}
-	return &rez.KnowledgeEntityWithAliases{Entity: entity, Aliases: aliases[entity.ID]}, nil
+	ancestors, ancestorsErr := s.query.ListAncestors(ctx, []uuid.UUID{entity.ID})
+	if ancestorsErr != nil {
+		return nil, fmt.Errorf("list ancestors: %w", ancestorsErr)
+	}
+	claims, claimsErr := s.query.ListParentClaims(ctx, []uuid.UUID{entity.ID})
+	if claimsErr != nil {
+		return nil, fmt.Errorf("list other parent claims: %w", claimsErr)
+	}
+	outermostFirst := slices.Clone(ancestors[entity.ID])
+	slices.Reverse(outermostFirst)
+	return &rez.KnowledgeEntityWithAliases{
+		Entity:            entity,
+		Aliases:           aliases[entity.ID],
+		Ancestors:         outermostFirst,
+		OtherParentClaims: claims[entity.ID],
+	}, nil
 }

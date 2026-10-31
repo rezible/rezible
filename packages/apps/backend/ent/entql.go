@@ -1054,10 +1054,15 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgeentity.FieldTenantID:         {Type: field.TypeInt, Column: knowledgeentity.FieldTenantID},
 			knowledgeentity.FieldCreatedAt:        {Type: field.TypeTime, Column: knowledgeentity.FieldCreatedAt},
 			knowledgeentity.FieldUpdatedAt:        {Type: field.TypeTime, Column: knowledgeentity.FieldUpdatedAt},
+			knowledgeentity.FieldState:            {Type: field.TypeJSON, Column: knowledgeentity.FieldState},
+			knowledgeentity.FieldStateSources:     {Type: field.TypeJSON, Column: knowledgeentity.FieldStateSources},
+			knowledgeentity.FieldStateEffectiveAt: {Type: field.TypeTime, Column: knowledgeentity.FieldStateEffectiveAt},
+			knowledgeentity.FieldLastObservedAt:   {Type: field.TypeTime, Column: knowledgeentity.FieldLastObservedAt},
+			knowledgeentity.FieldWithdrawnAt:      {Type: field.TypeTime, Column: knowledgeentity.FieldWithdrawnAt},
+			knowledgeentity.FieldExpiresAt:        {Type: field.TypeTime, Column: knowledgeentity.FieldExpiresAt},
 			knowledgeentity.FieldCategory:         {Type: field.TypeEnum, Column: knowledgeentity.FieldCategory},
 			knowledgeentity.FieldKind:             {Type: field.TypeString, Column: knowledgeentity.FieldKind},
-			knowledgeentity.FieldState:            {Type: field.TypeJSON, Column: knowledgeentity.FieldState},
-			knowledgeentity.FieldStateEffectiveAt: {Type: field.TypeTime, Column: knowledgeentity.FieldStateEffectiveAt},
+			knowledgeentity.FieldParentID:         {Type: field.TypeUUID, Column: knowledgeentity.FieldParentID},
 		},
 	}
 	graph.Nodes[47] = &sqlgraph.Node{
@@ -1096,6 +1101,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgeevidence.FieldCreatedAt:      {Type: field.TypeTime, Column: knowledgeevidence.FieldCreatedAt},
 			knowledgeevidence.FieldEffectiveAt:    {Type: field.TypeTime, Column: knowledgeevidence.FieldEffectiveAt},
 			knowledgeevidence.FieldSubjectState:   {Type: field.TypeJSON, Column: knowledgeevidence.FieldSubjectState},
+			knowledgeevidence.FieldStateMode:      {Type: field.TypeEnum, Column: knowledgeevidence.FieldStateMode},
+			knowledgeevidence.FieldExpiresAt:      {Type: field.TypeTime, Column: knowledgeevidence.FieldExpiresAt},
 		},
 	}
 	graph.Nodes[49] = &sqlgraph.Node{
@@ -1153,12 +1160,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "KnowledgeRelationship",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			knowledgerelationship.FieldTenantID:       {Type: field.TypeInt, Column: knowledgerelationship.FieldTenantID},
-			knowledgerelationship.FieldCreatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldCreatedAt},
-			knowledgerelationship.FieldUpdatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldUpdatedAt},
-			knowledgerelationship.FieldPredicate:      {Type: field.TypeEnum, Column: knowledgerelationship.FieldPredicate},
-			knowledgerelationship.FieldSourceEntityID: {Type: field.TypeUUID, Column: knowledgerelationship.FieldSourceEntityID},
-			knowledgerelationship.FieldTargetEntityID: {Type: field.TypeUUID, Column: knowledgerelationship.FieldTargetEntityID},
+			knowledgerelationship.FieldTenantID:         {Type: field.TypeInt, Column: knowledgerelationship.FieldTenantID},
+			knowledgerelationship.FieldCreatedAt:        {Type: field.TypeTime, Column: knowledgerelationship.FieldCreatedAt},
+			knowledgerelationship.FieldUpdatedAt:        {Type: field.TypeTime, Column: knowledgerelationship.FieldUpdatedAt},
+			knowledgerelationship.FieldState:            {Type: field.TypeJSON, Column: knowledgerelationship.FieldState},
+			knowledgerelationship.FieldStateSources:     {Type: field.TypeJSON, Column: knowledgerelationship.FieldStateSources},
+			knowledgerelationship.FieldStateEffectiveAt: {Type: field.TypeTime, Column: knowledgerelationship.FieldStateEffectiveAt},
+			knowledgerelationship.FieldLastObservedAt:   {Type: field.TypeTime, Column: knowledgerelationship.FieldLastObservedAt},
+			knowledgerelationship.FieldWithdrawnAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldWithdrawnAt},
+			knowledgerelationship.FieldExpiresAt:        {Type: field.TypeTime, Column: knowledgerelationship.FieldExpiresAt},
+			knowledgerelationship.FieldPredicate:        {Type: field.TypeEnum, Column: knowledgerelationship.FieldPredicate},
+			knowledgerelationship.FieldSourceEntityID:   {Type: field.TypeUUID, Column: knowledgerelationship.FieldSourceEntityID},
+			knowledgerelationship.FieldTargetEntityID:   {Type: field.TypeUUID, Column: knowledgerelationship.FieldTargetEntityID},
 		},
 	}
 	graph.Nodes[52] = &sqlgraph.Node{
@@ -1180,6 +1193,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgesubjectalias.FieldEntityID:            {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldEntityID},
 			knowledgesubjectalias.FieldRelationshipID:      {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldRelationshipID},
 			knowledgesubjectalias.FieldMergedByProposalID:  {Type: field.TypeUUID, Column: knowledgesubjectalias.FieldMergedByProposalID},
+			knowledgesubjectalias.FieldCreatedAt:           {Type: field.TypeTime, Column: knowledgesubjectalias.FieldCreatedAt},
+			knowledgesubjectalias.FieldState:               {Type: field.TypeJSON, Column: knowledgesubjectalias.FieldState},
+			knowledgesubjectalias.FieldFirstObservedAt:     {Type: field.TypeTime, Column: knowledgesubjectalias.FieldFirstObservedAt},
+			knowledgesubjectalias.FieldLastObservedAt:      {Type: field.TypeTime, Column: knowledgesubjectalias.FieldLastObservedAt},
+			knowledgesubjectalias.FieldWithdrawnAt:         {Type: field.TypeTime, Column: knowledgesubjectalias.FieldWithdrawnAt},
+			knowledgesubjectalias.FieldExpiresAt:           {Type: field.TypeTime, Column: knowledgesubjectalias.FieldExpiresAt},
 		},
 	}
 	graph.Nodes[53] = &sqlgraph.Node{
@@ -4374,6 +4393,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"KnowledgeEntity",
 		"KnowledgeRelationship",
+	)
+	graph.MustAddE(
+		"parent",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   knowledgeentity.ParentTable,
+			Columns: []string{knowledgeentity.ParentColumn},
+			Bidi:    false,
+		},
+		"KnowledgeEntity",
+		"KnowledgeEntity",
+	)
+	graph.MustAddE(
+		"children",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   knowledgeentity.ChildrenTable,
+			Columns: []string{knowledgeentity.ChildrenColumn},
+			Bidi:    false,
+		},
+		"KnowledgeEntity",
+		"KnowledgeEntity",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -12798,6 +12841,36 @@ func (f *KnowledgeEntityFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgeentity.FieldUpdatedAt))
 }
 
+// WhereState applies the entql json.RawMessage predicate on the state field.
+func (f *KnowledgeEntityFilter) WhereState(p entql.BytesP) {
+	f.Where(p.Field(knowledgeentity.FieldState))
+}
+
+// WhereStateSources applies the entql json.RawMessage predicate on the state_sources field.
+func (f *KnowledgeEntityFilter) WhereStateSources(p entql.BytesP) {
+	f.Where(p.Field(knowledgeentity.FieldStateSources))
+}
+
+// WhereStateEffectiveAt applies the entql time.Time predicate on the state_effective_at field.
+func (f *KnowledgeEntityFilter) WhereStateEffectiveAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeentity.FieldStateEffectiveAt))
+}
+
+// WhereLastObservedAt applies the entql time.Time predicate on the last_observed_at field.
+func (f *KnowledgeEntityFilter) WhereLastObservedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeentity.FieldLastObservedAt))
+}
+
+// WhereWithdrawnAt applies the entql time.Time predicate on the withdrawn_at field.
+func (f *KnowledgeEntityFilter) WhereWithdrawnAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeentity.FieldWithdrawnAt))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *KnowledgeEntityFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeentity.FieldExpiresAt))
+}
+
 // WhereCategory applies the entql string predicate on the category field.
 func (f *KnowledgeEntityFilter) WhereCategory(p entql.StringP) {
 	f.Where(p.Field(knowledgeentity.FieldCategory))
@@ -12808,14 +12881,9 @@ func (f *KnowledgeEntityFilter) WhereKind(p entql.StringP) {
 	f.Where(p.Field(knowledgeentity.FieldKind))
 }
 
-// WhereState applies the entql json.RawMessage predicate on the state field.
-func (f *KnowledgeEntityFilter) WhereState(p entql.BytesP) {
-	f.Where(p.Field(knowledgeentity.FieldState))
-}
-
-// WhereStateEffectiveAt applies the entql time.Time predicate on the state_effective_at field.
-func (f *KnowledgeEntityFilter) WhereStateEffectiveAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentity.FieldStateEffectiveAt))
+// WhereParentID applies the entql [16]byte predicate on the parent_id field.
+func (f *KnowledgeEntityFilter) WhereParentID(p entql.ValueP) {
+	f.Where(p.Field(knowledgeentity.FieldParentID))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -12882,6 +12950,34 @@ func (f *KnowledgeEntityFilter) WhereHasTargetRelationships() {
 // WhereHasTargetRelationshipsWith applies a predicate to check if query has an edge target_relationships with a given conditions (other predicates).
 func (f *KnowledgeEntityFilter) WhereHasTargetRelationshipsWith(preds ...predicate.KnowledgeRelationship) {
 	f.Where(entql.HasEdgeWith("target_relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasParent applies a predicate to check if query has an edge parent.
+func (f *KnowledgeEntityFilter) WhereHasParent() {
+	f.Where(entql.HasEdge("parent"))
+}
+
+// WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
+func (f *KnowledgeEntityFilter) WhereHasParentWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasChildren applies a predicate to check if query has an edge children.
+func (f *KnowledgeEntityFilter) WhereHasChildren() {
+	f.Where(entql.HasEdge("children"))
+}
+
+// WhereHasChildrenWith applies a predicate to check if query has an edge children with a given conditions (other predicates).
+func (f *KnowledgeEntityFilter) WhereHasChildrenWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("children", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -13054,6 +13150,16 @@ func (f *KnowledgeEvidenceFilter) WhereEffectiveAt(p entql.TimeP) {
 // WhereSubjectState applies the entql json.RawMessage predicate on the subject_state field.
 func (f *KnowledgeEvidenceFilter) WhereSubjectState(p entql.BytesP) {
 	f.Where(p.Field(knowledgeevidence.FieldSubjectState))
+}
+
+// WhereStateMode applies the entql string predicate on the state_mode field.
+func (f *KnowledgeEvidenceFilter) WhereStateMode(p entql.StringP) {
+	f.Where(p.Field(knowledgeevidence.FieldStateMode))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *KnowledgeEvidenceFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeevidence.FieldExpiresAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -13421,6 +13527,36 @@ func (f *KnowledgeRelationshipFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgerelationship.FieldUpdatedAt))
 }
 
+// WhereState applies the entql json.RawMessage predicate on the state field.
+func (f *KnowledgeRelationshipFilter) WhereState(p entql.BytesP) {
+	f.Where(p.Field(knowledgerelationship.FieldState))
+}
+
+// WhereStateSources applies the entql json.RawMessage predicate on the state_sources field.
+func (f *KnowledgeRelationshipFilter) WhereStateSources(p entql.BytesP) {
+	f.Where(p.Field(knowledgerelationship.FieldStateSources))
+}
+
+// WhereStateEffectiveAt applies the entql time.Time predicate on the state_effective_at field.
+func (f *KnowledgeRelationshipFilter) WhereStateEffectiveAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgerelationship.FieldStateEffectiveAt))
+}
+
+// WhereLastObservedAt applies the entql time.Time predicate on the last_observed_at field.
+func (f *KnowledgeRelationshipFilter) WhereLastObservedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgerelationship.FieldLastObservedAt))
+}
+
+// WhereWithdrawnAt applies the entql time.Time predicate on the withdrawn_at field.
+func (f *KnowledgeRelationshipFilter) WhereWithdrawnAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgerelationship.FieldWithdrawnAt))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *KnowledgeRelationshipFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgerelationship.FieldExpiresAt))
+}
+
 // WherePredicate applies the entql string predicate on the predicate field.
 func (f *KnowledgeRelationshipFilter) WherePredicate(p entql.StringP) {
 	f.Where(p.Field(knowledgerelationship.FieldPredicate))
@@ -13570,6 +13706,36 @@ func (f *KnowledgeSubjectAliasFilter) WhereRelationshipID(p entql.ValueP) {
 // WhereMergedByProposalID applies the entql [16]byte predicate on the merged_by_proposal_id field.
 func (f *KnowledgeSubjectAliasFilter) WhereMergedByProposalID(p entql.ValueP) {
 	f.Where(p.Field(knowledgesubjectalias.FieldMergedByProposalID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldCreatedAt))
+}
+
+// WhereState applies the entql json.RawMessage predicate on the state field.
+func (f *KnowledgeSubjectAliasFilter) WhereState(p entql.BytesP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldState))
+}
+
+// WhereFirstObservedAt applies the entql time.Time predicate on the first_observed_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereFirstObservedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldFirstObservedAt))
+}
+
+// WhereLastObservedAt applies the entql time.Time predicate on the last_observed_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereLastObservedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldLastObservedAt))
+}
+
+// WhereWithdrawnAt applies the entql time.Time predicate on the withdrawn_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereWithdrawnAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldWithdrawnAt))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *KnowledgeSubjectAliasFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgesubjectalias.FieldExpiresAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import type { GraphEntity, GraphRelationship, GraphSubset } from "../graph";
 import type { MapSelection } from "../presentation";
 import { reconcileSelection, selectedEntityIds, selectionIsAvailable } from "../selection";
+import { testModel } from "./test-model";
 
 const graph = (
 	entities: readonly GraphEntity[],
@@ -9,6 +10,7 @@ const graph = (
 	unresolvedRelationships: readonly GraphRelationship[] = [],
 	stopReason: GraphSubset["enumeration"]["stopReason"] = "exhausted"
 ): GraphSubset => ({
+	model: testModel,
 	entities,
 	relationships,
 	unresolvedRelationships,
