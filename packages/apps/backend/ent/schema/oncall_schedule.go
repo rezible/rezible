@@ -14,6 +14,7 @@ type OncallSchedule struct {
 
 func (OncallSchedule) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
@@ -23,7 +24,6 @@ func (OncallSchedule) Mixin() []ent.Mixin {
 // Fields of the OncallSchedule.
 func (OncallSchedule) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name"),
 		field.UUID("roster_id", uuid.UUID{}),
 		field.String("timezone").Optional(),
@@ -46,6 +46,7 @@ type OncallScheduleParticipant struct {
 
 func (OncallScheduleParticipant) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -53,7 +54,6 @@ func (OncallScheduleParticipant) Mixin() []ent.Mixin {
 
 func (OncallScheduleParticipant) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("schedule_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
 		field.Int("index"),

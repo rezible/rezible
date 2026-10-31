@@ -17,6 +17,7 @@ type SituationNotice struct {
 
 func (SituationNotice) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -25,7 +26,6 @@ func (SituationNotice) Mixin() []ent.Mixin {
 
 func (SituationNotice) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("situation_id", uuid.UUID{}).Immutable(),
 		field.UUID("integration_id", uuid.UUID{}).
 			Immutable().

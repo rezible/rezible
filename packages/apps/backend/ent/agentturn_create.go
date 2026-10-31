@@ -254,6 +254,14 @@ func (_c *AgentTurnCreate) SetID(v uuid.UUID) *AgentTurnCreate {
 	return _c
 }
 
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *AgentTurnCreate) SetNillableID(v *uuid.UUID) *AgentTurnCreate {
+	if v != nil {
+		_c.SetID(*v)
+	}
+	return _c
+}
+
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *AgentTurnCreate) SetTenant(v *Tenant) *AgentTurnCreate {
 	return _c.SetTenantID(v.ID)
@@ -392,6 +400,13 @@ func (_c *AgentTurnCreate) defaults() error {
 	if _, ok := _c.mutation.PeakInputTokens(); !ok {
 		v := agentturn.DefaultPeakInputTokens
 		_c.mutation.SetPeakInputTokens(v)
+	}
+	if _, ok := _c.mutation.ID(); !ok {
+		if agentturn.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized agentturn.DefaultID (forgotten import ent/runtime?)")
+		}
+		v := agentturn.DefaultID()
+		_c.mutation.SetID(v)
 	}
 	return nil
 }

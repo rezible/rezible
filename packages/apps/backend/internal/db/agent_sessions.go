@@ -22,6 +22,7 @@ import (
 	agtm "github.com/rezible/rezible/ent/agentmessage"
 	apr "github.com/rezible/rezible/ent/agentproviderread"
 	agts "github.com/rezible/rezible/ent/agentsession"
+	agtsb "github.com/rezible/rezible/ent/agentsessionbinding"
 	agtt "github.com/rezible/rezible/ent/agentturn"
 	"github.com/rezible/rezible/ent/predicate"
 	rezai "github.com/rezible/rezible/pkg/ai"
@@ -188,7 +189,7 @@ func (s *AiAgentSessionService) SetAgentSessionBinding(ctx context.Context, bind
 		var mutator ent.EntityMutator[*ent.AgentSessionBinding, *ent.AgentSessionBindingMutation]
 		var existing *ent.AgentSessionBinding
 		if bindingId == uuid.Nil {
-			mutator = tx.AgentSessionBinding.Create().SetID(uuid.New())
+			mutator = tx.AgentSessionBinding.Create().SetID(agtsb.DefaultID())
 		} else {
 			var queryErr error
 			existing, queryErr = tx.AgentSessionBinding.Get(ctx, bindingId)
@@ -363,7 +364,7 @@ func (s *AiAgentSessionService) RequestAgentTurn(ctx context.Context, sessionID 
 			return nil, fmt.Errorf("%w: agent session already has an active turn", errs.ErrConflict)
 		}
 
-		turnID := uuid.New()
+		turnID := agtt.DefaultID()
 
 		jobID, jobErr := s.insertInvokeAgentTurnJob(ctx, sessionID, turnID)
 		if jobErr != nil {

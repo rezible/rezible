@@ -17,6 +17,7 @@ type OncallRoster struct {
 
 func (OncallRoster) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
@@ -26,7 +27,6 @@ func (OncallRoster) Mixin() []ent.Mixin {
 // Fields of the OncallRoster.
 func (OncallRoster) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name"),
 		field.String("slug"),
 		field.String("timezone").Optional(),
@@ -66,6 +66,7 @@ type OncallRosterMetrics struct {
 
 func (OncallRosterMetrics) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -73,7 +74,6 @@ func (OncallRosterMetrics) Mixin() []ent.Mixin {
 
 func (OncallRosterMetrics) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("roster_id", uuid.UUID{}),
 	}
 }
@@ -92,6 +92,7 @@ type OncallHandoverTemplate struct {
 
 func (OncallHandoverTemplate) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -100,7 +101,6 @@ func (OncallHandoverTemplate) Mixin() []ent.Mixin {
 // Fields of the OncallHandoverTemplate.
 func (OncallHandoverTemplate) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now),
 		field.Bytes("contents"),

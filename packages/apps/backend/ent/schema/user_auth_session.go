@@ -15,6 +15,7 @@ type UserAuthSession struct {
 
 func (UserAuthSession) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -22,7 +23,6 @@ func (UserAuthSession) Mixin() []ent.Mixin {
 
 func (UserAuthSession) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("user_id", uuid.New()),
 		field.UUID("organization_id", uuid.New()),
 		field.Time("expires_at"),

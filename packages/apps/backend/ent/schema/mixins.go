@@ -52,6 +52,19 @@ func (BaseMixin) Policy() ent.Policy {
 	}
 }
 
+// IDMixin defines a UUID primary key that defaults to a time-ordered UUIDv7.
+type IDMixin struct {
+	mixin.Schema
+}
+
+func (IDMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(func() uuid.UUID {
+			return uuid.Must(uuid.NewV7())
+		}),
+	}
+}
+
 type TenantMixin struct {
 	mixin.Schema
 }

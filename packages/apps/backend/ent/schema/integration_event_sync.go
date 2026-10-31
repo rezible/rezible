@@ -17,6 +17,7 @@ type IntegrationEventSyncCursor struct {
 
 func (IntegrationEventSyncCursor) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -25,7 +26,6 @@ func (IntegrationEventSyncCursor) Mixin() []ent.Mixin {
 
 func (IntegrationEventSyncCursor) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("integration_id", uuid.UUID{}),
 		field.String("provider_event_source").NotEmpty(),
 		field.String("cursor").Optional(),
@@ -55,6 +55,7 @@ type IntegrationEventSyncRun struct {
 
 func (IntegrationEventSyncRun) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -62,7 +63,6 @@ func (IntegrationEventSyncRun) Mixin() []ent.Mixin {
 
 func (IntegrationEventSyncRun) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("integration_id", uuid.UUID{}),
 		field.JSON("provider_event_source_cursors", map[string]string{}).Optional(),
 		field.String("sync_reason").Default("manual"),

@@ -19,6 +19,7 @@ type Situation struct {
 
 func (Situation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -27,7 +28,6 @@ func (Situation) Mixin() []ent.Mixin {
 
 func (Situation) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Int("number").Positive().Immutable(),
 		field.String("title").NotEmpty(),
 		field.Text("summary").Optional(),
@@ -98,6 +98,7 @@ type SituationObservationGroup struct {
 
 func (SituationObservationGroup) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -106,7 +107,6 @@ func (SituationObservationGroup) Mixin() []ent.Mixin {
 
 func (SituationObservationGroup) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("situation_id", uuid.UUID{}),
 		field.String("title").NotEmpty(),
 		field.Text("body").Optional(),
@@ -132,6 +132,7 @@ type SituationObservation struct {
 
 func (SituationObservation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -149,7 +150,6 @@ func (SituationObservation) Annotations() []entschema.Annotation {
 
 func (SituationObservation) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("situation_id", uuid.UUID{}),
 		field.UUID("observation_group_id", uuid.UUID{}).
 			Optional().
@@ -200,6 +200,7 @@ type SituationEntity struct {
 
 func (SituationEntity) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -207,7 +208,6 @@ func (SituationEntity) Mixin() []ent.Mixin {
 
 func (SituationEntity) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("situation_id", uuid.UUID{}).Immutable(),
 		field.UUID("knowledge_entity_id", uuid.UUID{}),
 		field.Bool("matching").
@@ -247,6 +247,7 @@ type SituationAction struct {
 
 func (SituationAction) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -255,9 +256,6 @@ func (SituationAction) Mixin() []ent.Mixin {
 func (SituationAction) Fields() []ent.Field {
 	return []ent.Field{
 		// Time-ordered, so actions recorded at one processing time keep their order.
-		field.UUID("id", uuid.UUID{}).Default(func() uuid.UUID {
-			return uuid.Must(uuid.NewV7())
-		}),
 		field.UUID("situation_id", uuid.UUID{}).Immutable(),
 		field.Enum("action").
 			Values("raised", "muted", "unmuted", "held", "hold_cleared", "closed", "merged").
@@ -300,6 +298,7 @@ type SituationJudgment struct {
 
 func (SituationJudgment) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -308,9 +307,6 @@ func (SituationJudgment) Mixin() []ent.Mixin {
 func (SituationJudgment) Fields() []ent.Field {
 	return []ent.Field{
 		// Time-ordered, so judgments recorded at one processing time keep their order.
-		field.UUID("id", uuid.UUID{}).Default(func() uuid.UUID {
-			return uuid.Must(uuid.NewV7())
-		}),
 		field.UUID("situation_id", uuid.UUID{}).Immutable(),
 		field.Time("judged_at").
 			Immutable().
@@ -366,6 +362,7 @@ type SituationSignalAttention struct {
 
 func (SituationSignalAttention) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -373,7 +370,6 @@ func (SituationSignalAttention) Mixin() []ent.Mixin {
 
 func (SituationSignalAttention) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.Enum("level").
 			Values("default", "watch_only", "join_only").
 			Default("default"),

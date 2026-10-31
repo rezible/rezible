@@ -14,6 +14,7 @@ type IncidentMilestone struct {
 
 func (IncidentMilestone) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -24,7 +25,6 @@ var incidentMilestoneKinds = []string{"impact", "detection", "investigation", "m
 // Fields of the IncidentMilestone.
 func (IncidentMilestone) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}).Optional().Nillable(),
 		field.Enum("kind").Values(incidentMilestoneKinds...),

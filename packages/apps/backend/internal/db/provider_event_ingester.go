@@ -62,7 +62,7 @@ func (s *ProviderEventIngester) saveNormalizedEvents(ctx context.Context, evts e
 		for _, ev := range evts {
 			id := ev.ID
 			if id == uuid.Nil {
-				id = uuid.New()
+				id = ne.DefaultID()
 			}
 			create := tx.NormalizedEvent.Create().
 				SetID(id).

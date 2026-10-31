@@ -21,6 +21,7 @@ type AgentProviderRead struct {
 
 func (AgentProviderRead) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -29,7 +30,6 @@ func (AgentProviderRead) Mixin() []ent.Mixin {
 
 func (AgentProviderRead) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
 		field.UUID("agent_turn_id", uuid.UUID{}).Immutable(),
 		field.String("tool_name").NotEmpty().Immutable(),

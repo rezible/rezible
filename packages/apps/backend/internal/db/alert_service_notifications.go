@@ -315,7 +315,7 @@ func (s *AlertService) overlappingAlertEpisode(ctx context.Context, definition *
 }
 
 func (s *AlertService) createAlertEpisode(ctx context.Context, definition *ent.AlertDefinition, startedAt time.Time) (*ent.AlertEpisode, error) {
-	episodeID := uuid.New()
+	episodeID := ale.DefaultID()
 	episodeSubjectRef := rez.KnowledgeSubjectRef{
 		Entity: &rez.KnowledgeEntityRef{
 			Category:            kne.CategoryEvent,

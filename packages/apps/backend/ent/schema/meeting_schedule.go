@@ -6,7 +6,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 var (
@@ -29,6 +28,7 @@ type MeetingSchedule struct {
 
 func (MeetingSchedule) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
@@ -38,7 +38,6 @@ func (MeetingSchedule) Mixin() []ent.Mixin {
 // Fields of the MeetingSchedule.
 func (MeetingSchedule) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
 		field.String("description").Optional(),
 		field.Int("begin_minute"), // eg 9am = 540

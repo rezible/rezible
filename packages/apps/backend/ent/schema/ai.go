@@ -17,6 +17,7 @@ type AgentSession struct {
 
 func (AgentSession) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -25,7 +26,6 @@ func (AgentSession) Mixin() []ent.Mixin {
 
 func (AgentSession) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("agent_name").NotEmpty(),
 		field.Strings("scopes").Default([]string{}),
 		field.Bytes("input"),
@@ -57,6 +57,7 @@ type AgentSessionBinding struct {
 
 func (AgentSessionBinding) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -66,7 +67,6 @@ func (AgentSessionBinding) Mixin() []ent.Mixin {
 
 func (AgentSessionBinding) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
 		field.UUID("integration_id", uuid.UUID{}).
 			Optional().
@@ -110,6 +110,7 @@ type AgentTurn struct {
 
 func (AgentTurn) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -118,7 +119,6 @@ func (AgentTurn) Mixin() []ent.Mixin {
 
 func (AgentTurn) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}),
 		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
 		field.Int("sequence").Immutable().Positive(),
 		field.Int64("river_job_id"),
@@ -189,6 +189,7 @@ type AgentMessage struct {
 
 func (AgentMessage) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -197,7 +198,6 @@ func (AgentMessage) Mixin() []ent.Mixin {
 
 func (AgentMessage) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
 		field.UUID("agent_turn_id", uuid.UUID{}).Immutable(),
 		field.Int("sequence").Positive().Immutable(),
@@ -244,6 +244,7 @@ type AgentArtifact struct {
 
 func (AgentArtifact) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -252,7 +253,6 @@ func (AgentArtifact) Mixin() []ent.Mixin {
 
 func (AgentArtifact) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
 		field.UUID("last_agent_turn_id", uuid.UUID{}).
 			Optional().

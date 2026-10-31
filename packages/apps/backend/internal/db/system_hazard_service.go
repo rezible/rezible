@@ -34,7 +34,7 @@ func (s *SystemHazardService) CreateSystemHazard(ctx context.Context, params rez
 	}
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.SystemHazard, error) {
-		hazardId := uuid.New()
+		hazardId := sh.DefaultID()
 		hazardEntityRef := &rez.KnowledgeEntityRef{
 			Category:            kne.CategoryConcern,
 			Kind:                knowledgegraph.EntityKindSystemHazard,

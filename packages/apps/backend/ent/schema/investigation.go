@@ -18,6 +18,7 @@ type Investigation struct {
 
 func (Investigation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -26,7 +27,6 @@ func (Investigation) Mixin() []ent.Mixin {
 
 func (Investigation) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_session_id", uuid.UUID{}).Immutable(),
 		field.UUID("system_analysis_id", uuid.UUID{}).Immutable(),
 	}
@@ -72,6 +72,7 @@ type InvestigationUserInput struct {
 
 func (InvestigationUserInput) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		CreatedAtMixin{},
@@ -80,7 +81,6 @@ func (InvestigationUserInput) Mixin() []ent.Mixin {
 
 func (InvestigationUserInput) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("investigation_id", uuid.UUID{}).Immutable(),
 		field.UUID("user_id", uuid.UUID{}).Immutable(),
 		field.Text("text").NotEmpty().Immutable(),
@@ -120,6 +120,7 @@ type InvestigationEvidenceRevision struct {
 
 func (InvestigationEvidenceRevision) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		CreatedAtMixin{},
@@ -128,7 +129,6 @@ func (InvestigationEvidenceRevision) Mixin() []ent.Mixin {
 
 func (InvestigationEvidenceRevision) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("investigation_id", uuid.UUID{}).Immutable(),
 		field.Text("explanation").NotEmpty().Immutable(),
 		field.String("key").NotEmpty().Immutable(),
@@ -165,6 +165,7 @@ type InvestigationHypothesis struct {
 
 func (InvestigationHypothesis) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -173,7 +174,6 @@ func (InvestigationHypothesis) Mixin() []ent.Mixin {
 
 func (InvestigationHypothesis) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("investigation_id", uuid.UUID{}).Immutable(),
 		field.String("key").NotEmpty().Immutable(),
 	}
@@ -205,6 +205,7 @@ type InvestigationHypothesisVersion struct {
 
 func (InvestigationHypothesisVersion) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		CreatedAtMixin{},
@@ -214,7 +215,6 @@ func (InvestigationHypothesisVersion) Mixin() []ent.Mixin {
 
 func (InvestigationHypothesisVersion) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("hypothesis_id", uuid.UUID{}).Immutable(),
 		field.UUID("agent_turn_id", uuid.UUID{}).Immutable(),
 		field.String("title").NotEmpty().Immutable(),
@@ -255,7 +255,11 @@ type InvestigationOutputReference struct {
 }
 
 func (InvestigationOutputReference) Mixin() []ent.Mixin {
-	return []ent.Mixin{BaseMixin{}, TenantMixin{}}
+	return []ent.Mixin{
+		IDMixin{},
+		BaseMixin{},
+		TenantMixin{},
+	}
 }
 
 func (InvestigationOutputReference) Annotations() []schema.Annotation {
@@ -267,7 +271,6 @@ func (InvestigationOutputReference) Annotations() []schema.Annotation {
 
 func (InvestigationOutputReference) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("report_id", uuid.UUID{}).Optional().Nillable().Immutable(),
 		field.UUID("finding_version_id", uuid.UUID{}).Optional().Nillable().Immutable(),
 		field.UUID("hypothesis_version_id", uuid.UUID{}).Optional().Nillable().Immutable(),
@@ -320,6 +323,7 @@ type InvestigationFinding struct {
 
 func (InvestigationFinding) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -328,7 +332,6 @@ func (InvestigationFinding) Mixin() []ent.Mixin {
 
 func (InvestigationFinding) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("investigation_id", uuid.UUID{}).Immutable(),
 		field.String("key").NotEmpty().Immutable(),
 		field.UUID("user_input_id", uuid.UUID{}).Optional().Nillable().Immutable(),
@@ -367,6 +370,7 @@ type InvestigationFindingVersion struct {
 
 func (InvestigationFindingVersion) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		CreatedAtMixin{},
@@ -376,7 +380,6 @@ func (InvestigationFindingVersion) Mixin() []ent.Mixin {
 
 func (InvestigationFindingVersion) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("finding_id", uuid.UUID{}).Immutable(),
 		field.UUID("agent_turn_id", uuid.UUID{}).Immutable(),
 		field.String("title").NotEmpty().Immutable(),
@@ -415,7 +418,11 @@ type InvestigationFindingVersionLink struct {
 }
 
 func (InvestigationFindingVersionLink) Mixin() []ent.Mixin {
-	return []ent.Mixin{BaseMixin{}, TenantMixin{}}
+	return []ent.Mixin{
+		IDMixin{},
+		BaseMixin{},
+		TenantMixin{},
+	}
 }
 
 func (InvestigationFindingVersionLink) Annotations() []schema.Annotation {
@@ -426,7 +433,6 @@ func (InvestigationFindingVersionLink) Annotations() []schema.Annotation {
 
 func (InvestigationFindingVersionLink) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("source_version_id", uuid.UUID{}).Immutable(),
 		field.Enum("relation").
 			Values("supports", "contradicts", "invalidates").
@@ -464,6 +470,7 @@ type InvestigationReport struct {
 
 func (InvestigationReport) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		CreatedAtMixin{},
@@ -473,7 +480,6 @@ func (InvestigationReport) Mixin() []ent.Mixin {
 
 func (InvestigationReport) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("investigation_id", uuid.UUID{}).Immutable(),
 		field.UUID("agent_turn_id", uuid.UUID{}).Immutable(),
 		field.Text("text").NotEmpty().Immutable(),

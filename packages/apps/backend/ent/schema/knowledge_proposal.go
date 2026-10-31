@@ -19,6 +19,7 @@ type KnowledgeProposal struct {
 
 func (KnowledgeProposal) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -27,7 +28,6 @@ func (KnowledgeProposal) Mixin() []ent.Mixin {
 
 func (KnowledgeProposal) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Enum("category").
 			Values(knowledgeEntityCategories...).
 			Immutable(),
@@ -76,6 +76,7 @@ type KnowledgeProposalDecision struct {
 
 func (KnowledgeProposalDecision) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -83,7 +84,6 @@ func (KnowledgeProposalDecision) Mixin() []ent.Mixin {
 
 func (KnowledgeProposalDecision) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("proposal_id", uuid.UUID{}).Immutable(),
 		field.Enum("status").
 			Values("confirmed", "rejected").

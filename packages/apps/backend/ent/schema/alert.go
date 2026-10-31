@@ -16,6 +16,7 @@ type AlertDefinition struct {
 
 func (AlertDefinition) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		KnowledgeEntityLinkMixin{},
@@ -24,7 +25,6 @@ func (AlertDefinition) Mixin() []ent.Mixin {
 
 func (AlertDefinition) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("title"),
 		field.String("description").Optional(),
 		field.String("definition").Optional(),
@@ -66,6 +66,7 @@ type AlertInstance struct {
 
 func (AlertInstance) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -73,7 +74,6 @@ func (AlertInstance) Mixin() []ent.Mixin {
 
 func (AlertInstance) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("alert_episode_id", uuid.UUID{}).Immutable(),
 		field.String("instance_key").
 			Immutable().
@@ -138,6 +138,7 @@ type AlertInstanceEvent struct {
 
 func (AlertInstanceEvent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -145,7 +146,6 @@ func (AlertInstanceEvent) Mixin() []ent.Mixin {
 
 func (AlertInstanceEvent) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("alert_instance_id", uuid.UUID{}).Immutable(),
 		field.UUID("event_id", uuid.UUID{}).Immutable(),
 	}
@@ -179,6 +179,7 @@ type AlertEpisode struct {
 
 func (AlertEpisode) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -188,7 +189,6 @@ func (AlertEpisode) Mixin() []ent.Mixin {
 
 func (AlertEpisode) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("alert_definition_id", uuid.UUID{}).Immutable(),
 		field.Time("started_at").
 			Comment("Earliest window start"),
@@ -233,6 +233,7 @@ type AlertFeedback struct {
 
 func (AlertFeedback) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -240,7 +241,6 @@ func (AlertFeedback) Mixin() []ent.Mixin {
 
 func (AlertFeedback) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("alert_instance_id", uuid.UUID{}),
 		field.Bool("actionable"),
 		field.Enum("accurate").Values("yes", "no", "unknown"),

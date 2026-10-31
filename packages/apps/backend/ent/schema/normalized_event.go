@@ -17,6 +17,7 @@ type NormalizedEvent struct {
 
 func (NormalizedEvent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		ProviderResourceReferenceMixin{},
@@ -25,7 +26,6 @@ func (NormalizedEvent) Mixin() []ent.Mixin {
 
 func (NormalizedEvent) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("integration_id", uuid.UUID{}).Optional().Nillable(),
 		field.String("kind").Immutable().NotEmpty().
 			Comment("Normalized kind of the primary subject this event is about."),
@@ -65,6 +65,7 @@ type NormalizedEventProjection struct {
 
 func (NormalizedEventProjection) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -72,7 +73,6 @@ func (NormalizedEventProjection) Mixin() []ent.Mixin {
 
 func (NormalizedEventProjection) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("event_id", uuid.UUID{}).Immutable(),
 		field.Time("completed_at").Default(time.Now).Immutable(),
 	}
@@ -96,6 +96,7 @@ type NormalizedEventProjectionEntity struct {
 
 func (NormalizedEventProjectionEntity) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -103,7 +104,6 @@ func (NormalizedEventProjectionEntity) Mixin() []ent.Mixin {
 
 func (NormalizedEventProjectionEntity) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("projection_id", uuid.UUID{}),
 		field.String("domain_entity_kind"),
 		field.UUID("domain_entity_id", uuid.UUID{}),
@@ -132,6 +132,7 @@ type EventAnnotation struct {
 
 func (EventAnnotation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -139,7 +140,6 @@ func (EventAnnotation) Mixin() []ent.Mixin {
 
 func (EventAnnotation) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("event_id", uuid.UUID{}),
 		field.UUID("creator_id", uuid.UUID{}),
 		field.Time("created_at").Default(time.Now),

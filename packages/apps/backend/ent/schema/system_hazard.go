@@ -14,6 +14,7 @@ type SystemHazard struct {
 
 func (SystemHazard) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -23,7 +24,6 @@ func (SystemHazard) Mixin() []ent.Mixin {
 
 func (SystemHazard) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("title").NotEmpty(),
 		field.Text("description").Optional(),
 		field.Text("potential_consequences").Optional(),
@@ -51,6 +51,7 @@ type SystemHazardRiskAssessment struct {
 
 func (SystemHazardRiskAssessment) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -59,7 +60,6 @@ func (SystemHazardRiskAssessment) Mixin() []ent.Mixin {
 
 func (SystemHazardRiskAssessment) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("system_hazard_id", uuid.UUID{}).Immutable(),
 		field.Int("revision").Positive().Immutable(),
 		field.String("likelihood").NotEmpty().Immutable(),

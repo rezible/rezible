@@ -17,6 +17,7 @@ type Incident struct {
 
 func (Incident) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -28,7 +29,6 @@ func (Incident) Mixin() []ent.Mixin {
 // Fields of the Incident.
 func (Incident) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.Int("number").Positive().Immutable(),
 		field.String("title"),
 		field.UUID("severity_id", uuid.UUID{}).Optional().Nillable(),

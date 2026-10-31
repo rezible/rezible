@@ -17,6 +17,7 @@ type VideoConference struct {
 
 func (VideoConference) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -25,7 +26,6 @@ func (VideoConference) Mixin() []ent.Mixin {
 
 func (VideoConference) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("meeting_session_id", uuid.UUID{}).Optional().Nillable(),
 		field.String("provider"),

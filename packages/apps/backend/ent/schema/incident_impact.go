@@ -16,6 +16,7 @@ type IncidentImpact struct {
 
 func (IncidentImpact) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -24,7 +25,6 @@ func (IncidentImpact) Mixin() []ent.Mixin {
 
 func (IncidentImpact) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("knowledge_entity_id", uuid.UUID{}),
 		field.String("source").Optional(),

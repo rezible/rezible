@@ -2,7 +2,6 @@ package schema
 
 import (
 	"entgo.io/ent/schema/edge"
-	"github.com/google/uuid"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
@@ -15,6 +14,7 @@ type Playbook struct {
 
 func (Playbook) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -23,7 +23,6 @@ func (Playbook) Mixin() []ent.Mixin {
 // Fields of the Playbook.
 func (Playbook) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("title"),
 		field.Bytes("content"),
 	}

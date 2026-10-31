@@ -17,6 +17,7 @@ type Retrospective struct {
 
 func (Retrospective) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -27,7 +28,6 @@ var retrospectiveStates = []string{"draft", "in_review", "closed"}
 // Fields of the Retrospective.
 func (Retrospective) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("document_id", uuid.UUID{}),
 		field.UUID("system_analysis_id", uuid.UUID{}),
@@ -71,6 +71,7 @@ type DiscussionThread struct {
 
 func (DiscussionThread) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -79,7 +80,6 @@ func (DiscussionThread) Mixin() []ent.Mixin {
 
 func (DiscussionThread) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("retrospective_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("user_id", uuid.UUID{}),
@@ -160,6 +160,7 @@ type DiscussionComment struct {
 
 func (DiscussionComment) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -168,7 +169,6 @@ func (DiscussionComment) Mixin() []ent.Mixin {
 
 func (DiscussionComment) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("thread_id", uuid.UUID{}),
 		field.UUID("parent_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("user_id", uuid.UUID{}),
@@ -201,6 +201,7 @@ type Review struct {
 
 func (Review) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -219,7 +220,6 @@ func (Review) Annotations() []entschema.Annotation {
 
 func (Review) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("retrospective_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("analysis_entry_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("comment_id", uuid.UUID{}).Optional().Nillable(),

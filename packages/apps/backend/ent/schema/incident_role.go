@@ -15,6 +15,7 @@ type IncidentRole struct {
 
 func (IncidentRole) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
@@ -24,7 +25,6 @@ func (IncidentRole) Mixin() []ent.Mixin {
 // Fields of the IncidentRole.
 func (IncidentRole) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name"),
 		field.Int("max_assignees").Optional().Nillable(),
 	}
@@ -45,6 +45,7 @@ type IncidentRoleAssignment struct {
 
 func (IncidentRoleAssignment) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -52,7 +53,6 @@ func (IncidentRoleAssignment) Mixin() []ent.Mixin {
 
 func (IncidentRoleAssignment) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("role_id", uuid.UUID{}),

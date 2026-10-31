@@ -14,6 +14,7 @@ type Organization struct {
 
 func (Organization) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -21,7 +22,6 @@ func (Organization) Mixin() []ent.Mixin {
 
 func (Organization) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("auth_provider_id"),
 		field.String("name"),
 	}
@@ -46,6 +46,7 @@ type OrganizationPreferences struct {
 
 func (OrganizationPreferences) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -53,7 +54,6 @@ func (OrganizationPreferences) Mixin() []ent.Mixin {
 
 func (OrganizationPreferences) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("organization_id", uuid.UUID{}),
 		field.Time("initial_setup_at").Optional(),
 		field.Bool("enable_incident_management").Default(false),

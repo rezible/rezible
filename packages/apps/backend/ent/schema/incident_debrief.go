@@ -15,6 +15,7 @@ type IncidentDebrief struct {
 
 func (IncidentDebrief) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -22,7 +23,6 @@ func (IncidentDebrief) Mixin() []ent.Mixin {
 
 func (IncidentDebrief) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
 		field.Bool("required"),
@@ -47,6 +47,7 @@ type IncidentDebriefMessage struct {
 
 func (IncidentDebriefMessage) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -54,7 +55,6 @@ func (IncidentDebriefMessage) Mixin() []ent.Mixin {
 
 func (IncidentDebriefMessage) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("debrief_id", uuid.UUID{}),
 		field.UUID("question_id", uuid.UUID{}).Optional(),
 		field.Time("created_at").Default(time.Now),
@@ -79,6 +79,7 @@ type IncidentDebriefQuestion struct {
 
 func (IncidentDebriefQuestion) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -87,7 +88,6 @@ func (IncidentDebriefQuestion) Mixin() []ent.Mixin {
 // Fields of the IncidentDebriefQuestion.
 func (IncidentDebriefQuestion) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.Text("content"),
 	}
 }
@@ -111,6 +111,7 @@ type IncidentDebriefSuggestion struct {
 
 func (IncidentDebriefSuggestion) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -119,7 +120,6 @@ func (IncidentDebriefSuggestion) Mixin() []ent.Mixin {
 // Fields of the IncidentDebriefSuggestion.
 func (IncidentDebriefSuggestion) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.Text("content"),
 	}
 }

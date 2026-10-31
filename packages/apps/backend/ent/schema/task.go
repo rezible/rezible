@@ -20,6 +20,7 @@ type Task struct {
 
 func (Task) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -30,7 +31,6 @@ func (Task) Mixin() []ent.Mixin {
 // Fields of the Task.
 func (Task) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.Int("version").Default(1),
 		field.String("title"),
 		field.Text("description").Default(""),
@@ -72,6 +72,7 @@ type Ticket struct {
 
 func (Ticket) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -82,7 +83,6 @@ func (Ticket) Mixin() []ent.Mixin {
 // Fields of the Ticket.
 func (Ticket) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("title"),
 		field.String("reference").Optional().Nillable(),
 		field.String("url").Optional().Nillable(),

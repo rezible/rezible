@@ -5,7 +5,6 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"github.com/google/uuid"
 )
 
 // IncidentType holds the schema definition for the IncidentType entity.
@@ -15,6 +14,7 @@ type IncidentType struct {
 
 func (IncidentType) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
@@ -24,7 +24,6 @@ func (IncidentType) Mixin() []ent.Mixin {
 // Fields of the IncidentType.
 func (IncidentType) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
 	}
 }

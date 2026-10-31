@@ -115,7 +115,7 @@ import (
 // to their package variables.
 func init() {
 	agentartifactMixin := schema.AgentArtifact{}.Mixin()
-	agentartifact.Policy = privacy.NewPolicies(agentartifactMixin[0], agentartifactMixin[1], schema.AgentArtifact{})
+	agentartifact.Policy = privacy.NewPolicies(agentartifactMixin[1], agentartifactMixin[2], schema.AgentArtifact{})
 	agentartifact.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := agentartifact.Policy.EvalMutation(ctx, m); err != nil {
@@ -124,34 +124,36 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	agentartifactMixinFields2 := agentartifactMixin[2].Fields()
-	_ = agentartifactMixinFields2
+	agentartifactMixinFields0 := agentartifactMixin[0].Fields()
+	_ = agentartifactMixinFields0
+	agentartifactMixinFields3 := agentartifactMixin[3].Fields()
+	_ = agentartifactMixinFields3
 	agentartifactFields := schema.AgentArtifact{}.Fields()
 	_ = agentartifactFields
 	// agentartifactDescCreatedAt is the schema descriptor for created_at field.
-	agentartifactDescCreatedAt := agentartifactMixinFields2[0].Descriptor()
+	agentartifactDescCreatedAt := agentartifactMixinFields3[0].Descriptor()
 	// agentartifact.DefaultCreatedAt holds the default value on creation for the created_at field.
 	agentartifact.DefaultCreatedAt = agentartifactDescCreatedAt.Default.(func() time.Time)
 	// agentartifactDescUpdatedAt is the schema descriptor for updated_at field.
-	agentartifactDescUpdatedAt := agentartifactMixinFields2[1].Descriptor()
+	agentartifactDescUpdatedAt := agentartifactMixinFields3[1].Descriptor()
 	// agentartifact.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	agentartifact.DefaultUpdatedAt = agentartifactDescUpdatedAt.Default.(func() time.Time)
 	// agentartifact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentartifact.UpdateDefaultUpdatedAt = agentartifactDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// agentartifactDescName is the schema descriptor for name field.
-	agentartifactDescName := agentartifactFields[3].Descriptor()
+	agentartifactDescName := agentartifactFields[2].Descriptor()
 	// agentartifact.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	agentartifact.NameValidator = agentartifactDescName.Validators[0].(func(string) error)
 	// agentartifactDescMetadata is the schema descriptor for metadata field.
-	agentartifactDescMetadata := agentartifactFields[5].Descriptor()
+	agentartifactDescMetadata := agentartifactFields[4].Descriptor()
 	// agentartifact.DefaultMetadata holds the default value on creation for the metadata field.
 	agentartifact.DefaultMetadata = agentartifactDescMetadata.Default.(map[string]interface{})
 	// agentartifactDescID is the schema descriptor for id field.
-	agentartifactDescID := agentartifactFields[0].Descriptor()
+	agentartifactDescID := agentartifactMixinFields0[0].Descriptor()
 	// agentartifact.DefaultID holds the default value on creation for the id field.
 	agentartifact.DefaultID = agentartifactDescID.Default.(func() uuid.UUID)
 	agentmessageMixin := schema.AgentMessage{}.Mixin()
-	agentmessage.Policy = privacy.NewPolicies(agentmessageMixin[0], agentmessageMixin[1], schema.AgentMessage{})
+	agentmessage.Policy = privacy.NewPolicies(agentmessageMixin[1], agentmessageMixin[2], schema.AgentMessage{})
 	agentmessage.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := agentmessage.Policy.EvalMutation(ctx, m); err != nil {
@@ -160,38 +162,40 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	agentmessageMixinFields2 := agentmessageMixin[2].Fields()
-	_ = agentmessageMixinFields2
+	agentmessageMixinFields0 := agentmessageMixin[0].Fields()
+	_ = agentmessageMixinFields0
+	agentmessageMixinFields3 := agentmessageMixin[3].Fields()
+	_ = agentmessageMixinFields3
 	agentmessageFields := schema.AgentMessage{}.Fields()
 	_ = agentmessageFields
 	// agentmessageDescCreatedAt is the schema descriptor for created_at field.
-	agentmessageDescCreatedAt := agentmessageMixinFields2[0].Descriptor()
+	agentmessageDescCreatedAt := agentmessageMixinFields3[0].Descriptor()
 	// agentmessage.DefaultCreatedAt holds the default value on creation for the created_at field.
 	agentmessage.DefaultCreatedAt = agentmessageDescCreatedAt.Default.(func() time.Time)
 	// agentmessageDescUpdatedAt is the schema descriptor for updated_at field.
-	agentmessageDescUpdatedAt := agentmessageMixinFields2[1].Descriptor()
+	agentmessageDescUpdatedAt := agentmessageMixinFields3[1].Descriptor()
 	// agentmessage.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	agentmessage.DefaultUpdatedAt = agentmessageDescUpdatedAt.Default.(func() time.Time)
 	// agentmessage.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentmessage.UpdateDefaultUpdatedAt = agentmessageDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// agentmessageDescSequence is the schema descriptor for sequence field.
-	agentmessageDescSequence := agentmessageFields[3].Descriptor()
+	agentmessageDescSequence := agentmessageFields[2].Descriptor()
 	// agentmessage.SequenceValidator is a validator for the "sequence" field. It is called by the builders before save.
 	agentmessage.SequenceValidator = agentmessageDescSequence.Validators[0].(func(int) error)
 	// agentmessageDescMetadata is the schema descriptor for metadata field.
-	agentmessageDescMetadata := agentmessageFields[6].Descriptor()
+	agentmessageDescMetadata := agentmessageFields[5].Descriptor()
 	// agentmessage.DefaultMetadata holds the default value on creation for the metadata field.
 	agentmessage.DefaultMetadata = agentmessageDescMetadata.Default.(map[string]interface{})
 	// agentmessageDescVisible is the schema descriptor for visible field.
-	agentmessageDescVisible := agentmessageFields[7].Descriptor()
+	agentmessageDescVisible := agentmessageFields[6].Descriptor()
 	// agentmessage.DefaultVisible holds the default value on creation for the visible field.
 	agentmessage.DefaultVisible = agentmessageDescVisible.Default.(bool)
 	// agentmessageDescID is the schema descriptor for id field.
-	agentmessageDescID := agentmessageFields[0].Descriptor()
+	agentmessageDescID := agentmessageMixinFields0[0].Descriptor()
 	// agentmessage.DefaultID holds the default value on creation for the id field.
 	agentmessage.DefaultID = agentmessageDescID.Default.(func() uuid.UUID)
 	agentproviderreadMixin := schema.AgentProviderRead{}.Mixin()
-	agentproviderread.Policy = privacy.NewPolicies(agentproviderreadMixin[0], agentproviderreadMixin[1], schema.AgentProviderRead{})
+	agentproviderread.Policy = privacy.NewPolicies(agentproviderreadMixin[1], agentproviderreadMixin[2], schema.AgentProviderRead{})
 	agentproviderread.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := agentproviderread.Policy.EvalMutation(ctx, m); err != nil {
@@ -200,30 +204,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	agentproviderreadMixinFields2 := agentproviderreadMixin[2].Fields()
-	_ = agentproviderreadMixinFields2
+	agentproviderreadMixinFields0 := agentproviderreadMixin[0].Fields()
+	_ = agentproviderreadMixinFields0
+	agentproviderreadMixinFields3 := agentproviderreadMixin[3].Fields()
+	_ = agentproviderreadMixinFields3
 	agentproviderreadFields := schema.AgentProviderRead{}.Fields()
 	_ = agentproviderreadFields
 	// agentproviderreadDescCreatedAt is the schema descriptor for created_at field.
-	agentproviderreadDescCreatedAt := agentproviderreadMixinFields2[0].Descriptor()
+	agentproviderreadDescCreatedAt := agentproviderreadMixinFields3[0].Descriptor()
 	// agentproviderread.DefaultCreatedAt holds the default value on creation for the created_at field.
 	agentproviderread.DefaultCreatedAt = agentproviderreadDescCreatedAt.Default.(func() time.Time)
 	// agentproviderreadDescUpdatedAt is the schema descriptor for updated_at field.
-	agentproviderreadDescUpdatedAt := agentproviderreadMixinFields2[1].Descriptor()
+	agentproviderreadDescUpdatedAt := agentproviderreadMixinFields3[1].Descriptor()
 	// agentproviderread.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	agentproviderread.DefaultUpdatedAt = agentproviderreadDescUpdatedAt.Default.(func() time.Time)
 	// agentproviderread.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentproviderread.UpdateDefaultUpdatedAt = agentproviderreadDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// agentproviderreadDescToolName is the schema descriptor for tool_name field.
-	agentproviderreadDescToolName := agentproviderreadFields[3].Descriptor()
+	agentproviderreadDescToolName := agentproviderreadFields[2].Descriptor()
 	// agentproviderread.ToolNameValidator is a validator for the "tool_name" field. It is called by the builders before save.
 	agentproviderread.ToolNameValidator = agentproviderreadDescToolName.Validators[0].(func(string) error)
 	// agentproviderreadDescID is the schema descriptor for id field.
-	agentproviderreadDescID := agentproviderreadFields[0].Descriptor()
+	agentproviderreadDescID := agentproviderreadMixinFields0[0].Descriptor()
 	// agentproviderread.DefaultID holds the default value on creation for the id field.
 	agentproviderread.DefaultID = agentproviderreadDescID.Default.(func() uuid.UUID)
 	agentsessionMixin := schema.AgentSession{}.Mixin()
-	agentsession.Policy = privacy.NewPolicies(agentsessionMixin[0], agentsessionMixin[1], schema.AgentSession{})
+	agentsession.Policy = privacy.NewPolicies(agentsessionMixin[1], agentsessionMixin[2], schema.AgentSession{})
 	agentsession.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := agentsession.Policy.EvalMutation(ctx, m); err != nil {
@@ -232,34 +238,36 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	agentsessionMixinFields2 := agentsessionMixin[2].Fields()
-	_ = agentsessionMixinFields2
+	agentsessionMixinFields0 := agentsessionMixin[0].Fields()
+	_ = agentsessionMixinFields0
+	agentsessionMixinFields3 := agentsessionMixin[3].Fields()
+	_ = agentsessionMixinFields3
 	agentsessionFields := schema.AgentSession{}.Fields()
 	_ = agentsessionFields
 	// agentsessionDescCreatedAt is the schema descriptor for created_at field.
-	agentsessionDescCreatedAt := agentsessionMixinFields2[0].Descriptor()
+	agentsessionDescCreatedAt := agentsessionMixinFields3[0].Descriptor()
 	// agentsession.DefaultCreatedAt holds the default value on creation for the created_at field.
 	agentsession.DefaultCreatedAt = agentsessionDescCreatedAt.Default.(func() time.Time)
 	// agentsessionDescUpdatedAt is the schema descriptor for updated_at field.
-	agentsessionDescUpdatedAt := agentsessionMixinFields2[1].Descriptor()
+	agentsessionDescUpdatedAt := agentsessionMixinFields3[1].Descriptor()
 	// agentsession.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	agentsession.DefaultUpdatedAt = agentsessionDescUpdatedAt.Default.(func() time.Time)
 	// agentsession.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentsession.UpdateDefaultUpdatedAt = agentsessionDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// agentsessionDescAgentName is the schema descriptor for agent_name field.
-	agentsessionDescAgentName := agentsessionFields[1].Descriptor()
+	agentsessionDescAgentName := agentsessionFields[0].Descriptor()
 	// agentsession.AgentNameValidator is a validator for the "agent_name" field. It is called by the builders before save.
 	agentsession.AgentNameValidator = agentsessionDescAgentName.Validators[0].(func(string) error)
 	// agentsessionDescScopes is the schema descriptor for scopes field.
-	agentsessionDescScopes := agentsessionFields[2].Descriptor()
+	agentsessionDescScopes := agentsessionFields[1].Descriptor()
 	// agentsession.DefaultScopes holds the default value on creation for the scopes field.
 	agentsession.DefaultScopes = agentsessionDescScopes.Default.([]string)
 	// agentsessionDescID is the schema descriptor for id field.
-	agentsessionDescID := agentsessionFields[0].Descriptor()
+	agentsessionDescID := agentsessionMixinFields0[0].Descriptor()
 	// agentsession.DefaultID holds the default value on creation for the id field.
 	agentsession.DefaultID = agentsessionDescID.Default.(func() uuid.UUID)
 	agentsessionbindingMixin := schema.AgentSessionBinding{}.Mixin()
-	agentsessionbinding.Policy = privacy.NewPolicies(agentsessionbindingMixin[0], agentsessionbindingMixin[1], schema.AgentSessionBinding{})
+	agentsessionbinding.Policy = privacy.NewPolicies(agentsessionbindingMixin[1], agentsessionbindingMixin[2], schema.AgentSessionBinding{})
 	agentsessionbinding.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := agentsessionbinding.Policy.EvalMutation(ctx, m); err != nil {
@@ -268,36 +276,38 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	agentsessionbindingMixinFields2 := agentsessionbindingMixin[2].Fields()
-	_ = agentsessionbindingMixinFields2
+	agentsessionbindingMixinFields0 := agentsessionbindingMixin[0].Fields()
+	_ = agentsessionbindingMixinFields0
 	agentsessionbindingMixinFields3 := agentsessionbindingMixin[3].Fields()
 	_ = agentsessionbindingMixinFields3
+	agentsessionbindingMixinFields4 := agentsessionbindingMixin[4].Fields()
+	_ = agentsessionbindingMixinFields4
 	agentsessionbindingFields := schema.AgentSessionBinding{}.Fields()
 	_ = agentsessionbindingFields
 	// agentsessionbindingDescCreatedAt is the schema descriptor for created_at field.
-	agentsessionbindingDescCreatedAt := agentsessionbindingMixinFields2[0].Descriptor()
+	agentsessionbindingDescCreatedAt := agentsessionbindingMixinFields3[0].Descriptor()
 	// agentsessionbinding.DefaultCreatedAt holds the default value on creation for the created_at field.
 	agentsessionbinding.DefaultCreatedAt = agentsessionbindingDescCreatedAt.Default.(func() time.Time)
 	// agentsessionbindingDescUpdatedAt is the schema descriptor for updated_at field.
-	agentsessionbindingDescUpdatedAt := agentsessionbindingMixinFields2[1].Descriptor()
+	agentsessionbindingDescUpdatedAt := agentsessionbindingMixinFields3[1].Descriptor()
 	// agentsessionbinding.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	agentsessionbinding.DefaultUpdatedAt = agentsessionbindingDescUpdatedAt.Default.(func() time.Time)
 	// agentsessionbinding.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentsessionbinding.UpdateDefaultUpdatedAt = agentsessionbindingDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// agentsessionbindingDescProvider is the schema descriptor for provider field.
-	agentsessionbindingDescProvider := agentsessionbindingMixinFields3[0].Descriptor()
+	agentsessionbindingDescProvider := agentsessionbindingMixinFields4[0].Descriptor()
 	// agentsessionbinding.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	agentsessionbinding.ProviderValidator = agentsessionbindingDescProvider.Validators[0].(func(string) error)
 	// agentsessionbindingDescProviderResourceRef is the schema descriptor for provider_resource_ref field.
-	agentsessionbindingDescProviderResourceRef := agentsessionbindingMixinFields3[2].Descriptor()
+	agentsessionbindingDescProviderResourceRef := agentsessionbindingMixinFields4[2].Descriptor()
 	// agentsessionbinding.ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
 	agentsessionbinding.ProviderResourceRefValidator = agentsessionbindingDescProviderResourceRef.Validators[0].(func(string) error)
 	// agentsessionbindingDescID is the schema descriptor for id field.
-	agentsessionbindingDescID := agentsessionbindingFields[0].Descriptor()
+	agentsessionbindingDescID := agentsessionbindingMixinFields0[0].Descriptor()
 	// agentsessionbinding.DefaultID holds the default value on creation for the id field.
 	agentsessionbinding.DefaultID = agentsessionbindingDescID.Default.(func() uuid.UUID)
 	agentturnMixin := schema.AgentTurn{}.Mixin()
-	agentturn.Policy = privacy.NewPolicies(agentturnMixin[0], agentturnMixin[1], schema.AgentTurn{})
+	agentturn.Policy = privacy.NewPolicies(agentturnMixin[1], agentturnMixin[2], schema.AgentTurn{})
 	agentturn.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := agentturn.Policy.EvalMutation(ctx, m); err != nil {
@@ -306,64 +316,70 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	agentturnMixinFields2 := agentturnMixin[2].Fields()
-	_ = agentturnMixinFields2
+	agentturnMixinFields0 := agentturnMixin[0].Fields()
+	_ = agentturnMixinFields0
+	agentturnMixinFields3 := agentturnMixin[3].Fields()
+	_ = agentturnMixinFields3
 	agentturnFields := schema.AgentTurn{}.Fields()
 	_ = agentturnFields
 	// agentturnDescCreatedAt is the schema descriptor for created_at field.
-	agentturnDescCreatedAt := agentturnMixinFields2[0].Descriptor()
+	agentturnDescCreatedAt := agentturnMixinFields3[0].Descriptor()
 	// agentturn.DefaultCreatedAt holds the default value on creation for the created_at field.
 	agentturn.DefaultCreatedAt = agentturnDescCreatedAt.Default.(func() time.Time)
 	// agentturnDescUpdatedAt is the schema descriptor for updated_at field.
-	agentturnDescUpdatedAt := agentturnMixinFields2[1].Descriptor()
+	agentturnDescUpdatedAt := agentturnMixinFields3[1].Descriptor()
 	// agentturn.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	agentturn.DefaultUpdatedAt = agentturnDescUpdatedAt.Default.(func() time.Time)
 	// agentturn.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentturn.UpdateDefaultUpdatedAt = agentturnDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// agentturnDescSequence is the schema descriptor for sequence field.
-	agentturnDescSequence := agentturnFields[2].Descriptor()
+	agentturnDescSequence := agentturnFields[1].Descriptor()
 	// agentturn.SequenceValidator is a validator for the "sequence" field. It is called by the builders before save.
 	agentturn.SequenceValidator = agentturnDescSequence.Validators[0].(func(int) error)
 	// agentturnDescFinishReason is the schema descriptor for finish_reason field.
-	agentturnDescFinishReason := agentturnFields[9].Descriptor()
+	agentturnDescFinishReason := agentturnFields[8].Descriptor()
 	// agentturn.DefaultFinishReason holds the default value on creation for the finish_reason field.
 	agentturn.DefaultFinishReason = agentturnDescFinishReason.Default.(string)
 	// agentturnDescModel is the schema descriptor for model field.
-	agentturnDescModel := agentturnFields[11].Descriptor()
+	agentturnDescModel := agentturnFields[10].Descriptor()
 	// agentturn.DefaultModel holds the default value on creation for the model field.
 	agentturn.DefaultModel = agentturnDescModel.Default.(string)
 	// agentturnDescInputTokens is the schema descriptor for input_tokens field.
-	agentturnDescInputTokens := agentturnFields[12].Descriptor()
+	agentturnDescInputTokens := agentturnFields[11].Descriptor()
 	// agentturn.DefaultInputTokens holds the default value on creation for the input_tokens field.
 	agentturn.DefaultInputTokens = agentturnDescInputTokens.Default.(int)
 	// agentturn.InputTokensValidator is a validator for the "input_tokens" field. It is called by the builders before save.
 	agentturn.InputTokensValidator = agentturnDescInputTokens.Validators[0].(func(int) error)
 	// agentturnDescCachedInputTokens is the schema descriptor for cached_input_tokens field.
-	agentturnDescCachedInputTokens := agentturnFields[13].Descriptor()
+	agentturnDescCachedInputTokens := agentturnFields[12].Descriptor()
 	// agentturn.DefaultCachedInputTokens holds the default value on creation for the cached_input_tokens field.
 	agentturn.DefaultCachedInputTokens = agentturnDescCachedInputTokens.Default.(int)
 	// agentturn.CachedInputTokensValidator is a validator for the "cached_input_tokens" field. It is called by the builders before save.
 	agentturn.CachedInputTokensValidator = agentturnDescCachedInputTokens.Validators[0].(func(int) error)
 	// agentturnDescOutputTokens is the schema descriptor for output_tokens field.
-	agentturnDescOutputTokens := agentturnFields[14].Descriptor()
+	agentturnDescOutputTokens := agentturnFields[13].Descriptor()
 	// agentturn.DefaultOutputTokens holds the default value on creation for the output_tokens field.
 	agentturn.DefaultOutputTokens = agentturnDescOutputTokens.Default.(int)
 	// agentturn.OutputTokensValidator is a validator for the "output_tokens" field. It is called by the builders before save.
 	agentturn.OutputTokensValidator = agentturnDescOutputTokens.Validators[0].(func(int) error)
 	// agentturnDescModelCalls is the schema descriptor for model_calls field.
-	agentturnDescModelCalls := agentturnFields[15].Descriptor()
+	agentturnDescModelCalls := agentturnFields[14].Descriptor()
 	// agentturn.DefaultModelCalls holds the default value on creation for the model_calls field.
 	agentturn.DefaultModelCalls = agentturnDescModelCalls.Default.(int)
 	// agentturn.ModelCallsValidator is a validator for the "model_calls" field. It is called by the builders before save.
 	agentturn.ModelCallsValidator = agentturnDescModelCalls.Validators[0].(func(int) error)
 	// agentturnDescPeakInputTokens is the schema descriptor for peak_input_tokens field.
-	agentturnDescPeakInputTokens := agentturnFields[16].Descriptor()
+	agentturnDescPeakInputTokens := agentturnFields[15].Descriptor()
 	// agentturn.DefaultPeakInputTokens holds the default value on creation for the peak_input_tokens field.
 	agentturn.DefaultPeakInputTokens = agentturnDescPeakInputTokens.Default.(int)
 	// agentturn.PeakInputTokensValidator is a validator for the "peak_input_tokens" field. It is called by the builders before save.
 	agentturn.PeakInputTokensValidator = agentturnDescPeakInputTokens.Validators[0].(func(int) error)
+	// agentturnDescID is the schema descriptor for id field.
+	agentturnDescID := agentturnMixinFields0[0].Descriptor()
+	// agentturn.DefaultID holds the default value on creation for the id field.
+	agentturn.DefaultID = agentturnDescID.Default.(func() uuid.UUID)
 	alertdefinitionMixin := schema.AlertDefinition{}.Mixin()
-	alertdefinition.Policy = privacy.NewPolicies(alertdefinitionMixin[0], alertdefinitionMixin[1], schema.AlertDefinition{})
+	alertdefinition.Policy = privacy.NewPolicies(alertdefinitionMixin[1], alertdefinitionMixin[2], schema.AlertDefinition{})
 	alertdefinition.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := alertdefinition.Policy.EvalMutation(ctx, m); err != nil {
@@ -372,18 +388,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	alertdefinitionMixinFields0 := alertdefinitionMixin[0].Fields()
+	_ = alertdefinitionMixinFields0
 	alertdefinitionFields := schema.AlertDefinition{}.Fields()
 	_ = alertdefinitionFields
 	// alertdefinitionDescResolutionTimeoutSeconds is the schema descriptor for resolution_timeout_seconds field.
-	alertdefinitionDescResolutionTimeoutSeconds := alertdefinitionFields[4].Descriptor()
+	alertdefinitionDescResolutionTimeoutSeconds := alertdefinitionFields[3].Descriptor()
 	// alertdefinition.ResolutionTimeoutSecondsValidator is a validator for the "resolution_timeout_seconds" field. It is called by the builders before save.
 	alertdefinition.ResolutionTimeoutSecondsValidator = alertdefinitionDescResolutionTimeoutSeconds.Validators[0].(func(int) error)
 	// alertdefinitionDescID is the schema descriptor for id field.
-	alertdefinitionDescID := alertdefinitionFields[0].Descriptor()
+	alertdefinitionDescID := alertdefinitionMixinFields0[0].Descriptor()
 	// alertdefinition.DefaultID holds the default value on creation for the id field.
 	alertdefinition.DefaultID = alertdefinitionDescID.Default.(func() uuid.UUID)
 	alertepisodeMixin := schema.AlertEpisode{}.Mixin()
-	alertepisode.Policy = privacy.NewPolicies(alertepisodeMixin[0], alertepisodeMixin[1], schema.AlertEpisode{})
+	alertepisode.Policy = privacy.NewPolicies(alertepisodeMixin[1], alertepisodeMixin[2], schema.AlertEpisode{})
 	alertepisode.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := alertepisode.Policy.EvalMutation(ctx, m); err != nil {
@@ -392,26 +410,28 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	alertepisodeMixinFields2 := alertepisodeMixin[2].Fields()
-	_ = alertepisodeMixinFields2
+	alertepisodeMixinFields0 := alertepisodeMixin[0].Fields()
+	_ = alertepisodeMixinFields0
+	alertepisodeMixinFields3 := alertepisodeMixin[3].Fields()
+	_ = alertepisodeMixinFields3
 	alertepisodeFields := schema.AlertEpisode{}.Fields()
 	_ = alertepisodeFields
 	// alertepisodeDescCreatedAt is the schema descriptor for created_at field.
-	alertepisodeDescCreatedAt := alertepisodeMixinFields2[0].Descriptor()
+	alertepisodeDescCreatedAt := alertepisodeMixinFields3[0].Descriptor()
 	// alertepisode.DefaultCreatedAt holds the default value on creation for the created_at field.
 	alertepisode.DefaultCreatedAt = alertepisodeDescCreatedAt.Default.(func() time.Time)
 	// alertepisodeDescUpdatedAt is the schema descriptor for updated_at field.
-	alertepisodeDescUpdatedAt := alertepisodeMixinFields2[1].Descriptor()
+	alertepisodeDescUpdatedAt := alertepisodeMixinFields3[1].Descriptor()
 	// alertepisode.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	alertepisode.DefaultUpdatedAt = alertepisodeDescUpdatedAt.Default.(func() time.Time)
 	// alertepisode.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	alertepisode.UpdateDefaultUpdatedAt = alertepisodeDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// alertepisodeDescID is the schema descriptor for id field.
-	alertepisodeDescID := alertepisodeFields[0].Descriptor()
+	alertepisodeDescID := alertepisodeMixinFields0[0].Descriptor()
 	// alertepisode.DefaultID holds the default value on creation for the id field.
 	alertepisode.DefaultID = alertepisodeDescID.Default.(func() uuid.UUID)
 	alertfeedbackMixin := schema.AlertFeedback{}.Mixin()
-	alertfeedback.Policy = privacy.NewPolicies(alertfeedbackMixin[0], alertfeedbackMixin[1], schema.AlertFeedback{})
+	alertfeedback.Policy = privacy.NewPolicies(alertfeedbackMixin[1], alertfeedbackMixin[2], schema.AlertFeedback{})
 	alertfeedback.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := alertfeedback.Policy.EvalMutation(ctx, m); err != nil {
@@ -420,14 +440,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	alertfeedbackMixinFields0 := alertfeedbackMixin[0].Fields()
+	_ = alertfeedbackMixinFields0
 	alertfeedbackFields := schema.AlertFeedback{}.Fields()
 	_ = alertfeedbackFields
 	// alertfeedbackDescID is the schema descriptor for id field.
-	alertfeedbackDescID := alertfeedbackFields[0].Descriptor()
+	alertfeedbackDescID := alertfeedbackMixinFields0[0].Descriptor()
 	// alertfeedback.DefaultID holds the default value on creation for the id field.
 	alertfeedback.DefaultID = alertfeedbackDescID.Default.(func() uuid.UUID)
 	alertinstanceMixin := schema.AlertInstance{}.Mixin()
-	alertinstance.Policy = privacy.NewPolicies(alertinstanceMixin[0], alertinstanceMixin[1], schema.AlertInstance{})
+	alertinstance.Policy = privacy.NewPolicies(alertinstanceMixin[1], alertinstanceMixin[2], schema.AlertInstance{})
 	alertinstance.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := alertinstance.Policy.EvalMutation(ctx, m); err != nil {
@@ -436,14 +458,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	alertinstanceMixinFields0 := alertinstanceMixin[0].Fields()
+	_ = alertinstanceMixinFields0
 	alertinstanceFields := schema.AlertInstance{}.Fields()
 	_ = alertinstanceFields
 	// alertinstanceDescID is the schema descriptor for id field.
-	alertinstanceDescID := alertinstanceFields[0].Descriptor()
+	alertinstanceDescID := alertinstanceMixinFields0[0].Descriptor()
 	// alertinstance.DefaultID holds the default value on creation for the id field.
 	alertinstance.DefaultID = alertinstanceDescID.Default.(func() uuid.UUID)
 	alertinstanceeventMixin := schema.AlertInstanceEvent{}.Mixin()
-	alertinstanceevent.Policy = privacy.NewPolicies(alertinstanceeventMixin[0], alertinstanceeventMixin[1], schema.AlertInstanceEvent{})
+	alertinstanceevent.Policy = privacy.NewPolicies(alertinstanceeventMixin[1], alertinstanceeventMixin[2], schema.AlertInstanceEvent{})
 	alertinstanceevent.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := alertinstanceevent.Policy.EvalMutation(ctx, m); err != nil {
@@ -452,10 +476,12 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	alertinstanceeventMixinFields0 := alertinstanceeventMixin[0].Fields()
+	_ = alertinstanceeventMixinFields0
 	alertinstanceeventFields := schema.AlertInstanceEvent{}.Fields()
 	_ = alertinstanceeventFields
 	// alertinstanceeventDescID is the schema descriptor for id field.
-	alertinstanceeventDescID := alertinstanceeventFields[0].Descriptor()
+	alertinstanceeventDescID := alertinstanceeventMixinFields0[0].Descriptor()
 	// alertinstanceevent.DefaultID holds the default value on creation for the id field.
 	alertinstanceevent.DefaultID = alertinstanceeventDescID.Default.(func() uuid.UUID)
 	alertmetricsMixin := schema.AlertMetrics{}.Mixin()
@@ -469,7 +495,7 @@ func init() {
 		})
 	}
 	discussioncommentMixin := schema.DiscussionComment{}.Mixin()
-	discussioncomment.Policy = privacy.NewPolicies(discussioncommentMixin[0], discussioncommentMixin[1], schema.DiscussionComment{})
+	discussioncomment.Policy = privacy.NewPolicies(discussioncommentMixin[1], discussioncommentMixin[2], schema.DiscussionComment{})
 	discussioncomment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := discussioncomment.Policy.EvalMutation(ctx, m); err != nil {
@@ -478,26 +504,28 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	discussioncommentMixinFields2 := discussioncommentMixin[2].Fields()
-	_ = discussioncommentMixinFields2
+	discussioncommentMixinFields0 := discussioncommentMixin[0].Fields()
+	_ = discussioncommentMixinFields0
+	discussioncommentMixinFields3 := discussioncommentMixin[3].Fields()
+	_ = discussioncommentMixinFields3
 	discussioncommentFields := schema.DiscussionComment{}.Fields()
 	_ = discussioncommentFields
 	// discussioncommentDescCreatedAt is the schema descriptor for created_at field.
-	discussioncommentDescCreatedAt := discussioncommentMixinFields2[0].Descriptor()
+	discussioncommentDescCreatedAt := discussioncommentMixinFields3[0].Descriptor()
 	// discussioncomment.DefaultCreatedAt holds the default value on creation for the created_at field.
 	discussioncomment.DefaultCreatedAt = discussioncommentDescCreatedAt.Default.(func() time.Time)
 	// discussioncommentDescUpdatedAt is the schema descriptor for updated_at field.
-	discussioncommentDescUpdatedAt := discussioncommentMixinFields2[1].Descriptor()
+	discussioncommentDescUpdatedAt := discussioncommentMixinFields3[1].Descriptor()
 	// discussioncomment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	discussioncomment.DefaultUpdatedAt = discussioncommentDescUpdatedAt.Default.(func() time.Time)
 	// discussioncomment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	discussioncomment.UpdateDefaultUpdatedAt = discussioncommentDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// discussioncommentDescID is the schema descriptor for id field.
-	discussioncommentDescID := discussioncommentFields[0].Descriptor()
+	discussioncommentDescID := discussioncommentMixinFields0[0].Descriptor()
 	// discussioncomment.DefaultID holds the default value on creation for the id field.
 	discussioncomment.DefaultID = discussioncommentDescID.Default.(func() uuid.UUID)
 	discussionthreadMixin := schema.DiscussionThread{}.Mixin()
-	discussionthread.Policy = privacy.NewPolicies(discussionthreadMixin[0], discussionthreadMixin[1], schema.DiscussionThread{})
+	discussionthread.Policy = privacy.NewPolicies(discussionthreadMixin[1], discussionthreadMixin[2], schema.DiscussionThread{})
 	discussionthread.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := discussionthread.Policy.EvalMutation(ctx, m); err != nil {
@@ -506,26 +534,28 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	discussionthreadMixinFields2 := discussionthreadMixin[2].Fields()
-	_ = discussionthreadMixinFields2
+	discussionthreadMixinFields0 := discussionthreadMixin[0].Fields()
+	_ = discussionthreadMixinFields0
+	discussionthreadMixinFields3 := discussionthreadMixin[3].Fields()
+	_ = discussionthreadMixinFields3
 	discussionthreadFields := schema.DiscussionThread{}.Fields()
 	_ = discussionthreadFields
 	// discussionthreadDescCreatedAt is the schema descriptor for created_at field.
-	discussionthreadDescCreatedAt := discussionthreadMixinFields2[0].Descriptor()
+	discussionthreadDescCreatedAt := discussionthreadMixinFields3[0].Descriptor()
 	// discussionthread.DefaultCreatedAt holds the default value on creation for the created_at field.
 	discussionthread.DefaultCreatedAt = discussionthreadDescCreatedAt.Default.(func() time.Time)
 	// discussionthreadDescUpdatedAt is the schema descriptor for updated_at field.
-	discussionthreadDescUpdatedAt := discussionthreadMixinFields2[1].Descriptor()
+	discussionthreadDescUpdatedAt := discussionthreadMixinFields3[1].Descriptor()
 	// discussionthread.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	discussionthread.DefaultUpdatedAt = discussionthreadDescUpdatedAt.Default.(func() time.Time)
 	// discussionthread.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	discussionthread.UpdateDefaultUpdatedAt = discussionthreadDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// discussionthreadDescID is the schema descriptor for id field.
-	discussionthreadDescID := discussionthreadFields[0].Descriptor()
+	discussionthreadDescID := discussionthreadMixinFields0[0].Descriptor()
 	// discussionthread.DefaultID holds the default value on creation for the id field.
 	discussionthread.DefaultID = discussionthreadDescID.Default.(func() uuid.UUID)
 	documentMixin := schema.Document{}.Mixin()
-	document.Policy = privacy.NewPolicies(documentMixin[0], documentMixin[1], schema.Document{})
+	document.Policy = privacy.NewPolicies(documentMixin[1], documentMixin[2], schema.Document{})
 	document.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := document.Policy.EvalMutation(ctx, m); err != nil {
@@ -534,18 +564,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	documentMixinFields0 := documentMixin[0].Fields()
+	_ = documentMixinFields0
 	documentFields := schema.Document{}.Fields()
 	_ = documentFields
 	// documentDescAccessRestricted is the schema descriptor for access_restricted field.
-	documentDescAccessRestricted := documentFields[2].Descriptor()
+	documentDescAccessRestricted := documentFields[1].Descriptor()
 	// document.DefaultAccessRestricted holds the default value on creation for the access_restricted field.
 	document.DefaultAccessRestricted = documentDescAccessRestricted.Default.(bool)
 	// documentDescID is the schema descriptor for id field.
-	documentDescID := documentFields[0].Descriptor()
+	documentDescID := documentMixinFields0[0].Descriptor()
 	// document.DefaultID holds the default value on creation for the id field.
 	document.DefaultID = documentDescID.Default.(func() uuid.UUID)
 	documentaccessMixin := schema.DocumentAccess{}.Mixin()
-	documentaccess.Policy = privacy.NewPolicies(documentaccessMixin[0], documentaccessMixin[1], schema.DocumentAccess{})
+	documentaccess.Policy = privacy.NewPolicies(documentaccessMixin[1], documentaccessMixin[2], schema.DocumentAccess{})
 	documentaccess.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := documentaccess.Policy.EvalMutation(ctx, m); err != nil {
@@ -554,38 +586,40 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	documentaccessMixinFields2 := documentaccessMixin[2].Fields()
-	_ = documentaccessMixinFields2
+	documentaccessMixinFields0 := documentaccessMixin[0].Fields()
+	_ = documentaccessMixinFields0
+	documentaccessMixinFields3 := documentaccessMixin[3].Fields()
+	_ = documentaccessMixinFields3
 	documentaccessFields := schema.DocumentAccess{}.Fields()
 	_ = documentaccessFields
 	// documentaccessDescCreatedAt is the schema descriptor for created_at field.
-	documentaccessDescCreatedAt := documentaccessMixinFields2[0].Descriptor()
+	documentaccessDescCreatedAt := documentaccessMixinFields3[0].Descriptor()
 	// documentaccess.DefaultCreatedAt holds the default value on creation for the created_at field.
 	documentaccess.DefaultCreatedAt = documentaccessDescCreatedAt.Default.(func() time.Time)
 	// documentaccessDescUpdatedAt is the schema descriptor for updated_at field.
-	documentaccessDescUpdatedAt := documentaccessMixinFields2[1].Descriptor()
+	documentaccessDescUpdatedAt := documentaccessMixinFields3[1].Descriptor()
 	// documentaccess.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	documentaccess.DefaultUpdatedAt = documentaccessDescUpdatedAt.Default.(func() time.Time)
 	// documentaccess.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	documentaccess.UpdateDefaultUpdatedAt = documentaccessDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// documentaccessDescCanView is the schema descriptor for can_view field.
-	documentaccessDescCanView := documentaccessFields[4].Descriptor()
+	documentaccessDescCanView := documentaccessFields[3].Descriptor()
 	// documentaccess.DefaultCanView holds the default value on creation for the can_view field.
 	documentaccess.DefaultCanView = documentaccessDescCanView.Default.(bool)
 	// documentaccessDescCanEdit is the schema descriptor for can_edit field.
-	documentaccessDescCanEdit := documentaccessFields[5].Descriptor()
+	documentaccessDescCanEdit := documentaccessFields[4].Descriptor()
 	// documentaccess.DefaultCanEdit holds the default value on creation for the can_edit field.
 	documentaccess.DefaultCanEdit = documentaccessDescCanEdit.Default.(bool)
 	// documentaccessDescCanManage is the schema descriptor for can_manage field.
-	documentaccessDescCanManage := documentaccessFields[6].Descriptor()
+	documentaccessDescCanManage := documentaccessFields[5].Descriptor()
 	// documentaccess.DefaultCanManage holds the default value on creation for the can_manage field.
 	documentaccess.DefaultCanManage = documentaccessDescCanManage.Default.(bool)
 	// documentaccessDescID is the schema descriptor for id field.
-	documentaccessDescID := documentaccessFields[0].Descriptor()
+	documentaccessDescID := documentaccessMixinFields0[0].Descriptor()
 	// documentaccess.DefaultID holds the default value on creation for the id field.
 	documentaccess.DefaultID = documentaccessDescID.Default.(func() uuid.UUID)
 	eventannotationMixin := schema.EventAnnotation{}.Mixin()
-	eventannotation.Policy = privacy.NewPolicies(eventannotationMixin[0], eventannotationMixin[1], schema.EventAnnotation{})
+	eventannotation.Policy = privacy.NewPolicies(eventannotationMixin[1], eventannotationMixin[2], schema.EventAnnotation{})
 	eventannotation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := eventannotation.Policy.EvalMutation(ctx, m); err != nil {
@@ -594,18 +628,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	eventannotationMixinFields0 := eventannotationMixin[0].Fields()
+	_ = eventannotationMixinFields0
 	eventannotationFields := schema.EventAnnotation{}.Fields()
 	_ = eventannotationFields
 	// eventannotationDescCreatedAt is the schema descriptor for created_at field.
-	eventannotationDescCreatedAt := eventannotationFields[3].Descriptor()
+	eventannotationDescCreatedAt := eventannotationFields[2].Descriptor()
 	// eventannotation.DefaultCreatedAt holds the default value on creation for the created_at field.
 	eventannotation.DefaultCreatedAt = eventannotationDescCreatedAt.Default.(func() time.Time)
 	// eventannotationDescID is the schema descriptor for id field.
-	eventannotationDescID := eventannotationFields[0].Descriptor()
+	eventannotationDescID := eventannotationMixinFields0[0].Descriptor()
 	// eventannotation.DefaultID holds the default value on creation for the id field.
 	eventannotation.DefaultID = eventannotationDescID.Default.(func() uuid.UUID)
 	incidentMixin := schema.Incident{}.Mixin()
-	incident.Policy = privacy.NewPolicies(incidentMixin[0], incidentMixin[1], schema.Incident{})
+	incident.Policy = privacy.NewPolicies(incidentMixin[1], incidentMixin[2], schema.Incident{})
 	incident.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incident.Policy.EvalMutation(ctx, m); err != nil {
@@ -614,39 +650,41 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	incidentMixinHooks3 := incidentMixin[3].Hooks()
+	incidentMixinHooks4 := incidentMixin[4].Hooks()
 
-	incident.Hooks[1] = incidentMixinHooks3[0]
-	incidentMixinInters3 := incidentMixin[3].Interceptors()
-	incident.Interceptors[0] = incidentMixinInters3[0]
-	incidentMixinFields2 := incidentMixin[2].Fields()
-	_ = incidentMixinFields2
+	incident.Hooks[1] = incidentMixinHooks4[0]
+	incidentMixinInters4 := incidentMixin[4].Interceptors()
+	incident.Interceptors[0] = incidentMixinInters4[0]
+	incidentMixinFields0 := incidentMixin[0].Fields()
+	_ = incidentMixinFields0
+	incidentMixinFields3 := incidentMixin[3].Fields()
+	_ = incidentMixinFields3
 	incidentFields := schema.Incident{}.Fields()
 	_ = incidentFields
 	// incidentDescCreatedAt is the schema descriptor for created_at field.
-	incidentDescCreatedAt := incidentMixinFields2[0].Descriptor()
+	incidentDescCreatedAt := incidentMixinFields3[0].Descriptor()
 	// incident.DefaultCreatedAt holds the default value on creation for the created_at field.
 	incident.DefaultCreatedAt = incidentDescCreatedAt.Default.(func() time.Time)
 	// incidentDescUpdatedAt is the schema descriptor for updated_at field.
-	incidentDescUpdatedAt := incidentMixinFields2[1].Descriptor()
+	incidentDescUpdatedAt := incidentMixinFields3[1].Descriptor()
 	// incident.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	incident.DefaultUpdatedAt = incidentDescUpdatedAt.Default.(func() time.Time)
 	// incident.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	incident.UpdateDefaultUpdatedAt = incidentDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// incidentDescNumber is the schema descriptor for number field.
-	incidentDescNumber := incidentFields[1].Descriptor()
+	incidentDescNumber := incidentFields[0].Descriptor()
 	// incident.NumberValidator is a validator for the "number" field. It is called by the builders before save.
 	incident.NumberValidator = incidentDescNumber.Validators[0].(func(int) error)
 	// incidentDescOpenedAt is the schema descriptor for opened_at field.
-	incidentDescOpenedAt := incidentFields[8].Descriptor()
+	incidentDescOpenedAt := incidentFields[7].Descriptor()
 	// incident.DefaultOpenedAt holds the default value on creation for the opened_at field.
 	incident.DefaultOpenedAt = incidentDescOpenedAt.Default.(func() time.Time)
 	// incidentDescID is the schema descriptor for id field.
-	incidentDescID := incidentFields[0].Descriptor()
+	incidentDescID := incidentMixinFields0[0].Descriptor()
 	// incident.DefaultID holds the default value on creation for the id field.
 	incident.DefaultID = incidentDescID.Default.(func() uuid.UUID)
 	incidentdebriefMixin := schema.IncidentDebrief{}.Mixin()
-	incidentdebrief.Policy = privacy.NewPolicies(incidentdebriefMixin[0], incidentdebriefMixin[1], schema.IncidentDebrief{})
+	incidentdebrief.Policy = privacy.NewPolicies(incidentdebriefMixin[1], incidentdebriefMixin[2], schema.IncidentDebrief{})
 	incidentdebrief.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentdebrief.Policy.EvalMutation(ctx, m); err != nil {
@@ -655,14 +693,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	incidentdebriefMixinFields0 := incidentdebriefMixin[0].Fields()
+	_ = incidentdebriefMixinFields0
 	incidentdebriefFields := schema.IncidentDebrief{}.Fields()
 	_ = incidentdebriefFields
 	// incidentdebriefDescID is the schema descriptor for id field.
-	incidentdebriefDescID := incidentdebriefFields[0].Descriptor()
+	incidentdebriefDescID := incidentdebriefMixinFields0[0].Descriptor()
 	// incidentdebrief.DefaultID holds the default value on creation for the id field.
 	incidentdebrief.DefaultID = incidentdebriefDescID.Default.(func() uuid.UUID)
 	incidentdebriefmessageMixin := schema.IncidentDebriefMessage{}.Mixin()
-	incidentdebriefmessage.Policy = privacy.NewPolicies(incidentdebriefmessageMixin[0], incidentdebriefmessageMixin[1], schema.IncidentDebriefMessage{})
+	incidentdebriefmessage.Policy = privacy.NewPolicies(incidentdebriefmessageMixin[1], incidentdebriefmessageMixin[2], schema.IncidentDebriefMessage{})
 	incidentdebriefmessage.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentdebriefmessage.Policy.EvalMutation(ctx, m); err != nil {
@@ -671,18 +711,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	incidentdebriefmessageMixinFields0 := incidentdebriefmessageMixin[0].Fields()
+	_ = incidentdebriefmessageMixinFields0
 	incidentdebriefmessageFields := schema.IncidentDebriefMessage{}.Fields()
 	_ = incidentdebriefmessageFields
 	// incidentdebriefmessageDescCreatedAt is the schema descriptor for created_at field.
-	incidentdebriefmessageDescCreatedAt := incidentdebriefmessageFields[3].Descriptor()
+	incidentdebriefmessageDescCreatedAt := incidentdebriefmessageFields[2].Descriptor()
 	// incidentdebriefmessage.DefaultCreatedAt holds the default value on creation for the created_at field.
 	incidentdebriefmessage.DefaultCreatedAt = incidentdebriefmessageDescCreatedAt.Default.(func() time.Time)
 	// incidentdebriefmessageDescID is the schema descriptor for id field.
-	incidentdebriefmessageDescID := incidentdebriefmessageFields[0].Descriptor()
+	incidentdebriefmessageDescID := incidentdebriefmessageMixinFields0[0].Descriptor()
 	// incidentdebriefmessage.DefaultID holds the default value on creation for the id field.
 	incidentdebriefmessage.DefaultID = incidentdebriefmessageDescID.Default.(func() uuid.UUID)
 	incidentdebriefquestionMixin := schema.IncidentDebriefQuestion{}.Mixin()
-	incidentdebriefquestion.Policy = privacy.NewPolicies(incidentdebriefquestionMixin[0], incidentdebriefquestionMixin[1], schema.IncidentDebriefQuestion{})
+	incidentdebriefquestion.Policy = privacy.NewPolicies(incidentdebriefquestionMixin[1], incidentdebriefquestionMixin[2], schema.IncidentDebriefQuestion{})
 	incidentdebriefquestion.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentdebriefquestion.Policy.EvalMutation(ctx, m); err != nil {
@@ -691,14 +733,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	incidentdebriefquestionMixinFields0 := incidentdebriefquestionMixin[0].Fields()
+	_ = incidentdebriefquestionMixinFields0
 	incidentdebriefquestionFields := schema.IncidentDebriefQuestion{}.Fields()
 	_ = incidentdebriefquestionFields
 	// incidentdebriefquestionDescID is the schema descriptor for id field.
-	incidentdebriefquestionDescID := incidentdebriefquestionFields[0].Descriptor()
+	incidentdebriefquestionDescID := incidentdebriefquestionMixinFields0[0].Descriptor()
 	// incidentdebriefquestion.DefaultID holds the default value on creation for the id field.
 	incidentdebriefquestion.DefaultID = incidentdebriefquestionDescID.Default.(func() uuid.UUID)
 	incidentdebriefsuggestionMixin := schema.IncidentDebriefSuggestion{}.Mixin()
-	incidentdebriefsuggestion.Policy = privacy.NewPolicies(incidentdebriefsuggestionMixin[0], incidentdebriefsuggestionMixin[1], schema.IncidentDebriefSuggestion{})
+	incidentdebriefsuggestion.Policy = privacy.NewPolicies(incidentdebriefsuggestionMixin[1], incidentdebriefsuggestionMixin[2], schema.IncidentDebriefSuggestion{})
 	incidentdebriefsuggestion.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentdebriefsuggestion.Policy.EvalMutation(ctx, m); err != nil {
@@ -707,14 +751,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	incidentdebriefsuggestionMixinFields0 := incidentdebriefsuggestionMixin[0].Fields()
+	_ = incidentdebriefsuggestionMixinFields0
 	incidentdebriefsuggestionFields := schema.IncidentDebriefSuggestion{}.Fields()
 	_ = incidentdebriefsuggestionFields
 	// incidentdebriefsuggestionDescID is the schema descriptor for id field.
-	incidentdebriefsuggestionDescID := incidentdebriefsuggestionFields[0].Descriptor()
+	incidentdebriefsuggestionDescID := incidentdebriefsuggestionMixinFields0[0].Descriptor()
 	// incidentdebriefsuggestion.DefaultID holds the default value on creation for the id field.
 	incidentdebriefsuggestion.DefaultID = incidentdebriefsuggestionDescID.Default.(func() uuid.UUID)
 	incidentfieldMixin := schema.IncidentField{}.Mixin()
-	incidentfield.Policy = privacy.NewPolicies(incidentfieldMixin[0], incidentfieldMixin[1], schema.IncidentField{})
+	incidentfield.Policy = privacy.NewPolicies(incidentfieldMixin[1], incidentfieldMixin[2], schema.IncidentField{})
 	incidentfield.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentfield.Policy.EvalMutation(ctx, m); err != nil {
@@ -723,19 +769,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	incidentfieldMixinHooks2 := incidentfieldMixin[2].Hooks()
+	incidentfieldMixinHooks3 := incidentfieldMixin[3].Hooks()
 
-	incidentfield.Hooks[1] = incidentfieldMixinHooks2[0]
-	incidentfieldMixinInters2 := incidentfieldMixin[2].Interceptors()
-	incidentfield.Interceptors[0] = incidentfieldMixinInters2[0]
+	incidentfield.Hooks[1] = incidentfieldMixinHooks3[0]
+	incidentfieldMixinInters3 := incidentfieldMixin[3].Interceptors()
+	incidentfield.Interceptors[0] = incidentfieldMixinInters3[0]
+	incidentfieldMixinFields0 := incidentfieldMixin[0].Fields()
+	_ = incidentfieldMixinFields0
 	incidentfieldFields := schema.IncidentField{}.Fields()
 	_ = incidentfieldFields
 	// incidentfieldDescID is the schema descriptor for id field.
-	incidentfieldDescID := incidentfieldFields[0].Descriptor()
+	incidentfieldDescID := incidentfieldMixinFields0[0].Descriptor()
 	// incidentfield.DefaultID holds the default value on creation for the id field.
 	incidentfield.DefaultID = incidentfieldDescID.Default.(func() uuid.UUID)
 	incidentfieldoptionMixin := schema.IncidentFieldOption{}.Mixin()
-	incidentfieldoption.Policy = privacy.NewPolicies(incidentfieldoptionMixin[0], incidentfieldoptionMixin[1], schema.IncidentFieldOption{})
+	incidentfieldoption.Policy = privacy.NewPolicies(incidentfieldoptionMixin[1], incidentfieldoptionMixin[2], schema.IncidentFieldOption{})
 	incidentfieldoption.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentfieldoption.Policy.EvalMutation(ctx, m); err != nil {
@@ -744,19 +792,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	incidentfieldoptionMixinHooks2 := incidentfieldoptionMixin[2].Hooks()
+	incidentfieldoptionMixinHooks3 := incidentfieldoptionMixin[3].Hooks()
 
-	incidentfieldoption.Hooks[1] = incidentfieldoptionMixinHooks2[0]
-	incidentfieldoptionMixinInters2 := incidentfieldoptionMixin[2].Interceptors()
-	incidentfieldoption.Interceptors[0] = incidentfieldoptionMixinInters2[0]
+	incidentfieldoption.Hooks[1] = incidentfieldoptionMixinHooks3[0]
+	incidentfieldoptionMixinInters3 := incidentfieldoptionMixin[3].Interceptors()
+	incidentfieldoption.Interceptors[0] = incidentfieldoptionMixinInters3[0]
+	incidentfieldoptionMixinFields0 := incidentfieldoptionMixin[0].Fields()
+	_ = incidentfieldoptionMixinFields0
 	incidentfieldoptionFields := schema.IncidentFieldOption{}.Fields()
 	_ = incidentfieldoptionFields
 	// incidentfieldoptionDescID is the schema descriptor for id field.
-	incidentfieldoptionDescID := incidentfieldoptionFields[0].Descriptor()
+	incidentfieldoptionDescID := incidentfieldoptionMixinFields0[0].Descriptor()
 	// incidentfieldoption.DefaultID holds the default value on creation for the id field.
 	incidentfieldoption.DefaultID = incidentfieldoptionDescID.Default.(func() uuid.UUID)
 	incidentimpactMixin := schema.IncidentImpact{}.Mixin()
-	incidentimpact.Policy = privacy.NewPolicies(incidentimpactMixin[0], incidentimpactMixin[1], schema.IncidentImpact{})
+	incidentimpact.Policy = privacy.NewPolicies(incidentimpactMixin[1], incidentimpactMixin[2], schema.IncidentImpact{})
 	incidentimpact.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentimpact.Policy.EvalMutation(ctx, m); err != nil {
@@ -765,22 +815,24 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	incidentimpactMixinFields2 := incidentimpactMixin[2].Fields()
-	_ = incidentimpactMixinFields2
+	incidentimpactMixinFields0 := incidentimpactMixin[0].Fields()
+	_ = incidentimpactMixinFields0
+	incidentimpactMixinFields3 := incidentimpactMixin[3].Fields()
+	_ = incidentimpactMixinFields3
 	incidentimpactFields := schema.IncidentImpact{}.Fields()
 	_ = incidentimpactFields
 	// incidentimpactDescCreatedAt is the schema descriptor for created_at field.
-	incidentimpactDescCreatedAt := incidentimpactMixinFields2[0].Descriptor()
+	incidentimpactDescCreatedAt := incidentimpactMixinFields3[0].Descriptor()
 	// incidentimpact.DefaultCreatedAt holds the default value on creation for the created_at field.
 	incidentimpact.DefaultCreatedAt = incidentimpactDescCreatedAt.Default.(func() time.Time)
 	// incidentimpactDescUpdatedAt is the schema descriptor for updated_at field.
-	incidentimpactDescUpdatedAt := incidentimpactMixinFields2[1].Descriptor()
+	incidentimpactDescUpdatedAt := incidentimpactMixinFields3[1].Descriptor()
 	// incidentimpact.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	incidentimpact.DefaultUpdatedAt = incidentimpactDescUpdatedAt.Default.(func() time.Time)
 	// incidentimpact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	incidentimpact.UpdateDefaultUpdatedAt = incidentimpactDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// incidentimpactDescID is the schema descriptor for id field.
-	incidentimpactDescID := incidentimpactFields[0].Descriptor()
+	incidentimpactDescID := incidentimpactMixinFields0[0].Descriptor()
 	// incidentimpact.DefaultID holds the default value on creation for the id field.
 	incidentimpact.DefaultID = incidentimpactDescID.Default.(func() uuid.UUID)
 	incidentlinkMixin := schema.IncidentLink{}.Mixin()
@@ -794,7 +846,7 @@ func init() {
 		})
 	}
 	incidentmilestoneMixin := schema.IncidentMilestone{}.Mixin()
-	incidentmilestone.Policy = privacy.NewPolicies(incidentmilestoneMixin[0], incidentmilestoneMixin[1], schema.IncidentMilestone{})
+	incidentmilestone.Policy = privacy.NewPolicies(incidentmilestoneMixin[1], incidentmilestoneMixin[2], schema.IncidentMilestone{})
 	incidentmilestone.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentmilestone.Policy.EvalMutation(ctx, m); err != nil {
@@ -803,14 +855,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	incidentmilestoneMixinFields0 := incidentmilestoneMixin[0].Fields()
+	_ = incidentmilestoneMixinFields0
 	incidentmilestoneFields := schema.IncidentMilestone{}.Fields()
 	_ = incidentmilestoneFields
 	// incidentmilestoneDescID is the schema descriptor for id field.
-	incidentmilestoneDescID := incidentmilestoneFields[0].Descriptor()
+	incidentmilestoneDescID := incidentmilestoneMixinFields0[0].Descriptor()
 	// incidentmilestone.DefaultID holds the default value on creation for the id field.
 	incidentmilestone.DefaultID = incidentmilestoneDescID.Default.(func() uuid.UUID)
 	incidentroleMixin := schema.IncidentRole{}.Mixin()
-	incidentrole.Policy = privacy.NewPolicies(incidentroleMixin[0], incidentroleMixin[1], schema.IncidentRole{})
+	incidentrole.Policy = privacy.NewPolicies(incidentroleMixin[1], incidentroleMixin[2], schema.IncidentRole{})
 	incidentrole.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentrole.Policy.EvalMutation(ctx, m); err != nil {
@@ -819,19 +873,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	incidentroleMixinHooks2 := incidentroleMixin[2].Hooks()
+	incidentroleMixinHooks3 := incidentroleMixin[3].Hooks()
 
-	incidentrole.Hooks[1] = incidentroleMixinHooks2[0]
-	incidentroleMixinInters2 := incidentroleMixin[2].Interceptors()
-	incidentrole.Interceptors[0] = incidentroleMixinInters2[0]
+	incidentrole.Hooks[1] = incidentroleMixinHooks3[0]
+	incidentroleMixinInters3 := incidentroleMixin[3].Interceptors()
+	incidentrole.Interceptors[0] = incidentroleMixinInters3[0]
+	incidentroleMixinFields0 := incidentroleMixin[0].Fields()
+	_ = incidentroleMixinFields0
 	incidentroleFields := schema.IncidentRole{}.Fields()
 	_ = incidentroleFields
 	// incidentroleDescID is the schema descriptor for id field.
-	incidentroleDescID := incidentroleFields[0].Descriptor()
+	incidentroleDescID := incidentroleMixinFields0[0].Descriptor()
 	// incidentrole.DefaultID holds the default value on creation for the id field.
 	incidentrole.DefaultID = incidentroleDescID.Default.(func() uuid.UUID)
 	incidentroleassignmentMixin := schema.IncidentRoleAssignment{}.Mixin()
-	incidentroleassignment.Policy = privacy.NewPolicies(incidentroleassignmentMixin[0], incidentroleassignmentMixin[1], schema.IncidentRoleAssignment{})
+	incidentroleassignment.Policy = privacy.NewPolicies(incidentroleassignmentMixin[1], incidentroleassignmentMixin[2], schema.IncidentRoleAssignment{})
 	incidentroleassignment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentroleassignment.Policy.EvalMutation(ctx, m); err != nil {
@@ -840,14 +896,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	incidentroleassignmentMixinFields0 := incidentroleassignmentMixin[0].Fields()
+	_ = incidentroleassignmentMixinFields0
 	incidentroleassignmentFields := schema.IncidentRoleAssignment{}.Fields()
 	_ = incidentroleassignmentFields
 	// incidentroleassignmentDescID is the schema descriptor for id field.
-	incidentroleassignmentDescID := incidentroleassignmentFields[0].Descriptor()
+	incidentroleassignmentDescID := incidentroleassignmentMixinFields0[0].Descriptor()
 	// incidentroleassignment.DefaultID holds the default value on creation for the id field.
 	incidentroleassignment.DefaultID = incidentroleassignmentDescID.Default.(func() uuid.UUID)
 	incidentseverityMixin := schema.IncidentSeverity{}.Mixin()
-	incidentseverity.Policy = privacy.NewPolicies(incidentseverityMixin[0], incidentseverityMixin[1], schema.IncidentSeverity{})
+	incidentseverity.Policy = privacy.NewPolicies(incidentseverityMixin[1], incidentseverityMixin[2], schema.IncidentSeverity{})
 	incidentseverity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidentseverity.Policy.EvalMutation(ctx, m); err != nil {
@@ -856,19 +914,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	incidentseverityMixinHooks2 := incidentseverityMixin[2].Hooks()
+	incidentseverityMixinHooks3 := incidentseverityMixin[3].Hooks()
 
-	incidentseverity.Hooks[1] = incidentseverityMixinHooks2[0]
-	incidentseverityMixinInters2 := incidentseverityMixin[2].Interceptors()
-	incidentseverity.Interceptors[0] = incidentseverityMixinInters2[0]
+	incidentseverity.Hooks[1] = incidentseverityMixinHooks3[0]
+	incidentseverityMixinInters3 := incidentseverityMixin[3].Interceptors()
+	incidentseverity.Interceptors[0] = incidentseverityMixinInters3[0]
+	incidentseverityMixinFields0 := incidentseverityMixin[0].Fields()
+	_ = incidentseverityMixinFields0
 	incidentseverityFields := schema.IncidentSeverity{}.Fields()
 	_ = incidentseverityFields
 	// incidentseverityDescID is the schema descriptor for id field.
-	incidentseverityDescID := incidentseverityFields[0].Descriptor()
+	incidentseverityDescID := incidentseverityMixinFields0[0].Descriptor()
 	// incidentseverity.DefaultID holds the default value on creation for the id field.
 	incidentseverity.DefaultID = incidentseverityDescID.Default.(func() uuid.UUID)
 	incidenttagMixin := schema.IncidentTag{}.Mixin()
-	incidenttag.Policy = privacy.NewPolicies(incidenttagMixin[0], incidenttagMixin[1], schema.IncidentTag{})
+	incidenttag.Policy = privacy.NewPolicies(incidenttagMixin[1], incidenttagMixin[2], schema.IncidentTag{})
 	incidenttag.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidenttag.Policy.EvalMutation(ctx, m); err != nil {
@@ -877,19 +937,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	incidenttagMixinHooks2 := incidenttagMixin[2].Hooks()
+	incidenttagMixinHooks3 := incidenttagMixin[3].Hooks()
 
-	incidenttag.Hooks[1] = incidenttagMixinHooks2[0]
-	incidenttagMixinInters2 := incidenttagMixin[2].Interceptors()
-	incidenttag.Interceptors[0] = incidenttagMixinInters2[0]
+	incidenttag.Hooks[1] = incidenttagMixinHooks3[0]
+	incidenttagMixinInters3 := incidenttagMixin[3].Interceptors()
+	incidenttag.Interceptors[0] = incidenttagMixinInters3[0]
+	incidenttagMixinFields0 := incidenttagMixin[0].Fields()
+	_ = incidenttagMixinFields0
 	incidenttagFields := schema.IncidentTag{}.Fields()
 	_ = incidenttagFields
 	// incidenttagDescID is the schema descriptor for id field.
-	incidenttagDescID := incidenttagFields[0].Descriptor()
+	incidenttagDescID := incidenttagMixinFields0[0].Descriptor()
 	// incidenttag.DefaultID holds the default value on creation for the id field.
 	incidenttag.DefaultID = incidenttagDescID.Default.(func() uuid.UUID)
 	incidenttypeMixin := schema.IncidentType{}.Mixin()
-	incidenttype.Policy = privacy.NewPolicies(incidenttypeMixin[0], incidenttypeMixin[1], schema.IncidentType{})
+	incidenttype.Policy = privacy.NewPolicies(incidenttypeMixin[1], incidenttypeMixin[2], schema.IncidentType{})
 	incidenttype.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := incidenttype.Policy.EvalMutation(ctx, m); err != nil {
@@ -898,19 +960,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	incidenttypeMixinHooks2 := incidenttypeMixin[2].Hooks()
+	incidenttypeMixinHooks3 := incidenttypeMixin[3].Hooks()
 
-	incidenttype.Hooks[1] = incidenttypeMixinHooks2[0]
-	incidenttypeMixinInters2 := incidenttypeMixin[2].Interceptors()
-	incidenttype.Interceptors[0] = incidenttypeMixinInters2[0]
+	incidenttype.Hooks[1] = incidenttypeMixinHooks3[0]
+	incidenttypeMixinInters3 := incidenttypeMixin[3].Interceptors()
+	incidenttype.Interceptors[0] = incidenttypeMixinInters3[0]
+	incidenttypeMixinFields0 := incidenttypeMixin[0].Fields()
+	_ = incidenttypeMixinFields0
 	incidenttypeFields := schema.IncidentType{}.Fields()
 	_ = incidenttypeFields
 	// incidenttypeDescID is the schema descriptor for id field.
-	incidenttypeDescID := incidenttypeFields[0].Descriptor()
+	incidenttypeDescID := incidenttypeMixinFields0[0].Descriptor()
 	// incidenttype.DefaultID holds the default value on creation for the id field.
 	incidenttype.DefaultID = incidenttypeDescID.Default.(func() uuid.UUID)
 	integrationMixin := schema.Integration{}.Mixin()
-	integration.Policy = privacy.NewPolicies(integrationMixin[0], integrationMixin[1], schema.Integration{})
+	integration.Policy = privacy.NewPolicies(integrationMixin[1], integrationMixin[2], schema.Integration{})
 	integration.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := integration.Policy.EvalMutation(ctx, m); err != nil {
@@ -919,41 +983,43 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	integrationMixinFields2 := integrationMixin[2].Fields()
-	_ = integrationMixinFields2
+	integrationMixinFields0 := integrationMixin[0].Fields()
+	_ = integrationMixinFields0
+	integrationMixinFields3 := integrationMixin[3].Fields()
+	_ = integrationMixinFields3
 	integrationFields := schema.Integration{}.Fields()
 	_ = integrationFields
 	// integrationDescCreatedAt is the schema descriptor for created_at field.
-	integrationDescCreatedAt := integrationMixinFields2[0].Descriptor()
+	integrationDescCreatedAt := integrationMixinFields3[0].Descriptor()
 	// integration.DefaultCreatedAt holds the default value on creation for the created_at field.
 	integration.DefaultCreatedAt = integrationDescCreatedAt.Default.(func() time.Time)
 	// integrationDescUpdatedAt is the schema descriptor for updated_at field.
-	integrationDescUpdatedAt := integrationMixinFields2[1].Descriptor()
+	integrationDescUpdatedAt := integrationMixinFields3[1].Descriptor()
 	// integration.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	integration.DefaultUpdatedAt = integrationDescUpdatedAt.Default.(func() time.Time)
 	// integration.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	integration.UpdateDefaultUpdatedAt = integrationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// integrationDescProvider is the schema descriptor for provider field.
-	integrationDescProvider := integrationFields[1].Descriptor()
+	integrationDescProvider := integrationFields[0].Descriptor()
 	// integration.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	integration.ProviderValidator = integrationDescProvider.Validators[0].(func(string) error)
 	// integrationDescName is the schema descriptor for name field.
-	integrationDescName := integrationFields[2].Descriptor()
+	integrationDescName := integrationFields[1].Descriptor()
 	// integration.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	integration.NameValidator = integrationDescName.Validators[0].(func(string) error)
 	// integrationDescProviderInstallationRef is the schema descriptor for provider_installation_ref field.
-	integrationDescProviderInstallationRef := integrationFields[4].Descriptor()
+	integrationDescProviderInstallationRef := integrationFields[3].Descriptor()
 	// integration.ProviderInstallationRefValidator is a validator for the "provider_installation_ref" field. It is called by the builders before save.
 	integration.ProviderInstallationRefValidator = integrationDescProviderInstallationRef.Validators[0].(func(string) error)
 	// integrationDescInstallationConfig is the schema descriptor for installation_config field.
-	integrationDescInstallationConfig := integrationFields[5].Descriptor()
+	integrationDescInstallationConfig := integrationFields[4].Descriptor()
 	integration.ValueScanner.InstallationConfig = integrationDescInstallationConfig.ValueScanner.(field.TypeValueScanner[jsontext.Value])
 	// integrationDescID is the schema descriptor for id field.
-	integrationDescID := integrationFields[0].Descriptor()
+	integrationDescID := integrationMixinFields0[0].Descriptor()
 	// integration.DefaultID holds the default value on creation for the id field.
 	integration.DefaultID = integrationDescID.Default.(func() uuid.UUID)
 	integrationeventsynccursorMixin := schema.IntegrationEventSyncCursor{}.Mixin()
-	integrationeventsynccursor.Policy = privacy.NewPolicies(integrationeventsynccursorMixin[0], integrationeventsynccursorMixin[1], schema.IntegrationEventSyncCursor{})
+	integrationeventsynccursor.Policy = privacy.NewPolicies(integrationeventsynccursorMixin[1], integrationeventsynccursorMixin[2], schema.IntegrationEventSyncCursor{})
 	integrationeventsynccursor.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := integrationeventsynccursor.Policy.EvalMutation(ctx, m); err != nil {
@@ -962,34 +1028,36 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	integrationeventsynccursorMixinFields2 := integrationeventsynccursorMixin[2].Fields()
-	_ = integrationeventsynccursorMixinFields2
+	integrationeventsynccursorMixinFields0 := integrationeventsynccursorMixin[0].Fields()
+	_ = integrationeventsynccursorMixinFields0
+	integrationeventsynccursorMixinFields3 := integrationeventsynccursorMixin[3].Fields()
+	_ = integrationeventsynccursorMixinFields3
 	integrationeventsynccursorFields := schema.IntegrationEventSyncCursor{}.Fields()
 	_ = integrationeventsynccursorFields
 	// integrationeventsynccursorDescCreatedAt is the schema descriptor for created_at field.
-	integrationeventsynccursorDescCreatedAt := integrationeventsynccursorMixinFields2[0].Descriptor()
+	integrationeventsynccursorDescCreatedAt := integrationeventsynccursorMixinFields3[0].Descriptor()
 	// integrationeventsynccursor.DefaultCreatedAt holds the default value on creation for the created_at field.
 	integrationeventsynccursor.DefaultCreatedAt = integrationeventsynccursorDescCreatedAt.Default.(func() time.Time)
 	// integrationeventsynccursorDescUpdatedAt is the schema descriptor for updated_at field.
-	integrationeventsynccursorDescUpdatedAt := integrationeventsynccursorMixinFields2[1].Descriptor()
+	integrationeventsynccursorDescUpdatedAt := integrationeventsynccursorMixinFields3[1].Descriptor()
 	// integrationeventsynccursor.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	integrationeventsynccursor.DefaultUpdatedAt = integrationeventsynccursorDescUpdatedAt.Default.(func() time.Time)
 	// integrationeventsynccursor.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	integrationeventsynccursor.UpdateDefaultUpdatedAt = integrationeventsynccursorDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// integrationeventsynccursorDescProviderEventSource is the schema descriptor for provider_event_source field.
-	integrationeventsynccursorDescProviderEventSource := integrationeventsynccursorFields[2].Descriptor()
+	integrationeventsynccursorDescProviderEventSource := integrationeventsynccursorFields[1].Descriptor()
 	// integrationeventsynccursor.ProviderEventSourceValidator is a validator for the "provider_event_source" field. It is called by the builders before save.
 	integrationeventsynccursor.ProviderEventSourceValidator = integrationeventsynccursorDescProviderEventSource.Validators[0].(func(string) error)
 	// integrationeventsynccursorDescLastSyncedAt is the schema descriptor for last_synced_at field.
-	integrationeventsynccursorDescLastSyncedAt := integrationeventsynccursorFields[4].Descriptor()
+	integrationeventsynccursorDescLastSyncedAt := integrationeventsynccursorFields[3].Descriptor()
 	// integrationeventsynccursor.DefaultLastSyncedAt holds the default value on creation for the last_synced_at field.
 	integrationeventsynccursor.DefaultLastSyncedAt = integrationeventsynccursorDescLastSyncedAt.Default.(func() time.Time)
 	// integrationeventsynccursorDescID is the schema descriptor for id field.
-	integrationeventsynccursorDescID := integrationeventsynccursorFields[0].Descriptor()
+	integrationeventsynccursorDescID := integrationeventsynccursorMixinFields0[0].Descriptor()
 	// integrationeventsynccursor.DefaultID holds the default value on creation for the id field.
 	integrationeventsynccursor.DefaultID = integrationeventsynccursorDescID.Default.(func() uuid.UUID)
 	integrationeventsyncrunMixin := schema.IntegrationEventSyncRun{}.Mixin()
-	integrationeventsyncrun.Policy = privacy.NewPolicies(integrationeventsyncrunMixin[0], integrationeventsyncrunMixin[1], schema.IntegrationEventSyncRun{})
+	integrationeventsyncrun.Policy = privacy.NewPolicies(integrationeventsyncrunMixin[1], integrationeventsyncrunMixin[2], schema.IntegrationEventSyncRun{})
 	integrationeventsyncrun.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := integrationeventsyncrun.Policy.EvalMutation(ctx, m); err != nil {
@@ -998,34 +1066,36 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	integrationeventsyncrunMixinFields0 := integrationeventsyncrunMixin[0].Fields()
+	_ = integrationeventsyncrunMixinFields0
 	integrationeventsyncrunFields := schema.IntegrationEventSyncRun{}.Fields()
 	_ = integrationeventsyncrunFields
 	// integrationeventsyncrunDescSyncReason is the schema descriptor for sync_reason field.
-	integrationeventsyncrunDescSyncReason := integrationeventsyncrunFields[3].Descriptor()
+	integrationeventsyncrunDescSyncReason := integrationeventsyncrunFields[2].Descriptor()
 	// integrationeventsyncrun.DefaultSyncReason holds the default value on creation for the sync_reason field.
 	integrationeventsyncrun.DefaultSyncReason = integrationeventsyncrunDescSyncReason.Default.(string)
 	// integrationeventsyncrunDescStartedAt is the schema descriptor for started_at field.
-	integrationeventsyncrunDescStartedAt := integrationeventsyncrunFields[4].Descriptor()
+	integrationeventsyncrunDescStartedAt := integrationeventsyncrunFields[3].Descriptor()
 	// integrationeventsyncrun.DefaultStartedAt holds the default value on creation for the started_at field.
 	integrationeventsyncrun.DefaultStartedAt = integrationeventsyncrunDescStartedAt.Default.(func() time.Time)
 	// integrationeventsyncrunDescEventsPulled is the schema descriptor for events_pulled field.
-	integrationeventsyncrunDescEventsPulled := integrationeventsyncrunFields[7].Descriptor()
+	integrationeventsyncrunDescEventsPulled := integrationeventsyncrunFields[6].Descriptor()
 	// integrationeventsyncrun.DefaultEventsPulled holds the default value on creation for the events_pulled field.
 	integrationeventsyncrun.DefaultEventsPulled = integrationeventsyncrunDescEventsPulled.Default.(int)
 	// integrationeventsyncrunDescEventsIngested is the schema descriptor for events_ingested field.
-	integrationeventsyncrunDescEventsIngested := integrationeventsyncrunFields[8].Descriptor()
+	integrationeventsyncrunDescEventsIngested := integrationeventsyncrunFields[7].Descriptor()
 	// integrationeventsyncrun.DefaultEventsIngested holds the default value on creation for the events_ingested field.
 	integrationeventsyncrun.DefaultEventsIngested = integrationeventsyncrunDescEventsIngested.Default.(int)
 	// integrationeventsyncrunDescDuplicates is the schema descriptor for duplicates field.
-	integrationeventsyncrunDescDuplicates := integrationeventsyncrunFields[9].Descriptor()
+	integrationeventsyncrunDescDuplicates := integrationeventsyncrunFields[8].Descriptor()
 	// integrationeventsyncrun.DefaultDuplicates holds the default value on creation for the duplicates field.
 	integrationeventsyncrun.DefaultDuplicates = integrationeventsyncrunDescDuplicates.Default.(int)
 	// integrationeventsyncrunDescID is the schema descriptor for id field.
-	integrationeventsyncrunDescID := integrationeventsyncrunFields[0].Descriptor()
+	integrationeventsyncrunDescID := integrationeventsyncrunMixinFields0[0].Descriptor()
 	// integrationeventsyncrun.DefaultID holds the default value on creation for the id field.
 	integrationeventsyncrun.DefaultID = integrationeventsyncrunDescID.Default.(func() uuid.UUID)
 	integrationuserinstallstateMixin := schema.IntegrationUserInstallState{}.Mixin()
-	integrationuserinstallstate.Policy = privacy.NewPolicies(integrationuserinstallstateMixin[0], integrationuserinstallstateMixin[1], schema.IntegrationUserInstallState{})
+	integrationuserinstallstate.Policy = privacy.NewPolicies(integrationuserinstallstateMixin[1], integrationuserinstallstateMixin[2], schema.IntegrationUserInstallState{})
 	integrationuserinstallstate.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := integrationuserinstallstate.Policy.EvalMutation(ctx, m); err != nil {
@@ -1034,21 +1104,23 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	integrationuserinstallstateMixinFields0 := integrationuserinstallstateMixin[0].Fields()
+	_ = integrationuserinstallstateMixinFields0
 	integrationuserinstallstateFields := schema.IntegrationUserInstallState{}.Fields()
 	_ = integrationuserinstallstateFields
 	// integrationuserinstallstateDescUserID is the schema descriptor for user_id field.
-	integrationuserinstallstateDescUserID := integrationuserinstallstateFields[1].Descriptor()
+	integrationuserinstallstateDescUserID := integrationuserinstallstateFields[0].Descriptor()
 	// integrationuserinstallstate.DefaultUserID holds the default value on creation for the user_id field.
 	integrationuserinstallstate.DefaultUserID = integrationuserinstallstateDescUserID.Default.(func() uuid.UUID)
 	// integrationuserinstallstateDescInstallationTargetConfigs is the schema descriptor for installation_target_configs field.
-	integrationuserinstallstateDescInstallationTargetConfigs := integrationuserinstallstateFields[5].Descriptor()
+	integrationuserinstallstateDescInstallationTargetConfigs := integrationuserinstallstateFields[4].Descriptor()
 	integrationuserinstallstate.ValueScanner.InstallationTargetConfigs = integrationuserinstallstateDescInstallationTargetConfigs.ValueScanner.(field.TypeValueScanner[[]byte])
 	// integrationuserinstallstateDescID is the schema descriptor for id field.
-	integrationuserinstallstateDescID := integrationuserinstallstateFields[0].Descriptor()
+	integrationuserinstallstateDescID := integrationuserinstallstateMixinFields0[0].Descriptor()
 	// integrationuserinstallstate.DefaultID holds the default value on creation for the id field.
 	integrationuserinstallstate.DefaultID = integrationuserinstallstateDescID.Default.(func() uuid.UUID)
 	investigationMixin := schema.Investigation{}.Mixin()
-	investigation.Policy = privacy.NewPolicies(investigationMixin[0], investigationMixin[1], schema.Investigation{})
+	investigation.Policy = privacy.NewPolicies(investigationMixin[1], investigationMixin[2], schema.Investigation{})
 	investigation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigation.Policy.EvalMutation(ctx, m); err != nil {
@@ -1057,26 +1129,28 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	investigationMixinFields2 := investigationMixin[2].Fields()
-	_ = investigationMixinFields2
+	investigationMixinFields0 := investigationMixin[0].Fields()
+	_ = investigationMixinFields0
+	investigationMixinFields3 := investigationMixin[3].Fields()
+	_ = investigationMixinFields3
 	investigationFields := schema.Investigation{}.Fields()
 	_ = investigationFields
 	// investigationDescCreatedAt is the schema descriptor for created_at field.
-	investigationDescCreatedAt := investigationMixinFields2[0].Descriptor()
+	investigationDescCreatedAt := investigationMixinFields3[0].Descriptor()
 	// investigation.DefaultCreatedAt holds the default value on creation for the created_at field.
 	investigation.DefaultCreatedAt = investigationDescCreatedAt.Default.(func() time.Time)
 	// investigationDescUpdatedAt is the schema descriptor for updated_at field.
-	investigationDescUpdatedAt := investigationMixinFields2[1].Descriptor()
+	investigationDescUpdatedAt := investigationMixinFields3[1].Descriptor()
 	// investigation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	investigation.DefaultUpdatedAt = investigationDescUpdatedAt.Default.(func() time.Time)
 	// investigation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	investigation.UpdateDefaultUpdatedAt = investigationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// investigationDescID is the schema descriptor for id field.
-	investigationDescID := investigationFields[0].Descriptor()
+	investigationDescID := investigationMixinFields0[0].Descriptor()
 	// investigation.DefaultID holds the default value on creation for the id field.
 	investigation.DefaultID = investigationDescID.Default.(func() uuid.UUID)
 	investigationevidencerevisionMixin := schema.InvestigationEvidenceRevision{}.Mixin()
-	investigationevidencerevision.Policy = privacy.NewPolicies(investigationevidencerevisionMixin[0], investigationevidencerevisionMixin[1], schema.InvestigationEvidenceRevision{})
+	investigationevidencerevision.Policy = privacy.NewPolicies(investigationevidencerevisionMixin[1], investigationevidencerevisionMixin[2], schema.InvestigationEvidenceRevision{})
 	investigationevidencerevision.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigationevidencerevision.Policy.EvalMutation(ctx, m); err != nil {
@@ -1085,28 +1159,30 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	investigationevidencerevisionMixinFields2 := investigationevidencerevisionMixin[2].Fields()
-	_ = investigationevidencerevisionMixinFields2
+	investigationevidencerevisionMixinFields0 := investigationevidencerevisionMixin[0].Fields()
+	_ = investigationevidencerevisionMixinFields0
+	investigationevidencerevisionMixinFields3 := investigationevidencerevisionMixin[3].Fields()
+	_ = investigationevidencerevisionMixinFields3
 	investigationevidencerevisionFields := schema.InvestigationEvidenceRevision{}.Fields()
 	_ = investigationevidencerevisionFields
 	// investigationevidencerevisionDescCreatedAt is the schema descriptor for created_at field.
-	investigationevidencerevisionDescCreatedAt := investigationevidencerevisionMixinFields2[0].Descriptor()
+	investigationevidencerevisionDescCreatedAt := investigationevidencerevisionMixinFields3[0].Descriptor()
 	// investigationevidencerevision.DefaultCreatedAt holds the default value on creation for the created_at field.
 	investigationevidencerevision.DefaultCreatedAt = investigationevidencerevisionDescCreatedAt.Default.(func() time.Time)
 	// investigationevidencerevisionDescExplanation is the schema descriptor for explanation field.
-	investigationevidencerevisionDescExplanation := investigationevidencerevisionFields[2].Descriptor()
+	investigationevidencerevisionDescExplanation := investigationevidencerevisionFields[1].Descriptor()
 	// investigationevidencerevision.ExplanationValidator is a validator for the "explanation" field. It is called by the builders before save.
 	investigationevidencerevision.ExplanationValidator = investigationevidencerevisionDescExplanation.Validators[0].(func(string) error)
 	// investigationevidencerevisionDescKey is the schema descriptor for key field.
-	investigationevidencerevisionDescKey := investigationevidencerevisionFields[3].Descriptor()
+	investigationevidencerevisionDescKey := investigationevidencerevisionFields[2].Descriptor()
 	// investigationevidencerevision.KeyValidator is a validator for the "key" field. It is called by the builders before save.
 	investigationevidencerevision.KeyValidator = investigationevidencerevisionDescKey.Validators[0].(func(string) error)
 	// investigationevidencerevisionDescID is the schema descriptor for id field.
-	investigationevidencerevisionDescID := investigationevidencerevisionFields[0].Descriptor()
+	investigationevidencerevisionDescID := investigationevidencerevisionMixinFields0[0].Descriptor()
 	// investigationevidencerevision.DefaultID holds the default value on creation for the id field.
 	investigationevidencerevision.DefaultID = investigationevidencerevisionDescID.Default.(func() uuid.UUID)
 	investigationfindingMixin := schema.InvestigationFinding{}.Mixin()
-	investigationfinding.Policy = privacy.NewPolicies(investigationfindingMixin[0], investigationfindingMixin[1], schema.InvestigationFinding{})
+	investigationfinding.Policy = privacy.NewPolicies(investigationfindingMixin[1], investigationfindingMixin[2], schema.InvestigationFinding{})
 	investigationfinding.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigationfinding.Policy.EvalMutation(ctx, m); err != nil {
@@ -1115,30 +1191,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	investigationfindingMixinFields2 := investigationfindingMixin[2].Fields()
-	_ = investigationfindingMixinFields2
+	investigationfindingMixinFields0 := investigationfindingMixin[0].Fields()
+	_ = investigationfindingMixinFields0
+	investigationfindingMixinFields3 := investigationfindingMixin[3].Fields()
+	_ = investigationfindingMixinFields3
 	investigationfindingFields := schema.InvestigationFinding{}.Fields()
 	_ = investigationfindingFields
 	// investigationfindingDescCreatedAt is the schema descriptor for created_at field.
-	investigationfindingDescCreatedAt := investigationfindingMixinFields2[0].Descriptor()
+	investigationfindingDescCreatedAt := investigationfindingMixinFields3[0].Descriptor()
 	// investigationfinding.DefaultCreatedAt holds the default value on creation for the created_at field.
 	investigationfinding.DefaultCreatedAt = investigationfindingDescCreatedAt.Default.(func() time.Time)
 	// investigationfindingDescUpdatedAt is the schema descriptor for updated_at field.
-	investigationfindingDescUpdatedAt := investigationfindingMixinFields2[1].Descriptor()
+	investigationfindingDescUpdatedAt := investigationfindingMixinFields3[1].Descriptor()
 	// investigationfinding.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	investigationfinding.DefaultUpdatedAt = investigationfindingDescUpdatedAt.Default.(func() time.Time)
 	// investigationfinding.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	investigationfinding.UpdateDefaultUpdatedAt = investigationfindingDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// investigationfindingDescKey is the schema descriptor for key field.
-	investigationfindingDescKey := investigationfindingFields[2].Descriptor()
+	investigationfindingDescKey := investigationfindingFields[1].Descriptor()
 	// investigationfinding.KeyValidator is a validator for the "key" field. It is called by the builders before save.
 	investigationfinding.KeyValidator = investigationfindingDescKey.Validators[0].(func(string) error)
 	// investigationfindingDescID is the schema descriptor for id field.
-	investigationfindingDescID := investigationfindingFields[0].Descriptor()
+	investigationfindingDescID := investigationfindingMixinFields0[0].Descriptor()
 	// investigationfinding.DefaultID holds the default value on creation for the id field.
 	investigationfinding.DefaultID = investigationfindingDescID.Default.(func() uuid.UUID)
 	investigationfindingversionMixin := schema.InvestigationFindingVersion{}.Mixin()
-	investigationfindingversion.Policy = privacy.NewPolicies(investigationfindingversionMixin[0], investigationfindingversionMixin[1], schema.InvestigationFindingVersion{})
+	investigationfindingversion.Policy = privacy.NewPolicies(investigationfindingversionMixin[1], investigationfindingversionMixin[2], schema.InvestigationFindingVersion{})
 	investigationfindingversion.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigationfindingversion.Policy.EvalMutation(ctx, m); err != nil {
@@ -1147,18 +1225,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	investigationfindingversionMixinFields2 := investigationfindingversionMixin[2].Fields()
-	_ = investigationfindingversionMixinFields2
+	investigationfindingversionMixinFields0 := investigationfindingversionMixin[0].Fields()
+	_ = investigationfindingversionMixinFields0
 	investigationfindingversionMixinFields3 := investigationfindingversionMixin[3].Fields()
 	_ = investigationfindingversionMixinFields3
+	investigationfindingversionMixinFields4 := investigationfindingversionMixin[4].Fields()
+	_ = investigationfindingversionMixinFields4
 	investigationfindingversionFields := schema.InvestigationFindingVersion{}.Fields()
 	_ = investigationfindingversionFields
 	// investigationfindingversionDescCreatedAt is the schema descriptor for created_at field.
-	investigationfindingversionDescCreatedAt := investigationfindingversionMixinFields2[0].Descriptor()
+	investigationfindingversionDescCreatedAt := investigationfindingversionMixinFields3[0].Descriptor()
 	// investigationfindingversion.DefaultCreatedAt holds the default value on creation for the created_at field.
 	investigationfindingversion.DefaultCreatedAt = investigationfindingversionDescCreatedAt.Default.(func() time.Time)
 	// investigationfindingversionDescFingerprint is the schema descriptor for fingerprint field.
-	investigationfindingversionDescFingerprint := investigationfindingversionMixinFields3[0].Descriptor()
+	investigationfindingversionDescFingerprint := investigationfindingversionMixinFields4[0].Descriptor()
 	// investigationfindingversion.FingerprintValidator is a validator for the "fingerprint" field. It is called by the builders before save.
 	investigationfindingversion.FingerprintValidator = func() func(string) error {
 		validators := investigationfindingversionDescFingerprint.Validators
@@ -1176,19 +1256,19 @@ func init() {
 		}
 	}()
 	// investigationfindingversionDescTitle is the schema descriptor for title field.
-	investigationfindingversionDescTitle := investigationfindingversionFields[3].Descriptor()
+	investigationfindingversionDescTitle := investigationfindingversionFields[2].Descriptor()
 	// investigationfindingversion.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	investigationfindingversion.TitleValidator = investigationfindingversionDescTitle.Validators[0].(func(string) error)
 	// investigationfindingversionDescBody is the schema descriptor for body field.
-	investigationfindingversionDescBody := investigationfindingversionFields[4].Descriptor()
+	investigationfindingversionDescBody := investigationfindingversionFields[3].Descriptor()
 	// investigationfindingversion.BodyValidator is a validator for the "body" field. It is called by the builders before save.
 	investigationfindingversion.BodyValidator = investigationfindingversionDescBody.Validators[0].(func(string) error)
 	// investigationfindingversionDescID is the schema descriptor for id field.
-	investigationfindingversionDescID := investigationfindingversionFields[0].Descriptor()
+	investigationfindingversionDescID := investigationfindingversionMixinFields0[0].Descriptor()
 	// investigationfindingversion.DefaultID holds the default value on creation for the id field.
 	investigationfindingversion.DefaultID = investigationfindingversionDescID.Default.(func() uuid.UUID)
 	investigationfindingversionlinkMixin := schema.InvestigationFindingVersionLink{}.Mixin()
-	investigationfindingversionlink.Policy = privacy.NewPolicies(investigationfindingversionlinkMixin[0], investigationfindingversionlinkMixin[1], schema.InvestigationFindingVersionLink{})
+	investigationfindingversionlink.Policy = privacy.NewPolicies(investigationfindingversionlinkMixin[1], investigationfindingversionlinkMixin[2], schema.InvestigationFindingVersionLink{})
 	investigationfindingversionlink.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigationfindingversionlink.Policy.EvalMutation(ctx, m); err != nil {
@@ -1197,14 +1277,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	investigationfindingversionlinkMixinFields0 := investigationfindingversionlinkMixin[0].Fields()
+	_ = investigationfindingversionlinkMixinFields0
 	investigationfindingversionlinkFields := schema.InvestigationFindingVersionLink{}.Fields()
 	_ = investigationfindingversionlinkFields
 	// investigationfindingversionlinkDescID is the schema descriptor for id field.
-	investigationfindingversionlinkDescID := investigationfindingversionlinkFields[0].Descriptor()
+	investigationfindingversionlinkDescID := investigationfindingversionlinkMixinFields0[0].Descriptor()
 	// investigationfindingversionlink.DefaultID holds the default value on creation for the id field.
 	investigationfindingversionlink.DefaultID = investigationfindingversionlinkDescID.Default.(func() uuid.UUID)
 	investigationhypothesisMixin := schema.InvestigationHypothesis{}.Mixin()
-	investigationhypothesis.Policy = privacy.NewPolicies(investigationhypothesisMixin[0], investigationhypothesisMixin[1], schema.InvestigationHypothesis{})
+	investigationhypothesis.Policy = privacy.NewPolicies(investigationhypothesisMixin[1], investigationhypothesisMixin[2], schema.InvestigationHypothesis{})
 	investigationhypothesis.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigationhypothesis.Policy.EvalMutation(ctx, m); err != nil {
@@ -1213,30 +1295,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	investigationhypothesisMixinFields2 := investigationhypothesisMixin[2].Fields()
-	_ = investigationhypothesisMixinFields2
+	investigationhypothesisMixinFields0 := investigationhypothesisMixin[0].Fields()
+	_ = investigationhypothesisMixinFields0
+	investigationhypothesisMixinFields3 := investigationhypothesisMixin[3].Fields()
+	_ = investigationhypothesisMixinFields3
 	investigationhypothesisFields := schema.InvestigationHypothesis{}.Fields()
 	_ = investigationhypothesisFields
 	// investigationhypothesisDescCreatedAt is the schema descriptor for created_at field.
-	investigationhypothesisDescCreatedAt := investigationhypothesisMixinFields2[0].Descriptor()
+	investigationhypothesisDescCreatedAt := investigationhypothesisMixinFields3[0].Descriptor()
 	// investigationhypothesis.DefaultCreatedAt holds the default value on creation for the created_at field.
 	investigationhypothesis.DefaultCreatedAt = investigationhypothesisDescCreatedAt.Default.(func() time.Time)
 	// investigationhypothesisDescUpdatedAt is the schema descriptor for updated_at field.
-	investigationhypothesisDescUpdatedAt := investigationhypothesisMixinFields2[1].Descriptor()
+	investigationhypothesisDescUpdatedAt := investigationhypothesisMixinFields3[1].Descriptor()
 	// investigationhypothesis.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	investigationhypothesis.DefaultUpdatedAt = investigationhypothesisDescUpdatedAt.Default.(func() time.Time)
 	// investigationhypothesis.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	investigationhypothesis.UpdateDefaultUpdatedAt = investigationhypothesisDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// investigationhypothesisDescKey is the schema descriptor for key field.
-	investigationhypothesisDescKey := investigationhypothesisFields[2].Descriptor()
+	investigationhypothesisDescKey := investigationhypothesisFields[1].Descriptor()
 	// investigationhypothesis.KeyValidator is a validator for the "key" field. It is called by the builders before save.
 	investigationhypothesis.KeyValidator = investigationhypothesisDescKey.Validators[0].(func(string) error)
 	// investigationhypothesisDescID is the schema descriptor for id field.
-	investigationhypothesisDescID := investigationhypothesisFields[0].Descriptor()
+	investigationhypothesisDescID := investigationhypothesisMixinFields0[0].Descriptor()
 	// investigationhypothesis.DefaultID holds the default value on creation for the id field.
 	investigationhypothesis.DefaultID = investigationhypothesisDescID.Default.(func() uuid.UUID)
 	investigationhypothesisversionMixin := schema.InvestigationHypothesisVersion{}.Mixin()
-	investigationhypothesisversion.Policy = privacy.NewPolicies(investigationhypothesisversionMixin[0], investigationhypothesisversionMixin[1], schema.InvestigationHypothesisVersion{})
+	investigationhypothesisversion.Policy = privacy.NewPolicies(investigationhypothesisversionMixin[1], investigationhypothesisversionMixin[2], schema.InvestigationHypothesisVersion{})
 	investigationhypothesisversion.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigationhypothesisversion.Policy.EvalMutation(ctx, m); err != nil {
@@ -1245,18 +1329,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	investigationhypothesisversionMixinFields2 := investigationhypothesisversionMixin[2].Fields()
-	_ = investigationhypothesisversionMixinFields2
+	investigationhypothesisversionMixinFields0 := investigationhypothesisversionMixin[0].Fields()
+	_ = investigationhypothesisversionMixinFields0
 	investigationhypothesisversionMixinFields3 := investigationhypothesisversionMixin[3].Fields()
 	_ = investigationhypothesisversionMixinFields3
+	investigationhypothesisversionMixinFields4 := investigationhypothesisversionMixin[4].Fields()
+	_ = investigationhypothesisversionMixinFields4
 	investigationhypothesisversionFields := schema.InvestigationHypothesisVersion{}.Fields()
 	_ = investigationhypothesisversionFields
 	// investigationhypothesisversionDescCreatedAt is the schema descriptor for created_at field.
-	investigationhypothesisversionDescCreatedAt := investigationhypothesisversionMixinFields2[0].Descriptor()
+	investigationhypothesisversionDescCreatedAt := investigationhypothesisversionMixinFields3[0].Descriptor()
 	// investigationhypothesisversion.DefaultCreatedAt holds the default value on creation for the created_at field.
 	investigationhypothesisversion.DefaultCreatedAt = investigationhypothesisversionDescCreatedAt.Default.(func() time.Time)
 	// investigationhypothesisversionDescFingerprint is the schema descriptor for fingerprint field.
-	investigationhypothesisversionDescFingerprint := investigationhypothesisversionMixinFields3[0].Descriptor()
+	investigationhypothesisversionDescFingerprint := investigationhypothesisversionMixinFields4[0].Descriptor()
 	// investigationhypothesisversion.FingerprintValidator is a validator for the "fingerprint" field. It is called by the builders before save.
 	investigationhypothesisversion.FingerprintValidator = func() func(string) error {
 		validators := investigationhypothesisversionDescFingerprint.Validators
@@ -1274,19 +1360,19 @@ func init() {
 		}
 	}()
 	// investigationhypothesisversionDescTitle is the schema descriptor for title field.
-	investigationhypothesisversionDescTitle := investigationhypothesisversionFields[3].Descriptor()
+	investigationhypothesisversionDescTitle := investigationhypothesisversionFields[2].Descriptor()
 	// investigationhypothesisversion.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	investigationhypothesisversion.TitleValidator = investigationhypothesisversionDescTitle.Validators[0].(func(string) error)
 	// investigationhypothesisversionDescJustification is the schema descriptor for justification field.
-	investigationhypothesisversionDescJustification := investigationhypothesisversionFields[5].Descriptor()
+	investigationhypothesisversionDescJustification := investigationhypothesisversionFields[4].Descriptor()
 	// investigationhypothesisversion.JustificationValidator is a validator for the "justification" field. It is called by the builders before save.
 	investigationhypothesisversion.JustificationValidator = investigationhypothesisversionDescJustification.Validators[0].(func(string) error)
 	// investigationhypothesisversionDescID is the schema descriptor for id field.
-	investigationhypothesisversionDescID := investigationhypothesisversionFields[0].Descriptor()
+	investigationhypothesisversionDescID := investigationhypothesisversionMixinFields0[0].Descriptor()
 	// investigationhypothesisversion.DefaultID holds the default value on creation for the id field.
 	investigationhypothesisversion.DefaultID = investigationhypothesisversionDescID.Default.(func() uuid.UUID)
 	investigationoutputreferenceMixin := schema.InvestigationOutputReference{}.Mixin()
-	investigationoutputreference.Policy = privacy.NewPolicies(investigationoutputreferenceMixin[0], investigationoutputreferenceMixin[1], schema.InvestigationOutputReference{})
+	investigationoutputreference.Policy = privacy.NewPolicies(investigationoutputreferenceMixin[1], investigationoutputreferenceMixin[2], schema.InvestigationOutputReference{})
 	investigationoutputreference.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigationoutputreference.Policy.EvalMutation(ctx, m); err != nil {
@@ -1295,14 +1381,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	investigationoutputreferenceMixinFields0 := investigationoutputreferenceMixin[0].Fields()
+	_ = investigationoutputreferenceMixinFields0
 	investigationoutputreferenceFields := schema.InvestigationOutputReference{}.Fields()
 	_ = investigationoutputreferenceFields
 	// investigationoutputreferenceDescID is the schema descriptor for id field.
-	investigationoutputreferenceDescID := investigationoutputreferenceFields[0].Descriptor()
+	investigationoutputreferenceDescID := investigationoutputreferenceMixinFields0[0].Descriptor()
 	// investigationoutputreference.DefaultID holds the default value on creation for the id field.
 	investigationoutputreference.DefaultID = investigationoutputreferenceDescID.Default.(func() uuid.UUID)
 	investigationreportMixin := schema.InvestigationReport{}.Mixin()
-	investigationreport.Policy = privacy.NewPolicies(investigationreportMixin[0], investigationreportMixin[1], schema.InvestigationReport{})
+	investigationreport.Policy = privacy.NewPolicies(investigationreportMixin[1], investigationreportMixin[2], schema.InvestigationReport{})
 	investigationreport.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigationreport.Policy.EvalMutation(ctx, m); err != nil {
@@ -1311,18 +1399,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	investigationreportMixinFields2 := investigationreportMixin[2].Fields()
-	_ = investigationreportMixinFields2
+	investigationreportMixinFields0 := investigationreportMixin[0].Fields()
+	_ = investigationreportMixinFields0
 	investigationreportMixinFields3 := investigationreportMixin[3].Fields()
 	_ = investigationreportMixinFields3
+	investigationreportMixinFields4 := investigationreportMixin[4].Fields()
+	_ = investigationreportMixinFields4
 	investigationreportFields := schema.InvestigationReport{}.Fields()
 	_ = investigationreportFields
 	// investigationreportDescCreatedAt is the schema descriptor for created_at field.
-	investigationreportDescCreatedAt := investigationreportMixinFields2[0].Descriptor()
+	investigationreportDescCreatedAt := investigationreportMixinFields3[0].Descriptor()
 	// investigationreport.DefaultCreatedAt holds the default value on creation for the created_at field.
 	investigationreport.DefaultCreatedAt = investigationreportDescCreatedAt.Default.(func() time.Time)
 	// investigationreportDescFingerprint is the schema descriptor for fingerprint field.
-	investigationreportDescFingerprint := investigationreportMixinFields3[0].Descriptor()
+	investigationreportDescFingerprint := investigationreportMixinFields4[0].Descriptor()
 	// investigationreport.FingerprintValidator is a validator for the "fingerprint" field. It is called by the builders before save.
 	investigationreport.FingerprintValidator = func() func(string) error {
 		validators := investigationreportDescFingerprint.Validators
@@ -1340,19 +1430,19 @@ func init() {
 		}
 	}()
 	// investigationreportDescText is the schema descriptor for text field.
-	investigationreportDescText := investigationreportFields[3].Descriptor()
+	investigationreportDescText := investigationreportFields[2].Descriptor()
 	// investigationreport.TextValidator is a validator for the "text" field. It is called by the builders before save.
 	investigationreport.TextValidator = investigationreportDescText.Validators[0].(func(string) error)
 	// investigationreportDescSummary is the schema descriptor for summary field.
-	investigationreportDescSummary := investigationreportFields[4].Descriptor()
+	investigationreportDescSummary := investigationreportFields[3].Descriptor()
 	// investigationreport.DefaultSummary holds the default value on creation for the summary field.
 	investigationreport.DefaultSummary = investigationreportDescSummary.Default.(string)
 	// investigationreportDescID is the schema descriptor for id field.
-	investigationreportDescID := investigationreportFields[0].Descriptor()
+	investigationreportDescID := investigationreportMixinFields0[0].Descriptor()
 	// investigationreport.DefaultID holds the default value on creation for the id field.
 	investigationreport.DefaultID = investigationreportDescID.Default.(func() uuid.UUID)
 	investigationuserinputMixin := schema.InvestigationUserInput{}.Mixin()
-	investigationuserinput.Policy = privacy.NewPolicies(investigationuserinputMixin[0], investigationuserinputMixin[1], schema.InvestigationUserInput{})
+	investigationuserinput.Policy = privacy.NewPolicies(investigationuserinputMixin[1], investigationuserinputMixin[2], schema.InvestigationUserInput{})
 	investigationuserinput.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := investigationuserinput.Policy.EvalMutation(ctx, m); err != nil {
@@ -1361,28 +1451,30 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	investigationuserinputMixinFields2 := investigationuserinputMixin[2].Fields()
-	_ = investigationuserinputMixinFields2
+	investigationuserinputMixinFields0 := investigationuserinputMixin[0].Fields()
+	_ = investigationuserinputMixinFields0
+	investigationuserinputMixinFields3 := investigationuserinputMixin[3].Fields()
+	_ = investigationuserinputMixinFields3
 	investigationuserinputFields := schema.InvestigationUserInput{}.Fields()
 	_ = investigationuserinputFields
 	// investigationuserinputDescCreatedAt is the schema descriptor for created_at field.
-	investigationuserinputDescCreatedAt := investigationuserinputMixinFields2[0].Descriptor()
+	investigationuserinputDescCreatedAt := investigationuserinputMixinFields3[0].Descriptor()
 	// investigationuserinput.DefaultCreatedAt holds the default value on creation for the created_at field.
 	investigationuserinput.DefaultCreatedAt = investigationuserinputDescCreatedAt.Default.(func() time.Time)
 	// investigationuserinputDescText is the schema descriptor for text field.
-	investigationuserinputDescText := investigationuserinputFields[3].Descriptor()
+	investigationuserinputDescText := investigationuserinputFields[2].Descriptor()
 	// investigationuserinput.TextValidator is a validator for the "text" field. It is called by the builders before save.
 	investigationuserinput.TextValidator = investigationuserinputDescText.Validators[0].(func(string) error)
 	// investigationuserinputDescKey is the schema descriptor for key field.
-	investigationuserinputDescKey := investigationuserinputFields[4].Descriptor()
+	investigationuserinputDescKey := investigationuserinputFields[3].Descriptor()
 	// investigationuserinput.KeyValidator is a validator for the "key" field. It is called by the builders before save.
 	investigationuserinput.KeyValidator = investigationuserinputDescKey.Validators[0].(func(string) error)
 	// investigationuserinputDescID is the schema descriptor for id field.
-	investigationuserinputDescID := investigationuserinputFields[0].Descriptor()
+	investigationuserinputDescID := investigationuserinputMixinFields0[0].Descriptor()
 	// investigationuserinput.DefaultID holds the default value on creation for the id field.
 	investigationuserinput.DefaultID = investigationuserinputDescID.Default.(func() uuid.UUID)
 	knowledgeentityMixin := schema.KnowledgeEntity{}.Mixin()
-	knowledgeentity.Policy = privacy.NewPolicies(knowledgeentityMixin[0], knowledgeentityMixin[1], schema.KnowledgeEntity{})
+	knowledgeentity.Policy = privacy.NewPolicies(knowledgeentityMixin[1], knowledgeentityMixin[2], schema.KnowledgeEntity{})
 	knowledgeentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := knowledgeentity.Policy.EvalMutation(ctx, m); err != nil {
@@ -1391,30 +1483,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgeentityMixinFields2 := knowledgeentityMixin[2].Fields()
-	_ = knowledgeentityMixinFields2
+	knowledgeentityMixinFields0 := knowledgeentityMixin[0].Fields()
+	_ = knowledgeentityMixinFields0
+	knowledgeentityMixinFields3 := knowledgeentityMixin[3].Fields()
+	_ = knowledgeentityMixinFields3
 	knowledgeentityFields := schema.KnowledgeEntity{}.Fields()
 	_ = knowledgeentityFields
 	// knowledgeentityDescCreatedAt is the schema descriptor for created_at field.
-	knowledgeentityDescCreatedAt := knowledgeentityMixinFields2[0].Descriptor()
+	knowledgeentityDescCreatedAt := knowledgeentityMixinFields3[0].Descriptor()
 	// knowledgeentity.DefaultCreatedAt holds the default value on creation for the created_at field.
 	knowledgeentity.DefaultCreatedAt = knowledgeentityDescCreatedAt.Default.(func() time.Time)
 	// knowledgeentityDescUpdatedAt is the schema descriptor for updated_at field.
-	knowledgeentityDescUpdatedAt := knowledgeentityMixinFields2[1].Descriptor()
+	knowledgeentityDescUpdatedAt := knowledgeentityMixinFields3[1].Descriptor()
 	// knowledgeentity.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	knowledgeentity.DefaultUpdatedAt = knowledgeentityDescUpdatedAt.Default.(func() time.Time)
 	// knowledgeentity.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	knowledgeentity.UpdateDefaultUpdatedAt = knowledgeentityDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// knowledgeentityDescKind is the schema descriptor for kind field.
-	knowledgeentityDescKind := knowledgeentityFields[2].Descriptor()
+	knowledgeentityDescKind := knowledgeentityFields[1].Descriptor()
 	// knowledgeentity.KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	knowledgeentity.KindValidator = knowledgeentityDescKind.Validators[0].(func(string) error)
 	// knowledgeentityDescID is the schema descriptor for id field.
-	knowledgeentityDescID := knowledgeentityFields[0].Descriptor()
+	knowledgeentityDescID := knowledgeentityMixinFields0[0].Descriptor()
 	// knowledgeentity.DefaultID holds the default value on creation for the id field.
 	knowledgeentity.DefaultID = knowledgeentityDescID.Default.(func() uuid.UUID)
 	knowledgeentitylinkingattributeMixin := schema.KnowledgeEntityLinkingAttribute{}.Mixin()
-	knowledgeentitylinkingattribute.Policy = privacy.NewPolicies(knowledgeentitylinkingattributeMixin[0], knowledgeentitylinkingattributeMixin[1], schema.KnowledgeEntityLinkingAttribute{})
+	knowledgeentitylinkingattribute.Policy = privacy.NewPolicies(knowledgeentitylinkingattributeMixin[1], knowledgeentitylinkingattributeMixin[2], schema.KnowledgeEntityLinkingAttribute{})
 	knowledgeentitylinkingattribute.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := knowledgeentitylinkingattribute.Policy.EvalMutation(ctx, m); err != nil {
@@ -1423,22 +1517,24 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	knowledgeentitylinkingattributeMixinFields0 := knowledgeentitylinkingattributeMixin[0].Fields()
+	_ = knowledgeentitylinkingattributeMixinFields0
 	knowledgeentitylinkingattributeFields := schema.KnowledgeEntityLinkingAttribute{}.Fields()
 	_ = knowledgeentitylinkingattributeFields
 	// knowledgeentitylinkingattributeDescAttribute is the schema descriptor for attribute field.
-	knowledgeentitylinkingattributeDescAttribute := knowledgeentitylinkingattributeFields[2].Descriptor()
+	knowledgeentitylinkingattributeDescAttribute := knowledgeentitylinkingattributeFields[1].Descriptor()
 	// knowledgeentitylinkingattribute.AttributeValidator is a validator for the "attribute" field. It is called by the builders before save.
 	knowledgeentitylinkingattribute.AttributeValidator = knowledgeentitylinkingattributeDescAttribute.Validators[0].(func(string) error)
 	// knowledgeentitylinkingattributeDescValue is the schema descriptor for value field.
-	knowledgeentitylinkingattributeDescValue := knowledgeentitylinkingattributeFields[3].Descriptor()
+	knowledgeentitylinkingattributeDescValue := knowledgeentitylinkingattributeFields[2].Descriptor()
 	// knowledgeentitylinkingattribute.ValueValidator is a validator for the "value" field. It is called by the builders before save.
 	knowledgeentitylinkingattribute.ValueValidator = knowledgeentitylinkingattributeDescValue.Validators[0].(func(string) error)
 	// knowledgeentitylinkingattributeDescID is the schema descriptor for id field.
-	knowledgeentitylinkingattributeDescID := knowledgeentitylinkingattributeFields[0].Descriptor()
+	knowledgeentitylinkingattributeDescID := knowledgeentitylinkingattributeMixinFields0[0].Descriptor()
 	// knowledgeentitylinkingattribute.DefaultID holds the default value on creation for the id field.
 	knowledgeentitylinkingattribute.DefaultID = knowledgeentitylinkingattributeDescID.Default.(func() uuid.UUID)
 	knowledgeevidenceMixin := schema.KnowledgeEvidence{}.Mixin()
-	knowledgeevidence.Policy = privacy.NewPolicies(knowledgeevidenceMixin[0], knowledgeevidenceMixin[1], schema.KnowledgeEvidence{})
+	knowledgeevidence.Policy = privacy.NewPolicies(knowledgeevidenceMixin[1], knowledgeevidenceMixin[2], schema.KnowledgeEvidence{})
 	knowledgeevidence.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := knowledgeevidence.Policy.EvalMutation(ctx, m); err != nil {
@@ -1447,22 +1543,24 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	knowledgeevidenceMixinFields0 := knowledgeevidenceMixin[0].Fields()
+	_ = knowledgeevidenceMixinFields0
 	knowledgeevidenceFields := schema.KnowledgeEvidence{}.Fields()
 	_ = knowledgeevidenceFields
 	// knowledgeevidenceDescAssertion is the schema descriptor for assertion field.
-	knowledgeevidenceDescAssertion := knowledgeevidenceFields[4].Descriptor()
+	knowledgeevidenceDescAssertion := knowledgeevidenceFields[3].Descriptor()
 	// knowledgeevidence.AssertionValidator is a validator for the "assertion" field. It is called by the builders before save.
 	knowledgeevidence.AssertionValidator = knowledgeevidenceDescAssertion.Validators[0].(func(string) error)
 	// knowledgeevidenceDescCreatedAt is the schema descriptor for created_at field.
-	knowledgeevidenceDescCreatedAt := knowledgeevidenceFields[5].Descriptor()
+	knowledgeevidenceDescCreatedAt := knowledgeevidenceFields[4].Descriptor()
 	// knowledgeevidence.DefaultCreatedAt holds the default value on creation for the created_at field.
 	knowledgeevidence.DefaultCreatedAt = knowledgeevidenceDescCreatedAt.Default.(func() time.Time)
 	// knowledgeevidenceDescID is the schema descriptor for id field.
-	knowledgeevidenceDescID := knowledgeevidenceFields[0].Descriptor()
+	knowledgeevidenceDescID := knowledgeevidenceMixinFields0[0].Descriptor()
 	// knowledgeevidence.DefaultID holds the default value on creation for the id field.
 	knowledgeevidence.DefaultID = knowledgeevidenceDescID.Default.(func() uuid.UUID)
 	knowledgeproposalMixin := schema.KnowledgeProposal{}.Mixin()
-	knowledgeproposal.Policy = privacy.NewPolicies(knowledgeproposalMixin[0], knowledgeproposalMixin[1], schema.KnowledgeProposal{})
+	knowledgeproposal.Policy = privacy.NewPolicies(knowledgeproposalMixin[1], knowledgeproposalMixin[2], schema.KnowledgeProposal{})
 	knowledgeproposal.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := knowledgeproposal.Policy.EvalMutation(ctx, m); err != nil {
@@ -1471,38 +1569,40 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgeproposalMixinFields2 := knowledgeproposalMixin[2].Fields()
-	_ = knowledgeproposalMixinFields2
+	knowledgeproposalMixinFields0 := knowledgeproposalMixin[0].Fields()
+	_ = knowledgeproposalMixinFields0
+	knowledgeproposalMixinFields3 := knowledgeproposalMixin[3].Fields()
+	_ = knowledgeproposalMixinFields3
 	knowledgeproposalFields := schema.KnowledgeProposal{}.Fields()
 	_ = knowledgeproposalFields
 	// knowledgeproposalDescCreatedAt is the schema descriptor for created_at field.
-	knowledgeproposalDescCreatedAt := knowledgeproposalMixinFields2[0].Descriptor()
+	knowledgeproposalDescCreatedAt := knowledgeproposalMixinFields3[0].Descriptor()
 	// knowledgeproposal.DefaultCreatedAt holds the default value on creation for the created_at field.
 	knowledgeproposal.DefaultCreatedAt = knowledgeproposalDescCreatedAt.Default.(func() time.Time)
 	// knowledgeproposalDescUpdatedAt is the schema descriptor for updated_at field.
-	knowledgeproposalDescUpdatedAt := knowledgeproposalMixinFields2[1].Descriptor()
+	knowledgeproposalDescUpdatedAt := knowledgeproposalMixinFields3[1].Descriptor()
 	// knowledgeproposal.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	knowledgeproposal.DefaultUpdatedAt = knowledgeproposalDescUpdatedAt.Default.(func() time.Time)
 	// knowledgeproposal.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	knowledgeproposal.UpdateDefaultUpdatedAt = knowledgeproposalDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// knowledgeproposalDescKind is the schema descriptor for kind field.
-	knowledgeproposalDescKind := knowledgeproposalFields[2].Descriptor()
+	knowledgeproposalDescKind := knowledgeproposalFields[1].Descriptor()
 	// knowledgeproposal.KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	knowledgeproposal.KindValidator = knowledgeproposalDescKind.Validators[0].(func(string) error)
 	// knowledgeproposalDescAttribute is the schema descriptor for attribute field.
-	knowledgeproposalDescAttribute := knowledgeproposalFields[3].Descriptor()
+	knowledgeproposalDescAttribute := knowledgeproposalFields[2].Descriptor()
 	// knowledgeproposal.AttributeValidator is a validator for the "attribute" field. It is called by the builders before save.
 	knowledgeproposal.AttributeValidator = knowledgeproposalDescAttribute.Validators[0].(func(string) error)
 	// knowledgeproposalDescValueA is the schema descriptor for value_a field.
-	knowledgeproposalDescValueA := knowledgeproposalFields[4].Descriptor()
+	knowledgeproposalDescValueA := knowledgeproposalFields[3].Descriptor()
 	// knowledgeproposal.ValueAValidator is a validator for the "value_a" field. It is called by the builders before save.
 	knowledgeproposal.ValueAValidator = knowledgeproposalDescValueA.Validators[0].(func(string) error)
 	// knowledgeproposalDescValueB is the schema descriptor for value_b field.
-	knowledgeproposalDescValueB := knowledgeproposalFields[5].Descriptor()
+	knowledgeproposalDescValueB := knowledgeproposalFields[4].Descriptor()
 	// knowledgeproposal.ValueBValidator is a validator for the "value_b" field. It is called by the builders before save.
 	knowledgeproposal.ValueBValidator = knowledgeproposalDescValueB.Validators[0].(func(string) error)
 	// knowledgeproposalDescRationale is the schema descriptor for rationale field.
-	knowledgeproposalDescRationale := knowledgeproposalFields[8].Descriptor()
+	knowledgeproposalDescRationale := knowledgeproposalFields[7].Descriptor()
 	// knowledgeproposal.RationaleValidator is a validator for the "rationale" field. It is called by the builders before save.
 	knowledgeproposal.RationaleValidator = func() func(string) error {
 		validators := knowledgeproposalDescRationale.Validators
@@ -1520,11 +1620,11 @@ func init() {
 		}
 	}()
 	// knowledgeproposalDescID is the schema descriptor for id field.
-	knowledgeproposalDescID := knowledgeproposalFields[0].Descriptor()
+	knowledgeproposalDescID := knowledgeproposalMixinFields0[0].Descriptor()
 	// knowledgeproposal.DefaultID holds the default value on creation for the id field.
 	knowledgeproposal.DefaultID = knowledgeproposalDescID.Default.(func() uuid.UUID)
 	knowledgeproposaldecisionMixin := schema.KnowledgeProposalDecision{}.Mixin()
-	knowledgeproposaldecision.Policy = privacy.NewPolicies(knowledgeproposaldecisionMixin[0], knowledgeproposaldecisionMixin[1], schema.KnowledgeProposalDecision{})
+	knowledgeproposaldecision.Policy = privacy.NewPolicies(knowledgeproposaldecisionMixin[1], knowledgeproposaldecisionMixin[2], schema.KnowledgeProposalDecision{})
 	knowledgeproposaldecision.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := knowledgeproposaldecision.Policy.EvalMutation(ctx, m); err != nil {
@@ -1533,18 +1633,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	knowledgeproposaldecisionMixinFields0 := knowledgeproposaldecisionMixin[0].Fields()
+	_ = knowledgeproposaldecisionMixinFields0
 	knowledgeproposaldecisionFields := schema.KnowledgeProposalDecision{}.Fields()
 	_ = knowledgeproposaldecisionFields
 	// knowledgeproposaldecisionDescCreatedAt is the schema descriptor for created_at field.
-	knowledgeproposaldecisionDescCreatedAt := knowledgeproposaldecisionFields[5].Descriptor()
+	knowledgeproposaldecisionDescCreatedAt := knowledgeproposaldecisionFields[4].Descriptor()
 	// knowledgeproposaldecision.DefaultCreatedAt holds the default value on creation for the created_at field.
 	knowledgeproposaldecision.DefaultCreatedAt = knowledgeproposaldecisionDescCreatedAt.Default.(func() time.Time)
 	// knowledgeproposaldecisionDescID is the schema descriptor for id field.
-	knowledgeproposaldecisionDescID := knowledgeproposaldecisionFields[0].Descriptor()
+	knowledgeproposaldecisionDescID := knowledgeproposaldecisionMixinFields0[0].Descriptor()
 	// knowledgeproposaldecision.DefaultID holds the default value on creation for the id field.
 	knowledgeproposaldecision.DefaultID = knowledgeproposaldecisionDescID.Default.(func() uuid.UUID)
 	knowledgerelationshipMixin := schema.KnowledgeRelationship{}.Mixin()
-	knowledgerelationship.Policy = privacy.NewPolicies(knowledgerelationshipMixin[0], knowledgerelationshipMixin[1], schema.KnowledgeRelationship{})
+	knowledgerelationship.Policy = privacy.NewPolicies(knowledgerelationshipMixin[1], knowledgerelationshipMixin[2], schema.KnowledgeRelationship{})
 	knowledgerelationship.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := knowledgerelationship.Policy.EvalMutation(ctx, m); err != nil {
@@ -1553,26 +1655,28 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgerelationshipMixinFields2 := knowledgerelationshipMixin[2].Fields()
-	_ = knowledgerelationshipMixinFields2
+	knowledgerelationshipMixinFields0 := knowledgerelationshipMixin[0].Fields()
+	_ = knowledgerelationshipMixinFields0
+	knowledgerelationshipMixinFields3 := knowledgerelationshipMixin[3].Fields()
+	_ = knowledgerelationshipMixinFields3
 	knowledgerelationshipFields := schema.KnowledgeRelationship{}.Fields()
 	_ = knowledgerelationshipFields
 	// knowledgerelationshipDescCreatedAt is the schema descriptor for created_at field.
-	knowledgerelationshipDescCreatedAt := knowledgerelationshipMixinFields2[0].Descriptor()
+	knowledgerelationshipDescCreatedAt := knowledgerelationshipMixinFields3[0].Descriptor()
 	// knowledgerelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
 	knowledgerelationship.DefaultCreatedAt = knowledgerelationshipDescCreatedAt.Default.(func() time.Time)
 	// knowledgerelationshipDescUpdatedAt is the schema descriptor for updated_at field.
-	knowledgerelationshipDescUpdatedAt := knowledgerelationshipMixinFields2[1].Descriptor()
+	knowledgerelationshipDescUpdatedAt := knowledgerelationshipMixinFields3[1].Descriptor()
 	// knowledgerelationship.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	knowledgerelationship.DefaultUpdatedAt = knowledgerelationshipDescUpdatedAt.Default.(func() time.Time)
 	// knowledgerelationship.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	knowledgerelationship.UpdateDefaultUpdatedAt = knowledgerelationshipDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// knowledgerelationshipDescID is the schema descriptor for id field.
-	knowledgerelationshipDescID := knowledgerelationshipFields[0].Descriptor()
+	knowledgerelationshipDescID := knowledgerelationshipMixinFields0[0].Descriptor()
 	// knowledgerelationship.DefaultID holds the default value on creation for the id field.
 	knowledgerelationship.DefaultID = knowledgerelationshipDescID.Default.(func() uuid.UUID)
 	knowledgesubjectaliasMixin := schema.KnowledgeSubjectAlias{}.Mixin()
-	knowledgesubjectalias.Policy = privacy.NewPolicies(knowledgesubjectaliasMixin[0], knowledgesubjectaliasMixin[1], schema.KnowledgeSubjectAlias{})
+	knowledgesubjectalias.Policy = privacy.NewPolicies(knowledgesubjectaliasMixin[1], knowledgesubjectaliasMixin[2], schema.KnowledgeSubjectAlias{})
 	knowledgesubjectalias.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := knowledgesubjectalias.Policy.EvalMutation(ctx, m); err != nil {
@@ -1581,28 +1685,30 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgesubjectaliasMixinFields2 := knowledgesubjectaliasMixin[2].Fields()
-	_ = knowledgesubjectaliasMixinFields2
+	knowledgesubjectaliasMixinFields0 := knowledgesubjectaliasMixin[0].Fields()
+	_ = knowledgesubjectaliasMixinFields0
+	knowledgesubjectaliasMixinFields3 := knowledgesubjectaliasMixin[3].Fields()
+	_ = knowledgesubjectaliasMixinFields3
 	knowledgesubjectaliasFields := schema.KnowledgeSubjectAlias{}.Fields()
 	_ = knowledgesubjectaliasFields
 	// knowledgesubjectaliasDescProvider is the schema descriptor for provider field.
-	knowledgesubjectaliasDescProvider := knowledgesubjectaliasMixinFields2[0].Descriptor()
+	knowledgesubjectaliasDescProvider := knowledgesubjectaliasMixinFields3[0].Descriptor()
 	// knowledgesubjectalias.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	knowledgesubjectalias.ProviderValidator = knowledgesubjectaliasDescProvider.Validators[0].(func(string) error)
 	// knowledgesubjectaliasDescProviderResourceRef is the schema descriptor for provider_resource_ref field.
-	knowledgesubjectaliasDescProviderResourceRef := knowledgesubjectaliasMixinFields2[2].Descriptor()
+	knowledgesubjectaliasDescProviderResourceRef := knowledgesubjectaliasMixinFields3[2].Descriptor()
 	// knowledgesubjectalias.ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
 	knowledgesubjectalias.ProviderResourceRefValidator = knowledgesubjectaliasDescProviderResourceRef.Validators[0].(func(string) error)
 	// knowledgesubjectaliasDescCreatedAt is the schema descriptor for created_at field.
-	knowledgesubjectaliasDescCreatedAt := knowledgesubjectaliasFields[5].Descriptor()
+	knowledgesubjectaliasDescCreatedAt := knowledgesubjectaliasFields[4].Descriptor()
 	// knowledgesubjectalias.DefaultCreatedAt holds the default value on creation for the created_at field.
 	knowledgesubjectalias.DefaultCreatedAt = knowledgesubjectaliasDescCreatedAt.Default.(func() time.Time)
 	// knowledgesubjectaliasDescID is the schema descriptor for id field.
-	knowledgesubjectaliasDescID := knowledgesubjectaliasFields[0].Descriptor()
+	knowledgesubjectaliasDescID := knowledgesubjectaliasMixinFields0[0].Descriptor()
 	// knowledgesubjectalias.DefaultID holds the default value on creation for the id field.
 	knowledgesubjectalias.DefaultID = knowledgesubjectaliasDescID.Default.(func() uuid.UUID)
 	meetingscheduleMixin := schema.MeetingSchedule{}.Mixin()
-	meetingschedule.Policy = privacy.NewPolicies(meetingscheduleMixin[0], meetingscheduleMixin[1], schema.MeetingSchedule{})
+	meetingschedule.Policy = privacy.NewPolicies(meetingscheduleMixin[1], meetingscheduleMixin[2], schema.MeetingSchedule{})
 	meetingschedule.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := meetingschedule.Policy.EvalMutation(ctx, m); err != nil {
@@ -1611,27 +1717,29 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	meetingscheduleMixinHooks2 := meetingscheduleMixin[2].Hooks()
+	meetingscheduleMixinHooks3 := meetingscheduleMixin[3].Hooks()
 
-	meetingschedule.Hooks[1] = meetingscheduleMixinHooks2[0]
-	meetingscheduleMixinInters2 := meetingscheduleMixin[2].Interceptors()
-	meetingschedule.Interceptors[0] = meetingscheduleMixinInters2[0]
+	meetingschedule.Hooks[1] = meetingscheduleMixinHooks3[0]
+	meetingscheduleMixinInters3 := meetingscheduleMixin[3].Interceptors()
+	meetingschedule.Interceptors[0] = meetingscheduleMixinInters3[0]
+	meetingscheduleMixinFields0 := meetingscheduleMixin[0].Fields()
+	_ = meetingscheduleMixinFields0
 	meetingscheduleFields := schema.MeetingSchedule{}.Fields()
 	_ = meetingscheduleFields
 	// meetingscheduleDescRepetitionStep is the schema descriptor for repetition_step field.
-	meetingscheduleDescRepetitionStep := meetingscheduleFields[7].Descriptor()
+	meetingscheduleDescRepetitionStep := meetingscheduleFields[6].Descriptor()
 	// meetingschedule.DefaultRepetitionStep holds the default value on creation for the repetition_step field.
 	meetingschedule.DefaultRepetitionStep = meetingscheduleDescRepetitionStep.Default.(int)
 	// meetingscheduleDescWeekDays is the schema descriptor for week_days field.
-	meetingscheduleDescWeekDays := meetingscheduleFields[8].Descriptor()
+	meetingscheduleDescWeekDays := meetingscheduleFields[7].Descriptor()
 	// meetingschedule.WeekDaysValidator is a validator for the "week_days" field. It is called by the builders before save.
 	meetingschedule.WeekDaysValidator = meetingscheduleDescWeekDays.Validators[0].(func([]string) error)
 	// meetingscheduleDescID is the schema descriptor for id field.
-	meetingscheduleDescID := meetingscheduleFields[0].Descriptor()
+	meetingscheduleDescID := meetingscheduleMixinFields0[0].Descriptor()
 	// meetingschedule.DefaultID holds the default value on creation for the id field.
 	meetingschedule.DefaultID = meetingscheduleDescID.Default.(func() uuid.UUID)
 	meetingsessionMixin := schema.MeetingSession{}.Mixin()
-	meetingsession.Policy = privacy.NewPolicies(meetingsessionMixin[0], meetingsessionMixin[1], schema.MeetingSession{})
+	meetingsession.Policy = privacy.NewPolicies(meetingsessionMixin[1], meetingsessionMixin[2], schema.MeetingSession{})
 	meetingsession.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := meetingsession.Policy.EvalMutation(ctx, m); err != nil {
@@ -1640,18 +1748,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	meetingsessionMixinFields0 := meetingsessionMixin[0].Fields()
+	_ = meetingsessionMixinFields0
 	meetingsessionFields := schema.MeetingSession{}.Fields()
 	_ = meetingsessionFields
 	// meetingsessionDescStartedAt is the schema descriptor for started_at field.
-	meetingsessionDescStartedAt := meetingsessionFields[2].Descriptor()
+	meetingsessionDescStartedAt := meetingsessionFields[1].Descriptor()
 	// meetingsession.DefaultStartedAt holds the default value on creation for the started_at field.
 	meetingsession.DefaultStartedAt = meetingsessionDescStartedAt.Default.(func() time.Time)
 	// meetingsessionDescID is the schema descriptor for id field.
-	meetingsessionDescID := meetingsessionFields[0].Descriptor()
+	meetingsessionDescID := meetingsessionMixinFields0[0].Descriptor()
 	// meetingsession.DefaultID holds the default value on creation for the id field.
 	meetingsession.DefaultID = meetingsessionDescID.Default.(func() uuid.UUID)
 	normalizedeventMixin := schema.NormalizedEvent{}.Mixin()
-	normalizedevent.Policy = privacy.NewPolicies(normalizedeventMixin[0], normalizedeventMixin[1], schema.NormalizedEvent{})
+	normalizedevent.Policy = privacy.NewPolicies(normalizedeventMixin[1], normalizedeventMixin[2], schema.NormalizedEvent{})
 	normalizedevent.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := normalizedevent.Policy.EvalMutation(ctx, m); err != nil {
@@ -1660,40 +1770,42 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	normalizedeventMixinFields2 := normalizedeventMixin[2].Fields()
-	_ = normalizedeventMixinFields2
+	normalizedeventMixinFields0 := normalizedeventMixin[0].Fields()
+	_ = normalizedeventMixinFields0
+	normalizedeventMixinFields3 := normalizedeventMixin[3].Fields()
+	_ = normalizedeventMixinFields3
 	normalizedeventFields := schema.NormalizedEvent{}.Fields()
 	_ = normalizedeventFields
 	// normalizedeventDescProvider is the schema descriptor for provider field.
-	normalizedeventDescProvider := normalizedeventMixinFields2[0].Descriptor()
+	normalizedeventDescProvider := normalizedeventMixinFields3[0].Descriptor()
 	// normalizedevent.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	normalizedevent.ProviderValidator = normalizedeventDescProvider.Validators[0].(func(string) error)
 	// normalizedeventDescProviderResourceRef is the schema descriptor for provider_resource_ref field.
-	normalizedeventDescProviderResourceRef := normalizedeventMixinFields2[2].Descriptor()
+	normalizedeventDescProviderResourceRef := normalizedeventMixinFields3[2].Descriptor()
 	// normalizedevent.ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
 	normalizedevent.ProviderResourceRefValidator = normalizedeventDescProviderResourceRef.Validators[0].(func(string) error)
 	// normalizedeventDescKind is the schema descriptor for kind field.
-	normalizedeventDescKind := normalizedeventFields[2].Descriptor()
+	normalizedeventDescKind := normalizedeventFields[1].Descriptor()
 	// normalizedevent.KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	normalizedevent.KindValidator = normalizedeventDescKind.Validators[0].(func(string) error)
 	// normalizedeventDescProviderEventSource is the schema descriptor for provider_event_source field.
-	normalizedeventDescProviderEventSource := normalizedeventFields[3].Descriptor()
+	normalizedeventDescProviderEventSource := normalizedeventFields[2].Descriptor()
 	// normalizedevent.ProviderEventSourceValidator is a validator for the "provider_event_source" field. It is called by the builders before save.
 	normalizedevent.ProviderEventSourceValidator = normalizedeventDescProviderEventSource.Validators[0].(func(string) error)
 	// normalizedeventDescProviderEventRef is the schema descriptor for provider_event_ref field.
-	normalizedeventDescProviderEventRef := normalizedeventFields[4].Descriptor()
+	normalizedeventDescProviderEventRef := normalizedeventFields[3].Descriptor()
 	// normalizedevent.ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
 	normalizedevent.ProviderEventRefValidator = normalizedeventDescProviderEventRef.Validators[0].(func(string) error)
 	// normalizedeventDescCreatedAt is the schema descriptor for created_at field.
-	normalizedeventDescCreatedAt := normalizedeventFields[6].Descriptor()
+	normalizedeventDescCreatedAt := normalizedeventFields[5].Descriptor()
 	// normalizedevent.DefaultCreatedAt holds the default value on creation for the created_at field.
 	normalizedevent.DefaultCreatedAt = normalizedeventDescCreatedAt.Default.(func() time.Time)
 	// normalizedeventDescID is the schema descriptor for id field.
-	normalizedeventDescID := normalizedeventFields[0].Descriptor()
+	normalizedeventDescID := normalizedeventMixinFields0[0].Descriptor()
 	// normalizedevent.DefaultID holds the default value on creation for the id field.
 	normalizedevent.DefaultID = normalizedeventDescID.Default.(func() uuid.UUID)
 	normalizedeventprojectionMixin := schema.NormalizedEventProjection{}.Mixin()
-	normalizedeventprojection.Policy = privacy.NewPolicies(normalizedeventprojectionMixin[0], normalizedeventprojectionMixin[1], schema.NormalizedEventProjection{})
+	normalizedeventprojection.Policy = privacy.NewPolicies(normalizedeventprojectionMixin[1], normalizedeventprojectionMixin[2], schema.NormalizedEventProjection{})
 	normalizedeventprojection.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := normalizedeventprojection.Policy.EvalMutation(ctx, m); err != nil {
@@ -1702,18 +1814,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	normalizedeventprojectionMixinFields0 := normalizedeventprojectionMixin[0].Fields()
+	_ = normalizedeventprojectionMixinFields0
 	normalizedeventprojectionFields := schema.NormalizedEventProjection{}.Fields()
 	_ = normalizedeventprojectionFields
 	// normalizedeventprojectionDescCompletedAt is the schema descriptor for completed_at field.
-	normalizedeventprojectionDescCompletedAt := normalizedeventprojectionFields[2].Descriptor()
+	normalizedeventprojectionDescCompletedAt := normalizedeventprojectionFields[1].Descriptor()
 	// normalizedeventprojection.DefaultCompletedAt holds the default value on creation for the completed_at field.
 	normalizedeventprojection.DefaultCompletedAt = normalizedeventprojectionDescCompletedAt.Default.(func() time.Time)
 	// normalizedeventprojectionDescID is the schema descriptor for id field.
-	normalizedeventprojectionDescID := normalizedeventprojectionFields[0].Descriptor()
+	normalizedeventprojectionDescID := normalizedeventprojectionMixinFields0[0].Descriptor()
 	// normalizedeventprojection.DefaultID holds the default value on creation for the id field.
 	normalizedeventprojection.DefaultID = normalizedeventprojectionDescID.Default.(func() uuid.UUID)
 	normalizedeventprojectionentityMixin := schema.NormalizedEventProjectionEntity{}.Mixin()
-	normalizedeventprojectionentity.Policy = privacy.NewPolicies(normalizedeventprojectionentityMixin[0], normalizedeventprojectionentityMixin[1], schema.NormalizedEventProjectionEntity{})
+	normalizedeventprojectionentity.Policy = privacy.NewPolicies(normalizedeventprojectionentityMixin[1], normalizedeventprojectionentityMixin[2], schema.NormalizedEventProjectionEntity{})
 	normalizedeventprojectionentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := normalizedeventprojectionentity.Policy.EvalMutation(ctx, m); err != nil {
@@ -1722,14 +1836,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	normalizedeventprojectionentityMixinFields0 := normalizedeventprojectionentityMixin[0].Fields()
+	_ = normalizedeventprojectionentityMixinFields0
 	normalizedeventprojectionentityFields := schema.NormalizedEventProjectionEntity{}.Fields()
 	_ = normalizedeventprojectionentityFields
 	// normalizedeventprojectionentityDescID is the schema descriptor for id field.
-	normalizedeventprojectionentityDescID := normalizedeventprojectionentityFields[0].Descriptor()
+	normalizedeventprojectionentityDescID := normalizedeventprojectionentityMixinFields0[0].Descriptor()
 	// normalizedeventprojectionentity.DefaultID holds the default value on creation for the id field.
 	normalizedeventprojectionentity.DefaultID = normalizedeventprojectionentityDescID.Default.(func() uuid.UUID)
 	oncallhandovertemplateMixin := schema.OncallHandoverTemplate{}.Mixin()
-	oncallhandovertemplate.Policy = privacy.NewPolicies(oncallhandovertemplateMixin[0], oncallhandovertemplateMixin[1], schema.OncallHandoverTemplate{})
+	oncallhandovertemplate.Policy = privacy.NewPolicies(oncallhandovertemplateMixin[1], oncallhandovertemplateMixin[2], schema.OncallHandoverTemplate{})
 	oncallhandovertemplate.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := oncallhandovertemplate.Policy.EvalMutation(ctx, m); err != nil {
@@ -1738,26 +1854,28 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	oncallhandovertemplateMixinFields0 := oncallhandovertemplateMixin[0].Fields()
+	_ = oncallhandovertemplateMixinFields0
 	oncallhandovertemplateFields := schema.OncallHandoverTemplate{}.Fields()
 	_ = oncallhandovertemplateFields
 	// oncallhandovertemplateDescCreatedAt is the schema descriptor for created_at field.
-	oncallhandovertemplateDescCreatedAt := oncallhandovertemplateFields[1].Descriptor()
+	oncallhandovertemplateDescCreatedAt := oncallhandovertemplateFields[0].Descriptor()
 	// oncallhandovertemplate.DefaultCreatedAt holds the default value on creation for the created_at field.
 	oncallhandovertemplate.DefaultCreatedAt = oncallhandovertemplateDescCreatedAt.Default.(func() time.Time)
 	// oncallhandovertemplateDescUpdatedAt is the schema descriptor for updated_at field.
-	oncallhandovertemplateDescUpdatedAt := oncallhandovertemplateFields[2].Descriptor()
+	oncallhandovertemplateDescUpdatedAt := oncallhandovertemplateFields[1].Descriptor()
 	// oncallhandovertemplate.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	oncallhandovertemplate.DefaultUpdatedAt = oncallhandovertemplateDescUpdatedAt.Default.(func() time.Time)
 	// oncallhandovertemplateDescIsDefault is the schema descriptor for is_default field.
-	oncallhandovertemplateDescIsDefault := oncallhandovertemplateFields[4].Descriptor()
+	oncallhandovertemplateDescIsDefault := oncallhandovertemplateFields[3].Descriptor()
 	// oncallhandovertemplate.DefaultIsDefault holds the default value on creation for the is_default field.
 	oncallhandovertemplate.DefaultIsDefault = oncallhandovertemplateDescIsDefault.Default.(bool)
 	// oncallhandovertemplateDescID is the schema descriptor for id field.
-	oncallhandovertemplateDescID := oncallhandovertemplateFields[0].Descriptor()
+	oncallhandovertemplateDescID := oncallhandovertemplateMixinFields0[0].Descriptor()
 	// oncallhandovertemplate.DefaultID holds the default value on creation for the id field.
 	oncallhandovertemplate.DefaultID = oncallhandovertemplateDescID.Default.(func() uuid.UUID)
 	oncallrosterMixin := schema.OncallRoster{}.Mixin()
-	oncallroster.Policy = privacy.NewPolicies(oncallrosterMixin[0], oncallrosterMixin[1], schema.OncallRoster{})
+	oncallroster.Policy = privacy.NewPolicies(oncallrosterMixin[1], oncallrosterMixin[2], schema.OncallRoster{})
 	oncallroster.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := oncallroster.Policy.EvalMutation(ctx, m); err != nil {
@@ -1766,19 +1884,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	oncallrosterMixinHooks2 := oncallrosterMixin[2].Hooks()
+	oncallrosterMixinHooks3 := oncallrosterMixin[3].Hooks()
 
-	oncallroster.Hooks[1] = oncallrosterMixinHooks2[0]
-	oncallrosterMixinInters2 := oncallrosterMixin[2].Interceptors()
-	oncallroster.Interceptors[0] = oncallrosterMixinInters2[0]
+	oncallroster.Hooks[1] = oncallrosterMixinHooks3[0]
+	oncallrosterMixinInters3 := oncallrosterMixin[3].Interceptors()
+	oncallroster.Interceptors[0] = oncallrosterMixinInters3[0]
+	oncallrosterMixinFields0 := oncallrosterMixin[0].Fields()
+	_ = oncallrosterMixinFields0
 	oncallrosterFields := schema.OncallRoster{}.Fields()
 	_ = oncallrosterFields
 	// oncallrosterDescID is the schema descriptor for id field.
-	oncallrosterDescID := oncallrosterFields[0].Descriptor()
+	oncallrosterDescID := oncallrosterMixinFields0[0].Descriptor()
 	// oncallroster.DefaultID holds the default value on creation for the id field.
 	oncallroster.DefaultID = oncallrosterDescID.Default.(func() uuid.UUID)
 	oncallrostermetricsMixin := schema.OncallRosterMetrics{}.Mixin()
-	oncallrostermetrics.Policy = privacy.NewPolicies(oncallrostermetricsMixin[0], oncallrostermetricsMixin[1], schema.OncallRosterMetrics{})
+	oncallrostermetrics.Policy = privacy.NewPolicies(oncallrostermetricsMixin[1], oncallrostermetricsMixin[2], schema.OncallRosterMetrics{})
 	oncallrostermetrics.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := oncallrostermetrics.Policy.EvalMutation(ctx, m); err != nil {
@@ -1787,14 +1907,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	oncallrostermetricsMixinFields0 := oncallrostermetricsMixin[0].Fields()
+	_ = oncallrostermetricsMixinFields0
 	oncallrostermetricsFields := schema.OncallRosterMetrics{}.Fields()
 	_ = oncallrostermetricsFields
 	// oncallrostermetricsDescID is the schema descriptor for id field.
-	oncallrostermetricsDescID := oncallrostermetricsFields[0].Descriptor()
+	oncallrostermetricsDescID := oncallrostermetricsMixinFields0[0].Descriptor()
 	// oncallrostermetrics.DefaultID holds the default value on creation for the id field.
 	oncallrostermetrics.DefaultID = oncallrostermetricsDescID.Default.(func() uuid.UUID)
 	oncallscheduleMixin := schema.OncallSchedule{}.Mixin()
-	oncallschedule.Policy = privacy.NewPolicies(oncallscheduleMixin[0], oncallscheduleMixin[1], schema.OncallSchedule{})
+	oncallschedule.Policy = privacy.NewPolicies(oncallscheduleMixin[1], oncallscheduleMixin[2], schema.OncallSchedule{})
 	oncallschedule.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := oncallschedule.Policy.EvalMutation(ctx, m); err != nil {
@@ -1803,19 +1925,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	oncallscheduleMixinHooks2 := oncallscheduleMixin[2].Hooks()
+	oncallscheduleMixinHooks3 := oncallscheduleMixin[3].Hooks()
 
-	oncallschedule.Hooks[1] = oncallscheduleMixinHooks2[0]
-	oncallscheduleMixinInters2 := oncallscheduleMixin[2].Interceptors()
-	oncallschedule.Interceptors[0] = oncallscheduleMixinInters2[0]
+	oncallschedule.Hooks[1] = oncallscheduleMixinHooks3[0]
+	oncallscheduleMixinInters3 := oncallscheduleMixin[3].Interceptors()
+	oncallschedule.Interceptors[0] = oncallscheduleMixinInters3[0]
+	oncallscheduleMixinFields0 := oncallscheduleMixin[0].Fields()
+	_ = oncallscheduleMixinFields0
 	oncallscheduleFields := schema.OncallSchedule{}.Fields()
 	_ = oncallscheduleFields
 	// oncallscheduleDescID is the schema descriptor for id field.
-	oncallscheduleDescID := oncallscheduleFields[0].Descriptor()
+	oncallscheduleDescID := oncallscheduleMixinFields0[0].Descriptor()
 	// oncallschedule.DefaultID holds the default value on creation for the id field.
 	oncallschedule.DefaultID = oncallscheduleDescID.Default.(func() uuid.UUID)
 	oncallscheduleparticipantMixin := schema.OncallScheduleParticipant{}.Mixin()
-	oncallscheduleparticipant.Policy = privacy.NewPolicies(oncallscheduleparticipantMixin[0], oncallscheduleparticipantMixin[1], schema.OncallScheduleParticipant{})
+	oncallscheduleparticipant.Policy = privacy.NewPolicies(oncallscheduleparticipantMixin[1], oncallscheduleparticipantMixin[2], schema.OncallScheduleParticipant{})
 	oncallscheduleparticipant.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := oncallscheduleparticipant.Policy.EvalMutation(ctx, m); err != nil {
@@ -1824,14 +1948,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	oncallscheduleparticipantMixinFields0 := oncallscheduleparticipantMixin[0].Fields()
+	_ = oncallscheduleparticipantMixinFields0
 	oncallscheduleparticipantFields := schema.OncallScheduleParticipant{}.Fields()
 	_ = oncallscheduleparticipantFields
 	// oncallscheduleparticipantDescID is the schema descriptor for id field.
-	oncallscheduleparticipantDescID := oncallscheduleparticipantFields[0].Descriptor()
+	oncallscheduleparticipantDescID := oncallscheduleparticipantMixinFields0[0].Descriptor()
 	// oncallscheduleparticipant.DefaultID holds the default value on creation for the id field.
 	oncallscheduleparticipant.DefaultID = oncallscheduleparticipantDescID.Default.(func() uuid.UUID)
 	oncallshiftMixin := schema.OncallShift{}.Mixin()
-	oncallshift.Policy = privacy.NewPolicies(oncallshiftMixin[0], oncallshiftMixin[1], schema.OncallShift{})
+	oncallshift.Policy = privacy.NewPolicies(oncallshiftMixin[1], oncallshiftMixin[2], schema.OncallShift{})
 	oncallshift.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := oncallshift.Policy.EvalMutation(ctx, m); err != nil {
@@ -1840,14 +1966,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	oncallshiftMixinFields0 := oncallshiftMixin[0].Fields()
+	_ = oncallshiftMixinFields0
 	oncallshiftFields := schema.OncallShift{}.Fields()
 	_ = oncallshiftFields
 	// oncallshiftDescID is the schema descriptor for id field.
-	oncallshiftDescID := oncallshiftFields[0].Descriptor()
+	oncallshiftDescID := oncallshiftMixinFields0[0].Descriptor()
 	// oncallshift.DefaultID holds the default value on creation for the id field.
 	oncallshift.DefaultID = oncallshiftDescID.Default.(func() uuid.UUID)
 	oncallshifthandoverMixin := schema.OncallShiftHandover{}.Mixin()
-	oncallshifthandover.Policy = privacy.NewPolicies(oncallshifthandoverMixin[0], oncallshifthandoverMixin[1], schema.OncallShiftHandover{})
+	oncallshifthandover.Policy = privacy.NewPolicies(oncallshifthandoverMixin[1], oncallshifthandoverMixin[2], schema.OncallShiftHandover{})
 	oncallshifthandover.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := oncallshifthandover.Policy.EvalMutation(ctx, m); err != nil {
@@ -1856,22 +1984,24 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	oncallshifthandoverMixinFields0 := oncallshifthandoverMixin[0].Fields()
+	_ = oncallshifthandoverMixinFields0
 	oncallshifthandoverFields := schema.OncallShiftHandover{}.Fields()
 	_ = oncallshifthandoverFields
 	// oncallshifthandoverDescReminderSent is the schema descriptor for reminder_sent field.
-	oncallshifthandoverDescReminderSent := oncallshifthandoverFields[3].Descriptor()
+	oncallshifthandoverDescReminderSent := oncallshifthandoverFields[2].Descriptor()
 	// oncallshifthandover.DefaultReminderSent holds the default value on creation for the reminder_sent field.
 	oncallshifthandover.DefaultReminderSent = oncallshifthandoverDescReminderSent.Default.(bool)
 	// oncallshifthandoverDescUpdatedAt is the schema descriptor for updated_at field.
-	oncallshifthandoverDescUpdatedAt := oncallshifthandoverFields[4].Descriptor()
+	oncallshifthandoverDescUpdatedAt := oncallshifthandoverFields[3].Descriptor()
 	// oncallshifthandover.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	oncallshifthandover.DefaultUpdatedAt = oncallshifthandoverDescUpdatedAt.Default.(func() time.Time)
 	// oncallshifthandoverDescID is the schema descriptor for id field.
-	oncallshifthandoverDescID := oncallshifthandoverFields[0].Descriptor()
+	oncallshifthandoverDescID := oncallshifthandoverMixinFields0[0].Descriptor()
 	// oncallshifthandover.DefaultID holds the default value on creation for the id field.
 	oncallshifthandover.DefaultID = oncallshifthandoverDescID.Default.(func() uuid.UUID)
 	oncallshiftmetricsMixin := schema.OncallShiftMetrics{}.Mixin()
-	oncallshiftmetrics.Policy = privacy.NewPolicies(oncallshiftmetricsMixin[0], oncallshiftmetricsMixin[1], schema.OncallShiftMetrics{})
+	oncallshiftmetrics.Policy = privacy.NewPolicies(oncallshiftmetricsMixin[1], oncallshiftmetricsMixin[2], schema.OncallShiftMetrics{})
 	oncallshiftmetrics.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := oncallshiftmetrics.Policy.EvalMutation(ctx, m); err != nil {
@@ -1880,18 +2010,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	oncallshiftmetricsMixinFields0 := oncallshiftmetricsMixin[0].Fields()
+	_ = oncallshiftmetricsMixinFields0
 	oncallshiftmetricsFields := schema.OncallShiftMetrics{}.Fields()
 	_ = oncallshiftmetricsFields
 	// oncallshiftmetricsDescUpdatedAt is the schema descriptor for updated_at field.
-	oncallshiftmetricsDescUpdatedAt := oncallshiftmetricsFields[2].Descriptor()
+	oncallshiftmetricsDescUpdatedAt := oncallshiftmetricsFields[1].Descriptor()
 	// oncallshiftmetrics.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	oncallshiftmetrics.DefaultUpdatedAt = oncallshiftmetricsDescUpdatedAt.Default.(func() time.Time)
 	// oncallshiftmetricsDescID is the schema descriptor for id field.
-	oncallshiftmetricsDescID := oncallshiftmetricsFields[0].Descriptor()
+	oncallshiftmetricsDescID := oncallshiftmetricsMixinFields0[0].Descriptor()
 	// oncallshiftmetrics.DefaultID holds the default value on creation for the id field.
 	oncallshiftmetrics.DefaultID = oncallshiftmetricsDescID.Default.(func() uuid.UUID)
 	organizationMixin := schema.Organization{}.Mixin()
-	organization.Policy = privacy.NewPolicies(organizationMixin[0], organizationMixin[1], schema.Organization{})
+	organization.Policy = privacy.NewPolicies(organizationMixin[1], organizationMixin[2], schema.Organization{})
 	organization.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := organization.Policy.EvalMutation(ctx, m); err != nil {
@@ -1900,14 +2032,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	organizationMixinFields0 := organizationMixin[0].Fields()
+	_ = organizationMixinFields0
 	organizationFields := schema.Organization{}.Fields()
 	_ = organizationFields
 	// organizationDescID is the schema descriptor for id field.
-	organizationDescID := organizationFields[0].Descriptor()
+	organizationDescID := organizationMixinFields0[0].Descriptor()
 	// organization.DefaultID holds the default value on creation for the id field.
 	organization.DefaultID = organizationDescID.Default.(func() uuid.UUID)
 	organizationpreferencesMixin := schema.OrganizationPreferences{}.Mixin()
-	organizationpreferences.Policy = privacy.NewPolicies(organizationpreferencesMixin[0], organizationpreferencesMixin[1], schema.OrganizationPreferences{})
+	organizationpreferences.Policy = privacy.NewPolicies(organizationpreferencesMixin[1], organizationpreferencesMixin[2], schema.OrganizationPreferences{})
 	organizationpreferences.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := organizationpreferences.Policy.EvalMutation(ctx, m); err != nil {
@@ -1916,18 +2050,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	organizationpreferencesMixinFields0 := organizationpreferencesMixin[0].Fields()
+	_ = organizationpreferencesMixinFields0
 	organizationpreferencesFields := schema.OrganizationPreferences{}.Fields()
 	_ = organizationpreferencesFields
 	// organizationpreferencesDescEnableIncidentManagement is the schema descriptor for enable_incident_management field.
-	organizationpreferencesDescEnableIncidentManagement := organizationpreferencesFields[3].Descriptor()
+	organizationpreferencesDescEnableIncidentManagement := organizationpreferencesFields[2].Descriptor()
 	// organizationpreferences.DefaultEnableIncidentManagement holds the default value on creation for the enable_incident_management field.
 	organizationpreferences.DefaultEnableIncidentManagement = organizationpreferencesDescEnableIncidentManagement.Default.(bool)
 	// organizationpreferencesDescID is the schema descriptor for id field.
-	organizationpreferencesDescID := organizationpreferencesFields[0].Descriptor()
+	organizationpreferencesDescID := organizationpreferencesMixinFields0[0].Descriptor()
 	// organizationpreferences.DefaultID holds the default value on creation for the id field.
 	organizationpreferences.DefaultID = organizationpreferencesDescID.Default.(func() uuid.UUID)
 	playbookMixin := schema.Playbook{}.Mixin()
-	playbook.Policy = privacy.NewPolicies(playbookMixin[0], playbookMixin[1], schema.Playbook{})
+	playbook.Policy = privacy.NewPolicies(playbookMixin[1], playbookMixin[2], schema.Playbook{})
 	playbook.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := playbook.Policy.EvalMutation(ctx, m); err != nil {
@@ -1936,14 +2072,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	playbookMixinFields0 := playbookMixin[0].Fields()
+	_ = playbookMixinFields0
 	playbookFields := schema.Playbook{}.Fields()
 	_ = playbookFields
 	// playbookDescID is the schema descriptor for id field.
-	playbookDescID := playbookFields[0].Descriptor()
+	playbookDescID := playbookMixinFields0[0].Descriptor()
 	// playbook.DefaultID holds the default value on creation for the id field.
 	playbook.DefaultID = playbookDescID.Default.(func() uuid.UUID)
 	retrospectiveMixin := schema.Retrospective{}.Mixin()
-	retrospective.Policy = privacy.NewPolicies(retrospectiveMixin[0], retrospectiveMixin[1], schema.Retrospective{})
+	retrospective.Policy = privacy.NewPolicies(retrospectiveMixin[1], retrospectiveMixin[2], schema.Retrospective{})
 	retrospective.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := retrospective.Policy.EvalMutation(ctx, m); err != nil {
@@ -1952,14 +2090,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	retrospectiveMixinFields0 := retrospectiveMixin[0].Fields()
+	_ = retrospectiveMixinFields0
 	retrospectiveFields := schema.Retrospective{}.Fields()
 	_ = retrospectiveFields
 	// retrospectiveDescID is the schema descriptor for id field.
-	retrospectiveDescID := retrospectiveFields[0].Descriptor()
+	retrospectiveDescID := retrospectiveMixinFields0[0].Descriptor()
 	// retrospective.DefaultID holds the default value on creation for the id field.
 	retrospective.DefaultID = retrospectiveDescID.Default.(func() uuid.UUID)
 	reviewMixin := schema.Review{}.Mixin()
-	review.Policy = privacy.NewPolicies(reviewMixin[0], reviewMixin[1], schema.Review{})
+	review.Policy = privacy.NewPolicies(reviewMixin[1], reviewMixin[2], schema.Review{})
 	review.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := review.Policy.EvalMutation(ctx, m); err != nil {
@@ -1968,26 +2108,28 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	reviewMixinFields2 := reviewMixin[2].Fields()
-	_ = reviewMixinFields2
+	reviewMixinFields0 := reviewMixin[0].Fields()
+	_ = reviewMixinFields0
+	reviewMixinFields3 := reviewMixin[3].Fields()
+	_ = reviewMixinFields3
 	reviewFields := schema.Review{}.Fields()
 	_ = reviewFields
 	// reviewDescCreatedAt is the schema descriptor for created_at field.
-	reviewDescCreatedAt := reviewMixinFields2[0].Descriptor()
+	reviewDescCreatedAt := reviewMixinFields3[0].Descriptor()
 	// review.DefaultCreatedAt holds the default value on creation for the created_at field.
 	review.DefaultCreatedAt = reviewDescCreatedAt.Default.(func() time.Time)
 	// reviewDescUpdatedAt is the schema descriptor for updated_at field.
-	reviewDescUpdatedAt := reviewMixinFields2[1].Descriptor()
+	reviewDescUpdatedAt := reviewMixinFields3[1].Descriptor()
 	// review.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	review.DefaultUpdatedAt = reviewDescUpdatedAt.Default.(func() time.Time)
 	// review.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	review.UpdateDefaultUpdatedAt = reviewDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// reviewDescID is the schema descriptor for id field.
-	reviewDescID := reviewFields[0].Descriptor()
+	reviewDescID := reviewMixinFields0[0].Descriptor()
 	// review.DefaultID holds the default value on creation for the id field.
 	review.DefaultID = reviewDescID.Default.(func() uuid.UUID)
 	sequencecounterMixin := schema.SequenceCounter{}.Mixin()
-	sequencecounter.Policy = privacy.NewPolicies(sequencecounterMixin[0], sequencecounterMixin[1], schema.SequenceCounter{})
+	sequencecounter.Policy = privacy.NewPolicies(sequencecounterMixin[1], sequencecounterMixin[2], schema.SequenceCounter{})
 	sequencecounter.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := sequencecounter.Policy.EvalMutation(ctx, m); err != nil {
@@ -1996,18 +2138,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	sequencecounterMixinFields0 := sequencecounterMixin[0].Fields()
+	_ = sequencecounterMixinFields0
 	sequencecounterFields := schema.SequenceCounter{}.Fields()
 	_ = sequencecounterFields
 	// sequencecounterDescValue is the schema descriptor for value field.
-	sequencecounterDescValue := sequencecounterFields[2].Descriptor()
+	sequencecounterDescValue := sequencecounterFields[1].Descriptor()
 	// sequencecounter.ValueValidator is a validator for the "value" field. It is called by the builders before save.
 	sequencecounter.ValueValidator = sequencecounterDescValue.Validators[0].(func(int) error)
 	// sequencecounterDescID is the schema descriptor for id field.
-	sequencecounterDescID := sequencecounterFields[0].Descriptor()
+	sequencecounterDescID := sequencecounterMixinFields0[0].Descriptor()
 	// sequencecounter.DefaultID holds the default value on creation for the id field.
 	sequencecounter.DefaultID = sequencecounterDescID.Default.(func() uuid.UUID)
 	situationMixin := schema.Situation{}.Mixin()
-	situation.Policy = privacy.NewPolicies(situationMixin[0], situationMixin[1], schema.Situation{})
+	situation.Policy = privacy.NewPolicies(situationMixin[1], situationMixin[2], schema.Situation{})
 	situation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := situation.Policy.EvalMutation(ctx, m); err != nil {
@@ -2016,34 +2160,36 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	situationMixinFields2 := situationMixin[2].Fields()
-	_ = situationMixinFields2
+	situationMixinFields0 := situationMixin[0].Fields()
+	_ = situationMixinFields0
+	situationMixinFields3 := situationMixin[3].Fields()
+	_ = situationMixinFields3
 	situationFields := schema.Situation{}.Fields()
 	_ = situationFields
 	// situationDescCreatedAt is the schema descriptor for created_at field.
-	situationDescCreatedAt := situationMixinFields2[0].Descriptor()
+	situationDescCreatedAt := situationMixinFields3[0].Descriptor()
 	// situation.DefaultCreatedAt holds the default value on creation for the created_at field.
 	situation.DefaultCreatedAt = situationDescCreatedAt.Default.(func() time.Time)
 	// situationDescUpdatedAt is the schema descriptor for updated_at field.
-	situationDescUpdatedAt := situationMixinFields2[1].Descriptor()
+	situationDescUpdatedAt := situationMixinFields3[1].Descriptor()
 	// situation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	situation.DefaultUpdatedAt = situationDescUpdatedAt.Default.(func() time.Time)
 	// situation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	situation.UpdateDefaultUpdatedAt = situationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// situationDescNumber is the schema descriptor for number field.
-	situationDescNumber := situationFields[1].Descriptor()
+	situationDescNumber := situationFields[0].Descriptor()
 	// situation.NumberValidator is a validator for the "number" field. It is called by the builders before save.
 	situation.NumberValidator = situationDescNumber.Validators[0].(func(int) error)
 	// situationDescTitle is the schema descriptor for title field.
-	situationDescTitle := situationFields[2].Descriptor()
+	situationDescTitle := situationFields[1].Descriptor()
 	// situation.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	situation.TitleValidator = situationDescTitle.Validators[0].(func(string) error)
 	// situationDescID is the schema descriptor for id field.
-	situationDescID := situationFields[0].Descriptor()
+	situationDescID := situationMixinFields0[0].Descriptor()
 	// situation.DefaultID holds the default value on creation for the id field.
 	situation.DefaultID = situationDescID.Default.(func() uuid.UUID)
 	situationactionMixin := schema.SituationAction{}.Mixin()
-	situationaction.Policy = privacy.NewPolicies(situationactionMixin[0], situationactionMixin[1], schema.SituationAction{})
+	situationaction.Policy = privacy.NewPolicies(situationactionMixin[1], situationactionMixin[2], schema.SituationAction{})
 	situationaction.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := situationaction.Policy.EvalMutation(ctx, m); err != nil {
@@ -2052,14 +2198,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	situationactionMixinFields0 := situationactionMixin[0].Fields()
+	_ = situationactionMixinFields0
 	situationactionFields := schema.SituationAction{}.Fields()
 	_ = situationactionFields
 	// situationactionDescID is the schema descriptor for id field.
-	situationactionDescID := situationactionFields[0].Descriptor()
+	situationactionDescID := situationactionMixinFields0[0].Descriptor()
 	// situationaction.DefaultID holds the default value on creation for the id field.
 	situationaction.DefaultID = situationactionDescID.Default.(func() uuid.UUID)
 	situationentityMixin := schema.SituationEntity{}.Mixin()
-	situationentity.Policy = privacy.NewPolicies(situationentityMixin[0], situationentityMixin[1], schema.SituationEntity{})
+	situationentity.Policy = privacy.NewPolicies(situationentityMixin[1], situationentityMixin[2], schema.SituationEntity{})
 	situationentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := situationentity.Policy.EvalMutation(ctx, m); err != nil {
@@ -2068,14 +2216,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	situationentityMixinFields0 := situationentityMixin[0].Fields()
+	_ = situationentityMixinFields0
 	situationentityFields := schema.SituationEntity{}.Fields()
 	_ = situationentityFields
 	// situationentityDescID is the schema descriptor for id field.
-	situationentityDescID := situationentityFields[0].Descriptor()
+	situationentityDescID := situationentityMixinFields0[0].Descriptor()
 	// situationentity.DefaultID holds the default value on creation for the id field.
 	situationentity.DefaultID = situationentityDescID.Default.(func() uuid.UUID)
 	situationjudgmentMixin := schema.SituationJudgment{}.Mixin()
-	situationjudgment.Policy = privacy.NewPolicies(situationjudgmentMixin[0], situationjudgmentMixin[1], schema.SituationJudgment{})
+	situationjudgment.Policy = privacy.NewPolicies(situationjudgmentMixin[1], situationjudgmentMixin[2], schema.SituationJudgment{})
 	situationjudgment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := situationjudgment.Policy.EvalMutation(ctx, m); err != nil {
@@ -2084,14 +2234,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	situationjudgmentMixinFields0 := situationjudgmentMixin[0].Fields()
+	_ = situationjudgmentMixinFields0
 	situationjudgmentFields := schema.SituationJudgment{}.Fields()
 	_ = situationjudgmentFields
 	// situationjudgmentDescID is the schema descriptor for id field.
-	situationjudgmentDescID := situationjudgmentFields[0].Descriptor()
+	situationjudgmentDescID := situationjudgmentMixinFields0[0].Descriptor()
 	// situationjudgment.DefaultID holds the default value on creation for the id field.
 	situationjudgment.DefaultID = situationjudgmentDescID.Default.(func() uuid.UUID)
 	situationnoticeMixin := schema.SituationNotice{}.Mixin()
-	situationnotice.Policy = privacy.NewPolicies(situationnoticeMixin[0], situationnoticeMixin[1], schema.SituationNotice{})
+	situationnotice.Policy = privacy.NewPolicies(situationnoticeMixin[1], situationnoticeMixin[2], schema.SituationNotice{})
 	situationnotice.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := situationnotice.Policy.EvalMutation(ctx, m); err != nil {
@@ -2100,30 +2252,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	situationnoticeMixinFields2 := situationnoticeMixin[2].Fields()
-	_ = situationnoticeMixinFields2
+	situationnoticeMixinFields0 := situationnoticeMixin[0].Fields()
+	_ = situationnoticeMixinFields0
+	situationnoticeMixinFields3 := situationnoticeMixin[3].Fields()
+	_ = situationnoticeMixinFields3
 	situationnoticeFields := schema.SituationNotice{}.Fields()
 	_ = situationnoticeFields
 	// situationnoticeDescCreatedAt is the schema descriptor for created_at field.
-	situationnoticeDescCreatedAt := situationnoticeMixinFields2[0].Descriptor()
+	situationnoticeDescCreatedAt := situationnoticeMixinFields3[0].Descriptor()
 	// situationnotice.DefaultCreatedAt holds the default value on creation for the created_at field.
 	situationnotice.DefaultCreatedAt = situationnoticeDescCreatedAt.Default.(func() time.Time)
 	// situationnoticeDescUpdatedAt is the schema descriptor for updated_at field.
-	situationnoticeDescUpdatedAt := situationnoticeMixinFields2[1].Descriptor()
+	situationnoticeDescUpdatedAt := situationnoticeMixinFields3[1].Descriptor()
 	// situationnotice.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	situationnotice.DefaultUpdatedAt = situationnoticeDescUpdatedAt.Default.(func() time.Time)
 	// situationnotice.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	situationnotice.UpdateDefaultUpdatedAt = situationnoticeDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// situationnoticeDescChannelID is the schema descriptor for channel_id field.
-	situationnoticeDescChannelID := situationnoticeFields[3].Descriptor()
+	situationnoticeDescChannelID := situationnoticeFields[2].Descriptor()
 	// situationnotice.ChannelIDValidator is a validator for the "channel_id" field. It is called by the builders before save.
 	situationnotice.ChannelIDValidator = situationnoticeDescChannelID.Validators[0].(func(string) error)
 	// situationnoticeDescID is the schema descriptor for id field.
-	situationnoticeDescID := situationnoticeFields[0].Descriptor()
+	situationnoticeDescID := situationnoticeMixinFields0[0].Descriptor()
 	// situationnotice.DefaultID holds the default value on creation for the id field.
 	situationnotice.DefaultID = situationnoticeDescID.Default.(func() uuid.UUID)
 	situationobservationMixin := schema.SituationObservation{}.Mixin()
-	situationobservation.Policy = privacy.NewPolicies(situationobservationMixin[0], situationobservationMixin[1], schema.SituationObservation{})
+	situationobservation.Policy = privacy.NewPolicies(situationobservationMixin[1], situationobservationMixin[2], schema.SituationObservation{})
 	situationobservation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := situationobservation.Policy.EvalMutation(ctx, m); err != nil {
@@ -2132,20 +2286,22 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	situationobservationMixinFields0 := situationobservationMixin[0].Fields()
+	_ = situationobservationMixinFields0
 	situationobservationFields := schema.SituationObservation{}.Fields()
 	_ = situationobservationFields
 	// situationobservationDescObservedRevision is the schema descriptor for observed_revision field.
-	situationobservationDescObservedRevision := situationobservationFields[6].Descriptor()
+	situationobservationDescObservedRevision := situationobservationFields[5].Descriptor()
 	// situationobservation.DefaultObservedRevision holds the default value on creation for the observed_revision field.
 	situationobservation.DefaultObservedRevision = situationobservationDescObservedRevision.Default.(int)
 	// situationobservation.ObservedRevisionValidator is a validator for the "observed_revision" field. It is called by the builders before save.
 	situationobservation.ObservedRevisionValidator = situationobservationDescObservedRevision.Validators[0].(func(int) error)
 	// situationobservationDescID is the schema descriptor for id field.
-	situationobservationDescID := situationobservationFields[0].Descriptor()
+	situationobservationDescID := situationobservationMixinFields0[0].Descriptor()
 	// situationobservation.DefaultID holds the default value on creation for the id field.
 	situationobservation.DefaultID = situationobservationDescID.Default.(func() uuid.UUID)
 	situationobservationgroupMixin := schema.SituationObservationGroup{}.Mixin()
-	situationobservationgroup.Policy = privacy.NewPolicies(situationobservationgroupMixin[0], situationobservationgroupMixin[1], schema.SituationObservationGroup{})
+	situationobservationgroup.Policy = privacy.NewPolicies(situationobservationgroupMixin[1], situationobservationgroupMixin[2], schema.SituationObservationGroup{})
 	situationobservationgroup.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := situationobservationgroup.Policy.EvalMutation(ctx, m); err != nil {
@@ -2154,30 +2310,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	situationobservationgroupMixinFields2 := situationobservationgroupMixin[2].Fields()
-	_ = situationobservationgroupMixinFields2
+	situationobservationgroupMixinFields0 := situationobservationgroupMixin[0].Fields()
+	_ = situationobservationgroupMixinFields0
+	situationobservationgroupMixinFields3 := situationobservationgroupMixin[3].Fields()
+	_ = situationobservationgroupMixinFields3
 	situationobservationgroupFields := schema.SituationObservationGroup{}.Fields()
 	_ = situationobservationgroupFields
 	// situationobservationgroupDescCreatedAt is the schema descriptor for created_at field.
-	situationobservationgroupDescCreatedAt := situationobservationgroupMixinFields2[0].Descriptor()
+	situationobservationgroupDescCreatedAt := situationobservationgroupMixinFields3[0].Descriptor()
 	// situationobservationgroup.DefaultCreatedAt holds the default value on creation for the created_at field.
 	situationobservationgroup.DefaultCreatedAt = situationobservationgroupDescCreatedAt.Default.(func() time.Time)
 	// situationobservationgroupDescUpdatedAt is the schema descriptor for updated_at field.
-	situationobservationgroupDescUpdatedAt := situationobservationgroupMixinFields2[1].Descriptor()
+	situationobservationgroupDescUpdatedAt := situationobservationgroupMixinFields3[1].Descriptor()
 	// situationobservationgroup.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	situationobservationgroup.DefaultUpdatedAt = situationobservationgroupDescUpdatedAt.Default.(func() time.Time)
 	// situationobservationgroup.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	situationobservationgroup.UpdateDefaultUpdatedAt = situationobservationgroupDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// situationobservationgroupDescTitle is the schema descriptor for title field.
-	situationobservationgroupDescTitle := situationobservationgroupFields[2].Descriptor()
+	situationobservationgroupDescTitle := situationobservationgroupFields[1].Descriptor()
 	// situationobservationgroup.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	situationobservationgroup.TitleValidator = situationobservationgroupDescTitle.Validators[0].(func(string) error)
 	// situationobservationgroupDescID is the schema descriptor for id field.
-	situationobservationgroupDescID := situationobservationgroupFields[0].Descriptor()
+	situationobservationgroupDescID := situationobservationgroupMixinFields0[0].Descriptor()
 	// situationobservationgroup.DefaultID holds the default value on creation for the id field.
 	situationobservationgroup.DefaultID = situationobservationgroupDescID.Default.(func() uuid.UUID)
 	situationsignalattentionMixin := schema.SituationSignalAttention{}.Mixin()
-	situationsignalattention.Policy = privacy.NewPolicies(situationsignalattentionMixin[0], situationsignalattentionMixin[1], schema.SituationSignalAttention{})
+	situationsignalattention.Policy = privacy.NewPolicies(situationsignalattentionMixin[1], situationsignalattentionMixin[2], schema.SituationSignalAttention{})
 	situationsignalattention.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := situationsignalattention.Policy.EvalMutation(ctx, m); err != nil {
@@ -2186,14 +2344,16 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	situationsignalattentionMixinFields0 := situationsignalattentionMixin[0].Fields()
+	_ = situationsignalattentionMixinFields0
 	situationsignalattentionFields := schema.SituationSignalAttention{}.Fields()
 	_ = situationsignalattentionFields
 	// situationsignalattentionDescID is the schema descriptor for id field.
-	situationsignalattentionDescID := situationsignalattentionFields[0].Descriptor()
+	situationsignalattentionDescID := situationsignalattentionMixinFields0[0].Descriptor()
 	// situationsignalattention.DefaultID holds the default value on creation for the id field.
 	situationsignalattention.DefaultID = situationsignalattentionDescID.Default.(func() uuid.UUID)
 	systemanalysisMixin := schema.SystemAnalysis{}.Mixin()
-	systemanalysis.Policy = privacy.NewPolicies(systemanalysisMixin[0], systemanalysisMixin[1], schema.SystemAnalysis{})
+	systemanalysis.Policy = privacy.NewPolicies(systemanalysisMixin[1], systemanalysisMixin[2], schema.SystemAnalysis{})
 	systemanalysis.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := systemanalysis.Policy.EvalMutation(ctx, m); err != nil {
@@ -2202,26 +2362,28 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	systemanalysisMixinFields2 := systemanalysisMixin[2].Fields()
-	_ = systemanalysisMixinFields2
+	systemanalysisMixinFields0 := systemanalysisMixin[0].Fields()
+	_ = systemanalysisMixinFields0
+	systemanalysisMixinFields3 := systemanalysisMixin[3].Fields()
+	_ = systemanalysisMixinFields3
 	systemanalysisFields := schema.SystemAnalysis{}.Fields()
 	_ = systemanalysisFields
 	// systemanalysisDescCreatedAt is the schema descriptor for created_at field.
-	systemanalysisDescCreatedAt := systemanalysisMixinFields2[0].Descriptor()
+	systemanalysisDescCreatedAt := systemanalysisMixinFields3[0].Descriptor()
 	// systemanalysis.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemanalysis.DefaultCreatedAt = systemanalysisDescCreatedAt.Default.(func() time.Time)
 	// systemanalysisDescUpdatedAt is the schema descriptor for updated_at field.
-	systemanalysisDescUpdatedAt := systemanalysisMixinFields2[1].Descriptor()
+	systemanalysisDescUpdatedAt := systemanalysisMixinFields3[1].Descriptor()
 	// systemanalysis.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemanalysis.DefaultUpdatedAt = systemanalysisDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysis.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysis.UpdateDefaultUpdatedAt = systemanalysisDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemanalysisDescID is the schema descriptor for id field.
-	systemanalysisDescID := systemanalysisFields[0].Descriptor()
+	systemanalysisDescID := systemanalysisMixinFields0[0].Descriptor()
 	// systemanalysis.DefaultID holds the default value on creation for the id field.
 	systemanalysis.DefaultID = systemanalysisDescID.Default.(func() uuid.UUID)
 	systemanalysisentityMixin := schema.SystemAnalysisEntity{}.Mixin()
-	systemanalysisentity.Policy = privacy.NewPolicies(systemanalysisentityMixin[0], systemanalysisentityMixin[1], schema.SystemAnalysisEntity{})
+	systemanalysisentity.Policy = privacy.NewPolicies(systemanalysisentityMixin[1], systemanalysisentityMixin[2], schema.SystemAnalysisEntity{})
 	systemanalysisentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := systemanalysisentity.Policy.EvalMutation(ctx, m); err != nil {
@@ -2230,30 +2392,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	systemanalysisentityMixinFields2 := systemanalysisentityMixin[2].Fields()
-	_ = systemanalysisentityMixinFields2
+	systemanalysisentityMixinFields0 := systemanalysisentityMixin[0].Fields()
+	_ = systemanalysisentityMixinFields0
+	systemanalysisentityMixinFields3 := systemanalysisentityMixin[3].Fields()
+	_ = systemanalysisentityMixinFields3
 	systemanalysisentityFields := schema.SystemAnalysisEntity{}.Fields()
 	_ = systemanalysisentityFields
 	// systemanalysisentityDescCreatedAt is the schema descriptor for created_at field.
-	systemanalysisentityDescCreatedAt := systemanalysisentityMixinFields2[0].Descriptor()
+	systemanalysisentityDescCreatedAt := systemanalysisentityMixinFields3[0].Descriptor()
 	// systemanalysisentity.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemanalysisentity.DefaultCreatedAt = systemanalysisentityDescCreatedAt.Default.(func() time.Time)
 	// systemanalysisentityDescUpdatedAt is the schema descriptor for updated_at field.
-	systemanalysisentityDescUpdatedAt := systemanalysisentityMixinFields2[1].Descriptor()
+	systemanalysisentityDescUpdatedAt := systemanalysisentityMixinFields3[1].Descriptor()
 	// systemanalysisentity.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemanalysisentity.DefaultUpdatedAt = systemanalysisentityDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysisentity.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisentity.UpdateDefaultUpdatedAt = systemanalysisentityDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemanalysisentityDescHidden is the schema descriptor for hidden field.
-	systemanalysisentityDescHidden := systemanalysisentityFields[5].Descriptor()
+	systemanalysisentityDescHidden := systemanalysisentityFields[4].Descriptor()
 	// systemanalysisentity.DefaultHidden holds the default value on creation for the hidden field.
 	systemanalysisentity.DefaultHidden = systemanalysisentityDescHidden.Default.(bool)
 	// systemanalysisentityDescID is the schema descriptor for id field.
-	systemanalysisentityDescID := systemanalysisentityFields[0].Descriptor()
+	systemanalysisentityDescID := systemanalysisentityMixinFields0[0].Descriptor()
 	// systemanalysisentity.DefaultID holds the default value on creation for the id field.
 	systemanalysisentity.DefaultID = systemanalysisentityDescID.Default.(func() uuid.UUID)
 	systemanalysisentryMixin := schema.SystemAnalysisEntry{}.Mixin()
-	systemanalysisentry.Policy = privacy.NewPolicies(systemanalysisentryMixin[0], systemanalysisentryMixin[1], schema.SystemAnalysisEntry{})
+	systemanalysisentry.Policy = privacy.NewPolicies(systemanalysisentryMixin[1], systemanalysisentryMixin[2], schema.SystemAnalysisEntry{})
 	systemanalysisentry.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := systemanalysisentry.Policy.EvalMutation(ctx, m); err != nil {
@@ -2262,38 +2426,40 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	systemanalysisentryMixinFields2 := systemanalysisentryMixin[2].Fields()
-	_ = systemanalysisentryMixinFields2
+	systemanalysisentryMixinFields0 := systemanalysisentryMixin[0].Fields()
+	_ = systemanalysisentryMixinFields0
+	systemanalysisentryMixinFields3 := systemanalysisentryMixin[3].Fields()
+	_ = systemanalysisentryMixinFields3
 	systemanalysisentryFields := schema.SystemAnalysisEntry{}.Fields()
 	_ = systemanalysisentryFields
 	// systemanalysisentryDescCreatedAt is the schema descriptor for created_at field.
-	systemanalysisentryDescCreatedAt := systemanalysisentryMixinFields2[0].Descriptor()
+	systemanalysisentryDescCreatedAt := systemanalysisentryMixinFields3[0].Descriptor()
 	// systemanalysisentry.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemanalysisentry.DefaultCreatedAt = systemanalysisentryDescCreatedAt.Default.(func() time.Time)
 	// systemanalysisentryDescUpdatedAt is the schema descriptor for updated_at field.
-	systemanalysisentryDescUpdatedAt := systemanalysisentryMixinFields2[1].Descriptor()
+	systemanalysisentryDescUpdatedAt := systemanalysisentryMixinFields3[1].Descriptor()
 	// systemanalysisentry.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemanalysisentry.DefaultUpdatedAt = systemanalysisentryDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysisentry.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisentry.UpdateDefaultUpdatedAt = systemanalysisentryDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemanalysisentryDescSequence is the schema descriptor for sequence field.
-	systemanalysisentryDescSequence := systemanalysisentryFields[6].Descriptor()
+	systemanalysisentryDescSequence := systemanalysisentryFields[5].Descriptor()
 	// systemanalysisentry.DefaultSequence holds the default value on creation for the sequence field.
 	systemanalysisentry.DefaultSequence = systemanalysisentryDescSequence.Default.(int)
 	// systemanalysisentryDescTitle is the schema descriptor for title field.
-	systemanalysisentryDescTitle := systemanalysisentryFields[7].Descriptor()
+	systemanalysisentryDescTitle := systemanalysisentryFields[6].Descriptor()
 	// systemanalysisentry.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	systemanalysisentry.TitleValidator = systemanalysisentryDescTitle.Validators[0].(func(string) error)
 	// systemanalysisentryDescVersion is the schema descriptor for version field.
-	systemanalysisentryDescVersion := systemanalysisentryFields[9].Descriptor()
+	systemanalysisentryDescVersion := systemanalysisentryFields[8].Descriptor()
 	// systemanalysisentry.DefaultVersion holds the default value on creation for the version field.
 	systemanalysisentry.DefaultVersion = systemanalysisentryDescVersion.Default.(int)
 	// systemanalysisentryDescID is the schema descriptor for id field.
-	systemanalysisentryDescID := systemanalysisentryFields[0].Descriptor()
+	systemanalysisentryDescID := systemanalysisentryMixinFields0[0].Descriptor()
 	// systemanalysisentry.DefaultID holds the default value on creation for the id field.
 	systemanalysisentry.DefaultID = systemanalysisentryDescID.Default.(func() uuid.UUID)
 	systemanalysisentrysubjectMixin := schema.SystemAnalysisEntrySubject{}.Mixin()
-	systemanalysisentrysubject.Policy = privacy.NewPolicies(systemanalysisentrysubjectMixin[0], systemanalysisentrysubjectMixin[1], schema.SystemAnalysisEntrySubject{})
+	systemanalysisentrysubject.Policy = privacy.NewPolicies(systemanalysisentrysubjectMixin[1], systemanalysisentrysubjectMixin[2], schema.SystemAnalysisEntrySubject{})
 	systemanalysisentrysubject.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := systemanalysisentrysubject.Policy.EvalMutation(ctx, m); err != nil {
@@ -2302,30 +2468,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	systemanalysisentrysubjectMixinFields2 := systemanalysisentrysubjectMixin[2].Fields()
-	_ = systemanalysisentrysubjectMixinFields2
+	systemanalysisentrysubjectMixinFields0 := systemanalysisentrysubjectMixin[0].Fields()
+	_ = systemanalysisentrysubjectMixinFields0
+	systemanalysisentrysubjectMixinFields3 := systemanalysisentrysubjectMixin[3].Fields()
+	_ = systemanalysisentrysubjectMixinFields3
 	systemanalysisentrysubjectFields := schema.SystemAnalysisEntrySubject{}.Fields()
 	_ = systemanalysisentrysubjectFields
 	// systemanalysisentrysubjectDescCreatedAt is the schema descriptor for created_at field.
-	systemanalysisentrysubjectDescCreatedAt := systemanalysisentrysubjectMixinFields2[0].Descriptor()
+	systemanalysisentrysubjectDescCreatedAt := systemanalysisentrysubjectMixinFields3[0].Descriptor()
 	// systemanalysisentrysubject.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemanalysisentrysubject.DefaultCreatedAt = systemanalysisentrysubjectDescCreatedAt.Default.(func() time.Time)
 	// systemanalysisentrysubjectDescUpdatedAt is the schema descriptor for updated_at field.
-	systemanalysisentrysubjectDescUpdatedAt := systemanalysisentrysubjectMixinFields2[1].Descriptor()
+	systemanalysisentrysubjectDescUpdatedAt := systemanalysisentrysubjectMixinFields3[1].Descriptor()
 	// systemanalysisentrysubject.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemanalysisentrysubject.DefaultUpdatedAt = systemanalysisentrysubjectDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysisentrysubject.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisentrysubject.UpdateDefaultUpdatedAt = systemanalysisentrysubjectDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemanalysisentrysubjectDescRole is the schema descriptor for role field.
-	systemanalysisentrysubjectDescRole := systemanalysisentrysubjectFields[5].Descriptor()
+	systemanalysisentrysubjectDescRole := systemanalysisentrysubjectFields[4].Descriptor()
 	// systemanalysisentrysubject.RoleValidator is a validator for the "role" field. It is called by the builders before save.
 	systemanalysisentrysubject.RoleValidator = systemanalysisentrysubjectDescRole.Validators[0].(func(string) error)
 	// systemanalysisentrysubjectDescID is the schema descriptor for id field.
-	systemanalysisentrysubjectDescID := systemanalysisentrysubjectFields[0].Descriptor()
+	systemanalysisentrysubjectDescID := systemanalysisentrysubjectMixinFields0[0].Descriptor()
 	// systemanalysisentrysubject.DefaultID holds the default value on creation for the id field.
 	systemanalysisentrysubject.DefaultID = systemanalysisentrysubjectDescID.Default.(func() uuid.UUID)
 	systemanalysisrelationshipMixin := schema.SystemAnalysisRelationship{}.Mixin()
-	systemanalysisrelationship.Policy = privacy.NewPolicies(systemanalysisrelationshipMixin[0], systemanalysisrelationshipMixin[1], schema.SystemAnalysisRelationship{})
+	systemanalysisrelationship.Policy = privacy.NewPolicies(systemanalysisrelationshipMixin[1], systemanalysisrelationshipMixin[2], schema.SystemAnalysisRelationship{})
 	systemanalysisrelationship.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := systemanalysisrelationship.Policy.EvalMutation(ctx, m); err != nil {
@@ -2334,30 +2502,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	systemanalysisrelationshipMixinFields2 := systemanalysisrelationshipMixin[2].Fields()
-	_ = systemanalysisrelationshipMixinFields2
+	systemanalysisrelationshipMixinFields0 := systemanalysisrelationshipMixin[0].Fields()
+	_ = systemanalysisrelationshipMixinFields0
+	systemanalysisrelationshipMixinFields3 := systemanalysisrelationshipMixin[3].Fields()
+	_ = systemanalysisrelationshipMixinFields3
 	systemanalysisrelationshipFields := schema.SystemAnalysisRelationship{}.Fields()
 	_ = systemanalysisrelationshipFields
 	// systemanalysisrelationshipDescCreatedAt is the schema descriptor for created_at field.
-	systemanalysisrelationshipDescCreatedAt := systemanalysisrelationshipMixinFields2[0].Descriptor()
+	systemanalysisrelationshipDescCreatedAt := systemanalysisrelationshipMixinFields3[0].Descriptor()
 	// systemanalysisrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemanalysisrelationship.DefaultCreatedAt = systemanalysisrelationshipDescCreatedAt.Default.(func() time.Time)
 	// systemanalysisrelationshipDescUpdatedAt is the schema descriptor for updated_at field.
-	systemanalysisrelationshipDescUpdatedAt := systemanalysisrelationshipMixinFields2[1].Descriptor()
+	systemanalysisrelationshipDescUpdatedAt := systemanalysisrelationshipMixinFields3[1].Descriptor()
 	// systemanalysisrelationship.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemanalysisrelationship.DefaultUpdatedAt = systemanalysisrelationshipDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysisrelationship.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemanalysisrelationship.UpdateDefaultUpdatedAt = systemanalysisrelationshipDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemanalysisrelationshipDescHidden is the schema descriptor for hidden field.
-	systemanalysisrelationshipDescHidden := systemanalysisrelationshipFields[3].Descriptor()
+	systemanalysisrelationshipDescHidden := systemanalysisrelationshipFields[2].Descriptor()
 	// systemanalysisrelationship.DefaultHidden holds the default value on creation for the hidden field.
 	systemanalysisrelationship.DefaultHidden = systemanalysisrelationshipDescHidden.Default.(bool)
 	// systemanalysisrelationshipDescID is the schema descriptor for id field.
-	systemanalysisrelationshipDescID := systemanalysisrelationshipFields[0].Descriptor()
+	systemanalysisrelationshipDescID := systemanalysisrelationshipMixinFields0[0].Descriptor()
 	// systemanalysisrelationship.DefaultID holds the default value on creation for the id field.
 	systemanalysisrelationship.DefaultID = systemanalysisrelationshipDescID.Default.(func() uuid.UUID)
 	systemhazardMixin := schema.SystemHazard{}.Mixin()
-	systemhazard.Policy = privacy.NewPolicies(systemhazardMixin[0], systemhazardMixin[1], schema.SystemHazard{})
+	systemhazard.Policy = privacy.NewPolicies(systemhazardMixin[1], systemhazardMixin[2], schema.SystemHazard{})
 	systemhazard.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := systemhazard.Policy.EvalMutation(ctx, m); err != nil {
@@ -2366,30 +2536,32 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	systemhazardMixinFields2 := systemhazardMixin[2].Fields()
-	_ = systemhazardMixinFields2
+	systemhazardMixinFields0 := systemhazardMixin[0].Fields()
+	_ = systemhazardMixinFields0
+	systemhazardMixinFields3 := systemhazardMixin[3].Fields()
+	_ = systemhazardMixinFields3
 	systemhazardFields := schema.SystemHazard{}.Fields()
 	_ = systemhazardFields
 	// systemhazardDescCreatedAt is the schema descriptor for created_at field.
-	systemhazardDescCreatedAt := systemhazardMixinFields2[0].Descriptor()
+	systemhazardDescCreatedAt := systemhazardMixinFields3[0].Descriptor()
 	// systemhazard.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemhazard.DefaultCreatedAt = systemhazardDescCreatedAt.Default.(func() time.Time)
 	// systemhazardDescUpdatedAt is the schema descriptor for updated_at field.
-	systemhazardDescUpdatedAt := systemhazardMixinFields2[1].Descriptor()
+	systemhazardDescUpdatedAt := systemhazardMixinFields3[1].Descriptor()
 	// systemhazard.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemhazard.DefaultUpdatedAt = systemhazardDescUpdatedAt.Default.(func() time.Time)
 	// systemhazard.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemhazard.UpdateDefaultUpdatedAt = systemhazardDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemhazardDescTitle is the schema descriptor for title field.
-	systemhazardDescTitle := systemhazardFields[1].Descriptor()
+	systemhazardDescTitle := systemhazardFields[0].Descriptor()
 	// systemhazard.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	systemhazard.TitleValidator = systemhazardDescTitle.Validators[0].(func(string) error)
 	// systemhazardDescID is the schema descriptor for id field.
-	systemhazardDescID := systemhazardFields[0].Descriptor()
+	systemhazardDescID := systemhazardMixinFields0[0].Descriptor()
 	// systemhazard.DefaultID holds the default value on creation for the id field.
 	systemhazard.DefaultID = systemhazardDescID.Default.(func() uuid.UUID)
 	systemhazardriskassessmentMixin := schema.SystemHazardRiskAssessment{}.Mixin()
-	systemhazardriskassessment.Policy = privacy.NewPolicies(systemhazardriskassessmentMixin[0], systemhazardriskassessmentMixin[1], schema.SystemHazardRiskAssessment{})
+	systemhazardriskassessment.Policy = privacy.NewPolicies(systemhazardriskassessmentMixin[1], systemhazardriskassessmentMixin[2], schema.SystemHazardRiskAssessment{})
 	systemhazardriskassessment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := systemhazardriskassessment.Policy.EvalMutation(ctx, m); err != nil {
@@ -2398,42 +2570,44 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	systemhazardriskassessmentMixinFields2 := systemhazardriskassessmentMixin[2].Fields()
-	_ = systemhazardriskassessmentMixinFields2
+	systemhazardriskassessmentMixinFields0 := systemhazardriskassessmentMixin[0].Fields()
+	_ = systemhazardriskassessmentMixinFields0
+	systemhazardriskassessmentMixinFields3 := systemhazardriskassessmentMixin[3].Fields()
+	_ = systemhazardriskassessmentMixinFields3
 	systemhazardriskassessmentFields := schema.SystemHazardRiskAssessment{}.Fields()
 	_ = systemhazardriskassessmentFields
 	// systemhazardriskassessmentDescCreatedAt is the schema descriptor for created_at field.
-	systemhazardriskassessmentDescCreatedAt := systemhazardriskassessmentMixinFields2[0].Descriptor()
+	systemhazardriskassessmentDescCreatedAt := systemhazardriskassessmentMixinFields3[0].Descriptor()
 	// systemhazardriskassessment.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemhazardriskassessment.DefaultCreatedAt = systemhazardriskassessmentDescCreatedAt.Default.(func() time.Time)
 	// systemhazardriskassessmentDescUpdatedAt is the schema descriptor for updated_at field.
-	systemhazardriskassessmentDescUpdatedAt := systemhazardriskassessmentMixinFields2[1].Descriptor()
+	systemhazardriskassessmentDescUpdatedAt := systemhazardriskassessmentMixinFields3[1].Descriptor()
 	// systemhazardriskassessment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemhazardriskassessment.DefaultUpdatedAt = systemhazardriskassessmentDescUpdatedAt.Default.(func() time.Time)
 	// systemhazardriskassessment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemhazardriskassessment.UpdateDefaultUpdatedAt = systemhazardriskassessmentDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemhazardriskassessmentDescRevision is the schema descriptor for revision field.
-	systemhazardriskassessmentDescRevision := systemhazardriskassessmentFields[2].Descriptor()
+	systemhazardriskassessmentDescRevision := systemhazardriskassessmentFields[1].Descriptor()
 	// systemhazardriskassessment.RevisionValidator is a validator for the "revision" field. It is called by the builders before save.
 	systemhazardriskassessment.RevisionValidator = systemhazardriskassessmentDescRevision.Validators[0].(func(int) error)
 	// systemhazardriskassessmentDescLikelihood is the schema descriptor for likelihood field.
-	systemhazardriskassessmentDescLikelihood := systemhazardriskassessmentFields[3].Descriptor()
+	systemhazardriskassessmentDescLikelihood := systemhazardriskassessmentFields[2].Descriptor()
 	// systemhazardriskassessment.LikelihoodValidator is a validator for the "likelihood" field. It is called by the builders before save.
 	systemhazardriskassessment.LikelihoodValidator = systemhazardriskassessmentDescLikelihood.Validators[0].(func(string) error)
 	// systemhazardriskassessmentDescConsequence is the schema descriptor for consequence field.
-	systemhazardriskassessmentDescConsequence := systemhazardriskassessmentFields[4].Descriptor()
+	systemhazardriskassessmentDescConsequence := systemhazardriskassessmentFields[3].Descriptor()
 	// systemhazardriskassessment.ConsequenceValidator is a validator for the "consequence" field. It is called by the builders before save.
 	systemhazardriskassessment.ConsequenceValidator = systemhazardriskassessmentDescConsequence.Validators[0].(func(string) error)
 	// systemhazardriskassessmentDescRiskLevel is the schema descriptor for risk_level field.
-	systemhazardriskassessmentDescRiskLevel := systemhazardriskassessmentFields[5].Descriptor()
+	systemhazardriskassessmentDescRiskLevel := systemhazardriskassessmentFields[4].Descriptor()
 	// systemhazardriskassessment.RiskLevelValidator is a validator for the "risk_level" field. It is called by the builders before save.
 	systemhazardriskassessment.RiskLevelValidator = systemhazardriskassessmentDescRiskLevel.Validators[0].(func(string) error)
 	// systemhazardriskassessmentDescID is the schema descriptor for id field.
-	systemhazardriskassessmentDescID := systemhazardriskassessmentFields[0].Descriptor()
+	systemhazardriskassessmentDescID := systemhazardriskassessmentMixinFields0[0].Descriptor()
 	// systemhazardriskassessment.DefaultID holds the default value on creation for the id field.
 	systemhazardriskassessment.DefaultID = systemhazardriskassessmentDescID.Default.(func() uuid.UUID)
 	taskMixin := schema.Task{}.Mixin()
-	task.Policy = privacy.NewPolicies(taskMixin[0], taskMixin[1], schema.Task{})
+	task.Policy = privacy.NewPolicies(taskMixin[1], taskMixin[2], schema.Task{})
 	task.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := task.Policy.EvalMutation(ctx, m); err != nil {
@@ -2442,39 +2616,41 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	taskMixinHooks3 := taskMixin[3].Hooks()
+	taskMixinHooks4 := taskMixin[4].Hooks()
 
-	task.Hooks[1] = taskMixinHooks3[0]
-	taskMixinInters3 := taskMixin[3].Interceptors()
-	task.Interceptors[0] = taskMixinInters3[0]
-	taskMixinFields2 := taskMixin[2].Fields()
-	_ = taskMixinFields2
+	task.Hooks[1] = taskMixinHooks4[0]
+	taskMixinInters4 := taskMixin[4].Interceptors()
+	task.Interceptors[0] = taskMixinInters4[0]
+	taskMixinFields0 := taskMixin[0].Fields()
+	_ = taskMixinFields0
+	taskMixinFields3 := taskMixin[3].Fields()
+	_ = taskMixinFields3
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescCreatedAt is the schema descriptor for created_at field.
-	taskDescCreatedAt := taskMixinFields2[0].Descriptor()
+	taskDescCreatedAt := taskMixinFields3[0].Descriptor()
 	// task.DefaultCreatedAt holds the default value on creation for the created_at field.
 	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
 	// taskDescUpdatedAt is the schema descriptor for updated_at field.
-	taskDescUpdatedAt := taskMixinFields2[1].Descriptor()
+	taskDescUpdatedAt := taskMixinFields3[1].Descriptor()
 	// task.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	task.DefaultUpdatedAt = taskDescUpdatedAt.Default.(func() time.Time)
 	// task.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	task.UpdateDefaultUpdatedAt = taskDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// taskDescVersion is the schema descriptor for version field.
-	taskDescVersion := taskFields[1].Descriptor()
+	taskDescVersion := taskFields[0].Descriptor()
 	// task.DefaultVersion holds the default value on creation for the version field.
 	task.DefaultVersion = taskDescVersion.Default.(int)
 	// taskDescDescription is the schema descriptor for description field.
-	taskDescDescription := taskFields[3].Descriptor()
+	taskDescDescription := taskFields[2].Descriptor()
 	// task.DefaultDescription holds the default value on creation for the description field.
 	task.DefaultDescription = taskDescDescription.Default.(string)
 	// taskDescID is the schema descriptor for id field.
-	taskDescID := taskFields[0].Descriptor()
+	taskDescID := taskMixinFields0[0].Descriptor()
 	// task.DefaultID holds the default value on creation for the id field.
 	task.DefaultID = taskDescID.Default.(func() uuid.UUID)
 	teamMixin := schema.Team{}.Mixin()
-	team.Policy = privacy.NewPolicies(teamMixin[0], teamMixin[1], schema.Team{})
+	team.Policy = privacy.NewPolicies(teamMixin[1], teamMixin[2], schema.Team{})
 	team.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := team.Policy.EvalMutation(ctx, m); err != nil {
@@ -2483,19 +2659,21 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	teamMixinHooks2 := teamMixin[2].Hooks()
+	teamMixinHooks3 := teamMixin[3].Hooks()
 
-	team.Hooks[1] = teamMixinHooks2[0]
-	teamMixinInters2 := teamMixin[2].Interceptors()
-	team.Interceptors[0] = teamMixinInters2[0]
+	team.Hooks[1] = teamMixinHooks3[0]
+	teamMixinInters3 := teamMixin[3].Interceptors()
+	team.Interceptors[0] = teamMixinInters3[0]
+	teamMixinFields0 := teamMixin[0].Fields()
+	_ = teamMixinFields0
 	teamFields := schema.Team{}.Fields()
 	_ = teamFields
 	// teamDescID is the schema descriptor for id field.
-	teamDescID := teamFields[0].Descriptor()
+	teamDescID := teamMixinFields0[0].Descriptor()
 	// team.DefaultID holds the default value on creation for the id field.
 	team.DefaultID = teamDescID.Default.(func() uuid.UUID)
 	teammembershipMixin := schema.TeamMembership{}.Mixin()
-	teammembership.Policy = privacy.NewPolicies(teammembershipMixin[0], teammembershipMixin[1], schema.TeamMembership{})
+	teammembership.Policy = privacy.NewPolicies(teammembershipMixin[1], teammembershipMixin[2], schema.TeamMembership{})
 	teammembership.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := teammembership.Policy.EvalMutation(ctx, m); err != nil {
@@ -2504,10 +2682,12 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	teammembershipMixinFields0 := teammembershipMixin[0].Fields()
+	_ = teammembershipMixinFields0
 	teammembershipFields := schema.TeamMembership{}.Fields()
 	_ = teammembershipFields
 	// teammembershipDescID is the schema descriptor for id field.
-	teammembershipDescID := teammembershipFields[0].Descriptor()
+	teammembershipDescID := teammembershipMixinFields0[0].Descriptor()
 	// teammembership.DefaultID holds the default value on creation for the id field.
 	teammembership.DefaultID = teammembershipDescID.Default.(func() uuid.UUID)
 	tenantMixin := schema.Tenant{}.Mixin()
@@ -2521,7 +2701,7 @@ func init() {
 		})
 	}
 	ticketMixin := schema.Ticket{}.Mixin()
-	ticket.Policy = privacy.NewPolicies(ticketMixin[0], ticketMixin[1], schema.Ticket{})
+	ticket.Policy = privacy.NewPolicies(ticketMixin[1], ticketMixin[2], schema.Ticket{})
 	ticket.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := ticket.Policy.EvalMutation(ctx, m); err != nil {
@@ -2530,26 +2710,28 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	ticketMixinFields2 := ticketMixin[2].Fields()
-	_ = ticketMixinFields2
+	ticketMixinFields0 := ticketMixin[0].Fields()
+	_ = ticketMixinFields0
+	ticketMixinFields3 := ticketMixin[3].Fields()
+	_ = ticketMixinFields3
 	ticketFields := schema.Ticket{}.Fields()
 	_ = ticketFields
 	// ticketDescCreatedAt is the schema descriptor for created_at field.
-	ticketDescCreatedAt := ticketMixinFields2[0].Descriptor()
+	ticketDescCreatedAt := ticketMixinFields3[0].Descriptor()
 	// ticket.DefaultCreatedAt holds the default value on creation for the created_at field.
 	ticket.DefaultCreatedAt = ticketDescCreatedAt.Default.(func() time.Time)
 	// ticketDescUpdatedAt is the schema descriptor for updated_at field.
-	ticketDescUpdatedAt := ticketMixinFields2[1].Descriptor()
+	ticketDescUpdatedAt := ticketMixinFields3[1].Descriptor()
 	// ticket.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	ticket.DefaultUpdatedAt = ticketDescUpdatedAt.Default.(func() time.Time)
 	// ticket.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	ticket.UpdateDefaultUpdatedAt = ticketDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// ticketDescID is the schema descriptor for id field.
-	ticketDescID := ticketFields[0].Descriptor()
+	ticketDescID := ticketMixinFields0[0].Descriptor()
 	// ticket.DefaultID holds the default value on creation for the id field.
 	ticket.DefaultID = ticketDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
-	user.Policy = privacy.NewPolicies(userMixin[0], userMixin[1], schema.User{})
+	user.Policy = privacy.NewPolicies(userMixin[1], userMixin[2], schema.User{})
 	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := user.Policy.EvalMutation(ctx, m); err != nil {
@@ -2558,18 +2740,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	userMixinFields0 := userMixin[0].Fields()
+	_ = userMixinFields0
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescName is the schema descriptor for name field.
-	userDescName := userFields[2].Descriptor()
+	userDescName := userFields[1].Descriptor()
 	// user.DefaultName holds the default value on creation for the name field.
 	user.DefaultName = userDescName.Default.(string)
 	// userDescID is the schema descriptor for id field.
-	userDescID := userFields[0].Descriptor()
+	userDescID := userMixinFields0[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
 	userauthsessionMixin := schema.UserAuthSession{}.Mixin()
-	userauthsession.Policy = privacy.NewPolicies(userauthsessionMixin[0], userauthsessionMixin[1], schema.UserAuthSession{})
+	userauthsession.Policy = privacy.NewPolicies(userauthsessionMixin[1], userauthsessionMixin[2], schema.UserAuthSession{})
 	userauthsession.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := userauthsession.Policy.EvalMutation(ctx, m); err != nil {
@@ -2578,17 +2762,19 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	userauthsessionMixinFields0 := userauthsessionMixin[0].Fields()
+	_ = userauthsessionMixinFields0
 	userauthsessionFields := schema.UserAuthSession{}.Fields()
 	_ = userauthsessionFields
 	// userauthsessionDescProviderRefreshToken is the schema descriptor for provider_refresh_token field.
-	userauthsessionDescProviderRefreshToken := userauthsessionFields[5].Descriptor()
+	userauthsessionDescProviderRefreshToken := userauthsessionFields[4].Descriptor()
 	userauthsession.ValueScanner.ProviderRefreshToken = userauthsessionDescProviderRefreshToken.ValueScanner.(field.TypeValueScanner[[]byte])
 	// userauthsessionDescID is the schema descriptor for id field.
-	userauthsessionDescID := userauthsessionFields[0].Descriptor()
+	userauthsessionDescID := userauthsessionMixinFields0[0].Descriptor()
 	// userauthsession.DefaultID holds the default value on creation for the id field.
 	userauthsession.DefaultID = userauthsessionDescID.Default.(func() uuid.UUID)
 	videoconferenceMixin := schema.VideoConference{}.Mixin()
-	videoconference.Policy = privacy.NewPolicies(videoconferenceMixin[0], videoconferenceMixin[1], schema.VideoConference{})
+	videoconference.Policy = privacy.NewPolicies(videoconferenceMixin[1], videoconferenceMixin[2], schema.VideoConference{})
 	videoconference.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := videoconference.Policy.EvalMutation(ctx, m); err != nil {
@@ -2597,22 +2783,24 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	videoconferenceMixinFields2 := videoconferenceMixin[2].Fields()
-	_ = videoconferenceMixinFields2
+	videoconferenceMixinFields0 := videoconferenceMixin[0].Fields()
+	_ = videoconferenceMixinFields0
+	videoconferenceMixinFields3 := videoconferenceMixin[3].Fields()
+	_ = videoconferenceMixinFields3
 	videoconferenceFields := schema.VideoConference{}.Fields()
 	_ = videoconferenceFields
 	// videoconferenceDescCreatedAt is the schema descriptor for created_at field.
-	videoconferenceDescCreatedAt := videoconferenceMixinFields2[0].Descriptor()
+	videoconferenceDescCreatedAt := videoconferenceMixinFields3[0].Descriptor()
 	// videoconference.DefaultCreatedAt holds the default value on creation for the created_at field.
 	videoconference.DefaultCreatedAt = videoconferenceDescCreatedAt.Default.(func() time.Time)
 	// videoconferenceDescUpdatedAt is the schema descriptor for updated_at field.
-	videoconferenceDescUpdatedAt := videoconferenceMixinFields2[1].Descriptor()
+	videoconferenceDescUpdatedAt := videoconferenceMixinFields3[1].Descriptor()
 	// videoconference.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	videoconference.DefaultUpdatedAt = videoconferenceDescUpdatedAt.Default.(func() time.Time)
 	// videoconference.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	videoconference.UpdateDefaultUpdatedAt = videoconferenceDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// videoconferenceDescID is the schema descriptor for id field.
-	videoconferenceDescID := videoconferenceFields[0].Descriptor()
+	videoconferenceDescID := videoconferenceMixinFields0[0].Descriptor()
 	// videoconference.DefaultID holds the default value on creation for the id field.
 	videoconference.DefaultID = videoconferenceDescID.Default.(func() uuid.UUID)
 }

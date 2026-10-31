@@ -15,6 +15,7 @@ type Team struct {
 
 func (Team) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
@@ -25,7 +26,6 @@ func (Team) Mixin() []ent.Mixin {
 // Fields of the Team.
 func (Team) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("slug"),
 		field.String("name"),
 		field.String("chat_channel_id").Optional(),
@@ -61,6 +61,7 @@ type TeamMembership struct {
 
 func (TeamMembership) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		KnowledgeRelationshipLinkMixin{},
@@ -69,7 +70,6 @@ func (TeamMembership) Mixin() []ent.Mixin {
 
 func (TeamMembership) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("team_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
 		field.Enum("role").Values("admin", "member").Default("member"),

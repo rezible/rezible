@@ -19,6 +19,7 @@ type Integration struct {
 
 func (Integration) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -28,7 +29,6 @@ func (Integration) Mixin() []ent.Mixin {
 // Fields of the Integration.
 func (Integration) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("provider").NotEmpty(),
 		field.String("name").NotEmpty(),
 		field.String("display_name"),
@@ -67,6 +67,7 @@ type IntegrationUserInstallState struct {
 
 func (IntegrationUserInstallState) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -74,8 +75,7 @@ func (IntegrationUserInstallState) Mixin() []ent.Mixin {
 
 func (IntegrationUserInstallState) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.UUID("user_id", uuid.New()).Default(uuid.New),
+		field.UUID("user_id", uuid.New()),
 		field.String("integration_name"),
 		field.Time("expires_at"),
 		field.String("oauth_state").

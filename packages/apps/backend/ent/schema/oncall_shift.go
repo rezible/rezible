@@ -15,6 +15,7 @@ type OncallShift struct {
 
 func (OncallShift) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -23,7 +24,6 @@ func (OncallShift) Mixin() []ent.Mixin {
 // Fields of the OncallShift.
 func (OncallShift) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("roster_id", uuid.UUID{}),
 		field.Enum("role").Values("primary", "secondary", "shadow", "covering").Default("primary").Optional(),
@@ -61,6 +61,7 @@ type OncallShiftHandover struct {
 
 func (OncallShiftHandover) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -68,7 +69,6 @@ func (OncallShiftHandover) Mixin() []ent.Mixin {
 
 func (OncallShiftHandover) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("shift_id", uuid.UUID{}),
 		field.Time("created_at"),
 		field.Bool("reminder_sent").Default(false),
@@ -95,6 +95,7 @@ type OncallShiftMetrics struct {
 
 func (OncallShiftMetrics) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -102,7 +103,6 @@ func (OncallShiftMetrics) Mixin() []ent.Mixin {
 
 func (OncallShiftMetrics) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("shift_id", uuid.UUID{}),
 		field.Time("updated_at").Default(time.Now),
 		// Burden

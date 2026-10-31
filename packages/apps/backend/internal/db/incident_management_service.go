@@ -122,7 +122,12 @@ func (s *IncidentManagementService) AddMilestone(ctx context.Context, params rez
 	if timestamp.IsZero() {
 		timestamp = time.Now()
 	}
-	added := &ent.IncidentMilestone{ID: uuid.New(), IncidentID: params.IncidentID, Kind: params.Kind, Timestamp: timestamp}
+	added := &ent.IncidentMilestone{
+		ID:         im.DefaultID(),
+		IncidentID: params.IncidentID,
+		Kind:       params.Kind,
+		Timestamp:  timestamp,
+	}
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (*ent.IncidentMilestone, error) {
 		if enabledErr := s.checkEnabled(ctx); enabledErr != nil {
 			return nil, enabledErr

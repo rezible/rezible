@@ -61,6 +61,7 @@ type KnowledgeEntity struct {
 
 func (KnowledgeEntity) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -70,7 +71,6 @@ func (KnowledgeEntity) Mixin() []ent.Mixin {
 
 func (KnowledgeEntity) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Enum("category").
 			Values(knowledgeEntityCategories...).
 			Comment("Stable semantic category used by graph queries, generated views, and agent reasoning.").
@@ -118,6 +118,7 @@ type KnowledgeEntityLinkingAttribute struct {
 
 func (KnowledgeEntityLinkingAttribute) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -125,7 +126,6 @@ func (KnowledgeEntityLinkingAttribute) Mixin() []ent.Mixin {
 
 func (KnowledgeEntityLinkingAttribute) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("entity_id", uuid.UUID{}).
 			Comment("Changed only when a confirmed match merges two entities."),
 		field.String("attribute").NotEmpty().Immutable(),
@@ -154,6 +154,7 @@ type KnowledgeRelationship struct {
 
 func (KnowledgeRelationship) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -163,7 +164,6 @@ func (KnowledgeRelationship) Mixin() []ent.Mixin {
 
 func (KnowledgeRelationship) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.Enum("predicate").
 			Values(knowledgeRelationshipPredicates...).
 			Comment("Canonical directional meaning from source entity to target entity.").
@@ -214,6 +214,7 @@ func (KnowledgeSubjectAlias) Annotations() []entschema.Annotation {
 
 func (KnowledgeSubjectAlias) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		ProviderResourceReferenceMixin{},
@@ -222,7 +223,6 @@ func (KnowledgeSubjectAlias) Mixin() []ent.Mixin {
 
 func (KnowledgeSubjectAlias) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 
 		field.Enum("subject_kind").
 			Values("entity", "relationship").
@@ -287,6 +287,7 @@ type KnowledgeEvidence struct {
 
 func (KnowledgeEvidence) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -294,7 +295,6 @@ func (KnowledgeEvidence) Mixin() []ent.Mixin {
 
 func (KnowledgeEvidence) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 
 		field.UUID("event_id", uuid.UUID{}).Immutable().
 			Comment("Normalized event that produced this evidence record."),

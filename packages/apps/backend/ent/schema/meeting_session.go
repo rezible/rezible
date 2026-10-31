@@ -6,7 +6,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // MeetingSession holds the schema definition for the MeetingSession entity.
@@ -16,6 +15,7 @@ type MeetingSession struct {
 
 func (MeetingSession) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -24,7 +24,6 @@ func (MeetingSession) Mixin() []ent.Mixin {
 // Fields of the MeetingSession.
 func (MeetingSession) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("title"),
 		field.Time("started_at").Default(time.Now),
 		field.Time("ended_at").Optional(),

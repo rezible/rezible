@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -186,6 +187,8 @@ var (
 	DefaultPeakInputTokens int
 	// PeakInputTokensValidator is a validator for the "peak_input_tokens" field. It is called by the builders before save.
 	PeakInputTokensValidator func(int) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // Status defines the type for the "status" enum field.

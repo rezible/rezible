@@ -13,6 +13,7 @@ type Document struct {
 
 func (Document) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 	}
@@ -20,7 +21,6 @@ func (Document) Mixin() []ent.Mixin {
 
 func (Document) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.Bytes("content"),
 		field.Bool("access_restricted").Default(false),
 	}
@@ -39,6 +39,7 @@ type DocumentAccess struct {
 
 func (DocumentAccess) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -47,7 +48,6 @@ func (DocumentAccess) Mixin() []ent.Mixin {
 
 func (DocumentAccess) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("document_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}).Optional(),
 		field.UUID("team_id", uuid.UUID{}).Optional(),

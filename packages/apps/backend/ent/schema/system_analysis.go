@@ -18,6 +18,7 @@ type SystemAnalysis struct {
 
 func (SystemAnalysis) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -26,8 +27,6 @@ func (SystemAnalysis) Mixin() []ent.Mixin {
 
 func (SystemAnalysis) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New),
 		field.UUID("scope_entity_id", uuid.UUID{}).
 			Optional().
 			Nillable().
@@ -77,6 +76,7 @@ type SystemAnalysisEntity struct {
 
 func (SystemAnalysisEntity) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -85,7 +85,6 @@ func (SystemAnalysisEntity) Mixin() []ent.Mixin {
 
 func (SystemAnalysisEntity) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).
 			Immutable(),
 		field.UUID("knowledge_entity_id", uuid.UUID{}),
@@ -137,6 +136,7 @@ type SystemAnalysisRelationship struct {
 
 func (SystemAnalysisRelationship) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -145,7 +145,6 @@ func (SystemAnalysisRelationship) Mixin() []ent.Mixin {
 
 func (SystemAnalysisRelationship) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).
 			Immutable(),
 		field.UUID("knowledge_relationship_id", uuid.UUID{}),
@@ -194,6 +193,7 @@ type SystemAnalysisEntry struct {
 
 func (SystemAnalysisEntry) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -202,7 +202,6 @@ func (SystemAnalysisEntry) Mixin() []ent.Mixin {
 
 func (SystemAnalysisEntry) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}).
 			Immutable(),
 		field.UUID("author_id", uuid.UUID{}).
@@ -264,6 +263,7 @@ type SystemAnalysisEntrySubject struct {
 
 func (SystemAnalysisEntrySubject) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
@@ -272,7 +272,6 @@ func (SystemAnalysisEntrySubject) Mixin() []ent.Mixin {
 
 func (SystemAnalysisEntrySubject) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("entry_id", uuid.UUID{}).Immutable(),
 		field.UUID("knowledge_entity_id", uuid.UUID{}).
 			Optional().

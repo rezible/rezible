@@ -5,7 +5,6 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"github.com/google/uuid"
 )
 
 // IncidentSeverity holds the schema definition for the IncidentSeverity entity.
@@ -15,6 +14,7 @@ type IncidentSeverity struct {
 
 func (IncidentSeverity) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		IDMixin{},
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
@@ -24,7 +24,6 @@ func (IncidentSeverity) Mixin() []ent.Mixin {
 // Fields of the IncidentSeverity.
 func (IncidentSeverity) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
 		field.Int("rank"),
 		field.String("color").Optional(),

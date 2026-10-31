@@ -35,7 +35,7 @@ func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.Use
 		var mutator ent.EntityMutator[*ent.User, *ent.UserMutation]
 
 		if id == uuid.Nil {
-			mutator = tx.User.Create().SetID(uuid.New())
+			mutator = tx.User.Create().SetID(user.DefaultID())
 		} else {
 			mutator = tx.User.UpdateOneID(id)
 		}
