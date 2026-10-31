@@ -396,8 +396,9 @@ func (_q *SystemAnalysisEntrySubjectQuery) Clone() *SystemAnalysisEntrySubjectQu
 		withKnowledgeRelationship: _q.withKnowledgeRelationship.Clone(),
 		withKnowledgeEvidence:     _q.withKnowledgeEvidence.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -892,6 +893,12 @@ func (_q *SystemAnalysisEntrySubjectQuery) ForShare(opts ...sql.LockOption) *Sys
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SystemAnalysisEntrySubjectQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisEntrySubjectSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SystemAnalysisEntrySubjectGroupBy is the group-by builder for SystemAnalysisEntrySubject entities.
 type SystemAnalysisEntrySubjectGroupBy struct {
 	selector
@@ -980,4 +987,10 @@ func (_s *SystemAnalysisEntrySubjectSelect) sqlScan(ctx context.Context, root *S
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SystemAnalysisEntrySubjectSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisEntrySubjectSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

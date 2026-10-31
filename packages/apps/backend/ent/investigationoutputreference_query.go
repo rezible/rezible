@@ -424,8 +424,9 @@ func (_q *InvestigationOutputReferenceQuery) Clone() *InvestigationOutputReferen
 		withKnowledgeEvidence: _q.withKnowledgeEvidence.Clone(),
 		withProviderRead:      _q.withProviderRead.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -978,6 +979,12 @@ func (_q *InvestigationOutputReferenceQuery) ForShare(opts ...sql.LockOption) *I
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *InvestigationOutputReferenceQuery) Modify(modifiers ...func(s *sql.Selector)) *InvestigationOutputReferenceSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // InvestigationOutputReferenceGroupBy is the group-by builder for InvestigationOutputReference entities.
 type InvestigationOutputReferenceGroupBy struct {
 	selector
@@ -1066,4 +1073,10 @@ func (_s *InvestigationOutputReferenceSelect) sqlScan(ctx context.Context, root 
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *InvestigationOutputReferenceSelect) Modify(modifiers ...func(s *sql.Selector)) *InvestigationOutputReferenceSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -312,8 +312,9 @@ func (_q *OncallShiftMetricsQuery) Clone() *OncallShiftMetricsQuery {
 		withTenant: _q.withTenant.Clone(),
 		withShift:  _q.withShift.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -649,6 +650,12 @@ func (_q *OncallShiftMetricsQuery) ForShare(opts ...sql.LockOption) *OncallShift
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *OncallShiftMetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftMetricsSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // OncallShiftMetricsGroupBy is the group-by builder for OncallShiftMetrics entities.
 type OncallShiftMetricsGroupBy struct {
 	selector
@@ -737,4 +744,10 @@ func (_s *OncallShiftMetricsSelect) sqlScan(ctx context.Context, root *OncallShi
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *OncallShiftMetricsSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftMetricsSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

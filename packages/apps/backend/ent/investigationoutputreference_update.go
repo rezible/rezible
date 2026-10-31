@@ -18,8 +18,9 @@ import (
 // InvestigationOutputReferenceUpdate is the builder for updating InvestigationOutputReference entities.
 type InvestigationOutputReferenceUpdate struct {
 	config
-	hooks    []Hook
-	mutation *InvestigationOutputReferenceMutation
+	hooks     []Hook
+	mutation  *InvestigationOutputReferenceMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the InvestigationOutputReferenceUpdate builder.
@@ -68,6 +69,12 @@ func (_u *InvestigationOutputReferenceUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *InvestigationOutputReferenceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationOutputReferenceUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *InvestigationOutputReferenceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -82,6 +89,7 @@ func (_u *InvestigationOutputReferenceUpdate) sqlSave(ctx context.Context) (_nod
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationOutputReference
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{investigationoutputreference.Label}
@@ -97,9 +105,10 @@ func (_u *InvestigationOutputReferenceUpdate) sqlSave(ctx context.Context) (_nod
 // InvestigationOutputReferenceUpdateOne is the builder for updating a single InvestigationOutputReference entity.
 type InvestigationOutputReferenceUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *InvestigationOutputReferenceMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *InvestigationOutputReferenceMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Mutation returns the InvestigationOutputReferenceMutation object of the builder.
@@ -155,6 +164,12 @@ func (_u *InvestigationOutputReferenceUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *InvestigationOutputReferenceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationOutputReferenceUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *InvestigationOutputReferenceUpdateOne) sqlSave(ctx context.Context) (_node *InvestigationOutputReference, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -186,6 +201,7 @@ func (_u *InvestigationOutputReferenceUpdateOne) sqlSave(ctx context.Context) (_
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationOutputReference
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &InvestigationOutputReference{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

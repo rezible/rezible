@@ -340,8 +340,9 @@ func (_q *IncidentImpactQuery) Clone() *IncidentImpactQuery {
 		withIncident:        _q.withIncident.Clone(),
 		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -727,6 +728,12 @@ func (_q *IncidentImpactQuery) ForShare(opts ...sql.LockOption) *IncidentImpactQ
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *IncidentImpactQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentImpactSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // IncidentImpactGroupBy is the group-by builder for IncidentImpact entities.
 type IncidentImpactGroupBy struct {
 	selector
@@ -815,4 +822,10 @@ func (_s *IncidentImpactSelect) sqlScan(ctx context.Context, root *IncidentImpac
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *IncidentImpactSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentImpactSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -18,8 +18,9 @@ import (
 // SituationActionUpdate is the builder for updating SituationAction entities.
 type SituationActionUpdate struct {
 	config
-	hooks    []Hook
-	mutation *SituationActionMutation
+	hooks     []Hook
+	mutation  *SituationActionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the SituationActionUpdate builder.
@@ -71,6 +72,12 @@ func (_u *SituationActionUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SituationActionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationActionUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SituationActionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -88,6 +95,7 @@ func (_u *SituationActionUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationAction
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{situationaction.Label}
@@ -103,9 +111,10 @@ func (_u *SituationActionUpdate) sqlSave(ctx context.Context) (_node int, err er
 // SituationActionUpdateOne is the builder for updating a single SituationAction entity.
 type SituationActionUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *SituationActionMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *SituationActionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Mutation returns the SituationActionMutation object of the builder.
@@ -164,6 +173,12 @@ func (_u *SituationActionUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SituationActionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationActionUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SituationActionUpdateOne) sqlSave(ctx context.Context) (_node *SituationAction, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -198,6 +213,7 @@ func (_u *SituationActionUpdateOne) sqlSave(ctx context.Context) (_node *Situati
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationAction
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &SituationAction{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -340,8 +340,9 @@ func (_q *UserAuthSessionQuery) Clone() *UserAuthSessionQuery {
 		withUser:         _q.withUser.Clone(),
 		withOrganization: _q.withOrganization.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -727,6 +728,12 @@ func (_q *UserAuthSessionQuery) ForShare(opts ...sql.LockOption) *UserAuthSessio
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *UserAuthSessionQuery) Modify(modifiers ...func(s *sql.Selector)) *UserAuthSessionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // UserAuthSessionGroupBy is the group-by builder for UserAuthSession entities.
 type UserAuthSessionGroupBy struct {
 	selector
@@ -815,4 +822,10 @@ func (_s *UserAuthSessionSelect) sqlScan(ctx context.Context, root *UserAuthSess
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *UserAuthSessionSelect) Modify(modifiers ...func(s *sql.Selector)) *UserAuthSessionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -20,8 +20,9 @@ import (
 // InvestigationReportUpdate is the builder for updating InvestigationReport entities.
 type InvestigationReportUpdate struct {
 	config
-	hooks    []Hook
-	mutation *InvestigationReportMutation
+	hooks     []Hook
+	mutation  *InvestigationReportMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the InvestigationReportUpdate builder.
@@ -112,6 +113,12 @@ func (_u *InvestigationReportUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *InvestigationReportUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationReportUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *InvestigationReportUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -177,6 +184,7 @@ func (_u *InvestigationReportUpdate) sqlSave(ctx context.Context) (_node int, er
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationReport
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{investigationreport.Label}
@@ -192,9 +200,10 @@ func (_u *InvestigationReportUpdate) sqlSave(ctx context.Context) (_node int, er
 // InvestigationReportUpdateOne is the builder for updating a single InvestigationReport entity.
 type InvestigationReportUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *InvestigationReportMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *InvestigationReportMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // AddOutputReferenceIDs adds the "output_references" edge to the InvestigationOutputReference entity by IDs.
@@ -292,6 +301,12 @@ func (_u *InvestigationReportUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *InvestigationReportUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationReportUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *InvestigationReportUpdateOne) sqlSave(ctx context.Context) (_node *InvestigationReport, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -374,6 +389,7 @@ func (_u *InvestigationReportUpdateOne) sqlSave(ctx context.Context) (_node *Inv
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationReport
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &InvestigationReport{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

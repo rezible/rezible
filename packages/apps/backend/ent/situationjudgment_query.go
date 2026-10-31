@@ -312,8 +312,9 @@ func (_q *SituationJudgmentQuery) Clone() *SituationJudgmentQuery {
 		withTenant:    _q.withTenant.Clone(),
 		withSituation: _q.withSituation.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -649,6 +650,12 @@ func (_q *SituationJudgmentQuery) ForShare(opts ...sql.LockOption) *SituationJud
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SituationJudgmentQuery) Modify(modifiers ...func(s *sql.Selector)) *SituationJudgmentSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SituationJudgmentGroupBy is the group-by builder for SituationJudgment entities.
 type SituationJudgmentGroupBy struct {
 	selector
@@ -737,4 +744,10 @@ func (_s *SituationJudgmentSelect) sqlScan(ctx context.Context, root *SituationJ
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SituationJudgmentSelect) Modify(modifiers ...func(s *sql.Selector)) *SituationJudgmentSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

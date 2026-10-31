@@ -340,8 +340,9 @@ func (_q *SituationNoticeQuery) Clone() *SituationNoticeQuery {
 		withSituation:   _q.withSituation.Clone(),
 		withIntegration: _q.withIntegration.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -727,6 +728,12 @@ func (_q *SituationNoticeQuery) ForShare(opts ...sql.LockOption) *SituationNotic
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SituationNoticeQuery) Modify(modifiers ...func(s *sql.Selector)) *SituationNoticeSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SituationNoticeGroupBy is the group-by builder for SituationNotice entities.
 type SituationNoticeGroupBy struct {
 	selector
@@ -815,4 +822,10 @@ func (_s *SituationNoticeSelect) sqlScan(ctx context.Context, root *SituationNot
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SituationNoticeSelect) Modify(modifiers ...func(s *sql.Selector)) *SituationNoticeSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

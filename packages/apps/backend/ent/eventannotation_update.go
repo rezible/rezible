@@ -24,8 +24,9 @@ import (
 // EventAnnotationUpdate is the builder for updating EventAnnotation entities.
 type EventAnnotationUpdate struct {
 	config
-	hooks    []Hook
-	mutation *EventAnnotationMutation
+	hooks     []Hook
+	mutation  *EventAnnotationMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the EventAnnotationUpdate builder.
@@ -227,6 +228,12 @@ func (_u *EventAnnotationUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *EventAnnotationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventAnnotationUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *EventAnnotationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -371,6 +378,7 @@ func (_u *EventAnnotationUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	_spec.Node.Schema = _u.schemaConfig.EventAnnotation
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{eventannotation.Label}
@@ -386,9 +394,10 @@ func (_u *EventAnnotationUpdate) sqlSave(ctx context.Context) (_node int, err er
 // EventAnnotationUpdateOne is the builder for updating a single EventAnnotation entity.
 type EventAnnotationUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *EventAnnotationMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *EventAnnotationMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetEventID sets the "event_id" field.
@@ -597,6 +606,12 @@ func (_u *EventAnnotationUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *EventAnnotationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventAnnotationUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *EventAnnotation, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -758,6 +773,7 @@ func (_u *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *EventAn
 	}
 	_spec.Node.Schema = _u.schemaConfig.EventAnnotation
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &EventAnnotation{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

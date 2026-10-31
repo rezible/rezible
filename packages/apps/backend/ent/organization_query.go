@@ -313,8 +313,9 @@ func (_q *OrganizationQuery) Clone() *OrganizationQuery {
 		withTenant:      _q.withTenant.Clone(),
 		withPreferences: _q.withPreferences.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -645,6 +646,12 @@ func (_q *OrganizationQuery) ForShare(opts ...sql.LockOption) *OrganizationQuery
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *OrganizationQuery) Modify(modifiers ...func(s *sql.Selector)) *OrganizationSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // OrganizationGroupBy is the group-by builder for Organization entities.
 type OrganizationGroupBy struct {
 	selector
@@ -733,4 +740,10 @@ func (_s *OrganizationSelect) sqlScan(ctx context.Context, root *OrganizationQue
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *OrganizationSelect) Modify(modifiers ...func(s *sql.Selector)) *OrganizationSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -341,8 +341,9 @@ func (_q *IncidentSeverityQuery) Clone() *IncidentSeverityQuery {
 		withIncidents:        _q.withIncidents.Clone(),
 		withDebriefQuestions: _q.withDebriefQuestions.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -763,6 +764,12 @@ func (_q *IncidentSeverityQuery) ForShare(opts ...sql.LockOption) *IncidentSever
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *IncidentSeverityQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentSeveritySelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // IncidentSeverityGroupBy is the group-by builder for IncidentSeverity entities.
 type IncidentSeverityGroupBy struct {
 	selector
@@ -851,4 +858,10 @@ func (_s *IncidentSeveritySelect) sqlScan(ctx context.Context, root *IncidentSev
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *IncidentSeveritySelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentSeveritySelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

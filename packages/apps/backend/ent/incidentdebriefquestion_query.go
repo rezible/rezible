@@ -453,8 +453,9 @@ func (_q *IncidentDebriefQuestionQuery) Clone() *IncidentDebriefQuestionQuery {
 		withIncidentTags:       _q.withIncidentTags.Clone(),
 		withIncidentTypes:      _q.withIncidentTypes.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -1206,6 +1207,12 @@ func (_q *IncidentDebriefQuestionQuery) ForShare(opts ...sql.LockOption) *Incide
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *IncidentDebriefQuestionQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefQuestionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // IncidentDebriefQuestionGroupBy is the group-by builder for IncidentDebriefQuestion entities.
 type IncidentDebriefQuestionGroupBy struct {
 	selector
@@ -1294,4 +1301,10 @@ func (_s *IncidentDebriefQuestionSelect) sqlScan(ctx context.Context, root *Inci
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *IncidentDebriefQuestionSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefQuestionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

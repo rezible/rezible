@@ -255,8 +255,9 @@ func (_q *TenantQuery) Clone() *TenantQuery {
 		inters:     append([]Interceptor{}, _q.inters...),
 		predicates: append([]predicate.Tenant{}, _q.predicates...),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -466,6 +467,12 @@ func (_q *TenantQuery) ForShare(opts ...sql.LockOption) *TenantQuery {
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *TenantQuery) Modify(modifiers ...func(s *sql.Selector)) *TenantSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // TenantGroupBy is the group-by builder for Tenant entities.
 type TenantGroupBy struct {
 	selector
@@ -554,4 +561,10 @@ func (_s *TenantSelect) sqlScan(ctx context.Context, root *TenantQuery, v any) e
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *TenantSelect) Modify(modifiers ...func(s *sql.Selector)) *TenantSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -312,8 +312,9 @@ func (_q *IntegrationEventSyncCursorQuery) Clone() *IntegrationEventSyncCursorQu
 		withTenant:      _q.withTenant.Clone(),
 		withIntegration: _q.withIntegration.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -649,6 +650,12 @@ func (_q *IntegrationEventSyncCursorQuery) ForShare(opts ...sql.LockOption) *Int
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *IntegrationEventSyncCursorQuery) Modify(modifiers ...func(s *sql.Selector)) *IntegrationEventSyncCursorSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // IntegrationEventSyncCursorGroupBy is the group-by builder for IntegrationEventSyncCursor entities.
 type IntegrationEventSyncCursorGroupBy struct {
 	selector
@@ -737,4 +744,10 @@ func (_s *IntegrationEventSyncCursorSelect) sqlScan(ctx context.Context, root *I
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *IntegrationEventSyncCursorSelect) Modify(modifiers ...func(s *sql.Selector)) *IntegrationEventSyncCursorSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

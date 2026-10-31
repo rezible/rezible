@@ -312,8 +312,9 @@ func (_q *SituationSignalAttentionQuery) Clone() *SituationSignalAttentionQuery 
 		withTenant:    _q.withTenant.Clone(),
 		withSetByUser: _q.withSetByUser.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -652,6 +653,12 @@ func (_q *SituationSignalAttentionQuery) ForShare(opts ...sql.LockOption) *Situa
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SituationSignalAttentionQuery) Modify(modifiers ...func(s *sql.Selector)) *SituationSignalAttentionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SituationSignalAttentionGroupBy is the group-by builder for SituationSignalAttention entities.
 type SituationSignalAttentionGroupBy struct {
 	selector
@@ -740,4 +747,10 @@ func (_s *SituationSignalAttentionSelect) sqlScan(ctx context.Context, root *Sit
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SituationSignalAttentionSelect) Modify(modifiers ...func(s *sql.Selector)) *SituationSignalAttentionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

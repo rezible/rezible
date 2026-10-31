@@ -18,8 +18,9 @@ import (
 // AlertInstanceEventUpdate is the builder for updating AlertInstanceEvent entities.
 type AlertInstanceEventUpdate struct {
 	config
-	hooks    []Hook
-	mutation *AlertInstanceEventMutation
+	hooks     []Hook
+	mutation  *AlertInstanceEventMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the AlertInstanceEventUpdate builder.
@@ -74,6 +75,12 @@ func (_u *AlertInstanceEventUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *AlertInstanceEventUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertInstanceEventUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *AlertInstanceEventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -88,6 +95,7 @@ func (_u *AlertInstanceEventUpdate) sqlSave(ctx context.Context) (_node int, err
 	}
 	_spec.Node.Schema = _u.schemaConfig.AlertInstanceEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{alertinstanceevent.Label}
@@ -103,9 +111,10 @@ func (_u *AlertInstanceEventUpdate) sqlSave(ctx context.Context) (_node int, err
 // AlertInstanceEventUpdateOne is the builder for updating a single AlertInstanceEvent entity.
 type AlertInstanceEventUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *AlertInstanceEventMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *AlertInstanceEventMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Mutation returns the AlertInstanceEventMutation object of the builder.
@@ -167,6 +176,12 @@ func (_u *AlertInstanceEventUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *AlertInstanceEventUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertInstanceEventUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *AlertInstanceEventUpdateOne) sqlSave(ctx context.Context) (_node *AlertInstanceEvent, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -198,6 +213,7 @@ func (_u *AlertInstanceEventUpdateOne) sqlSave(ctx context.Context) (_node *Aler
 	}
 	_spec.Node.Schema = _u.schemaConfig.AlertInstanceEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &AlertInstanceEvent{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -509,8 +509,9 @@ func (_q *SituationQuery) Clone() *SituationQuery {
 		withJudgments:         _q.withJudgments.Clone(),
 		withNotices:           _q.withNotices.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -1226,6 +1227,12 @@ func (_q *SituationQuery) ForShare(opts ...sql.LockOption) *SituationQuery {
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SituationQuery) Modify(modifiers ...func(s *sql.Selector)) *SituationSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SituationGroupBy is the group-by builder for Situation entities.
 type SituationGroupBy struct {
 	selector
@@ -1314,4 +1321,10 @@ func (_s *SituationSelect) sqlScan(ctx context.Context, root *SituationQuery, v 
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SituationSelect) Modify(modifiers ...func(s *sql.Selector)) *SituationSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

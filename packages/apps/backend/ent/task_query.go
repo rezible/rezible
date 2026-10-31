@@ -424,8 +424,9 @@ func (_q *TaskQuery) Clone() *TaskQuery {
 		withAssignee:    _q.withAssignee.Clone(),
 		withCreator:     _q.withCreator.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -1004,6 +1005,12 @@ func (_q *TaskQuery) ForShare(opts ...sql.LockOption) *TaskQuery {
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *TaskQuery) Modify(modifiers ...func(s *sql.Selector)) *TaskSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // TaskGroupBy is the group-by builder for Task entities.
 type TaskGroupBy struct {
 	selector
@@ -1092,4 +1099,10 @@ func (_s *TaskSelect) sqlScan(ctx context.Context, root *TaskQuery, v any) error
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *TaskSelect) Modify(modifiers ...func(s *sql.Selector)) *TaskSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

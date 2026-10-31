@@ -23,8 +23,9 @@ import (
 // KnowledgeRelationshipUpdate is the builder for updating KnowledgeRelationship entities.
 type KnowledgeRelationshipUpdate struct {
 	config
-	hooks    []Hook
-	mutation *KnowledgeRelationshipMutation
+	hooks     []Hook
+	mutation  *KnowledgeRelationshipMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the KnowledgeRelationshipUpdate builder.
@@ -320,6 +321,12 @@ func (_u *KnowledgeRelationshipUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *KnowledgeRelationshipUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *KnowledgeRelationshipUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *KnowledgeRelationshipUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -486,6 +493,7 @@ func (_u *KnowledgeRelationshipUpdate) sqlSave(ctx context.Context) (_node int, 
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeRelationship
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{knowledgerelationship.Label}
@@ -501,9 +509,10 @@ func (_u *KnowledgeRelationshipUpdate) sqlSave(ctx context.Context) (_node int, 
 // KnowledgeRelationshipUpdateOne is the builder for updating a single KnowledgeRelationship entity.
 type KnowledgeRelationshipUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *KnowledgeRelationshipMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *KnowledgeRelationshipMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -806,6 +815,12 @@ func (_u *KnowledgeRelationshipUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *KnowledgeRelationshipUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *KnowledgeRelationshipUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *KnowledgeRelationshipUpdateOne) sqlSave(ctx context.Context) (_node *KnowledgeRelationship, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -989,6 +1004,7 @@ func (_u *KnowledgeRelationshipUpdateOne) sqlSave(ctx context.Context) (_node *K
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeRelationship
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &KnowledgeRelationship{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

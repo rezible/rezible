@@ -369,8 +369,9 @@ func (_q *InvestigationFindingQuery) Clone() *InvestigationFindingQuery {
 		withUserInput:     _q.withUserInput.Clone(),
 		withVersions:      _q.withVersions.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -810,6 +811,12 @@ func (_q *InvestigationFindingQuery) ForShare(opts ...sql.LockOption) *Investiga
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *InvestigationFindingQuery) Modify(modifiers ...func(s *sql.Selector)) *InvestigationFindingSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // InvestigationFindingGroupBy is the group-by builder for InvestigationFinding entities.
 type InvestigationFindingGroupBy struct {
 	selector
@@ -898,4 +905,10 @@ func (_s *InvestigationFindingSelect) sqlScan(ctx context.Context, root *Investi
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *InvestigationFindingSelect) Modify(modifiers ...func(s *sql.Selector)) *InvestigationFindingSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

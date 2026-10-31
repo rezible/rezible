@@ -340,8 +340,9 @@ func (_q *AlertInstanceEventQuery) Clone() *AlertInstanceEventQuery {
 		withInstance: _q.withInstance.Clone(),
 		withEvent:    _q.withEvent.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -727,6 +728,12 @@ func (_q *AlertInstanceEventQuery) ForShare(opts ...sql.LockOption) *AlertInstan
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *AlertInstanceEventQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertInstanceEventSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // AlertInstanceEventGroupBy is the group-by builder for AlertInstanceEvent entities.
 type AlertInstanceEventGroupBy struct {
 	selector
@@ -815,4 +822,10 @@ func (_s *AlertInstanceEventSelect) sqlScan(ctx context.Context, root *AlertInst
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *AlertInstanceEventSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertInstanceEventSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

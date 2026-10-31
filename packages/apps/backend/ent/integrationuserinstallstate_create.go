@@ -38,14 +38,6 @@ func (_c *IntegrationUserInstallStateCreate) SetUserID(v uuid.UUID) *Integration
 	return _c
 }
 
-// SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (_c *IntegrationUserInstallStateCreate) SetNillableUserID(v *uuid.UUID) *IntegrationUserInstallStateCreate {
-	if v != nil {
-		_c.SetUserID(*v)
-	}
-	return _c
-}
-
 // SetIntegrationName sets the "integration_name" field.
 func (_c *IntegrationUserInstallStateCreate) SetIntegrationName(v string) *IntegrationUserInstallStateCreate {
 	_c.mutation.SetIntegrationName(v)
@@ -139,13 +131,6 @@ func (_c *IntegrationUserInstallStateCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *IntegrationUserInstallStateCreate) defaults() error {
-	if _, ok := _c.mutation.UserID(); !ok {
-		if integrationuserinstallstate.DefaultUserID == nil {
-			return fmt.Errorf("ent: uninitialized integrationuserinstallstate.DefaultUserID (forgotten import ent/runtime?)")
-		}
-		v := integrationuserinstallstate.DefaultUserID()
-		_c.mutation.SetUserID(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if integrationuserinstallstate.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized integrationuserinstallstate.DefaultID (forgotten import ent/runtime?)")

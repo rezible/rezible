@@ -18,8 +18,9 @@ import (
 // SequenceCounterUpdate is the builder for updating SequenceCounter entities.
 type SequenceCounterUpdate struct {
 	config
-	hooks    []Hook
-	mutation *SequenceCounterMutation
+	hooks     []Hook
+	mutation  *SequenceCounterMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the SequenceCounterUpdate builder.
@@ -113,6 +114,12 @@ func (_u *SequenceCounterUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SequenceCounterUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SequenceCounterUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SequenceCounterUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -136,6 +143,7 @@ func (_u *SequenceCounterUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	_spec.Node.Schema = _u.schemaConfig.SequenceCounter
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{sequencecounter.Label}
@@ -151,9 +159,10 @@ func (_u *SequenceCounterUpdate) sqlSave(ctx context.Context) (_node int, err er
 // SequenceCounterUpdateOne is the builder for updating a single SequenceCounter entity.
 type SequenceCounterUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *SequenceCounterMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *SequenceCounterMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetKind sets the "kind" field.
@@ -254,6 +263,12 @@ func (_u *SequenceCounterUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SequenceCounterUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SequenceCounterUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SequenceCounterUpdateOne) sqlSave(ctx context.Context) (_node *SequenceCounter, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -294,6 +309,7 @@ func (_u *SequenceCounterUpdateOne) sqlSave(ctx context.Context) (_node *Sequenc
 	}
 	_spec.Node.Schema = _u.schemaConfig.SequenceCounter
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &SequenceCounter{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

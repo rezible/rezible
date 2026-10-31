@@ -25,8 +25,9 @@ import (
 // KnowledgeSubjectAliasUpdate is the builder for updating KnowledgeSubjectAlias entities.
 type KnowledgeSubjectAliasUpdate struct {
 	config
-	hooks    []Hook
-	mutation *KnowledgeSubjectAliasMutation
+	hooks     []Hook
+	mutation  *KnowledgeSubjectAliasMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the KnowledgeSubjectAliasUpdate builder.
@@ -304,6 +305,12 @@ func (_u *KnowledgeSubjectAliasUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *KnowledgeSubjectAliasUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *KnowledgeSubjectAliasUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *KnowledgeSubjectAliasUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -489,6 +496,7 @@ func (_u *KnowledgeSubjectAliasUpdate) sqlSave(ctx context.Context) (_node int, 
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeSubjectAlias
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{knowledgesubjectalias.Label}
@@ -504,9 +512,10 @@ func (_u *KnowledgeSubjectAliasUpdate) sqlSave(ctx context.Context) (_node int, 
 // KnowledgeSubjectAliasUpdateOne is the builder for updating a single KnowledgeSubjectAlias entity.
 type KnowledgeSubjectAliasUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *KnowledgeSubjectAliasMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *KnowledgeSubjectAliasMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetEntityID sets the "entity_id" field.
@@ -791,6 +800,12 @@ func (_u *KnowledgeSubjectAliasUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *KnowledgeSubjectAliasUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *KnowledgeSubjectAliasUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *KnowledgeSubjectAliasUpdateOne) sqlSave(ctx context.Context) (_node *KnowledgeSubjectAlias, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -993,6 +1008,7 @@ func (_u *KnowledgeSubjectAliasUpdateOne) sqlSave(ctx context.Context) (_node *K
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeSubjectAlias
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &KnowledgeSubjectAlias{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -23,8 +23,9 @@ import (
 // AgentArtifactUpdate is the builder for updating AgentArtifact entities.
 type AgentArtifactUpdate struct {
 	config
-	hooks    []Hook
-	mutation *AgentArtifactMutation
+	hooks     []Hook
+	mutation  *AgentArtifactMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the AgentArtifactUpdate builder.
@@ -193,6 +194,12 @@ func (_u *AgentArtifactUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *AgentArtifactUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentArtifactUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *AgentArtifactUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -258,6 +265,7 @@ func (_u *AgentArtifactUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentArtifact
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agentartifact.Label}
@@ -273,9 +281,10 @@ func (_u *AgentArtifactUpdate) sqlSave(ctx context.Context) (_node int, err erro
 // AgentArtifactUpdateOne is the builder for updating a single AgentArtifact entity.
 type AgentArtifactUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *AgentArtifactMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *AgentArtifactMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -451,6 +460,12 @@ func (_u *AgentArtifactUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *AgentArtifactUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AgentArtifactUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *AgentArtifactUpdateOne) sqlSave(ctx context.Context) (_node *AgentArtifact, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -533,6 +548,7 @@ func (_u *AgentArtifactUpdateOne) sqlSave(ctx context.Context) (_node *AgentArti
 	}
 	_spec.Node.Schema = _u.schemaConfig.AgentArtifact
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &AgentArtifact{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

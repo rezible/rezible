@@ -19,8 +19,9 @@ import (
 // SystemHazardRiskAssessmentUpdate is the builder for updating SystemHazardRiskAssessment entities.
 type SystemHazardRiskAssessmentUpdate struct {
 	config
-	hooks    []Hook
-	mutation *SystemHazardRiskAssessmentMutation
+	hooks     []Hook
+	mutation  *SystemHazardRiskAssessmentMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the SystemHazardRiskAssessmentUpdate builder.
@@ -107,6 +108,12 @@ func (_u *SystemHazardRiskAssessmentUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SystemHazardRiskAssessmentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemHazardRiskAssessmentUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SystemHazardRiskAssessmentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -130,6 +137,7 @@ func (_u *SystemHazardRiskAssessmentUpdate) sqlSave(ctx context.Context) (_node 
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemHazardRiskAssessment
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemhazardriskassessment.Label}
@@ -145,9 +153,10 @@ func (_u *SystemHazardRiskAssessmentUpdate) sqlSave(ctx context.Context) (_node 
 // SystemHazardRiskAssessmentUpdateOne is the builder for updating a single SystemHazardRiskAssessment entity.
 type SystemHazardRiskAssessmentUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *SystemHazardRiskAssessmentMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *SystemHazardRiskAssessmentMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -241,6 +250,12 @@ func (_u *SystemHazardRiskAssessmentUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SystemHazardRiskAssessmentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemHazardRiskAssessmentUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SystemHazardRiskAssessmentUpdateOne) sqlSave(ctx context.Context) (_node *SystemHazardRiskAssessment, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -281,6 +296,7 @@ func (_u *SystemHazardRiskAssessmentUpdateOne) sqlSave(ctx context.Context) (_no
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemHazardRiskAssessment
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &SystemHazardRiskAssessment{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

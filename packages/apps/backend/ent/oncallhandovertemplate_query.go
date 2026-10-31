@@ -313,8 +313,9 @@ func (_q *OncallHandoverTemplateQuery) Clone() *OncallHandoverTemplateQuery {
 		withTenant: _q.withTenant.Clone(),
 		withRoster: _q.withRoster.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -649,6 +650,12 @@ func (_q *OncallHandoverTemplateQuery) ForShare(opts ...sql.LockOption) *OncallH
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *OncallHandoverTemplateQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallHandoverTemplateSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // OncallHandoverTemplateGroupBy is the group-by builder for OncallHandoverTemplate entities.
 type OncallHandoverTemplateGroupBy struct {
 	selector
@@ -737,4 +744,10 @@ func (_s *OncallHandoverTemplateSelect) sqlScan(ctx context.Context, root *Oncal
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *OncallHandoverTemplateSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallHandoverTemplateSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

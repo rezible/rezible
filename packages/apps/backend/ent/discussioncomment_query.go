@@ -423,8 +423,9 @@ func (_q *DiscussionCommentQuery) Clone() *DiscussionCommentQuery {
 		withReplies: _q.withReplies.Clone(),
 		withReviews: _q.withReviews.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -967,6 +968,12 @@ func (_q *DiscussionCommentQuery) ForShare(opts ...sql.LockOption) *DiscussionCo
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *DiscussionCommentQuery) Modify(modifiers ...func(s *sql.Selector)) *DiscussionCommentSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // DiscussionCommentGroupBy is the group-by builder for DiscussionComment entities.
 type DiscussionCommentGroupBy struct {
 	selector
@@ -1055,4 +1062,10 @@ func (_s *DiscussionCommentSelect) sqlScan(ctx context.Context, root *Discussion
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *DiscussionCommentSelect) Modify(modifiers ...func(s *sql.Selector)) *DiscussionCommentSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

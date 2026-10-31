@@ -18,8 +18,9 @@ import (
 // SituationJudgmentUpdate is the builder for updating SituationJudgment entities.
 type SituationJudgmentUpdate struct {
 	config
-	hooks    []Hook
-	mutation *SituationJudgmentMutation
+	hooks     []Hook
+	mutation  *SituationJudgmentMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the SituationJudgmentUpdate builder.
@@ -71,6 +72,12 @@ func (_u *SituationJudgmentUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SituationJudgmentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationJudgmentUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SituationJudgmentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -85,6 +92,7 @@ func (_u *SituationJudgmentUpdate) sqlSave(ctx context.Context) (_node int, err 
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationJudgment
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{situationjudgment.Label}
@@ -100,9 +108,10 @@ func (_u *SituationJudgmentUpdate) sqlSave(ctx context.Context) (_node int, err 
 // SituationJudgmentUpdateOne is the builder for updating a single SituationJudgment entity.
 type SituationJudgmentUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *SituationJudgmentMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *SituationJudgmentMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Mutation returns the SituationJudgmentMutation object of the builder.
@@ -161,6 +170,12 @@ func (_u *SituationJudgmentUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SituationJudgmentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationJudgmentUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SituationJudgmentUpdateOne) sqlSave(ctx context.Context) (_node *SituationJudgment, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -192,6 +207,7 @@ func (_u *SituationJudgmentUpdateOne) sqlSave(ctx context.Context) (_node *Situa
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationJudgment
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &SituationJudgment{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

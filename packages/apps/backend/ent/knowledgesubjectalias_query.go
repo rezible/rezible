@@ -397,8 +397,9 @@ func (_q *KnowledgeSubjectAliasQuery) Clone() *KnowledgeSubjectAliasQuery {
 		withMergedByProposal: _q.withMergedByProposal.Clone(),
 		withEvidence:         _q.withEvidence.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -892,6 +893,12 @@ func (_q *KnowledgeSubjectAliasQuery) ForShare(opts ...sql.LockOption) *Knowledg
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *KnowledgeSubjectAliasQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeSubjectAliasSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // KnowledgeSubjectAliasGroupBy is the group-by builder for KnowledgeSubjectAlias entities.
 type KnowledgeSubjectAliasGroupBy struct {
 	selector
@@ -980,4 +987,10 @@ func (_s *KnowledgeSubjectAliasSelect) sqlScan(ctx context.Context, root *Knowle
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *KnowledgeSubjectAliasSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeSubjectAliasSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

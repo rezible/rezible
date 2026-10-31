@@ -312,8 +312,9 @@ func (_q *IntegrationEventSyncRunQuery) Clone() *IntegrationEventSyncRunQuery {
 		withTenant:      _q.withTenant.Clone(),
 		withIntegration: _q.withIntegration.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -649,6 +650,12 @@ func (_q *IntegrationEventSyncRunQuery) ForShare(opts ...sql.LockOption) *Integr
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *IntegrationEventSyncRunQuery) Modify(modifiers ...func(s *sql.Selector)) *IntegrationEventSyncRunSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // IntegrationEventSyncRunGroupBy is the group-by builder for IntegrationEventSyncRun entities.
 type IntegrationEventSyncRunGroupBy struct {
 	selector
@@ -737,4 +744,10 @@ func (_s *IntegrationEventSyncRunSelect) sqlScan(ctx context.Context, root *Inte
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *IntegrationEventSyncRunSelect) Modify(modifiers ...func(s *sql.Selector)) *IntegrationEventSyncRunSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

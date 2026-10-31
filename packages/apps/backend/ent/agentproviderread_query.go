@@ -396,8 +396,9 @@ func (_q *AgentProviderReadQuery) Clone() *AgentProviderReadQuery {
 		withServiceEntity: _q.withServiceEntity.Clone(),
 		withIntegration:   _q.withIntegration.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -886,6 +887,12 @@ func (_q *AgentProviderReadQuery) ForShare(opts ...sql.LockOption) *AgentProvide
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *AgentProviderReadQuery) Modify(modifiers ...func(s *sql.Selector)) *AgentProviderReadSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // AgentProviderReadGroupBy is the group-by builder for AgentProviderRead entities.
 type AgentProviderReadGroupBy struct {
 	selector
@@ -974,4 +981,10 @@ func (_s *AgentProviderReadSelect) sqlScan(ctx context.Context, root *AgentProvi
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *AgentProviderReadSelect) Modify(modifiers ...func(s *sql.Selector)) *AgentProviderReadSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -22,8 +22,9 @@ import (
 // IncidentRoleUpdate is the builder for updating IncidentRole entities.
 type IncidentRoleUpdate struct {
 	config
-	hooks    []Hook
-	mutation *IncidentRoleMutation
+	hooks     []Hook
+	mutation  *IncidentRoleMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the IncidentRoleUpdate builder.
@@ -205,6 +206,12 @@ func (_u *IncidentRoleUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *IncidentRoleUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -333,6 +340,7 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentRole
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentrole.Label}
@@ -348,9 +356,10 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 // IncidentRoleUpdateOne is the builder for updating a single IncidentRole entity.
 type IncidentRoleUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *IncidentRoleMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *IncidentRoleMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -539,6 +548,12 @@ func (_u *IncidentRoleUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *IncidentRoleUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRole, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -684,6 +699,7 @@ func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRo
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentRole
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentRole{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

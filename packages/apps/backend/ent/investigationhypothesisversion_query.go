@@ -369,8 +369,9 @@ func (_q *InvestigationHypothesisVersionQuery) Clone() *InvestigationHypothesisV
 		withAgentTurn:        _q.withAgentTurn.Clone(),
 		withOutputReferences: _q.withOutputReferences.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -810,6 +811,12 @@ func (_q *InvestigationHypothesisVersionQuery) ForShare(opts ...sql.LockOption) 
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *InvestigationHypothesisVersionQuery) Modify(modifiers ...func(s *sql.Selector)) *InvestigationHypothesisVersionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // InvestigationHypothesisVersionGroupBy is the group-by builder for InvestigationHypothesisVersion entities.
 type InvestigationHypothesisVersionGroupBy struct {
 	selector
@@ -898,4 +905,10 @@ func (_s *InvestigationHypothesisVersionSelect) sqlScan(ctx context.Context, roo
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *InvestigationHypothesisVersionSelect) Modify(modifiers ...func(s *sql.Selector)) *InvestigationHypothesisVersionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -284,8 +284,9 @@ func (_q *SequenceCounterQuery) Clone() *SequenceCounterQuery {
 		predicates: append([]predicate.SequenceCounter{}, _q.predicates...),
 		withTenant: _q.withTenant.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -571,6 +572,12 @@ func (_q *SequenceCounterQuery) ForShare(opts ...sql.LockOption) *SequenceCounte
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SequenceCounterQuery) Modify(modifiers ...func(s *sql.Selector)) *SequenceCounterSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SequenceCounterGroupBy is the group-by builder for SequenceCounter entities.
 type SequenceCounterGroupBy struct {
 	selector
@@ -659,4 +666,10 @@ func (_s *SequenceCounterSelect) sqlScan(ctx context.Context, root *SequenceCoun
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SequenceCounterSelect) Modify(modifiers ...func(s *sql.Selector)) *SequenceCounterSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

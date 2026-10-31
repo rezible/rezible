@@ -342,8 +342,9 @@ func (_q *MeetingSessionQuery) Clone() *MeetingSessionQuery {
 		withVideoConference: _q.withVideoConference.Clone(),
 		withSchedule:        _q.withSchedule.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -734,6 +735,12 @@ func (_q *MeetingSessionQuery) ForShare(opts ...sql.LockOption) *MeetingSessionQ
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *MeetingSessionQuery) Modify(modifiers ...func(s *sql.Selector)) *MeetingSessionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // MeetingSessionGroupBy is the group-by builder for MeetingSession entities.
 type MeetingSessionGroupBy struct {
 	selector
@@ -822,4 +829,10 @@ func (_s *MeetingSessionSelect) sqlScan(ctx context.Context, root *MeetingSessio
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *MeetingSessionSelect) Modify(modifiers ...func(s *sql.Selector)) *MeetingSessionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -340,8 +340,9 @@ func (_q *KnowledgeEvidenceQuery) Clone() *KnowledgeEvidenceQuery {
 		withEvent:        _q.withEvent.Clone(),
 		withSubjectAlias: _q.withSubjectAlias.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -727,6 +728,12 @@ func (_q *KnowledgeEvidenceQuery) ForShare(opts ...sql.LockOption) *KnowledgeEvi
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *KnowledgeEvidenceQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeEvidenceSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // KnowledgeEvidenceGroupBy is the group-by builder for KnowledgeEvidence entities.
 type KnowledgeEvidenceGroupBy struct {
 	selector
@@ -815,4 +822,10 @@ func (_s *KnowledgeEvidenceSelect) sqlScan(ctx context.Context, root *KnowledgeE
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *KnowledgeEvidenceSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeEvidenceSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

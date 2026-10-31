@@ -312,8 +312,9 @@ func (_q *AlertFeedbackQuery) Clone() *AlertFeedbackQuery {
 		withTenant:        _q.withTenant.Clone(),
 		withAlertInstance: _q.withAlertInstance.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -649,6 +650,12 @@ func (_q *AlertFeedbackQuery) ForShare(opts ...sql.LockOption) *AlertFeedbackQue
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *AlertFeedbackQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertFeedbackSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // AlertFeedbackGroupBy is the group-by builder for AlertFeedback entities.
 type AlertFeedbackGroupBy struct {
 	selector
@@ -737,4 +744,10 @@ func (_s *AlertFeedbackSelect) sqlScan(ctx context.Context, root *AlertFeedbackQ
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *AlertFeedbackSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertFeedbackSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

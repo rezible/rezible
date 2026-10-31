@@ -537,8 +537,9 @@ func (_q *DiscussionThreadQuery) Clone() *DiscussionThreadQuery {
 		withTargetKnowledgeEntity:       _q.withTargetKnowledgeEntity.Clone(),
 		withTargetKnowledgeRelationship: _q.withTargetKnowledgeRelationship.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -1294,6 +1295,12 @@ func (_q *DiscussionThreadQuery) ForShare(opts ...sql.LockOption) *DiscussionThr
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *DiscussionThreadQuery) Modify(modifiers ...func(s *sql.Selector)) *DiscussionThreadSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // DiscussionThreadGroupBy is the group-by builder for DiscussionThread entities.
 type DiscussionThreadGroupBy struct {
 	selector
@@ -1382,4 +1389,10 @@ func (_s *DiscussionThreadSelect) sqlScan(ctx context.Context, root *DiscussionT
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *DiscussionThreadSelect) Modify(modifiers ...func(s *sql.Selector)) *DiscussionThreadSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

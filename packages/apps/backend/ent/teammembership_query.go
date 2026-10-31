@@ -368,8 +368,9 @@ func (_q *TeamMembershipQuery) Clone() *TeamMembershipQuery {
 		withTeam:                  _q.withTeam.Clone(),
 		withUser:                  _q.withUser.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -808,6 +809,12 @@ func (_q *TeamMembershipQuery) ForShare(opts ...sql.LockOption) *TeamMembershipQ
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *TeamMembershipQuery) Modify(modifiers ...func(s *sql.Selector)) *TeamMembershipSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // TeamMembershipGroupBy is the group-by builder for TeamMembership entities.
 type TeamMembershipGroupBy struct {
 	selector
@@ -896,4 +903,10 @@ func (_s *TeamMembershipSelect) sqlScan(ctx context.Context, root *TeamMembershi
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *TeamMembershipSelect) Modify(modifiers ...func(s *sql.Selector)) *TeamMembershipSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

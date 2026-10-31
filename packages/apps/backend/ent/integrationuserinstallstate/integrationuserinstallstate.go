@@ -78,8 +78,6 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// DefaultUserID holds the default value on creation for the "user_id" field.
-	DefaultUserID func() uuid.UUID
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 	// ValueScanner of all IntegrationUserInstallState fields.

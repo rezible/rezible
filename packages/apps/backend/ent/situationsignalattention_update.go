@@ -21,8 +21,9 @@ import (
 // SituationSignalAttentionUpdate is the builder for updating SituationSignalAttention entities.
 type SituationSignalAttentionUpdate struct {
 	config
-	hooks    []Hook
-	mutation *SituationSignalAttentionMutation
+	hooks     []Hook
+	mutation  *SituationSignalAttentionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the SituationSignalAttentionUpdate builder.
@@ -135,6 +136,12 @@ func (_u *SituationSignalAttentionUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SituationSignalAttentionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationSignalAttentionUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SituationSignalAttentionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -186,6 +193,7 @@ func (_u *SituationSignalAttentionUpdate) sqlSave(ctx context.Context) (_node in
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationSignalAttention
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{situationsignalattention.Label}
@@ -201,9 +209,10 @@ func (_u *SituationSignalAttentionUpdate) sqlSave(ctx context.Context) (_node in
 // SituationSignalAttentionUpdateOne is the builder for updating a single SituationSignalAttention entity.
 type SituationSignalAttentionUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *SituationSignalAttentionMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *SituationSignalAttentionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetLevel sets the "level" field.
@@ -323,6 +332,12 @@ func (_u *SituationSignalAttentionUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SituationSignalAttentionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationSignalAttentionUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SituationSignalAttentionUpdateOne) sqlSave(ctx context.Context) (_node *SituationSignalAttention, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -391,6 +406,7 @@ func (_u *SituationSignalAttentionUpdateOne) sqlSave(ctx context.Context) (_node
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationSignalAttention
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &SituationSignalAttention{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

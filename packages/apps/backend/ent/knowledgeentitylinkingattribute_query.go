@@ -312,8 +312,9 @@ func (_q *KnowledgeEntityLinkingAttributeQuery) Clone() *KnowledgeEntityLinkingA
 		withTenant: _q.withTenant.Clone(),
 		withEntity: _q.withEntity.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -649,6 +650,12 @@ func (_q *KnowledgeEntityLinkingAttributeQuery) ForShare(opts ...sql.LockOption)
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *KnowledgeEntityLinkingAttributeQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeEntityLinkingAttributeSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // KnowledgeEntityLinkingAttributeGroupBy is the group-by builder for KnowledgeEntityLinkingAttribute entities.
 type KnowledgeEntityLinkingAttributeGroupBy struct {
 	selector
@@ -737,4 +744,10 @@ func (_s *KnowledgeEntityLinkingAttributeSelect) sqlScan(ctx context.Context, ro
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *KnowledgeEntityLinkingAttributeSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeEntityLinkingAttributeSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

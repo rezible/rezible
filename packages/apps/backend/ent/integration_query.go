@@ -284,8 +284,9 @@ func (_q *IntegrationQuery) Clone() *IntegrationQuery {
 		predicates: append([]predicate.Integration{}, _q.predicates...),
 		withTenant: _q.withTenant.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -571,6 +572,12 @@ func (_q *IntegrationQuery) ForShare(opts ...sql.LockOption) *IntegrationQuery {
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *IntegrationQuery) Modify(modifiers ...func(s *sql.Selector)) *IntegrationSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // IntegrationGroupBy is the group-by builder for Integration entities.
 type IntegrationGroupBy struct {
 	selector
@@ -659,4 +666,10 @@ func (_s *IntegrationSelect) sqlScan(ctx context.Context, root *IntegrationQuery
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *IntegrationSelect) Modify(modifiers ...func(s *sql.Selector)) *IntegrationSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

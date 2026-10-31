@@ -450,8 +450,9 @@ func (_q *KnowledgeEntityQuery) Clone() *KnowledgeEntityQuery {
 		withParent:              _q.withParent.Clone(),
 		withChildren:            _q.withChildren.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -1047,6 +1048,12 @@ func (_q *KnowledgeEntityQuery) ForShare(opts ...sql.LockOption) *KnowledgeEntit
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *KnowledgeEntityQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeEntitySelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // KnowledgeEntityGroupBy is the group-by builder for KnowledgeEntity entities.
 type KnowledgeEntityGroupBy struct {
 	selector
@@ -1135,4 +1142,10 @@ func (_s *KnowledgeEntitySelect) sqlScan(ctx context.Context, root *KnowledgeEnt
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *KnowledgeEntitySelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeEntitySelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

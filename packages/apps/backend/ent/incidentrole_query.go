@@ -341,8 +341,9 @@ func (_q *IncidentRoleQuery) Clone() *IncidentRoleQuery {
 		withAssignments:      _q.withAssignments.Clone(),
 		withDebriefQuestions: _q.withDebriefQuestions.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -760,6 +761,12 @@ func (_q *IncidentRoleQuery) ForShare(opts ...sql.LockOption) *IncidentRoleQuery
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *IncidentRoleQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentRoleSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // IncidentRoleGroupBy is the group-by builder for IncidentRole entities.
 type IncidentRoleGroupBy struct {
 	selector
@@ -848,4 +855,10 @@ func (_s *IncidentRoleSelect) sqlScan(ctx context.Context, root *IncidentRoleQue
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *IncidentRoleSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentRoleSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

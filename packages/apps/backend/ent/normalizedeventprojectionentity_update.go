@@ -20,8 +20,9 @@ import (
 // NormalizedEventProjectionEntityUpdate is the builder for updating NormalizedEventProjectionEntity entities.
 type NormalizedEventProjectionEntityUpdate struct {
 	config
-	hooks    []Hook
-	mutation *NormalizedEventProjectionEntityMutation
+	hooks     []Hook
+	mutation  *NormalizedEventProjectionEntityMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the NormalizedEventProjectionEntityUpdate builder.
@@ -126,6 +127,12 @@ func (_u *NormalizedEventProjectionEntityUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *NormalizedEventProjectionEntityUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *NormalizedEventProjectionEntityUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *NormalizedEventProjectionEntityUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -177,6 +184,7 @@ func (_u *NormalizedEventProjectionEntityUpdate) sqlSave(ctx context.Context) (_
 	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEventProjectionEntity
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{normalizedeventprojectionentity.Label}
@@ -192,9 +200,10 @@ func (_u *NormalizedEventProjectionEntityUpdate) sqlSave(ctx context.Context) (_
 // NormalizedEventProjectionEntityUpdateOne is the builder for updating a single NormalizedEventProjectionEntity entity.
 type NormalizedEventProjectionEntityUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *NormalizedEventProjectionEntityMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *NormalizedEventProjectionEntityMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetProjectionID sets the "projection_id" field.
@@ -306,6 +315,12 @@ func (_u *NormalizedEventProjectionEntityUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *NormalizedEventProjectionEntityUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *NormalizedEventProjectionEntityUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *NormalizedEventProjectionEntityUpdateOne) sqlSave(ctx context.Context) (_node *NormalizedEventProjectionEntity, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -374,6 +389,7 @@ func (_u *NormalizedEventProjectionEntityUpdateOne) sqlSave(ctx context.Context)
 	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEventProjectionEntity
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &NormalizedEventProjectionEntity{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

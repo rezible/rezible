@@ -341,8 +341,9 @@ func (_q *NormalizedEventProjectionQuery) Clone() *NormalizedEventProjectionQuer
 		withEvent:              _q.withEvent.Clone(),
 		withProjectionEntities: _q.withProjectionEntities.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -729,6 +730,12 @@ func (_q *NormalizedEventProjectionQuery) ForShare(opts ...sql.LockOption) *Norm
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *NormalizedEventProjectionQuery) Modify(modifiers ...func(s *sql.Selector)) *NormalizedEventProjectionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // NormalizedEventProjectionGroupBy is the group-by builder for NormalizedEventProjection entities.
 type NormalizedEventProjectionGroupBy struct {
 	selector
@@ -817,4 +824,10 @@ func (_s *NormalizedEventProjectionSelect) sqlScan(ctx context.Context, root *No
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *NormalizedEventProjectionSelect) Modify(modifiers ...func(s *sql.Selector)) *NormalizedEventProjectionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

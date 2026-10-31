@@ -21,8 +21,9 @@ import (
 // IntegrationEventSyncCursorUpdate is the builder for updating IntegrationEventSyncCursor entities.
 type IntegrationEventSyncCursorUpdate struct {
 	config
-	hooks    []Hook
-	mutation *IntegrationEventSyncCursorMutation
+	hooks     []Hook
+	mutation  *IntegrationEventSyncCursorMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the IntegrationEventSyncCursorUpdate builder.
@@ -187,6 +188,12 @@ func (_u *IntegrationEventSyncCursorUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *IntegrationEventSyncCursorUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IntegrationEventSyncCursorUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *IntegrationEventSyncCursorUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -250,6 +257,7 @@ func (_u *IntegrationEventSyncCursorUpdate) sqlSave(ctx context.Context) (_node 
 	}
 	_spec.Node.Schema = _u.schemaConfig.IntegrationEventSyncCursor
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{integrationeventsynccursor.Label}
@@ -265,9 +273,10 @@ func (_u *IntegrationEventSyncCursorUpdate) sqlSave(ctx context.Context) (_node 
 // IntegrationEventSyncCursorUpdateOne is the builder for updating a single IntegrationEventSyncCursor entity.
 type IntegrationEventSyncCursorUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *IntegrationEventSyncCursorMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *IntegrationEventSyncCursorMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -439,6 +448,12 @@ func (_u *IntegrationEventSyncCursorUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *IntegrationEventSyncCursorUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IntegrationEventSyncCursorUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *IntegrationEventSyncCursorUpdateOne) sqlSave(ctx context.Context) (_node *IntegrationEventSyncCursor, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -519,6 +534,7 @@ func (_u *IntegrationEventSyncCursorUpdateOne) sqlSave(ctx context.Context) (_no
 	}
 	_spec.Node.Schema = _u.schemaConfig.IntegrationEventSyncCursor
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &IntegrationEventSyncCursor{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

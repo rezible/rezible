@@ -22,8 +22,9 @@ import (
 // IncidentMilestoneUpdate is the builder for updating IncidentMilestone entities.
 type IncidentMilestoneUpdate struct {
 	config
-	hooks    []Hook
-	mutation *IncidentMilestoneMutation
+	hooks     []Hook
+	mutation  *IncidentMilestoneMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the IncidentMilestoneUpdate builder.
@@ -216,6 +217,12 @@ func (_u *IncidentMilestoneUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *IncidentMilestoneUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentMilestoneUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -316,6 +323,7 @@ func (_u *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (_node int, err 
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentMilestone
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentmilestone.Label}
@@ -331,9 +339,10 @@ func (_u *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (_node int, err 
 // IncidentMilestoneUpdateOne is the builder for updating a single IncidentMilestone entity.
 type IncidentMilestoneUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *IncidentMilestoneMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *IncidentMilestoneMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetIncidentID sets the "incident_id" field.
@@ -533,6 +542,12 @@ func (_u *IncidentMilestoneUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *IncidentMilestoneUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentMilestoneUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *IncidentMilestone, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -650,6 +665,7 @@ func (_u *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentMilestone
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentMilestone{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

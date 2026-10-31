@@ -480,8 +480,9 @@ func (_q *RetrospectiveQuery) Clone() *RetrospectiveQuery {
 		withReviews:           _q.withReviews.Clone(),
 		withSystemAnalysis:    _q.withSystemAnalysis.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -1129,6 +1130,12 @@ func (_q *RetrospectiveQuery) ForShare(opts ...sql.LockOption) *RetrospectiveQue
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *RetrospectiveQuery) Modify(modifiers ...func(s *sql.Selector)) *RetrospectiveSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // RetrospectiveGroupBy is the group-by builder for Retrospective entities.
 type RetrospectiveGroupBy struct {
 	selector
@@ -1217,4 +1224,10 @@ func (_s *RetrospectiveSelect) sqlScan(ctx context.Context, root *RetrospectiveQ
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *RetrospectiveSelect) Modify(modifiers ...func(s *sql.Selector)) *RetrospectiveSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

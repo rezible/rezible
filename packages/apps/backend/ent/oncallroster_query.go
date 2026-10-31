@@ -453,8 +453,9 @@ func (_q *OncallRosterQuery) Clone() *OncallRosterQuery {
 		withUserWatchers:     _q.withUserWatchers.Clone(),
 		withMetrics:          _q.withMetrics.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -1099,6 +1100,12 @@ func (_q *OncallRosterQuery) ForShare(opts ...sql.LockOption) *OncallRosterQuery
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *OncallRosterQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // OncallRosterGroupBy is the group-by builder for OncallRoster entities.
 type OncallRosterGroupBy struct {
 	selector
@@ -1187,4 +1194,10 @@ func (_s *OncallRosterSelect) sqlScan(ctx context.Context, root *OncallRosterQue
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *OncallRosterSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -340,8 +340,9 @@ func (_q *VideoConferenceQuery) Clone() *VideoConferenceQuery {
 		withIncident:       _q.withIncident.Clone(),
 		withMeetingSession: _q.withMeetingSession.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -733,6 +734,12 @@ func (_q *VideoConferenceQuery) ForShare(opts ...sql.LockOption) *VideoConferenc
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *VideoConferenceQuery) Modify(modifiers ...func(s *sql.Selector)) *VideoConferenceSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // VideoConferenceGroupBy is the group-by builder for VideoConference entities.
 type VideoConferenceGroupBy struct {
 	selector
@@ -821,4 +828,10 @@ func (_s *VideoConferenceSelect) sqlScan(ctx context.Context, root *VideoConfere
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *VideoConferenceSelect) Modify(modifiers ...func(s *sql.Selector)) *VideoConferenceSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -341,8 +341,9 @@ func (_q *MeetingScheduleQuery) Clone() *MeetingScheduleQuery {
 		withOwningTeam: _q.withOwningTeam.Clone(),
 		withSessions:   _q.withSessions.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -759,6 +760,12 @@ func (_q *MeetingScheduleQuery) ForShare(opts ...sql.LockOption) *MeetingSchedul
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *MeetingScheduleQuery) Modify(modifiers ...func(s *sql.Selector)) *MeetingScheduleSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // MeetingScheduleGroupBy is the group-by builder for MeetingSchedule entities.
 type MeetingScheduleGroupBy struct {
 	selector
@@ -847,4 +854,10 @@ func (_s *MeetingScheduleSelect) sqlScan(ctx context.Context, root *MeetingSched
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *MeetingScheduleSelect) Modify(modifiers ...func(s *sql.Selector)) *MeetingScheduleSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -340,8 +340,9 @@ func (_q *AgentArtifactQuery) Clone() *AgentArtifactQuery {
 		withAgentSession: _q.withAgentSession.Clone(),
 		withAgentTurn:    _q.withAgentTurn.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -730,6 +731,12 @@ func (_q *AgentArtifactQuery) ForShare(opts ...sql.LockOption) *AgentArtifactQue
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *AgentArtifactQuery) Modify(modifiers ...func(s *sql.Selector)) *AgentArtifactSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // AgentArtifactGroupBy is the group-by builder for AgentArtifact entities.
 type AgentArtifactGroupBy struct {
 	selector
@@ -818,4 +825,10 @@ func (_s *AgentArtifactSelect) sqlScan(ctx context.Context, root *AgentArtifactQ
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *AgentArtifactSelect) Modify(modifiers ...func(s *sql.Selector)) *AgentArtifactSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -182,8 +182,9 @@ func (_q *AlertMetricsQuery) Clone() *AlertMetricsQuery {
 		inters:     append([]Interceptor{}, _q.inters...),
 		predicates: append([]predicate.AlertMetrics{}, _q.predicates...),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -412,6 +413,12 @@ func (_q *AlertMetricsQuery) ForShare(opts ...sql.LockOption) *AlertMetricsQuery
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *AlertMetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertMetricsSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // AlertMetricsGroupBy is the group-by builder for AlertMetrics entities.
 type AlertMetricsGroupBy struct {
 	selector
@@ -500,4 +507,10 @@ func (_s *AlertMetricsSelect) sqlScan(ctx context.Context, root *AlertMetricsQue
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *AlertMetricsSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertMetricsSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

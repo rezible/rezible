@@ -313,8 +313,9 @@ func (_q *PlaybookQuery) Clone() *PlaybookQuery {
 		withTenant:           _q.withTenant.Clone(),
 		withAlertDefinitions: _q.withAlertDefinitions.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -681,6 +682,12 @@ func (_q *PlaybookQuery) ForShare(opts ...sql.LockOption) *PlaybookQuery {
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *PlaybookQuery) Modify(modifiers ...func(s *sql.Selector)) *PlaybookSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // PlaybookGroupBy is the group-by builder for Playbook entities.
 type PlaybookGroupBy struct {
 	selector
@@ -769,4 +776,10 @@ func (_s *PlaybookSelect) sqlScan(ctx context.Context, root *PlaybookQuery, v an
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *PlaybookSelect) Modify(modifiers ...func(s *sql.Selector)) *PlaybookSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

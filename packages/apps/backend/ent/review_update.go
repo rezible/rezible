@@ -24,8 +24,9 @@ import (
 // ReviewUpdate is the builder for updating Review entities.
 type ReviewUpdate struct {
 	config
-	hooks    []Hook
-	mutation *ReviewMutation
+	hooks     []Hook
+	mutation  *ReviewMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the ReviewUpdate builder.
@@ -317,6 +318,12 @@ func (_u *ReviewUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *ReviewUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ReviewUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *ReviewUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -507,6 +514,7 @@ func (_u *ReviewUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	_spec.Node.Schema = _u.schemaConfig.Review
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{review.Label}
@@ -522,9 +530,10 @@ func (_u *ReviewUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 // ReviewUpdateOne is the builder for updating a single Review entity.
 type ReviewUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *ReviewMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *ReviewMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -823,6 +832,12 @@ func (_u *ReviewUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *ReviewUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ReviewUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -1030,6 +1045,7 @@ func (_u *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err erro
 	}
 	_spec.Node.Schema = _u.schemaConfig.Review
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &Review{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -367,8 +367,9 @@ func (_q *KnowledgeProposalDecisionQuery) Clone() *KnowledgeProposalDecisionQuer
 		withUser:              _q.withUser.Clone(),
 		withImpliedByProposal: _q.withImpliedByProposal.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -807,6 +808,12 @@ func (_q *KnowledgeProposalDecisionQuery) ForShare(opts ...sql.LockOption) *Know
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *KnowledgeProposalDecisionQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeProposalDecisionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // KnowledgeProposalDecisionGroupBy is the group-by builder for KnowledgeProposalDecision entities.
 type KnowledgeProposalDecisionGroupBy struct {
 	selector
@@ -895,4 +902,10 @@ func (_s *KnowledgeProposalDecisionSelect) sqlScan(ctx context.Context, root *Kn
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *KnowledgeProposalDecisionSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeProposalDecisionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

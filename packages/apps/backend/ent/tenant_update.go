@@ -18,8 +18,9 @@ import (
 // TenantUpdate is the builder for updating Tenant entities.
 type TenantUpdate struct {
 	config
-	hooks    []Hook
-	mutation *TenantMutation
+	hooks     []Hook
+	mutation  *TenantMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the TenantUpdate builder.
@@ -60,6 +61,12 @@ func (_u *TenantUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *TenantUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TenantUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *TenantUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(tenant.Table, tenant.Columns, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
@@ -71,6 +78,7 @@ func (_u *TenantUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	_spec.Node.Schema = _u.schemaConfig.Tenant
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{tenant.Label}
@@ -86,9 +94,10 @@ func (_u *TenantUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 // TenantUpdateOne is the builder for updating a single Tenant entity.
 type TenantUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *TenantMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *TenantMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Mutation returns the TenantMutation object of the builder.
@@ -136,6 +145,12 @@ func (_u *TenantUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *TenantUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TenantUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err error) {
 	_spec := sqlgraph.NewUpdateSpec(tenant.Table, tenant.Columns, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt))
 	id, ok := _u.mutation.ID()
@@ -164,6 +179,7 @@ func (_u *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err erro
 	}
 	_spec.Node.Schema = _u.schemaConfig.Tenant
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &Tenant{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

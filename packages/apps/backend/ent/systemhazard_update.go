@@ -22,8 +22,9 @@ import (
 // SystemHazardUpdate is the builder for updating SystemHazard entities.
 type SystemHazardUpdate struct {
 	config
-	hooks    []Hook
-	mutation *SystemHazardMutation
+	hooks     []Hook
+	mutation  *SystemHazardMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the SystemHazardUpdate builder.
@@ -252,6 +253,12 @@ func (_u *SystemHazardUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SystemHazardUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemHazardUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SystemHazardUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -369,6 +376,7 @@ func (_u *SystemHazardUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemHazard
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemhazard.Label}
@@ -384,9 +392,10 @@ func (_u *SystemHazardUpdate) sqlSave(ctx context.Context) (_node int, err error
 // SystemHazardUpdateOne is the builder for updating a single SystemHazard entity.
 type SystemHazardUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *SystemHazardMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *SystemHazardMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -622,6 +631,12 @@ func (_u *SystemHazardUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SystemHazardUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemHazardUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHazard, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -756,6 +771,7 @@ func (_u *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHaza
 	}
 	_spec.Node.Schema = _u.schemaConfig.SystemHazard
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &SystemHazard{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

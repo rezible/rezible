@@ -313,8 +313,9 @@ func (_q *TicketQuery) Clone() *TicketQuery {
 		withTenant: _q.withTenant.Clone(),
 		withTasks:  _q.withTasks.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -681,6 +682,12 @@ func (_q *TicketQuery) ForShare(opts ...sql.LockOption) *TicketQuery {
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *TicketQuery) Modify(modifiers ...func(s *sql.Selector)) *TicketSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // TicketGroupBy is the group-by builder for Ticket entities.
 type TicketGroupBy struct {
 	selector
@@ -769,4 +776,10 @@ func (_s *TicketSelect) sqlScan(ctx context.Context, root *TicketQuery, v any) e
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *TicketSelect) Modify(modifiers ...func(s *sql.Selector)) *TicketSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

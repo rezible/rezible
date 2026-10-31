@@ -397,8 +397,9 @@ func (_q *AlertEpisodeQuery) Clone() *AlertEpisodeQuery {
 		withInstances:             _q.withInstances.Clone(),
 		withSituationObservations: _q.withSituationObservations.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -890,6 +891,12 @@ func (_q *AlertEpisodeQuery) ForShare(opts ...sql.LockOption) *AlertEpisodeQuery
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *AlertEpisodeQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertEpisodeSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // AlertEpisodeGroupBy is the group-by builder for AlertEpisode entities.
 type AlertEpisodeGroupBy struct {
 	selector
@@ -978,4 +985,10 @@ func (_s *AlertEpisodeSelect) sqlScan(ctx context.Context, root *AlertEpisodeQue
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *AlertEpisodeSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertEpisodeSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

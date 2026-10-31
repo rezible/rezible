@@ -340,8 +340,9 @@ func (_q *SystemAnalysisRelationshipQuery) Clone() *SystemAnalysisRelationshipQu
 		withAnalysis:              _q.withAnalysis.Clone(),
 		withKnowledgeRelationship: _q.withKnowledgeRelationship.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -727,6 +728,12 @@ func (_q *SystemAnalysisRelationshipQuery) ForShare(opts ...sql.LockOption) *Sys
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SystemAnalysisRelationshipQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisRelationshipSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SystemAnalysisRelationshipGroupBy is the group-by builder for SystemAnalysisRelationship entities.
 type SystemAnalysisRelationshipGroupBy struct {
 	selector
@@ -815,4 +822,10 @@ func (_s *SystemAnalysisRelationshipSelect) sqlScan(ctx context.Context, root *S
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SystemAnalysisRelationshipSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisRelationshipSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

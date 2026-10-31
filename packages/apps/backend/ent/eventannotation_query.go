@@ -369,8 +369,9 @@ func (_q *EventAnnotationQuery) Clone() *EventAnnotationQuery {
 		withCreator:   _q.withCreator.Clone(),
 		withHandovers: _q.withHandovers.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -837,6 +838,12 @@ func (_q *EventAnnotationQuery) ForShare(opts ...sql.LockOption) *EventAnnotatio
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *EventAnnotationQuery) Modify(modifiers ...func(s *sql.Selector)) *EventAnnotationSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // EventAnnotationGroupBy is the group-by builder for EventAnnotation entities.
 type EventAnnotationGroupBy struct {
 	selector
@@ -925,4 +932,10 @@ func (_s *EventAnnotationSelect) sqlScan(ctx context.Context, root *EventAnnotat
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *EventAnnotationSelect) Modify(modifiers ...func(s *sql.Selector)) *EventAnnotationSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

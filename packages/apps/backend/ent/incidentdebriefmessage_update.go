@@ -22,8 +22,9 @@ import (
 // IncidentDebriefMessageUpdate is the builder for updating IncidentDebriefMessage entities.
 type IncidentDebriefMessageUpdate struct {
 	config
-	hooks    []Hook
-	mutation *IncidentDebriefMessageMutation
+	hooks     []Hook
+	mutation  *IncidentDebriefMessageMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the IncidentDebriefMessageUpdate builder.
@@ -217,6 +218,12 @@ func (_u *IncidentDebriefMessageUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *IncidentDebriefMessageUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefMessageUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -308,6 +315,7 @@ func (_u *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (_node int,
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefMessage
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebriefmessage.Label}
@@ -323,9 +331,10 @@ func (_u *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (_node int,
 // IncidentDebriefMessageUpdateOne is the builder for updating a single IncidentDebriefMessage entity.
 type IncidentDebriefMessageUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *IncidentDebriefMessageMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *IncidentDebriefMessageMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetDebriefID sets the "debrief_id" field.
@@ -526,6 +535,12 @@ func (_u *IncidentDebriefMessageUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *IncidentDebriefMessageUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefMessageUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefMessage, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -634,6 +649,7 @@ func (_u *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_node *
 	}
 	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefMessage
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentDebriefMessage{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -368,8 +368,9 @@ func (_q *DocumentAccessQuery) Clone() *DocumentAccessQuery {
 		withUser:     _q.withUser.Clone(),
 		withTeam:     _q.withTeam.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -805,6 +806,12 @@ func (_q *DocumentAccessQuery) ForShare(opts ...sql.LockOption) *DocumentAccessQ
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *DocumentAccessQuery) Modify(modifiers ...func(s *sql.Selector)) *DocumentAccessSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // DocumentAccessGroupBy is the group-by builder for DocumentAccess entities.
 type DocumentAccessGroupBy struct {
 	selector
@@ -893,4 +900,10 @@ func (_s *DocumentAccessSelect) sqlScan(ctx context.Context, root *DocumentAcces
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *DocumentAccessSelect) Modify(modifiers ...func(s *sql.Selector)) *DocumentAccessSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

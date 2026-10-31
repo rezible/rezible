@@ -339,8 +339,9 @@ func (_q *IncidentLinkQuery) Clone() *IncidentLinkQuery {
 		withIncident:       _q.withIncident.Clone(),
 		withLinkedIncident: _q.withLinkedIncident.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -726,6 +727,12 @@ func (_q *IncidentLinkQuery) ForShare(opts ...sql.LockOption) *IncidentLinkQuery
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *IncidentLinkQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentLinkSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // IncidentLinkGroupBy is the group-by builder for IncidentLink entities.
 type IncidentLinkGroupBy struct {
 	selector
@@ -814,4 +821,10 @@ func (_s *IncidentLinkSelect) sqlScan(ctx context.Context, root *IncidentLinkQue
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *IncidentLinkSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentLinkSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

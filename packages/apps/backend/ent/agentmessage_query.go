@@ -340,8 +340,9 @@ func (_q *AgentMessageQuery) Clone() *AgentMessageQuery {
 		withAgentSession: _q.withAgentSession.Clone(),
 		withAgentTurn:    _q.withAgentTurn.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -727,6 +728,12 @@ func (_q *AgentMessageQuery) ForShare(opts ...sql.LockOption) *AgentMessageQuery
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *AgentMessageQuery) Modify(modifiers ...func(s *sql.Selector)) *AgentMessageSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // AgentMessageGroupBy is the group-by builder for AgentMessage entities.
 type AgentMessageGroupBy struct {
 	selector
@@ -815,4 +822,10 @@ func (_s *AgentMessageSelect) sqlScan(ctx context.Context, root *AgentMessageQue
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *AgentMessageSelect) Modify(modifiers ...func(s *sql.Selector)) *AgentMessageSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

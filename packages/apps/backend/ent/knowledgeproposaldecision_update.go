@@ -18,8 +18,9 @@ import (
 // KnowledgeProposalDecisionUpdate is the builder for updating KnowledgeProposalDecision entities.
 type KnowledgeProposalDecisionUpdate struct {
 	config
-	hooks    []Hook
-	mutation *KnowledgeProposalDecisionMutation
+	hooks     []Hook
+	mutation  *KnowledgeProposalDecisionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the KnowledgeProposalDecisionUpdate builder.
@@ -74,6 +75,12 @@ func (_u *KnowledgeProposalDecisionUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *KnowledgeProposalDecisionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *KnowledgeProposalDecisionUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *KnowledgeProposalDecisionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -88,6 +95,7 @@ func (_u *KnowledgeProposalDecisionUpdate) sqlSave(ctx context.Context) (_node i
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeProposalDecision
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{knowledgeproposaldecision.Label}
@@ -103,9 +111,10 @@ func (_u *KnowledgeProposalDecisionUpdate) sqlSave(ctx context.Context) (_node i
 // KnowledgeProposalDecisionUpdateOne is the builder for updating a single KnowledgeProposalDecision entity.
 type KnowledgeProposalDecisionUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *KnowledgeProposalDecisionMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *KnowledgeProposalDecisionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Mutation returns the KnowledgeProposalDecisionMutation object of the builder.
@@ -167,6 +176,12 @@ func (_u *KnowledgeProposalDecisionUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *KnowledgeProposalDecisionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *KnowledgeProposalDecisionUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *KnowledgeProposalDecisionUpdateOne) sqlSave(ctx context.Context) (_node *KnowledgeProposalDecision, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -198,6 +213,7 @@ func (_u *KnowledgeProposalDecisionUpdateOne) sqlSave(ctx context.Context) (_nod
 	}
 	_spec.Node.Schema = _u.schemaConfig.KnowledgeProposalDecision
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &KnowledgeProposalDecision{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

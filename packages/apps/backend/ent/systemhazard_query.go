@@ -341,8 +341,9 @@ func (_q *SystemHazardQuery) Clone() *SystemHazardQuery {
 		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
 		withRiskAssessments: _q.withRiskAssessments.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -732,6 +733,12 @@ func (_q *SystemHazardQuery) ForShare(opts ...sql.LockOption) *SystemHazardQuery
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SystemHazardQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemHazardSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SystemHazardGroupBy is the group-by builder for SystemHazard entities.
 type SystemHazardGroupBy struct {
 	selector
@@ -820,4 +827,10 @@ func (_s *SystemHazardSelect) sqlScan(ctx context.Context, root *SystemHazardQue
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SystemHazardSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemHazardSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

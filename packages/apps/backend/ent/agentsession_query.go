@@ -425,8 +425,9 @@ func (_q *AgentSessionQuery) Clone() *AgentSessionQuery {
 		withBindings:      _q.withBindings.Clone(),
 		withInvestigation: _q.withInvestigation.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -953,6 +954,12 @@ func (_q *AgentSessionQuery) ForShare(opts ...sql.LockOption) *AgentSessionQuery
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *AgentSessionQuery) Modify(modifiers ...func(s *sql.Selector)) *AgentSessionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // AgentSessionGroupBy is the group-by builder for AgentSession entities.
 type AgentSessionGroupBy struct {
 	selector
@@ -1041,4 +1048,10 @@ func (_s *AgentSessionSelect) sqlScan(ctx context.Context, root *AgentSessionQue
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *AgentSessionSelect) Modify(modifiers ...func(s *sql.Selector)) *AgentSessionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

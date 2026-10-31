@@ -341,8 +341,9 @@ func (_q *OncallScheduleQuery) Clone() *OncallScheduleQuery {
 		withParticipants: _q.withParticipants.Clone(),
 		withRoster:       _q.withRoster.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -729,6 +730,12 @@ func (_q *OncallScheduleQuery) ForShare(opts ...sql.LockOption) *OncallScheduleQ
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *OncallScheduleQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallScheduleSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // OncallScheduleGroupBy is the group-by builder for OncallSchedule entities.
 type OncallScheduleGroupBy struct {
 	selector
@@ -817,4 +824,10 @@ func (_s *OncallScheduleSelect) sqlScan(ctx context.Context, root *OncallSchedul
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *OncallScheduleSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallScheduleSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

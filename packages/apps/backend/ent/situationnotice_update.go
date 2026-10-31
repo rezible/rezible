@@ -19,8 +19,9 @@ import (
 // SituationNoticeUpdate is the builder for updating SituationNotice entities.
 type SituationNoticeUpdate struct {
 	config
-	hooks    []Hook
-	mutation *SituationNoticeMutation
+	hooks     []Hook
+	mutation  *SituationNoticeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the SituationNoticeUpdate builder.
@@ -249,6 +250,12 @@ func (_u *SituationNoticeUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SituationNoticeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationNoticeUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SituationNoticeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -308,6 +315,7 @@ func (_u *SituationNoticeUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationNotice
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{situationnotice.Label}
@@ -323,9 +331,10 @@ func (_u *SituationNoticeUpdate) sqlSave(ctx context.Context) (_node int, err er
 // SituationNoticeUpdateOne is the builder for updating a single SituationNotice entity.
 type SituationNoticeUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *SituationNoticeMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *SituationNoticeMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -561,6 +570,12 @@ func (_u *SituationNoticeUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *SituationNoticeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationNoticeUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *SituationNoticeUpdateOne) sqlSave(ctx context.Context) (_node *SituationNotice, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -637,6 +652,7 @@ func (_u *SituationNoticeUpdateOne) sqlSave(ctx context.Context) (_node *Situati
 	}
 	_spec.Node.Schema = _u.schemaConfig.SituationNotice
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &SituationNotice{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

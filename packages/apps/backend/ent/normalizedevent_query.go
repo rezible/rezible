@@ -341,8 +341,9 @@ func (_q *NormalizedEventQuery) Clone() *NormalizedEventQuery {
 		withIntegration: _q.withIntegration.Clone(),
 		withProjection:  _q.withProjection.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -738,6 +739,12 @@ func (_q *NormalizedEventQuery) ForShare(opts ...sql.LockOption) *NormalizedEven
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *NormalizedEventQuery) Modify(modifiers ...func(s *sql.Selector)) *NormalizedEventSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // NormalizedEventGroupBy is the group-by builder for NormalizedEvent entities.
 type NormalizedEventGroupBy struct {
 	selector
@@ -826,4 +833,10 @@ func (_s *NormalizedEventSelect) sqlScan(ctx context.Context, root *NormalizedEv
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *NormalizedEventSelect) Modify(modifiers ...func(s *sql.Selector)) *NormalizedEventSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -29,8 +29,9 @@ import (
 // DiscussionThreadUpdate is the builder for updating DiscussionThread entities.
 type DiscussionThreadUpdate struct {
 	config
-	hooks    []Hook
-	mutation *DiscussionThreadMutation
+	hooks     []Hook
+	mutation  *DiscussionThreadMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the DiscussionThreadUpdate builder.
@@ -480,6 +481,12 @@ func (_u *DiscussionThreadUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *DiscussionThreadUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DiscussionThreadUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *DiscussionThreadUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -820,6 +827,7 @@ func (_u *DiscussionThreadUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	_spec.Node.Schema = _u.schemaConfig.DiscussionThread
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{discussionthread.Label}
@@ -835,9 +843,10 @@ func (_u *DiscussionThreadUpdate) sqlSave(ctx context.Context) (_node int, err e
 // DiscussionThreadUpdateOne is the builder for updating a single DiscussionThread entity.
 type DiscussionThreadUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *DiscussionThreadMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *DiscussionThreadMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -1294,6 +1303,12 @@ func (_u *DiscussionThreadUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *DiscussionThreadUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DiscussionThreadUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *DiscussionThreadUpdateOne) sqlSave(ctx context.Context) (_node *DiscussionThread, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -1651,6 +1666,7 @@ func (_u *DiscussionThreadUpdateOne) sqlSave(ctx context.Context) (_node *Discus
 	}
 	_spec.Node.Schema = _u.schemaConfig.DiscussionThread
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &DiscussionThread{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

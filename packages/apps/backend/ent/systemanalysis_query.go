@@ -480,8 +480,9 @@ func (_q *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		withDiscussionThreads:     _q.withDiscussionThreads.Clone(),
 		withInvestigation:         _q.withInvestigation.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -1123,6 +1124,12 @@ func (_q *SystemAnalysisQuery) ForShare(opts ...sql.LockOption) *SystemAnalysisQ
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SystemAnalysisQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SystemAnalysisGroupBy is the group-by builder for SystemAnalysis entities.
 type SystemAnalysisGroupBy struct {
 	selector
@@ -1211,4 +1218,10 @@ func (_s *SystemAnalysisSelect) sqlScan(ctx context.Context, root *SystemAnalysi
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SystemAnalysisSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

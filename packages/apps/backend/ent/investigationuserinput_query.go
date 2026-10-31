@@ -369,8 +369,9 @@ func (_q *InvestigationUserInputQuery) Clone() *InvestigationUserInputQuery {
 		withAgentTurn:     _q.withAgentTurn.Clone(),
 		withFindings:      _q.withFindings.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -813,6 +814,12 @@ func (_q *InvestigationUserInputQuery) ForShare(opts ...sql.LockOption) *Investi
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *InvestigationUserInputQuery) Modify(modifiers ...func(s *sql.Selector)) *InvestigationUserInputSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // InvestigationUserInputGroupBy is the group-by builder for InvestigationUserInput entities.
 type InvestigationUserInputGroupBy struct {
 	selector
@@ -901,4 +908,10 @@ func (_s *InvestigationUserInputSelect) sqlScan(ctx context.Context, root *Inves
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *InvestigationUserInputSelect) Modify(modifiers ...func(s *sql.Selector)) *InvestigationUserInputSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -18,6 +18,7 @@ func main() {
 			gen.FeatureVersionedMigration,
 			gen.FeatureEntQL,
 			gen.FeatureIntercept,
+			gen.FeatureModifier,
 			gen.FeatureUpsert,
 			gen.FeaturePrivacy,
 			gen.FeatureSchemaConfig,

@@ -23,8 +23,9 @@ import (
 // AlertInstanceUpdate is the builder for updating AlertInstance entities.
 type AlertInstanceUpdate struct {
 	config
-	hooks    []Hook
-	mutation *AlertInstanceMutation
+	hooks     []Hook
+	mutation  *AlertInstanceMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the AlertInstanceUpdate builder.
@@ -278,6 +279,12 @@ func (_u *AlertInstanceUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *AlertInstanceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertInstanceUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *AlertInstanceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -424,6 +431,7 @@ func (_u *AlertInstanceUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	_spec.Node.Schema = _u.schemaConfig.AlertInstance
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{alertinstance.Label}
@@ -439,9 +447,10 @@ func (_u *AlertInstanceUpdate) sqlSave(ctx context.Context) (_node int, err erro
 // AlertInstanceUpdateOne is the builder for updating a single AlertInstance entity.
 type AlertInstanceUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *AlertInstanceMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *AlertInstanceMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetLabels sets the "labels" field.
@@ -702,6 +711,12 @@ func (_u *AlertInstanceUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *AlertInstanceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertInstanceUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertInstance, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -865,6 +880,7 @@ func (_u *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertInst
 	}
 	_spec.Node.Schema = _u.schemaConfig.AlertInstance
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &AlertInstance{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

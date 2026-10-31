@@ -18,8 +18,9 @@ import (
 // InvestigationFindingVersionLinkUpdate is the builder for updating InvestigationFindingVersionLink entities.
 type InvestigationFindingVersionLinkUpdate struct {
 	config
-	hooks    []Hook
-	mutation *InvestigationFindingVersionLinkMutation
+	hooks     []Hook
+	mutation  *InvestigationFindingVersionLinkMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the InvestigationFindingVersionLinkUpdate builder.
@@ -74,6 +75,12 @@ func (_u *InvestigationFindingVersionLinkUpdate) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *InvestigationFindingVersionLinkUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationFindingVersionLinkUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *InvestigationFindingVersionLinkUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -88,6 +95,7 @@ func (_u *InvestigationFindingVersionLinkUpdate) sqlSave(ctx context.Context) (_
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationFindingVersionLink
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{investigationfindingversionlink.Label}
@@ -103,9 +111,10 @@ func (_u *InvestigationFindingVersionLinkUpdate) sqlSave(ctx context.Context) (_
 // InvestigationFindingVersionLinkUpdateOne is the builder for updating a single InvestigationFindingVersionLink entity.
 type InvestigationFindingVersionLinkUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *InvestigationFindingVersionLinkMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *InvestigationFindingVersionLinkMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Mutation returns the InvestigationFindingVersionLinkMutation object of the builder.
@@ -167,6 +176,12 @@ func (_u *InvestigationFindingVersionLinkUpdateOne) check() error {
 	return nil
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (_u *InvestigationFindingVersionLinkUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *InvestigationFindingVersionLinkUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
+}
+
 func (_u *InvestigationFindingVersionLinkUpdateOne) sqlSave(ctx context.Context) (_node *InvestigationFindingVersionLink, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
@@ -198,6 +213,7 @@ func (_u *InvestigationFindingVersionLinkUpdateOne) sqlSave(ctx context.Context)
 	}
 	_spec.Node.Schema = _u.schemaConfig.InvestigationFindingVersionLink
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
+	_spec.AddModifiers(_u.modifiers...)
 	_node = &InvestigationFindingVersionLink{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

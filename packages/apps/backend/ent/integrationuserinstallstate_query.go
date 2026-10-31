@@ -312,8 +312,9 @@ func (_q *IntegrationUserInstallStateQuery) Clone() *IntegrationUserInstallState
 		withTenant: _q.withTenant.Clone(),
 		withUser:   _q.withUser.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -649,6 +650,12 @@ func (_q *IntegrationUserInstallStateQuery) ForShare(opts ...sql.LockOption) *In
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *IntegrationUserInstallStateQuery) Modify(modifiers ...func(s *sql.Selector)) *IntegrationUserInstallStateSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // IntegrationUserInstallStateGroupBy is the group-by builder for IntegrationUserInstallState entities.
 type IntegrationUserInstallStateGroupBy struct {
 	selector
@@ -737,4 +744,10 @@ func (_s *IntegrationUserInstallStateSelect) sqlScan(ctx context.Context, root *
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *IntegrationUserInstallStateSelect) Modify(modifiers ...func(s *sql.Selector)) *IntegrationUserInstallStateSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -423,8 +423,9 @@ func (_q *ReviewQuery) Clone() *ReviewQuery {
 		withRequester:     _q.withRequester.Clone(),
 		withReviewer:      _q.withReviewer.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -969,6 +970,12 @@ func (_q *ReviewQuery) ForShare(opts ...sql.LockOption) *ReviewQuery {
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *ReviewQuery) Modify(modifiers ...func(s *sql.Selector)) *ReviewSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // ReviewGroupBy is the group-by builder for Review entities.
 type ReviewGroupBy struct {
 	selector
@@ -1057,4 +1064,10 @@ func (_s *ReviewSelect) sqlScan(ctx context.Context, root *ReviewQuery, v any) e
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *ReviewSelect) Modify(modifiers ...func(s *sql.Selector)) *ReviewSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

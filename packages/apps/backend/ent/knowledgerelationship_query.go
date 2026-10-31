@@ -368,8 +368,9 @@ func (_q *KnowledgeRelationshipQuery) Clone() *KnowledgeRelationshipQuery {
 		withTargetEntity: _q.withTargetEntity.Clone(),
 		withAliases:      _q.withAliases.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -807,6 +808,12 @@ func (_q *KnowledgeRelationshipQuery) ForShare(opts ...sql.LockOption) *Knowledg
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *KnowledgeRelationshipQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeRelationshipSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // KnowledgeRelationshipGroupBy is the group-by builder for KnowledgeRelationship entities.
 type KnowledgeRelationshipGroupBy struct {
 	selector
@@ -895,4 +902,10 @@ func (_s *KnowledgeRelationshipSelect) sqlScan(ctx context.Context, root *Knowle
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *KnowledgeRelationshipSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeRelationshipSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

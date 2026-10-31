@@ -368,8 +368,9 @@ func (_q *SituationObservationQuery) Clone() *SituationObservationQuery {
 		withObservationGroup: _q.withObservationGroup.Clone(),
 		withAlertEpisode:     _q.withAlertEpisode.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -811,6 +812,12 @@ func (_q *SituationObservationQuery) ForShare(opts ...sql.LockOption) *Situation
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *SituationObservationQuery) Modify(modifiers ...func(s *sql.Selector)) *SituationObservationSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // SituationObservationGroupBy is the group-by builder for SituationObservation entities.
 type SituationObservationGroupBy struct {
 	selector
@@ -899,4 +906,10 @@ func (_s *SituationObservationSelect) sqlScan(ctx context.Context, root *Situati
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *SituationObservationSelect) Modify(modifiers ...func(s *sql.Selector)) *SituationObservationSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

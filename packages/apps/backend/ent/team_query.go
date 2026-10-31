@@ -453,8 +453,9 @@ func (_q *TeamQuery) Clone() *TeamQuery {
 		withDocumentAccesses:  _q.withDocumentAccesses.Clone(),
 		withTeamMemberships:   _q.withTeamMemberships.Clone(),
 		// clone intermediate query.
-		sql:  _q.sql.Clone(),
-		path: _q.path,
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -1134,6 +1135,12 @@ func (_q *TeamQuery) ForShare(opts ...sql.LockOption) *TeamQuery {
 	return _q
 }
 
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_q *TeamQuery) Modify(modifiers ...func(s *sql.Selector)) *TeamSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
+}
+
 // TeamGroupBy is the group-by builder for Team entities.
 type TeamGroupBy struct {
 	selector
@@ -1222,4 +1229,10 @@ func (_s *TeamSelect) sqlScan(ctx context.Context, root *TeamQuery, v any) error
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (_s *TeamSelect) Modify(modifiers ...func(s *sql.Selector)) *TeamSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }
