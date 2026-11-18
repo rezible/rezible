@@ -30,11 +30,12 @@ import (
 )
 
 type KnowledgeGraphIngestionService struct {
-	db rez.Database
+	db           rez.Database
+	observations rez.SituationObservationService
 }
 
-func NewKnowledgeGraphIngestionService(db rez.Database) (*KnowledgeGraphIngestionService, error) {
-	return &KnowledgeGraphIngestionService{db: db}, nil
+func NewKnowledgeGraphIngestionService(db rez.Database, observations rez.SituationObservationService) (*KnowledgeGraphIngestionService, error) {
+	return &KnowledgeGraphIngestionService{db: db, observations: observations}, nil
 }
 
 func (s *KnowledgeGraphIngestionService) IngestEvidence(ctx context.Context, event *ent.NormalizedEvent, refs ...rez.KnowledgeEvidenceRef) error {

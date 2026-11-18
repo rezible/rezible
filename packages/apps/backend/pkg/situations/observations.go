@@ -48,6 +48,11 @@ func RuntimeEntities(observations []*ent.SituationObservation) []RuntimeEntity {
 			continue
 		}
 		for _, row := range scope.Edges.Entities {
+			// A merge committed between loading the scope rows and their entities hides the merged entity. The
+			// merge moved the row to the survivor, which the next read loads.
+			if row.Edges.KnowledgeEntity == nil {
+				continue
+			}
 			entity, seen := byID[row.KnowledgeEntityID]
 			if !seen {
 				entity = &RuntimeEntity{Entity: row.Edges.KnowledgeEntity}

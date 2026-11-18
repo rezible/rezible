@@ -518,7 +518,7 @@ func (s *KnowledgeGraphQueryServiceSuite) ingestStructure(ctx context.Context, d
 	event, createErr := createEvent.Save(ctx)
 	s.Require().NoError(createErr)
 
-	ingestion, ingestionErr := NewKnowledgeGraphIngestionService(database)
+	ingestion, ingestionErr := NewKnowledgeGraphIngestionService(database, discardedObservationNotices{})
 	s.Require().NoError(ingestionErr)
 	s.Require().NoError(ingestion.IngestEvidence(ctx, event, evidence...))
 }
@@ -705,7 +705,7 @@ type testGraph struct {
 }
 
 func newTestGraph(require *require.Assertions, tdb rez.Database) *testGraph {
-	ingestion, ingestionErr := NewKnowledgeGraphIngestionService(tdb)
+	ingestion, ingestionErr := NewKnowledgeGraphIngestionService(tdb, discardedObservationNotices{})
 	require.NoError(ingestionErr)
 	return &testGraph{require: require, db: tdb, ingestion: ingestion}
 }

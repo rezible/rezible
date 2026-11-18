@@ -53,6 +53,8 @@ type situationServiceFixture struct {
 	situations *SituationService
 	// notified are the observations captured from inserted process-situation-observation jobs, not yet processed.
 	notified []uuid.UUID
+	// scopeRefreshes counts the captured refresh-observation-scopes jobs.
+	scopeRefreshes int
 	// evaluations are the captured evaluate-situation jobs, in order.
 	evaluations []jobs.EvaluateSituation
 	// situationUpdates are the published situation updates, not yet delivered.
@@ -73,6 +75,9 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 					s.True(args.DueAt.Equal(opts.ScheduledAt), "an evaluation is scheduled at its due time")
 				}
 				h.evaluations = append(h.evaluations, args)
+			case *jobs.RefreshObservationScopes:
+				s.True(args.DueAt.Equal(opts.ScheduledAt), "a scope refresh is scheduled at its due time")
+				h.scopeRefreshes++
 			}
 			return &rivertype.JobInsertResult{Job: &rivertype.JobRow{}}, nil
 		}).
@@ -83,13 +88,13 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 	}
 	knowledgeQuery, queryServiceErr := NewKnowledgeGraphQueryService(tdb)
 	s.Require().NoError(queryServiceErr)
-	knowledge, knowledgeErr := NewKnowledgeGraphIngestionService(tdb)
+	knowledge, knowledgeErr := NewKnowledgeGraphIngestionService(tdb, NewSituationObservationService(h.clock, jobService))
 	s.Require().NoError(knowledgeErr)
 	analysisService, analysisServiceErr := NewSystemAnalysisService(tdb, knowledgeQuery)
 	s.Require().NoError(analysisServiceErr)
 
 	h.knowledge = knowledge
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, NewSituationObservationService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, NewSituationObservationService(h.clock, jobService))
 	s.Require().NoError(alertsErr)
 	messageQueue := mocks.NewMockMessageQueue(s.T())
 	messageQueue.EXPECT().
@@ -757,7 +762,7 @@ func (s *SituationServiceSuite) TestInvestigationAnalysisDeduplicatesSubjects() 
 func (s *SituationServiceSuite) TestSystemHazardRetirementAndRiskAssessmentRevisions() {
 	ctx, tdb := s.SetupTestDatabase()
 
-	knowledge, knowledgeServiceErr := NewKnowledgeGraphIngestionService(tdb)
+	knowledge, knowledgeServiceErr := NewKnowledgeGraphIngestionService(tdb, discardedObservationNotices{})
 	s.Require().NoError(knowledgeServiceErr)
 
 	hazards, hazardServiceErr := NewSystemHazardService(tdb, knowledge)

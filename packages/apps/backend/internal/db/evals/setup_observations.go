@@ -26,6 +26,10 @@ func (s *SetupObservations) NotifyObservationChanged(ctx context.Context, ref re
 	return s.next.NotifyObservationChanged(ctx, ref)
 }
 
+func (s *SetupObservations) NotifyStructureChanged(ctx context.Context) error {
+	return s.next.NotifyStructureChanged(ctx)
+}
+
 type setupEventKey struct{}
 
 // setupEvent collects the observations notified while one setup event is ingested. Projection notifies on the

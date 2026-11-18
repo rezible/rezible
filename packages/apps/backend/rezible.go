@@ -1586,6 +1586,9 @@ type (
 	SituationObservationService interface {
 		// NotifyObservationChanged tells situations that what an observation is of changed.
 		NotifyObservationChanged(ctx context.Context, ref SituationObservationRef) error
+		// NotifyStructureChanged tells situations that the knowledge structure observations resolve their
+		// entities through changed.
+		NotifyStructureChanged(ctx context.Context) error
 	}
 )
 

@@ -174,11 +174,20 @@ func (s *SituationService) storeObservationScope(ctx context.Context, observatio
 	} else if current {
 		return nil
 	}
+	_, computeErr := s.computeObservationScope(ctx, observation, false)
+	return computeErr
+}
+
+// computeObservationScope computes the observation's scope and stores it where the stored one may be replaced,
+// reporting whether the scope's entities changed. A stored scope of a newer revision is always kept. One of the
+// same revision is replaced when restructured is set, since the structure its entities were resolved through
+// changed; otherwise only when it is empty.
+func (s *SituationService) computeObservationScope(ctx context.Context, observation rez.SituationObservation, restructured bool) (bool, error) {
 	entityIDs, entitiesErr := s.observationRuntimeEntities(ctx, observation)
 	if entitiesErr != nil {
-		return entitiesErr
+		return false, entitiesErr
 	}
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (bool, error) {
 		create, refColumn := s.setScopeRef(tx.ObservationScope.Create(), observation.Ref)
 		create.SetRevision(observation.Revision).
 			SetBroad(situations.IsBroad(entityIDs.Cardinality()))
@@ -189,7 +198,9 @@ func (s *SituationService) storeObservationScope(ctx context.Context, observatio
 		builder := sql.Dialect(dialect.Postgres)
 		stored, entities := builder.Table(osc.Table), builder.Table(osce.Table)
 		replaceable := sql.LT(stored.C(osc.FieldRevision), observation.Revision)
-		if !entityIDs.IsEmpty() {
+		if restructured {
+			replaceable = sql.LTE(stored.C(osc.FieldRevision), observation.Revision)
+		} else if !entityIDs.IsEmpty() {
 			storedEntities := builder.Select(entities.C(osce.FieldID)).
 				From(entities).
 				Where(sql.ColumnsEQ(entities.C(osce.FieldScopeID), stored.C(osc.FieldID)))
@@ -204,14 +215,27 @@ func (s *SituationService) storeObservationScope(ctx context.Context, observatio
 		scopeID, upsertErr := upsert.ID(ctx)
 		if upsertErr != nil {
 			if errors.Is(upsertErr, stdsql.ErrNoRows) {
-				return nil
+				return false, nil
 			}
-			return fmt.Errorf("upsert observation scope: %w", upsertErr)
+			return false, fmt.Errorf("upsert observation scope: %w", upsertErr)
+		}
+		queryStored := tx.ObservationScopeEntity.Query().
+			Where(osce.ScopeID(scopeID))
+		storedEntities, storedErr := queryStored.All(ctx)
+		if storedErr != nil {
+			return false, fmt.Errorf("query observation scope entities: %w", storedErr)
+		}
+		storedIDs := mapset.NewSet[uuid.UUID]()
+		for _, entity := range storedEntities {
+			storedIDs.Add(entity.KnowledgeEntityID)
+		}
+		if storedIDs.Equal(entityIDs) {
+			return false, nil
 		}
 		deleteEntities := tx.ObservationScopeEntity.Delete().
 			Where(osce.ScopeID(scopeID))
 		if _, deleteErr := deleteEntities.Exec(ctx); deleteErr != nil {
-			return fmt.Errorf("delete observation scope entities: %w", deleteErr)
+			return false, fmt.Errorf("delete observation scope entities: %w", deleteErr)
 		}
 		ids := entityIDs.ToSlice()
 		// Two of the entities can be merged into one survivor after they were resolved, and the canonical reference
@@ -223,10 +247,46 @@ func (s *SituationService) storeObservationScope(ctx context.Context, observatio
 			OnConflictColumns(osce.FieldTenantID, osce.FieldScopeID, osce.FieldKnowledgeEntityID).
 			DoNothing()
 		if createErr := createEntities.Exec(ctx); createErr != nil {
-			return fmt.Errorf("create observation scope entities: %w", createErr)
+			return false, fmt.Errorf("create observation scope entities: %w", createErr)
 		}
-		return nil
+		return true, nil
 	})
+}
+
+// RefreshObservationScopes computes again the scopes of the observations of unclosed situations, and requests
+// the evaluation of the situations whose entities changed. It runs after the knowledge structure changed:
+// a scope is otherwise computed only when its observation's revision rises. Repeating it changes nothing.
+func (s *SituationService) RefreshObservationScopes(ctx context.Context) error {
+	queryObserved := s.db.Client(ctx).SituationObservation.Query().
+		Where(sitobs.HasSituationWith(sit.ClosedAtIsNil()))
+	observed, queryErr := queryObserved.All(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("query observations of unclosed situations: %w", queryErr)
+	}
+	refs := mapset.NewSet[rez.SituationObservationRef]()
+	for _, observation := range observed {
+		refs.Add(observation.Ref())
+	}
+	if refs.IsEmpty() {
+		return nil
+	}
+	observations, loadErr := s.LoadObservations(ctx, refs.ToSlice(), rez.LoadSituationObservationsOptions{})
+	if loadErr != nil {
+		return loadErr
+	}
+	for ref, observation := range observations {
+		changed, computeErr := s.computeObservationScope(ctx, observation, true)
+		if computeErr != nil {
+			return computeErr
+		}
+		if !changed {
+			continue
+		}
+		if _, refreshErr := s.refreshObservingSituations(ctx, ref); refreshErr != nil {
+			return refreshErr
+		}
+	}
+	return nil
 }
 
 // storedScopeEntities reads the entities of the observation's stored scope.

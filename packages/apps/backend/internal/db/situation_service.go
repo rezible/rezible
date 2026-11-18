@@ -10,6 +10,7 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -25,26 +26,40 @@ import (
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/situations"
 )
 
 const defaultSituationInvestigationQuestion = "Explain what is happening in this situation."
 
-// SituationObservationService tells situations that observations changed. Observation sources depend on
-// it, so they need not depend on situations.
+// SituationObservationService tells situations that observations, or the knowledge structure their scopes are
+// resolved through, changed. Observation sources and knowledge ingestion depend on it, so they need not depend
+// on situations.
 type SituationObservationService struct {
-	jobs rez.JobService
+	clock rez.Clock
+	jobs  rez.JobService
 }
 
 var _ rez.SituationObservationService = (*SituationObservationService)(nil)
 
-func NewSituationObservationService(js rez.JobService) *SituationObservationService {
-	return &SituationObservationService{jobs: js}
+func NewSituationObservationService(clock rez.Clock, js rez.JobService) *SituationObservationService {
+	return &SituationObservationService{clock: clock, jobs: js}
 }
 
 func (s *SituationObservationService) NotifyObservationChanged(ctx context.Context, ref rez.SituationObservationRef) error {
 	args := jobs.ProcessSituationObservation{Ref: ref}
 	if _, insertErr := s.jobs.Insert(ctx, args, nil); insertErr != nil {
 		return fmt.Errorf("insert process situation observation job: %w", insertErr)
+	}
+	return nil
+}
+
+// NotifyStructureChanged schedules a refresh of observation scopes in the caller's transaction. It decides
+// nothing: the refresh reads the structure when it runs.
+func (s *SituationObservationService) NotifyStructureChanged(ctx context.Context) error {
+	dueAt := s.clock.Now().Add(situations.ScopeRefreshDelay).Truncate(time.Second).Add(time.Second)
+	args := &jobs.RefreshObservationScopes{DueAt: dueAt}
+	if _, insertErr := s.jobs.Insert(ctx, args, &river.InsertOpts{ScheduledAt: dueAt}); insertErr != nil {
+		return fmt.Errorf("insert refresh observation scopes job: %w", insertErr)
 	}
 	return nil
 }

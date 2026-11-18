@@ -17,6 +17,9 @@ const (
 	// BroadObservationEntityLimit is the most runtime entities an observation may touch and still make its
 	// situation attract observations about them.
 	BroadObservationEntityLimit = 4
+	// ScopeRefreshDelay is how long after the knowledge structure changes observation scopes are refreshed, so
+	// the changes of one sync are one refresh.
+	ScopeRefreshDelay = 10 * time.Second
 	// HoldDefault is a hold's length when none is given.
 	HoldDefault = 24 * time.Hour
 	// SharedEntityWindow is how long after its last activity a situation with no active observation still

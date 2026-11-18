@@ -289,3 +289,33 @@ func (s *SituationServiceSuite) TestAnEmptyStoredScopeIsComputedAgain() {
 
 	s.Contains(slices.Collect(maps.Values(s.storedScopeRows(ctx, tdb, episodeID))), s.entityID(ctx, h, checkout))
 }
+
+func (s *SituationServiceSuite) TestAStructureChangeRefreshesStoredScopes() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	checkout := s.entityRef(kne.CategoryContainer, "checkout")
+	payments := s.entityRef(kne.CategoryContainer, "payments")
+	handler := s.entityRef(kne.CategoryComponent, "handler")
+
+	episode := s.alertEpisode(ctx, tdb, h, "handler-errors", 5, handler, payments)
+	s.processNotified(ctx, h)
+	situation := s.placed(ctx, tdb, h, episode)[0]
+	s.Require().NotNil(situation)
+	s.Require().Equal(map[uuid.UUID]bool{s.entityID(ctx, h, payments): true}, s.entities(situation))
+	h.evaluations, h.scopeRefreshes = nil, 0
+
+	// The handler gains a parent without the episode's revision rising.
+	s.ingestRelationship(ctx, tdb, h, checkout, knr.PredicateContains, handler)
+	s.Require().Positive(h.scopeRefreshes, "a parent change schedules a scope refresh")
+	s.Require().NoError(h.situations.RefreshObservationScopes(ctx))
+
+	situation = s.placed(ctx, tdb, h, episode)[0]
+	s.Equal(map[uuid.UUID]bool{s.entityID(ctx, h, payments): true, s.entityID(ctx, h, checkout): true}, s.entities(situation))
+	s.Require().Len(h.evaluations, 1, "the situation whose entities changed is evaluated")
+	s.Equal(situation.ID, h.evaluations[0].SituationID)
+
+	stored := s.storedScopeRows(ctx, tdb, episode)
+	s.Require().NoError(h.situations.RefreshObservationScopes(ctx))
+	s.Equal(stored, s.storedScopeRows(ctx, tdb, episode), "an unchanged scope is not rewritten")
+	s.Len(h.evaluations, 1)
+}

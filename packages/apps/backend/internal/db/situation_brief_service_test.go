@@ -152,11 +152,11 @@ func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture 
 		Maybe()
 	knowledgeQuery, queryErr := NewKnowledgeGraphQueryService(tdb)
 	s.Require().NoError(queryErr)
-	knowledge, knowledgeErr := NewKnowledgeGraphIngestionService(tdb)
+	knowledge, knowledgeErr := NewKnowledgeGraphIngestionService(tdb, NewSituationObservationService(h.clock, jobService))
 	s.Require().NoError(knowledgeErr)
 	analyses, analysesErr := NewSystemAnalysisService(tdb, knowledgeQuery)
 	s.Require().NoError(analysesErr)
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, NewSituationObservationService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, NewSituationObservationService(h.clock, jobService))
 	s.Require().NoError(alertsErr)
 	agentSessions := &AiAgentSessionService{db: tdb, jobs: jobService}
 	messageQueue := mocks.NewMockMessageQueue(s.T())

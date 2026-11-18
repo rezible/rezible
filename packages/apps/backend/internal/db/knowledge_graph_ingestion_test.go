@@ -44,8 +44,19 @@ func TestKnowledgeGraphIngestionServiceSuite(t *testing.T) {
 	suite.Run(t, &KnowledgeGraphIngestionServiceSuite{Suite: test.NewSuite()})
 }
 
+// discardedObservationNotices drops the notifications of an ingestion service whose test has no situations.
+type discardedObservationNotices struct{}
+
+func (discardedObservationNotices) NotifyObservationChanged(context.Context, rez.SituationObservationRef) error {
+	return nil
+}
+
+func (discardedObservationNotices) NotifyStructureChanged(context.Context) error {
+	return nil
+}
+
 func (s *KnowledgeGraphIngestionServiceSuite) makeService(tdb rez.Database) *KnowledgeGraphIngestionService {
-	service, serviceErr := NewKnowledgeGraphIngestionService(tdb)
+	service, serviceErr := NewKnowledgeGraphIngestionService(tdb, discardedObservationNotices{})
 	s.Require().NoError(serviceErr)
 	return service
 }

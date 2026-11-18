@@ -45,7 +45,7 @@ type changesFixture struct {
 }
 
 func (s *ServiceChangesSuite) newFixture(tdb rez.Database) *changesFixture {
-	knowledge, knowledgeErr := NewKnowledgeGraphIngestionService(tdb)
+	knowledge, knowledgeErr := NewKnowledgeGraphIngestionService(tdb, discardedObservationNotices{})
 	s.Require().NoError(knowledgeErr)
 
 	knowledgeQuery, knowledgeQueryErr := NewKnowledgeGraphQueryService(tdb)
@@ -57,7 +57,7 @@ func (s *ServiceChangesSuite) newFixture(tdb rez.Database) *changesFixture {
 		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{}}, nil).
 		Maybe()
 	clock := test.NewClock(changesTestStart)
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, NewSituationObservationService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, NewSituationObservationService(clock, jobService))
 	s.Require().NoError(alertsErr)
 
 	changePoints, changePointsErr := NewChangePointService(tdb)

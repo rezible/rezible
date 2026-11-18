@@ -247,6 +247,7 @@ func (s *KnowledgeGraphIngestionService) placeParents(ctx context.Context, r *su
 		}
 		anyMoved = anyMoved || moved
 	}
+	structureChanged := anyMoved
 
 	// A fallback that moves is itself a changed parent and can free another fallback's skipped claim, so the
 	// passes repeat until one moves nothing. They end: every committed parent is a current claim that closes no
@@ -273,6 +274,12 @@ func (s *KnowledgeGraphIngestionService) placeParents(ctx context.Context, r *su
 				return fmt.Errorf("re-place fallback parent: %w", placeErr)
 			}
 			anyMoved = anyMoved || moved
+		}
+	}
+	if structureChanged {
+		// Observation scopes hold entities resolved through their parents.
+		if notifyErr := s.observations.NotifyStructureChanged(ctx); notifyErr != nil {
+			return fmt.Errorf("notify structure changed: %w", notifyErr)
 		}
 	}
 	return nil

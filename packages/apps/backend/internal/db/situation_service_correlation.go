@@ -32,6 +32,12 @@ func NewProcessSituationObservationWorker(service *SituationService) jobs.Worker
 	})
 }
 
+func NewRefreshObservationScopesWorker(service *SituationService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(func(ctx context.Context, _ *jobs.RefreshObservationScopes) error {
+		return service.RefreshObservationScopes(ctx)
+	})
+}
+
 // ProcessObservation brings situations up to date with an observation's stored state. It stores the
 // observation's entities, then refreshes the situations that have the observation, or places an eligible
 // observation that no situation has. Unknown observations are ignored.

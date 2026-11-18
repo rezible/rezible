@@ -42,7 +42,13 @@ func TestProjectionServiceSuite(t *testing.T) {
 }
 
 func (s *ProjectionServiceSuite) ingestionService(tdb rez.Database) *db.KnowledgeGraphIngestionService {
-	knowledge, knowledgeErr := db.NewKnowledgeGraphIngestionService(tdb)
+	jobService := mocks.NewMockJobService(s.T())
+	jobService.EXPECT().
+		Insert(mock.Anything, mock.Anything, mock.Anything).
+		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{}}, nil).
+		Maybe()
+	clock := test.NewClock(time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC))
+	knowledge, knowledgeErr := db.NewKnowledgeGraphIngestionService(tdb, db.NewSituationObservationService(clock, jobService))
 	s.Require().NoError(knowledgeErr)
 	return knowledge
 }
@@ -70,7 +76,7 @@ func (s *ProjectionServiceSuite) projectionService(tdb rez.Database) *Projection
 		}, nil).
 		Maybe()
 	clock := test.NewClock(time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC))
-	alerts, alertsErr := db.NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, db.NewSituationObservationService(jobService))
+	alerts, alertsErr := db.NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, db.NewSituationObservationService(clock, jobService))
 	s.Require().NoError(alertsErr)
 
 	changePoints, changePointsErr := db.NewChangePointService(tdb)

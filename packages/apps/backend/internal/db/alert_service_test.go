@@ -50,7 +50,7 @@ type alertServiceFixture struct {
 }
 
 func (s *AlertServiceSuite) newFixture(tdb rez.Database) *alertServiceFixture {
-	knowledge, knowledgeErr := NewKnowledgeGraphIngestionService(tdb)
+	knowledge, knowledgeErr := NewKnowledgeGraphIngestionService(tdb, discardedObservationNotices{})
 	s.Require().NoError(knowledgeErr)
 	h := &alertServiceFixture{clock: test.NewClock(alertTestStart), knowledge: knowledge}
 	jobService := mocks.NewMockJobService(s.T())
@@ -67,7 +67,7 @@ func (s *AlertServiceSuite) newFixture(tdb rez.Database) *alertServiceFixture {
 			return &rivertype.JobInsertResult{Job: &rivertype.JobRow{}}, nil
 		}).
 		Maybe()
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, NewSituationObservationService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, NewSituationObservationService(h.clock, jobService))
 	s.Require().NoError(alertsErr)
 	h.alerts = alerts
 	return h

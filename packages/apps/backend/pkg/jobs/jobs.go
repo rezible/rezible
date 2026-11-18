@@ -258,6 +258,28 @@ func (ProcessSituationObservation) Kind() string {
 	return "process-situation-observation"
 }
 
+// RefreshObservationScopes computes again, at DueAt, the scopes of the observations of unclosed situations,
+// after the knowledge structure they resolve through changed. DueAt is a delay after the change, rounded up to
+// the second, and the job is unique by args: the changes within the delay are one refresh, and a change while a
+// refresh runs schedules another rather than being dropped.
+type RefreshObservationScopes struct {
+	TenantArgs
+	DueAt time.Time `json:"due_at" river:"unique"`
+}
+
+func (*RefreshObservationScopes) Kind() string {
+	return "refresh-observation-scopes"
+}
+
+func (*RefreshObservationScopes) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: UniqueStateNonCompleted,
+		},
+	}
+}
+
 // SituationsQueue runs situation evaluations, which may wait on a model judge, apart from the default queue.
 const SituationsQueue = "situations"
 
