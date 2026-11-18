@@ -36,6 +36,10 @@ export class InitialSetupController {
 		});
 		this.session.refetch();
 	};
+
+	logOut = () => {
+		this.session.logout();
+	};
 }
 
 const ctx = new Context<InitialSetupController>("InitialSetupController");

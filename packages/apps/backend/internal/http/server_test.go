@@ -189,6 +189,19 @@ func (s *ServerSuite) TestRequestSpanReachesResponseAndLogs() {
 	s.Empty(webhookRecorder.Header().Get("traceparent"))
 }
 
+func (s *ServerSuite) TestResponsesCarrySecurityHeaders() {
+	handler := s.newFailingAPIServer(slog.LevelError)
+	for _, path := range []string{"/api/v1/fail", "/api/v1/explode", "/api/v1/missing"} {
+		recorder := httptest.NewRecorder()
+		handler.server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, path, nil))
+		sent := recorder.Result().Header
+		s.Equal("max-age=31536000", sent.Get("Strict-Transport-Security"), path)
+		s.Equal("nosniff", sent.Get("X-Content-Type-Options"), path)
+		s.Equal("no-referrer", sent.Get("Referrer-Policy"), path)
+		s.Equal("DENY", sent.Get("X-Frame-Options"), path)
+	}
+}
+
 func (s *ServerSuite) TestReadyChecksDependencies() {
 	var pingErr error
 	ping := func(context.Context) map[string]error { return map[string]error{"*postgres.ConnectionPool": pingErr} }

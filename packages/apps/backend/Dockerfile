@@ -17,9 +17,14 @@ FROM alpine:3.22 AS rez_final
 
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata \
+    && addgroup -S -g 10001 rezible \
+    && adduser -S -D -H -u 10001 -G rezible rezible
 
 COPY --from=builder /out/rezible /usr/local/bin/rezible
+
+# The backend writes nothing to the filesystem at runtime.
+USER 10001:10001
 
 EXPOSE 7002
 

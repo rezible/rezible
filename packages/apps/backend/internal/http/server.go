@@ -90,6 +90,7 @@ func NewServer(
 
 func (s *Server) makeServer(cfg rez.Config, r *chi.Mux) *http.Server {
 	handler := chi.NewRouter()
+	handler.Use(s.makeSecurityHeadersMiddleware())
 	handler.Use(s.makeTraceResponseHeaderMiddleware())
 	handler.Use(s.makeSetRootExecutionContextMiddleware())
 	httpCfg := cfg.HttpServer
@@ -118,6 +119,28 @@ func (s *Server) makeTracingHandler(next http.Handler, basePath string) http.Han
 			return r.Method
 		}),
 	)
+}
+
+// securityHeaders are set on every response. The backend serves no page meant to be framed, and browsers
+// reach it only over HTTPS.
+var securityHeaders = map[string]string{
+	"Strict-Transport-Security": "max-age=31536000",
+	"X-Content-Type-Options":    "nosniff",
+	"Referrer-Policy":           "no-referrer",
+	"X-Frame-Options":           "DENY",
+}
+
+// makeSecurityHeadersMiddleware sets securityHeaders before the handler runs, so error and panic responses
+// carry them too.
+func (s *Server) makeSecurityHeadersMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for name, value := range securityHeaders {
+				w.Header().Set(name, value)
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 // makeTraceResponseHeaderMiddleware returns the request's trace context in a traceparent header, so a

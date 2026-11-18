@@ -8,6 +8,8 @@
 	import TimezoneSelectField from "$components/forms/timezone-select-field/TimezoneSelectField.svelte";
 	import { useInitialSetupController } from "./initialSetupController.svelte";
 
+	import RiLogoutBoxRLine from "remixicon-svelte/icons/logout-box-r-line";
+
 	const ctrl = useInitialSetupController();
 </script>
 
@@ -25,7 +27,15 @@
 		{/if}
 
 		{#if !ctrl.isAdmin}
-			<p class="text-sm text-muted-foreground">An administrator must complete organization setup.</p>
+			<div class="flex flex-col items-start gap-4">
+				<p class="text-sm text-muted-foreground">
+					An administrator must complete organization setup.
+				</p>
+				<Button variant="outline" onclick={ctrl.logOut}>
+					<RiLogoutBoxRLine data-icon="inline-start" />
+					Log out
+				</Button>
+			</div>
 		{:else}
 			<form
 				class="flex flex-col gap-5"

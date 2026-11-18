@@ -9,6 +9,10 @@ not assume a platform.
 | `ghcr.io/rezible/documents-server` | `bun run index.js` | `PORT`, 7003 in the image |
 | `ghcr.io/rezible/frontend` | Caddy | 80 |
 
+Every image runs as a non-root user: the backend and frontend as UID and GID 10001, the documents-server as
+the base image's `bun` user. None writes to the filesystem at runtime except Caddy, which keeps its state under
+`/data` and `/config` in the frontend image; neither needs a persistent volume.
+
 Configuration is read from environment variables. For the backend, each variable is a configuration path in
 upper case with `__` between sections: `http.auth.session_secret` is `HTTP__AUTH__SESSION_SECRET`.
 
@@ -44,10 +48,21 @@ Required:
 | `POSTGRES__SSLMODE` | `require` by default. |
 | `POSTGRES__ROLE_APP__NAME`, `POSTGRES__ROLE_APP__PASSWORD` | The role `rezible serve` connects as. |
 | `POSTGRES__ROLE_ADMIN__NAME`, `POSTGRES__ROLE_ADMIN__PASSWORD` | The role `rezible migrations apply` connects as. |
+| `POSTGRES__FIELD_ENCRYPTION_KEY_HEX` | 64 hex characters (32 random bytes), such as the output of `openssl rand -hex 32`. Sensitive database fields, including every integration's configuration, are encrypted under it. See [Field encryption key](#field-encryption-key). |
 
-Optional sections, each validated only when set: `AI__PROVIDERS__*` and `AI__MODELS__*` for investigations,
-`INTEGRATIONS__SLACK__*`, `INTEGRATIONS__GITHUB__*` and `INTEGRATIONS__GOOGLE__*` for those integrations, and
-`TELEMETRY__*` (below). `rezible print-config` prints the loaded configuration.
+`INTEGRATIONS__ALLOW_PRIVATE_PROVIDER_URLS`, when `true`, lets provider URLs that admins enter reach loopback
+and private network addresses. It is for local development; never set it in a hosted deployment.
+
+Optional sections, each validated only when one of its variables is set: `AI__PROVIDERS__*` and
+`AI__MODELS__*` for investigations, `INTEGRATIONS__GOOGLE__*`, and `TELEMETRY__*` (below). The GitHub and
+Slack sections require these once set:
+
+| Section | Required |
+| --- | --- |
+| `INTEGRATIONS__GITHUB__*` | `INTEGRATIONS__GITHUB__WEBHOOK_SECRET`. |
+| `INTEGRATIONS__SLACK__<APP>__*`, for each Slack app configured, `AGENT` or `INCIDENTS` | `..._OAUTH_CLIENT_ID` and `..._OAUTH_CLIENT_SECRET` when `..._ENABLED` is `true`. `..._WEBHOOK_SIGNING_SECRET` unless `..._SOCKETMODE_ENABLED` is `true`; with it, `..._APP_TOKEN` and `..._BOT_TOKEN` instead. |
+
+`rezible print-config` prints the loaded configuration.
 
 ### Documents-server
 
@@ -63,6 +78,12 @@ Optional sections, each validated only when set: `AI__PROVIDERS__*` and `AI__MOD
 | Variable | Meaning |
 | --- | --- |
 | `PROXY_API_UPSTREAM_HOST` | Required. The backend's address as Caddy reaches it, such as `backend:7002`. |
+
+### Field encryption key
+
+`POSTGRES__FIELD_ENCRYPTION_KEY_HEX` cannot be rotated: every encrypted field must be read with the key it
+was written under, and there is no re-encryption. Losing the key loses every integration's configuration: a
+database restored without it cannot read them. Back it up alongside the database.
 
 ## Database
 
@@ -80,6 +101,20 @@ PostgreSQL holds all persistent state. Before the first migration, the database 
 
 `rezible migrations apply`, with no argument, applies the schema and job queue migrations as the admin role.
 Run it to completion, once, before a new version serves traffic. It exits non-zero on failure.
+
+## Response headers
+
+The backend sets `Strict-Transport-Security` (one year), `X-Content-Type-Options: nosniff`,
+`Referrer-Policy: no-referrer` and `X-Frame-Options: DENY` on every response, including API responses proxied
+through the frontend.
+
+No `Content-Security-Policy` is set anywhere, and where it goes is undecided. The backend serves only the
+API, sign-in and webhook routes, not the app's HTML. In the images above, the frontend image's Caddy serves the
+HTML and scripts, and its Caddyfile sets no CSP. The hosting configuration is not in this repository, so it is
+not confirmed that the hosted deployment serves the frontend through that image rather than through, for
+example, a CDN or another proxy in front of it. Deciding needs: what serves the frontend's HTML in the hosted
+deployment (the CSP goes there), and the origins the app loads from and connects to (the API through the
+frontend's origin, and the documents-server's `DOCUMENTS__SERVER_URL` websocket origin).
 
 ## Replicas and state
 
