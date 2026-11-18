@@ -50,6 +50,35 @@ func (s *IncidentDetailsServiceSuite) createIncident(ctx context.Context, client
 	return inc
 }
 
+func (s *IncidentDetailsServiceSuite) TestRecordObservedIncident() {
+	ctx, tdb := s.SetupTestDatabase()
+	svc := s.newService(tdb)
+	client := tdb.Client(ctx)
+	severityID := client.IncidentSeverity.Create().SetName("SEV-" + uuid.NewString()).SetRank(1).SaveX(ctx).ID
+	typeID := client.IncidentType.Create().SetName("Type " + uuid.NewString()).SaveX(ctx).ID
+	ref := rez.ProviderResourceRef{Provider: "test", ProviderNamespace: "incidents", ResourceRef: "incident-" + uuid.NewString()}
+	record := func(ref rez.ProviderResourceRef, title string) uuid.UUID {
+		params := rez.RecordObservedIncidentParams{
+			ProviderResourceRef: ref,
+			Title:               title,
+			SeverityID:          severityID,
+			TypeID:              typeID,
+			OpenedAt:            time.Now(),
+		}
+		id, recordErr := svc.RecordObservedIncident(ctx, params)
+		s.Require().NoError(recordErr)
+		return id
+	}
+
+	first := record(ref, "Search outage")
+	s.Equal(first, record(ref, "Search outage, all regions"), "the same provider reference updates one incident")
+	s.Equal("Search outage, all regions", client.Incident.GetX(ctx, first).Title)
+
+	otherNamespace := ref
+	otherNamespace.ProviderNamespace = "other"
+	s.NotEqual(first, record(otherNamespace, "Search outage"), "the namespace is part of the reference")
+}
+
 func (s *IncidentDetailsServiceSuite) TestListIncidentsFindsAReference() {
 	ctx, tdb := s.SetupTestDatabase()
 	svc := s.newService(tdb)

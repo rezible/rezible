@@ -9,12 +9,14 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // NormalizedEventProjectionUpdate is the builder for updating NormalizedEventProjection entities.
@@ -28,6 +30,18 @@ type NormalizedEventProjectionUpdate struct {
 // Where appends a list predicates to the NormalizedEventProjectionUpdate builder.
 func (_u *NormalizedEventProjectionUpdate) Where(ps ...predicate.NormalizedEventProjection) *NormalizedEventProjectionUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetSkippedRefs sets the "skipped_refs" field.
+func (_u *NormalizedEventProjectionUpdate) SetSkippedRefs(v []schematypes.SkippedEvidenceRef) *NormalizedEventProjectionUpdate {
+	_u.mutation.SetSkippedRefs(v)
+	return _u
+}
+
+// AppendSkippedRefs appends value to the "skipped_refs" field.
+func (_u *NormalizedEventProjectionUpdate) AppendSkippedRefs(v []schematypes.SkippedEvidenceRef) *NormalizedEventProjectionUpdate {
+	_u.mutation.AppendSkippedRefs(v)
 	return _u
 }
 
@@ -128,6 +142,14 @@ func (_u *NormalizedEventProjectionUpdate) sqlSave(ctx context.Context) (_node i
 			}
 		}
 	}
+	if value, ok := _u.mutation.SkippedRefs(); ok {
+		_spec.SetField(normalizedeventprojection.FieldSkippedRefs, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSkippedRefs(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, normalizedeventprojection.FieldSkippedRefs, value)
+		})
+	}
 	if _u.mutation.ProjectionEntitiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -198,6 +220,18 @@ type NormalizedEventProjectionUpdateOne struct {
 	hooks     []Hook
 	mutation  *NormalizedEventProjectionMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetSkippedRefs sets the "skipped_refs" field.
+func (_u *NormalizedEventProjectionUpdateOne) SetSkippedRefs(v []schematypes.SkippedEvidenceRef) *NormalizedEventProjectionUpdateOne {
+	_u.mutation.SetSkippedRefs(v)
+	return _u
+}
+
+// AppendSkippedRefs appends value to the "skipped_refs" field.
+func (_u *NormalizedEventProjectionUpdateOne) AppendSkippedRefs(v []schematypes.SkippedEvidenceRef) *NormalizedEventProjectionUpdateOne {
+	_u.mutation.AppendSkippedRefs(v)
+	return _u
 }
 
 // AddProjectionEntityIDs adds the "projection_entities" edge to the NormalizedEventProjectionEntity entity by IDs.
@@ -326,6 +360,14 @@ func (_u *NormalizedEventProjectionUpdateOne) sqlSave(ctx context.Context) (_nod
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.SkippedRefs(); ok {
+		_spec.SetField(normalizedeventprojection.FieldSkippedRefs, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSkippedRefs(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, normalizedeventprojection.FieldSkippedRefs, value)
+		})
 	}
 	if _u.mutation.ProjectionEntitiesCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -116,6 +116,12 @@ func (_c *KnowledgeSubjectAliasCreate) SetNillableCreatedAt(v *time.Time) *Knowl
 	return _c
 }
 
+// SetAuthority sets the "authority" field.
+func (_c *KnowledgeSubjectAliasCreate) SetAuthority(v schematypes.KnowledgeAuthority) *KnowledgeSubjectAliasCreate {
+	_c.mutation.SetAuthority(v)
+	return _c
+}
+
 // SetState sets the "state" field.
 func (_c *KnowledgeSubjectAliasCreate) SetState(v schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasCreate {
 	_c.mutation.SetState(v)
@@ -324,6 +330,9 @@ func (_c *KnowledgeSubjectAliasCreate) check() error {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.created_at"`)}
 	}
+	if _, ok := _c.mutation.Authority(); !ok {
+		return &ValidationError{Name: "authority", err: errors.New(`ent: missing required field "KnowledgeSubjectAlias.authority"`)}
+	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeSubjectAlias.tenant"`)}
 	}
@@ -383,6 +392,10 @@ func (_c *KnowledgeSubjectAliasCreate) createSpec() (*KnowledgeSubjectAlias, *sq
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.Authority(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldAuthority, field.TypeString, value)
+		_node.Authority = value
 	}
 	if value, ok := _c.mutation.State(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldState, field.TypeJSON, value)
@@ -596,6 +609,18 @@ func (u *KnowledgeSubjectAliasUpsert) UpdateMergedByProposalID() *KnowledgeSubje
 // ClearMergedByProposalID clears the value of the "merged_by_proposal_id" field.
 func (u *KnowledgeSubjectAliasUpsert) ClearMergedByProposalID() *KnowledgeSubjectAliasUpsert {
 	u.SetNull(knowledgesubjectalias.FieldMergedByProposalID)
+	return u
+}
+
+// SetAuthority sets the "authority" field.
+func (u *KnowledgeSubjectAliasUpsert) SetAuthority(v schematypes.KnowledgeAuthority) *KnowledgeSubjectAliasUpsert {
+	u.Set(knowledgesubjectalias.FieldAuthority, v)
+	return u
+}
+
+// UpdateAuthority sets the "authority" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsert) UpdateAuthority() *KnowledgeSubjectAliasUpsert {
+	u.SetExcluded(knowledgesubjectalias.FieldAuthority)
 	return u
 }
 
@@ -815,6 +840,20 @@ func (u *KnowledgeSubjectAliasUpsertOne) UpdateMergedByProposalID() *KnowledgeSu
 func (u *KnowledgeSubjectAliasUpsertOne) ClearMergedByProposalID() *KnowledgeSubjectAliasUpsertOne {
 	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
 		s.ClearMergedByProposalID()
+	})
+}
+
+// SetAuthority sets the "authority" field.
+func (u *KnowledgeSubjectAliasUpsertOne) SetAuthority(v schematypes.KnowledgeAuthority) *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetAuthority(v)
+	})
+}
+
+// UpdateAuthority sets the "authority" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertOne) UpdateAuthority() *KnowledgeSubjectAliasUpsertOne {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateAuthority()
 	})
 }
 
@@ -1216,6 +1255,20 @@ func (u *KnowledgeSubjectAliasUpsertBulk) UpdateMergedByProposalID() *KnowledgeS
 func (u *KnowledgeSubjectAliasUpsertBulk) ClearMergedByProposalID() *KnowledgeSubjectAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
 		s.ClearMergedByProposalID()
+	})
+}
+
+// SetAuthority sets the "authority" field.
+func (u *KnowledgeSubjectAliasUpsertBulk) SetAuthority(v schematypes.KnowledgeAuthority) *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.SetAuthority(v)
+	})
+}
+
+// UpdateAuthority sets the "authority" field to the value that was provided on create.
+func (u *KnowledgeSubjectAliasUpsertBulk) UpdateAuthority() *KnowledgeSubjectAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeSubjectAliasUpsert) {
+		s.UpdateAuthority()
 	})
 }
 

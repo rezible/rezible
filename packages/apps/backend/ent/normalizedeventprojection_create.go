@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -50,6 +51,12 @@ func (_c *NormalizedEventProjectionCreate) SetNillableCompletedAt(v *time.Time) 
 	if v != nil {
 		_c.SetCompletedAt(*v)
 	}
+	return _c
+}
+
+// SetSkippedRefs sets the "skipped_refs" field.
+func (_c *NormalizedEventProjectionCreate) SetSkippedRefs(v []schematypes.SkippedEvidenceRef) *NormalizedEventProjectionCreate {
+	_c.mutation.SetSkippedRefs(v)
 	return _c
 }
 
@@ -136,6 +143,10 @@ func (_c *NormalizedEventProjectionCreate) defaults() error {
 		v := normalizedeventprojection.DefaultCompletedAt()
 		_c.mutation.SetCompletedAt(v)
 	}
+	if _, ok := _c.mutation.SkippedRefs(); !ok {
+		v := normalizedeventprojection.DefaultSkippedRefs
+		_c.mutation.SetSkippedRefs(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if normalizedeventprojection.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized normalizedeventprojection.DefaultID (forgotten import ent/runtime?)")
@@ -156,6 +167,9 @@ func (_c *NormalizedEventProjectionCreate) check() error {
 	}
 	if _, ok := _c.mutation.CompletedAt(); !ok {
 		return &ValidationError{Name: "completed_at", err: errors.New(`ent: missing required field "NormalizedEventProjection.completed_at"`)}
+	}
+	if _, ok := _c.mutation.SkippedRefs(); !ok {
+		return &ValidationError{Name: "skipped_refs", err: errors.New(`ent: missing required field "NormalizedEventProjection.skipped_refs"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "NormalizedEventProjection.tenant"`)}
@@ -204,6 +218,10 @@ func (_c *NormalizedEventProjectionCreate) createSpec() (*NormalizedEventProject
 		_spec.SetField(normalizedeventprojection.FieldCompletedAt, field.TypeTime, value)
 		_node.CompletedAt = value
 	}
+	if value, ok := _c.mutation.SkippedRefs(); ok {
+		_spec.SetField(normalizedeventprojection.FieldSkippedRefs, field.TypeJSON, value)
+		_node.SkippedRefs = value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -224,8 +242,8 @@ func (_c *NormalizedEventProjectionCreate) createSpec() (*NormalizedEventProject
 	}
 	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   normalizedeventprojection.EventTable,
 			Columns: []string{normalizedeventprojection.EventColumn},
 			Bidi:    false,
@@ -309,6 +327,18 @@ type (
 	}
 )
 
+// SetSkippedRefs sets the "skipped_refs" field.
+func (u *NormalizedEventProjectionUpsert) SetSkippedRefs(v []schematypes.SkippedEvidenceRef) *NormalizedEventProjectionUpsert {
+	u.Set(normalizedeventprojection.FieldSkippedRefs, v)
+	return u
+}
+
+// UpdateSkippedRefs sets the "skipped_refs" field to the value that was provided on create.
+func (u *NormalizedEventProjectionUpsert) UpdateSkippedRefs() *NormalizedEventProjectionUpsert {
+	u.SetExcluded(normalizedeventprojection.FieldSkippedRefs)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -364,6 +394,20 @@ func (u *NormalizedEventProjectionUpsertOne) Update(set func(*NormalizedEventPro
 		set(&NormalizedEventProjectionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetSkippedRefs sets the "skipped_refs" field.
+func (u *NormalizedEventProjectionUpsertOne) SetSkippedRefs(v []schematypes.SkippedEvidenceRef) *NormalizedEventProjectionUpsertOne {
+	return u.Update(func(s *NormalizedEventProjectionUpsert) {
+		s.SetSkippedRefs(v)
+	})
+}
+
+// UpdateSkippedRefs sets the "skipped_refs" field to the value that was provided on create.
+func (u *NormalizedEventProjectionUpsertOne) UpdateSkippedRefs() *NormalizedEventProjectionUpsertOne {
+	return u.Update(func(s *NormalizedEventProjectionUpsert) {
+		s.UpdateSkippedRefs()
+	})
 }
 
 // Exec executes the query.
@@ -588,6 +632,20 @@ func (u *NormalizedEventProjectionUpsertBulk) Update(set func(*NormalizedEventPr
 		set(&NormalizedEventProjectionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetSkippedRefs sets the "skipped_refs" field.
+func (u *NormalizedEventProjectionUpsertBulk) SetSkippedRefs(v []schematypes.SkippedEvidenceRef) *NormalizedEventProjectionUpsertBulk {
+	return u.Update(func(s *NormalizedEventProjectionUpsert) {
+		s.SetSkippedRefs(v)
+	})
+}
+
+// UpdateSkippedRefs sets the "skipped_refs" field to the value that was provided on create.
+func (u *NormalizedEventProjectionUpsertBulk) UpdateSkippedRefs() *NormalizedEventProjectionUpsertBulk {
+	return u.Update(func(s *NormalizedEventProjectionUpsert) {
+		s.UpdateSkippedRefs()
+	})
 }
 
 // Exec executes the query.

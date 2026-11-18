@@ -317,7 +317,6 @@ export type AlertEpisodeAttributes = {
     definition?: AlertDefinition;
     highestSeverity: 'unknown' | 'info' | 'warning' | 'critical';
     instances: Array<AlertInstance>;
-    knowledgeEntityId?: string;
     startedAt: string;
     status: 'open' | 'closed';
 };
@@ -1281,11 +1280,18 @@ export type EventProjection = {
 export type EventProjectionAttributes = {
     completedAt: string;
     entities: Array<EventProjectionEntity>;
+    skippedRefs: Array<EventProjectionSkippedRef>;
 };
 
 export type EventProjectionEntity = {
     entityId: string;
     entityKind: string;
+};
+
+export type EventProjectionSkippedRef = {
+    error: string;
+    reason: string;
+    resourceRef: string;
 };
 
 export type ExpandKnowledgeGraphRelationshipsResponseBody = {
@@ -2294,7 +2300,7 @@ export type KnowledgeGraphAliasState = {
 export type KnowledgeGraphCategorySpec = {
     hierarchy?: 'logical' | 'deployment' | 'code' | 'organization' | 'process' | 'concern' | 'decision' | 'monitoring';
     level?: number;
-    value: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event';
+    value: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal';
 };
 
 export type KnowledgeGraphEntitiesPage = {
@@ -2321,14 +2327,17 @@ export type KnowledgeGraphEntityAlias = {
 export type KnowledgeGraphEntityAttributes = {
     aliases: Array<KnowledgeGraphEntityAlias>;
     ancestors?: Array<KnowledgeGraphEntitySummary>;
-    category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event';
+    category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal';
     createdAt: string;
     displayName: string;
     kind: string;
     lastObservedAt?: string;
     linkingAttributes: Array<KnowledgeGraphLinkingAttribute>;
+    mergedIntoId?: string;
     otherParentClaims?: Array<KnowledgeGraphParentClaim>;
     parentId?: string;
+    parentProviders?: Array<string>;
+    parentRelationshipId?: string;
     stale: boolean;
     state: KnowledgeGraphSubjectState;
     stateSources: KnowledgeGraphStateSources;
@@ -2337,7 +2346,7 @@ export type KnowledgeGraphEntityAttributes = {
 };
 
 export type KnowledgeGraphEntitySummary = {
-    category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event';
+    category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal';
     displayName: string;
     id: string;
     kind: string;
@@ -2362,7 +2371,7 @@ export type KnowledgeGraphEvidenceAttributes = {
 };
 
 export type KnowledgeGraphHierarchy = {
-    categories: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
+    categories: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal'>;
     value: 'logical' | 'deployment' | 'code' | 'organization' | 'process' | 'concern' | 'decision' | 'monitoring';
 };
 
@@ -2385,12 +2394,12 @@ export type KnowledgeGraphParentClaim = {
 
 export type KnowledgeGraphPredicateSpec = {
     dependency: 'source_on_target' | 'target_on_source' | 'mutual' | 'none';
-    family: 'structure' | 'placement' | 'implementation' | 'ownership' | 'membership' | 'support' | 'flow' | 'observation' | 'governance' | 'occurrence';
+    family: 'structure' | 'placement' | 'implementation' | 'ownership' | 'membership' | 'support' | 'flow' | 'observation' | 'governance';
     rollsUp: boolean;
     sameHierarchy: boolean;
-    sourceCategories: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
-    targetCategories: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
-    value: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates' | 'impacts' | 'touches';
+    sourceCategories: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal'>;
+    targetCategories: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal'>;
+    value: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates';
 };
 
 export type KnowledgeGraphRelationship = {
@@ -2402,7 +2411,8 @@ export type KnowledgeGraphRelationshipAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
     lastObservedAt?: string;
-    predicate: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates' | 'impacts' | 'touches';
+    mergedIntoId?: string;
+    predicate: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates';
     sourceEntityId: string;
     stale: boolean;
     state: KnowledgeGraphSubjectState;
@@ -2414,7 +2424,7 @@ export type KnowledgeGraphRelationshipAttributes = {
 
 export type KnowledgeGraphRelationshipSummary = {
     id: string;
-    predicate: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates' | 'impacts' | 'touches';
+    predicate: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates';
     sourceId: string;
     stale: boolean;
     targetId: string;
@@ -2427,6 +2437,7 @@ export type KnowledgeGraphRelationshipsPage = {
 
 export type KnowledgeGraphStateSource = {
     aliasId: string;
+    authority: 'observed' | 'declared';
     effectiveAt: string;
 };
 
@@ -2475,7 +2486,7 @@ export type KnowledgeProposal = {
 
 export type KnowledgeProposalAttributes = {
     attribute: string;
-    category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event';
+    category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal';
     createdAt: string;
     decisions: Array<KnowledgeProposalDecision>;
     evidence: KnowledgeProposalEvidence;
@@ -3508,6 +3519,10 @@ export type SituationAttributes = {
      */
     latestJudgment?: SituationJudgment;
     linkedIncidentIds: Array<string>;
+    /**
+     * Set when the situation was merged
+     */
+    mergedInto?: SituationMergeTarget;
     muteReason?: 'not_noteworthy' | 'expected';
     mutedAt?: string;
     notices: Array<SituationNotice>;
@@ -3556,10 +3571,13 @@ export type SituationBriefDeployment = {
     deployedAt: string;
     environment: string;
     /**
-     * The deployment's knowledge entity
+     * The deployment's change point
      */
     id: string;
-    latestEvidenceId?: string;
+    /**
+     * The deployment's involvement evidence on the service, to cite
+     */
+    latestEvidenceId: string;
     mergedChanges: Array<SituationBriefMergedChange>;
     mergedChangesCut: boolean;
     mergedChangesUnlinked: '' | 'no_repository' | 'repository_not_from_code_forge';
@@ -3573,7 +3591,7 @@ export type SituationBriefDeployment = {
 export type SituationBriefMergedChange = {
     author: string;
     /**
-     * The change's knowledge entity
+     * The merged change's change point
      */
     id: string;
     link: 'merge_commit' | 'merged_since_previous_deployment' | 'merged_in_lookback';
@@ -3671,6 +3689,12 @@ export type SituationJudgmentHistoryAttributes = {
 export type SituationJudgmentHistoryItem = {
     attributes: SituationJudgmentHistoryAttributes;
     id: string;
+};
+
+export type SituationMergeTarget = {
+    id: string;
+    reference: string;
+    title: string;
 };
 
 export type SituationNotice = {
@@ -10107,7 +10131,7 @@ export type ListKnowledgeGraphEntitiesData = {
         page?: number;
         pageSize?: number;
         search?: string;
-        category?: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
+        category?: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal'>;
         kind?: Array<string>;
         provider?: string;
         providerNamespace?: string;
@@ -10302,7 +10326,7 @@ export type SelectKnowledgeGraphEntitiesData = {
     body?: never;
     path?: never;
     query?: {
-        category?: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal' | 'event'>;
+        category?: Array<'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal'>;
         kind?: Array<string>;
         cursor?: string;
         limit?: number;
@@ -10353,7 +10377,7 @@ export type ExpandKnowledgeGraphRelationshipsData = {
     path?: never;
     query: {
         entitySelectionRef: string;
-        predicate?: Array<'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates' | 'impacts' | 'touches'>;
+        predicate?: Array<'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates'>;
         cursor?: string;
         limit?: number;
     };

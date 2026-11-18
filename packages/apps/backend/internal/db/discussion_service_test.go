@@ -194,6 +194,7 @@ func (s *DiscussionSuite) createThreadTargets(ctx context.Context, tdb rez.Datab
 		SetProviderEventRef(uuid.NewString()).
 		SetKind("test").
 		SetOccurredAt(time.Date(2026, 6, 1, 10, 5, 0, 0, time.UTC)).
+		SetLastOccurredAt(time.Date(2026, 6, 1, 10, 5, 0, 0, time.UTC)).
 		SetReceivedAt(time.Date(2026, 6, 1, 10, 5, 0, 0, time.UTC)).
 		SetAttributes([]byte(`{}`))
 	event, eventErr := createEvent.Save(ctx)

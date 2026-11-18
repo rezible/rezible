@@ -164,6 +164,7 @@ func (s *ProjectionServiceSuite) projectServiceComponent(ctx context.Context, td
 		SetProviderEventRef("listing-" + uuid.NewString()).
 		SetKind(projections.KindSystemComponent).
 		SetOccurredAt(linkingTestTime).
+		SetLastOccurredAt(linkingTestTime).
 		SetReceivedAt(linkingTestTime).
 		SetAttributes(encoded)
 	event, createErr := create.Save(ctx)
@@ -195,6 +196,51 @@ func (s *ProjectionServiceSuite) TestServiceComponentLinksToAnotherProvidersServ
 
 		s.assertServiceComponentLinks(ctx, tdb)
 	})
+}
+
+// TestAlertNamesDoNotOverrideDeclaredServices projects a topology snapshot and a Grafana-style listing, then a
+// later alert labelling each service.
+func (s *ProjectionServiceSuite) TestAlertNamesDoNotOverrideDeclaredServices() {
+	ctx, tdb := s.SetupTestDatabase()
+	service := s.projectionService(tdb)
+	component := func(name, serviceName string, listing bool) {
+		attrs := projections.SystemComponentEventAttributes{
+			Category:          kne.CategoryContainer,
+			Kind:              "service",
+			DisplayName:       name,
+			LinkingAttributes: projections.LinkingAttributes{projections.LinkingAttributeServiceName: serviceName},
+			Listing:           listing,
+		}
+		if listing {
+			attrs.ValidFor = 3 * time.Hour
+		}
+		event := s.createNormalizedEvent(ctx, tdb, projections.KindSystemComponent, "service:"+serviceName, linkingTestTime, attrs)
+		_, projectErr := runProjection(ctx, service, event)
+		s.Require().NoError(projectErr)
+	}
+	component("Checkout API", "checkout", false)
+	component("payments", "payments", true)
+
+	attrs := projections.AlertInstanceEventAttributes{
+		Title:     "HighErrorRate",
+		State:     projections.AlertStateFiring,
+		Severity:  "critical",
+		StartedAt: linkingTestTime.Add(time.Hour),
+		ObservedEntities: []projections.EntityObservation{
+			alertServiceObservation("installation-a", "checkout"),
+			alertServiceObservation("installation-a", "Payments"),
+		},
+	}
+	alert := s.createAlertProjectionEvent(ctx, tdb, "installation-a:HighErrorRate", linkingTestTime.Add(time.Hour), attrs)
+	_, projectErr := runProjection(ctx, service, alert)
+	s.Require().NoError(projectErr)
+
+	names := []string{}
+	for _, entity := range s.entitiesOfKind(ctx, tdb, kne.CategoryContainer, "service") {
+		names = append(names, entity.State.DisplayName)
+	}
+	s.ElementsMatch([]string{"Checkout API", "Payments"}, names,
+		"the topology's name survives the later alert label, and the listing-only service takes the alert's name")
 }
 
 // assertServiceComponentLinks requires checkout-api to hold both providers' aliases, and checkout, a different
@@ -300,9 +346,7 @@ func (s *ProjectionServiceSuite) TestCodeChangeImpactLandsOnLinkedService() {
 
 	services := s.entitiesOfKind(ctx, tdb, kne.CategoryContainer, "service")
 	s.Require().Len(services, 1)
-	impacts := s.relationshipsOf(ctx, tdb, knr.PredicateImpacts)
-	s.Require().Len(impacts, 1)
-	s.Equal(services[0].ID, impacts[0].TargetEntityID)
+	s.assertInvolvement(ctx, tdb, projections.AssertionChangeImpacted, services[0].ID, 1)
 }
 
 func (s *ProjectionServiceSuite) TestRepositoryObservationsFromTwoProvidersResolveToOneRepository() {
@@ -332,9 +376,7 @@ func (s *ProjectionServiceSuite) TestRepositoryObservationsFromTwoProvidersResol
 func (s *ProjectionServiceSuite) assertChangeTouchesOneRepository(ctx context.Context, tdb rez.Database) {
 	repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgegraph.EntityKindRepository)
 	s.Require().Len(repositories, 1)
-	touches := s.relationshipsOf(ctx, tdb, knr.PredicateTouches)
-	s.Require().Len(touches, 1)
-	s.Equal(repositories[0].ID, touches[0].TargetEntityID)
+	s.assertInvolvement(ctx, tdb, projections.AssertionChangeRepository, repositories[0].ID, 1)
 }
 
 func (s *ProjectionServiceSuite) TestRenamedRepositoryStaysOnItsAliasAndProposesTheMatch() {

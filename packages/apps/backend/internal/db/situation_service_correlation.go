@@ -12,9 +12,10 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	osc "github.com/rezible/rezible/ent/observationscope"
+	osce "github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	sit "github.com/rezible/rezible/ent/situation"
-	sitent "github.com/rezible/rezible/ent/situationentity"
 	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -27,23 +28,13 @@ const situationCorrelationLock = "situation_correlation"
 
 func NewProcessSituationObservationWorker(service *SituationService) jobs.WorkerDefinition {
 	return jobs.DefineWorkerFunc(func(ctx context.Context, args jobs.ProcessSituationObservation) error {
-		return service.observationJobError(service.ProcessObservation(ctx, args.Ref))
+		return service.ProcessObservation(ctx, args.Ref)
 	})
 }
 
-// observationJobError marks processErr retryable when an entity merge deleted a knowledge subject that
-// correlation read: correlation found it gone, or a write referring to it failed on its foreign key. The next
-// attempt reads the merged graph.
-func (s *SituationService) observationJobError(processErr error) error {
-	if errors.Is(processErr, errs.ErrKnowledgeSubjectMerged) || s.db.IsForeignKeyError(processErr, ent.KnowledgeForeignKeyConstraints...) {
-		return jobs.MarkRetryableError(processErr)
-	}
-	return processErr
-}
-
-// ProcessObservation brings situations up to date with an observation's stored state. It refreshes the
-// situations that have the observation, or places an eligible observation that no situation has. Unknown
-// observations are ignored.
+// ProcessObservation brings situations up to date with an observation's stored state. It stores the
+// observation's entities, then refreshes the situations that have the observation, or places an eligible
+// observation that no situation has. Unknown observations are ignored.
 func (s *SituationService) ProcessObservation(ctx context.Context, ref rez.SituationObservationRef) error {
 	observations, loadErr := s.LoadObservations(ctx, []rez.SituationObservationRef{ref}, rez.LoadSituationObservationsOptions{})
 	if loadErr != nil {
@@ -53,6 +44,9 @@ func (s *SituationService) ProcessObservation(ctx context.Context, ref rez.Situa
 		return loadErr
 	}
 	observation := observations[ref]
+	if storeErr := s.storeObservationScope(ctx, observation); storeErr != nil {
+		return storeErr
+	}
 	observed, observedErr := s.refreshObservingSituations(ctx, ref)
 	if observedErr != nil || observed {
 		return observedErr
@@ -63,8 +57,7 @@ func (s *SituationService) ProcessObservation(ctx context.Context, ref rez.Situa
 	return s.correlateObservation(ctx, observation)
 }
 
-// refreshObservingSituations recomputes the entity rows of the unclosed situations with the observation and
-// requests their evaluation. It reports whether any situation, closed or not, has the observation:
+// refreshObservingSituations requests the evaluation of the unclosed situations with the observation. It reports whether any situation, closed or not, has the observation:
 // correlation never places an observation again.
 func (s *SituationService) refreshObservingSituations(ctx context.Context, ref rez.SituationObservationRef) (bool, error) {
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (bool, error) {
@@ -85,9 +78,6 @@ func (s *SituationService) refreshObservingSituations(ctx context.Context, ref r
 			if locked[id].ClosedAt != nil {
 				continue
 			}
-			if entitiesErr := s.recomputeSituationEntities(ctx, id); entitiesErr != nil {
-				return true, entitiesErr
-			}
 			if evaluateErr := s.requestEvaluation(ctx, id); evaluateErr != nil {
 				return true, evaluateErr
 			}
@@ -96,8 +86,8 @@ func (s *SituationService) refreshObservingSituations(ctx context.Context, ref r
 	})
 }
 
-// correlateObservation places the observation into a situation about the same or a related runtime entity, or
-// into a new candidate.
+// correlateObservation places the observation into a situation about the same or a related runtime entity, by
+// its stored entities, or into a new candidate.
 func (s *SituationService) correlateObservation(ctx context.Context, observation rez.SituationObservation) error {
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		// Without this lock, two observations about the same entities correlated at once could each find no
@@ -113,7 +103,7 @@ func (s *SituationService) correlateObservation(ctx context.Context, observation
 			return observedErr
 		}
 
-		entityIDs, entitiesErr := s.observationRuntimeEntities(ctx, observation)
+		entityIDs, entitiesErr := s.storedScopeEntities(ctx, observation.Ref)
 		if entitiesErr != nil {
 			return entitiesErr
 		}
@@ -194,13 +184,10 @@ func (s *SituationService) correlationSituations(ctx context.Context, reach maps
 	if reach.IsEmpty() {
 		return nil, nil
 	}
-	inReach := []predicate.SituationEntity{
-		sitent.Matching(true),
-		sitent.KnowledgeEntityIDIn(reach.ToSlice()...),
-	}
+	matchingInReach := s.hasScopeWith(osc.Broad(false), osc.HasEntitiesWith(osce.KnowledgeEntityIDIn(reach.ToSlice()...)))
 	client := s.db.Client(ctx)
 	querySituations := client.Situation.Query().
-		Where(sit.ClosedAtIsNil(), sit.HasEntitiesWith(inReach...))
+		Where(sit.ClosedAtIsNil(), sit.HasObservationsWith(matchingInReach))
 	ids, queryErr := querySituations.IDs(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("query correlation situations: %w", queryErr)
@@ -224,21 +211,9 @@ func (s *SituationService) correlationSituations(ctx context.Context, reach maps
 		}
 	}
 
-	queryEntities := client.SituationEntity.Query().
-		Where(sitent.SituationIDIn(ids...)).
-		Where(inReach...)
-	entities, entitiesErr := queryEntities.All(ctx)
-	if entitiesErr != nil {
-		return nil, fmt.Errorf("query correlation situation entities: %w", entitiesErr)
-	}
-	for _, entity := range entities {
-		if candidate := byID[entity.SituationID]; candidate != nil {
-			candidate.MatchingEntityIDs.Add(entity.KnowledgeEntityID)
-		}
-	}
-
 	queryMembers := client.SituationObservation.Query().
-		Where(sitobs.SituationIDIn(ids...))
+		Where(sitobs.SituationIDIn(ids...)).
+		WithScopes()
 	members, membersErr := queryMembers.All(ctx)
 	if membersErr != nil {
 		return nil, fmt.Errorf("query correlation situation observations: %w", membersErr)
@@ -253,16 +228,26 @@ func (s *SituationService) correlationSituations(ctx context.Context, reach maps
 		return nil, loadErr
 	}
 
+	membersBySituation := make(map[uuid.UUID]ent.SituationObservations, len(byID))
 	for _, member := range members {
 		candidate := byID[member.SituationID]
 		if candidate == nil {
 			continue
 		}
+		membersBySituation[member.SituationID] = append(membersBySituation[member.SituationID], member)
 		observation := observations[member.Ref()]
 		candidate.Active = candidate.Active || observation.Active
 		for _, at := range []time.Time{member.AttachedAt, observation.LastActivityAt} {
 			if at.After(candidate.LastActivityAt) {
 				candidate.LastActivityAt = at
+			}
+		}
+	}
+
+	for id, situationMembers := range membersBySituation {
+		for _, entity := range situations.RuntimeEntities(situationMembers) {
+			if entity.Matching && reach.Contains(entity.Entity.ID) {
+				byID[id].MatchingEntityIDs.Add(entity.Entity.ID)
 			}
 		}
 	}

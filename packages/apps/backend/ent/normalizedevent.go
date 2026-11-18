@@ -37,19 +37,20 @@ type NormalizedEvent struct {
 	ProviderEventSource string `json:"provider_event_source,omitempty"`
 	// Stable provider reference for the source event, used with the provider fields for idempotency.
 	ProviderEventRef string `json:"provider_event_ref,omitempty"`
-	// Normalized JSON attributes for this event kind.
+	// Normalized JSON attributes for this event kind. Stored as jsonb, so queries filter on them; jsonb keeps neither key order nor whitespace.
 	Attributes []byte `json:"attributes,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// OccurredAt holds the value of the "occurred_at" field.
 	OccurredAt time.Time `json:"occurred_at,omitempty"`
+	// LastOccurredAt holds the value of the "last_occurred_at" field.
+	LastOccurredAt time.Time `json:"last_occurred_at,omitempty"`
 	// ReceivedAt holds the value of the "received_at" field.
 	ReceivedAt time.Time `json:"received_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NormalizedEventQuery when eager-loading is set.
-	Edges                       NormalizedEventEdges `json:"edges"`
-	normalized_event_projection *uuid.UUID
-	selectValues                sql.SelectValues
+	Edges        NormalizedEventEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // NormalizedEventEdges holds the relations/edges for other nodes in the graph.
@@ -111,12 +112,10 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case normalizedevent.FieldProvider, normalizedevent.FieldProviderNamespace, normalizedevent.FieldProviderResourceRef, normalizedevent.FieldKind, normalizedevent.FieldProviderEventSource, normalizedevent.FieldProviderEventRef:
 			values[i] = new(sql.NullString)
-		case normalizedevent.FieldCreatedAt, normalizedevent.FieldOccurredAt, normalizedevent.FieldReceivedAt:
+		case normalizedevent.FieldCreatedAt, normalizedevent.FieldOccurredAt, normalizedevent.FieldLastOccurredAt, normalizedevent.FieldReceivedAt:
 			values[i] = new(sql.NullTime)
 		case normalizedevent.FieldID:
 			values[i] = new(uuid.UUID)
-		case normalizedevent.ForeignKeys[0]: // normalized_event_projection
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -205,18 +204,17 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.OccurredAt = value.Time
 			}
+		case normalizedevent.FieldLastOccurredAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field last_occurred_at", values[i])
+			} else if value.Valid {
+				_m.LastOccurredAt = value.Time
+			}
 		case normalizedevent.FieldReceivedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field received_at", values[i])
 			} else if value.Valid {
 				_m.ReceivedAt = value.Time
-			}
-		case normalizedevent.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field normalized_event_projection", values[i])
-			} else if value.Valid {
-				_m.normalized_event_projection = new(uuid.UUID)
-				*_m.normalized_event_projection = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -303,6 +301,9 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("occurred_at=")
 	builder.WriteString(_m.OccurredAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("last_occurred_at=")
+	builder.WriteString(_m.LastOccurredAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("received_at=")
 	builder.WriteString(_m.ReceivedAt.Format(time.ANSIC))

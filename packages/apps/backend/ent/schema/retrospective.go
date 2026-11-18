@@ -132,7 +132,7 @@ func (DiscussionThread) Edges() []ent.Edge {
 			Field("target_normalized_event_id").
 			Unique().
 			Annotations(entsql.OnDelete(entsql.SetNull)),
-		// A knowledge merge re-points these before it deletes the merged entity or folded relationship.
+		// A knowledge merge re-points these before it leaves the merged entity or folded relationship as a redirect.
 		edge.To("target_knowledge_entity", KnowledgeEntity.Type).
 			Field("target_knowledge_entity_id").
 			Unique().

@@ -33,6 +33,17 @@ export function closeReasonLabel(reason: SituationAttributes["closeReason"]) {
 	}
 }
 
+export type SituationMergeLink = { label: string; ref: string };
+
+/** Where a merged situation went: "Merged into SIT-123", and the reference to link to. */
+export function mergedIntoLink(attributes: SituationAttributes): SituationMergeLink | undefined {
+	const target = attributes.mergedInto;
+	if (!target) {
+		return undefined;
+	}
+	return { label: `Merged into ${target.reference}`, ref: target.reference };
+}
+
 export function muteReasonLabel(reason: SituationAttributes["muteReason"]) {
 	switch (reason) {
 		case "not_noteworthy":

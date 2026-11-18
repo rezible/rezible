@@ -275,8 +275,14 @@ func (r *agentRun) ingest(ctx context.Context, event ScenarioEvent) error {
 	if processErr != nil {
 		return fmt.Errorf("process event %s: %w", event.Ref, processErr)
 	}
-	for _, eventID := range eventIDs {
-		if projectErr := r.service.ingester.ProjectNormalizedEvent(ctx, eventID); projectErr != nil {
+	for _, repeat := range eventIDs.Reobservations {
+		if repeatErr := r.service.ingester.ReobserveNormalizedEvent(ctx, repeat.EventID, repeat.At); repeatErr != nil {
+			return repeatErr
+		}
+	}
+
+	for _, eventID := range eventIDs.NewEventIDs {
+		if projectErr := r.service.ingester.ProjectNormalizedEvent(ctx, eventID, false); projectErr != nil {
 			return fmt.Errorf("project event %s: %w", event.Ref, projectErr)
 		}
 	}

@@ -166,7 +166,7 @@ func (d *dataSeeder) ingestEvents(ctx context.Context) error {
 		return fmt.Errorf("query stored demo events: %w", queryErr)
 	}
 	for _, eventID := range eventIDs {
-		if projectErr := d.ingester.ProjectNormalizedEvent(ctx, eventID); projectErr != nil {
+		if projectErr := d.ingester.ProjectNormalizedEvent(ctx, eventID, false); projectErr != nil {
 			return fmt.Errorf("project demo event %s: %w", eventID, projectErr)
 		}
 	}
@@ -193,15 +193,18 @@ func (d *dataSeeder) lookupAlias(ctx context.Context, resourceRef string) (*ent.
 }
 
 func (d *dataSeeder) lookupIncident(ctx context.Context, resourceID string) (*ent.Incident, error) {
-	alias, aliasErr := d.lookupAlias(ctx, "demo:incident:"+resourceID)
-	if aliasErr != nil {
-		return nil, aliasErr
-	} else if alias == nil {
-		return nil, nil
-	} else if alias.SubjectKind != ksa.SubjectKindEntity || alias.EntityID == nil {
-		return nil, fmt.Errorf("demo incident alias does not reference an entity")
+	inc, getErr := d.incidents.GetIncident(ctx, incident.And(
+		incident.Provider(ProviderName),
+		incident.ProviderNamespace(integrationName),
+		incident.ProviderResourceRef("demo:incident:"+resourceID),
+	))
+	if getErr != nil {
+		if ent.IsNotFound(getErr) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("lookup demo incident %q: %w", resourceID, getErr)
 	}
-	return d.incidents.GetIncident(ctx, incident.KnowledgeEntityID(*alias.EntityID))
+	return inc, nil
 }
 
 func (d *dataSeeder) ensureIncidentRole(ctx context.Context, name string) (*ent.IncidentRole, error) {

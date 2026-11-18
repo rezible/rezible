@@ -67,6 +67,7 @@ func (s *InvestigationServiceSuite) outputCitationFixture(ctx context.Context, t
 		SetKind("deployment").
 		SetAttributes(encodedAttributes).
 		SetOccurredAt(now).
+		SetLastOccurredAt(now).
 		SetReceivedAt(now)
 	event, eventErr := createEvent.Save(ctx)
 	s.Require().NoError(eventErr)
@@ -84,6 +85,7 @@ func (s *InvestigationServiceSuite) outputCitationFixture(ctx context.Context, t
 	s.Require().NoError(attachAnalysisEntityErr)
 
 	createAlias := client.KnowledgeSubjectAlias.Create().
+		SetAuthority(schematypes.KnowledgeAuthorityDeclared).
 		SetSubjectKind(ksa.SubjectKindEntity).
 		SetProvider("investigation-tests").
 		SetProviderNamespace("investigation-tests").
@@ -105,6 +107,7 @@ func (s *InvestigationServiceSuite) outputCitationFixture(ctx context.Context, t
 	s.Require().NoError(evidenceErr)
 
 	createSecondAlias := client.KnowledgeSubjectAlias.Create().
+		SetAuthority(schematypes.KnowledgeAuthorityDeclared).
 		SetSubjectKind(ksa.SubjectKindEntity).
 		SetProvider("investigation-tests").
 		SetProviderNamespace("investigation-tests").

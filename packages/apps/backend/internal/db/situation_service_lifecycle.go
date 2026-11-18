@@ -170,7 +170,7 @@ func (s *SituationService) CloseSituation(ctx context.Context, id uuid.UUID, par
 			return s.GetSituation(ctx, sit.ID(id))
 		}
 		now := s.clock.Now()
-		if closeErr := s.closeLocked(ctx, situation, reason, params.Note, now, now); closeErr != nil {
+		if closeErr := s.closeLocked(ctx, situation, reason, nil, params.Note, now, now); closeErr != nil {
 			return nil, closeErr
 		}
 		return s.GetSituation(ctx, sit.ID(id))
@@ -178,11 +178,15 @@ func (s *SituationService) CloseSituation(ctx context.Context, id uuid.UUID, par
 }
 
 // closeLocked closes the situation at closedAt with the reason and records the decision at the processing
-// time: merged for a merge, otherwise closed.
-func (s *SituationService) closeLocked(ctx context.Context, situation *ent.Situation, reason sit.CloseReason, note string, closedAt, now time.Time) error {
+// time: merged for a merge, otherwise closed. The merge target is given exactly when the reason is merged.
+func (s *SituationService) closeLocked(ctx context.Context, situation *ent.Situation, reason sit.CloseReason, mergedIntoID *uuid.UUID, note string, closedAt, now time.Time) error {
+	if (reason == sit.CloseReasonMerged) != (mergedIntoID != nil) {
+		return fmt.Errorf("%w: a merge target is given exactly when closing as merged", errs.ErrInvalidInput)
+	}
 	closeSituation := s.db.Client(ctx).Situation.UpdateOneID(situation.ID).
 		SetClosedAt(closedAt).
-		SetCloseReason(reason)
+		SetCloseReason(reason).
+		SetNillableMergedIntoID(mergedIntoID)
 	if closeErr := closeSituation.Exec(ctx); closeErr != nil {
 		return fmt.Errorf("close situation: %w", closeErr)
 	}
@@ -192,6 +196,7 @@ func (s *SituationService) closeLocked(ctx context.Context, situation *ent.Situa
 	}
 	situation.ClosedAt = &closedAt
 	situation.CloseReason = &reason
+	situation.MergedIntoID = mergedIntoID
 	return s.recordAction(ctx, situation.ID, action, note, now)
 }
 

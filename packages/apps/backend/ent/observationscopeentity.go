@@ -10,36 +10,34 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/situationentity"
+	"github.com/rezible/rezible/ent/observationscope"
+	"github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// SituationEntity is the model entity for the SituationEntity schema.
-type SituationEntity struct {
+// ObservationScopeEntity is the model entity for the ObservationScopeEntity schema.
+type ObservationScopeEntity struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// SituationID holds the value of the "situation_id" field.
-	SituationID uuid.UUID `json:"situation_id,omitempty"`
+	// ScopeID holds the value of the "scope_id" field.
+	ScopeID uuid.UUID `json:"scope_id,omitempty"`
 	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
 	KnowledgeEntityID uuid.UUID `json:"knowledge_entity_id,omitempty"`
-	// Whether an observation that is not broad touches it, so it attracts related observations
-	Matching bool `json:"matching,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the SituationEntityQuery when eager-loading is set.
-	Edges        SituationEntityEdges `json:"edges"`
+	// The values are being populated by the ObservationScopeEntityQuery when eager-loading is set.
+	Edges        ObservationScopeEntityEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// SituationEntityEdges holds the relations/edges for other nodes in the graph.
-type SituationEntityEdges struct {
+// ObservationScopeEntityEdges holds the relations/edges for other nodes in the graph.
+type ObservationScopeEntityEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Situation holds the value of the situation edge.
-	Situation *Situation `json:"situation,omitempty"`
+	// Scope holds the value of the scope edge.
+	Scope *ObservationScope `json:"scope,omitempty"`
 	// KnowledgeEntity holds the value of the knowledge_entity edge.
 	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -49,7 +47,7 @@ type SituationEntityEdges struct {
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SituationEntityEdges) TenantOrErr() (*Tenant, error) {
+func (e ObservationScopeEntityEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -58,20 +56,20 @@ func (e SituationEntityEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// SituationOrErr returns the Situation value or an error if the edge
+// ScopeOrErr returns the Scope value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SituationEntityEdges) SituationOrErr() (*Situation, error) {
-	if e.Situation != nil {
-		return e.Situation, nil
+func (e ObservationScopeEntityEdges) ScopeOrErr() (*ObservationScope, error) {
+	if e.Scope != nil {
+		return e.Scope, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: situation.Label}
+		return nil, &NotFoundError{label: observationscope.Label}
 	}
-	return nil, &NotLoadedError{edge: "situation"}
+	return nil, &NotLoadedError{edge: "scope"}
 }
 
 // KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SituationEntityEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
+func (e ObservationScopeEntityEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
 	if e.KnowledgeEntity != nil {
 		return e.KnowledgeEntity, nil
 	} else if e.loadedTypes[2] {
@@ -81,15 +79,13 @@ func (e SituationEntityEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*SituationEntity) scanValues(columns []string) ([]any, error) {
+func (*ObservationScopeEntity) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case situationentity.FieldMatching:
-			values[i] = new(sql.NullBool)
-		case situationentity.FieldTenantID:
+		case observationscopeentity.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case situationentity.FieldID, situationentity.FieldSituationID, situationentity.FieldKnowledgeEntityID:
+		case observationscopeentity.FieldID, observationscopeentity.FieldScopeID, observationscopeentity.FieldKnowledgeEntityID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -99,42 +95,36 @@ func (*SituationEntity) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the SituationEntity fields.
-func (_m *SituationEntity) assignValues(columns []string, values []any) error {
+// to the ObservationScopeEntity fields.
+func (_m *ObservationScopeEntity) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case situationentity.FieldID:
+		case observationscopeentity.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case situationentity.FieldTenantID:
+		case observationscopeentity.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case situationentity.FieldSituationID:
+		case observationscopeentity.FieldScopeID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field situation_id", values[i])
+				return fmt.Errorf("unexpected type %T for field scope_id", values[i])
 			} else if value != nil {
-				_m.SituationID = *value
+				_m.ScopeID = *value
 			}
-		case situationentity.FieldKnowledgeEntityID:
+		case observationscopeentity.FieldKnowledgeEntityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
 			} else if value != nil {
 				_m.KnowledgeEntityID = *value
-			}
-		case situationentity.FieldMatching:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field matching", values[i])
-			} else if value.Valid {
-				_m.Matching = value.Bool
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -143,64 +133,61 @@ func (_m *SituationEntity) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the SituationEntity.
+// Value returns the ent.Value that was dynamically selected and assigned to the ObservationScopeEntity.
 // This includes values selected through modifiers, order, etc.
-func (_m *SituationEntity) Value(name string) (ent.Value, error) {
+func (_m *ObservationScopeEntity) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the SituationEntity entity.
-func (_m *SituationEntity) QueryTenant() *TenantQuery {
-	return NewSituationEntityClient(_m.config).QueryTenant(_m)
+// QueryTenant queries the "tenant" edge of the ObservationScopeEntity entity.
+func (_m *ObservationScopeEntity) QueryTenant() *TenantQuery {
+	return NewObservationScopeEntityClient(_m.config).QueryTenant(_m)
 }
 
-// QuerySituation queries the "situation" edge of the SituationEntity entity.
-func (_m *SituationEntity) QuerySituation() *SituationQuery {
-	return NewSituationEntityClient(_m.config).QuerySituation(_m)
+// QueryScope queries the "scope" edge of the ObservationScopeEntity entity.
+func (_m *ObservationScopeEntity) QueryScope() *ObservationScopeQuery {
+	return NewObservationScopeEntityClient(_m.config).QueryScope(_m)
 }
 
-// QueryKnowledgeEntity queries the "knowledge_entity" edge of the SituationEntity entity.
-func (_m *SituationEntity) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	return NewSituationEntityClient(_m.config).QueryKnowledgeEntity(_m)
+// QueryKnowledgeEntity queries the "knowledge_entity" edge of the ObservationScopeEntity entity.
+func (_m *ObservationScopeEntity) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	return NewObservationScopeEntityClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
-// Update returns a builder for updating this SituationEntity.
-// Note that you need to call SituationEntity.Unwrap() before calling this method if this SituationEntity
+// Update returns a builder for updating this ObservationScopeEntity.
+// Note that you need to call ObservationScopeEntity.Unwrap() before calling this method if this ObservationScopeEntity
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *SituationEntity) Update() *SituationEntityUpdateOne {
-	return NewSituationEntityClient(_m.config).UpdateOne(_m)
+func (_m *ObservationScopeEntity) Update() *ObservationScopeEntityUpdateOne {
+	return NewObservationScopeEntityClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the SituationEntity entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the ObservationScopeEntity entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *SituationEntity) Unwrap() *SituationEntity {
+func (_m *ObservationScopeEntity) Unwrap() *ObservationScopeEntity {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: SituationEntity is not a transactional entity")
+		panic("ent: ObservationScopeEntity is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *SituationEntity) String() string {
+func (_m *ObservationScopeEntity) String() string {
 	var builder strings.Builder
-	builder.WriteString("SituationEntity(")
+	builder.WriteString("ObservationScopeEntity(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("situation_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SituationID))
+	builder.WriteString("scope_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ScopeID))
 	builder.WriteString(", ")
 	builder.WriteString("knowledge_entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.KnowledgeEntityID))
-	builder.WriteString(", ")
-	builder.WriteString("matching=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Matching))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// SituationEntities is a parsable slice of SituationEntity.
-type SituationEntities []*SituationEntity
+// ObservationScopeEntities is a parsable slice of ObservationScopeEntity.
+type ObservationScopeEntities []*ObservationScopeEntity

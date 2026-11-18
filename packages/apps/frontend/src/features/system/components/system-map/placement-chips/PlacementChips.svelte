@@ -34,7 +34,7 @@
 		}
 	}
 
-	/** Chips read as the placement's path, such as "production › prod-use1 › commerce". */
+	/** Chips read as the placement's path, such as "commerce-prod › prod-use1 › commerce". */
 	const chipPath = (target: CardPlacement) =>
 		target.breadcrumb ? `${target.breadcrumb} › ${target.label}` : target.label;
 

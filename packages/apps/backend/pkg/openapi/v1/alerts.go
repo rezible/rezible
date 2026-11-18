@@ -80,13 +80,12 @@ type (
 	}
 
 	AlertEpisodeAttributes struct {
-		KnowledgeEntityId *uuid.UUID       `json:"knowledgeEntityId,omitempty"`
-		Instances         []AlertInstance  `json:"instances"`
-		Status            string           `json:"status" enum:"open,closed"`
-		Definition        *AlertDefinition `json:"definition,omitempty"`
-		StartedAt         time.Time        `json:"startedAt"`
-		ClosedAt          *time.Time       `json:"closedAt,omitempty"`
-		HighestSeverity   string           `json:"highestSeverity" enum:"unknown,info,warning,critical"`
+		Instances       []AlertInstance  `json:"instances"`
+		Status          string           `json:"status" enum:"open,closed"`
+		Definition      *AlertDefinition `json:"definition,omitempty"`
+		StartedAt       time.Time        `json:"startedAt"`
+		ClosedAt        *time.Time       `json:"closedAt,omitempty"`
+		HighestSeverity string           `json:"highestSeverity" enum:"unknown,info,warning,critical"`
 	}
 
 	AlertInstanceFeedback struct {
@@ -161,12 +160,11 @@ func AlertInstanceFromEnt(instance *ent.AlertInstance) AlertInstance {
 
 func AlertEpisodeFromEnt(ep *ent.AlertEpisode) AlertEpisode {
 	attrs := AlertEpisodeAttributes{
-		KnowledgeEntityId: ep.KnowledgeEntityID,
-		Instances:         ConvertSlice(ep.Edges.Instances, AlertInstanceFromEnt),
-		Status:            "open",
-		StartedAt:         ep.StartedAt,
-		ClosedAt:          ep.ClosedAt,
-		HighestSeverity:   string(ep.HighestSeverity),
+		Instances:       ConvertSlice(ep.Edges.Instances, AlertInstanceFromEnt),
+		Status:          "open",
+		StartedAt:       ep.StartedAt,
+		ClosedAt:        ep.ClosedAt,
+		HighestSeverity: string(ep.HighestSeverity),
 	}
 	if ep.ClosedAt != nil {
 		attrs.Status = "closed"

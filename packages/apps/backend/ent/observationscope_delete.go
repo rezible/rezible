@@ -9,30 +9,30 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/observationscope"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situationentity"
 )
 
-// SituationEntityDelete is the builder for deleting a SituationEntity entity.
-type SituationEntityDelete struct {
+// ObservationScopeDelete is the builder for deleting a ObservationScope entity.
+type ObservationScopeDelete struct {
 	config
 	hooks    []Hook
-	mutation *SituationEntityMutation
+	mutation *ObservationScopeMutation
 }
 
-// Where appends a list predicates to the SituationEntityDelete builder.
-func (_d *SituationEntityDelete) Where(ps ...predicate.SituationEntity) *SituationEntityDelete {
+// Where appends a list predicates to the ObservationScopeDelete builder.
+func (_d *ObservationScopeDelete) Where(ps ...predicate.ObservationScope) *ObservationScopeDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *SituationEntityDelete) Exec(ctx context.Context) (int, error) {
+func (_d *ObservationScopeDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *SituationEntityDelete) ExecX(ctx context.Context) int {
+func (_d *ObservationScopeDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -40,9 +40,9 @@ func (_d *SituationEntityDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *SituationEntityDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(situationentity.Table, sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID))
-	_spec.Node.Schema = _d.schemaConfig.SituationEntity
+func (_d *ObservationScopeDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(observationscope.Table, sqlgraph.NewFieldSpec(observationscope.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.ObservationScope
 	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -59,32 +59,32 @@ func (_d *SituationEntityDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// SituationEntityDeleteOne is the builder for deleting a single SituationEntity entity.
-type SituationEntityDeleteOne struct {
-	_d *SituationEntityDelete
+// ObservationScopeDeleteOne is the builder for deleting a single ObservationScope entity.
+type ObservationScopeDeleteOne struct {
+	_d *ObservationScopeDelete
 }
 
-// Where appends a list predicates to the SituationEntityDelete builder.
-func (_d *SituationEntityDeleteOne) Where(ps ...predicate.SituationEntity) *SituationEntityDeleteOne {
+// Where appends a list predicates to the ObservationScopeDelete builder.
+func (_d *ObservationScopeDeleteOne) Where(ps ...predicate.ObservationScope) *ObservationScopeDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *SituationEntityDeleteOne) Exec(ctx context.Context) error {
+func (_d *ObservationScopeDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{situationentity.Label}
+		return &NotFoundError{observationscope.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *SituationEntityDeleteOne) ExecX(ctx context.Context) {
+func (_d *ObservationScopeDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

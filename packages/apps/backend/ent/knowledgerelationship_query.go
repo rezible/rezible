@@ -34,6 +34,8 @@ type KnowledgeRelationshipQuery struct {
 	withSourceEntity *KnowledgeEntityQuery
 	withTargetEntity *KnowledgeEntityQuery
 	withAliases      *KnowledgeSubjectAliasQuery
+	withMergedInto   *KnowledgeRelationshipQuery
+	withRedirects    *KnowledgeRelationshipQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -165,6 +167,56 @@ func (_q *KnowledgeRelationshipQuery) QueryAliases() *KnowledgeSubjectAliasQuery
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMergedInto chains the current query on the "merged_into" edge.
+func (_q *KnowledgeRelationshipQuery) QueryMergedInto() *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, knowledgerelationship.MergedIntoTable, knowledgerelationship.MergedIntoColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeRelationship
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRedirects chains the current query on the "redirects" edge.
+func (_q *KnowledgeRelationshipQuery) QueryRedirects() *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, knowledgerelationship.RedirectsTable, knowledgerelationship.RedirectsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeRelationship
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -367,6 +419,8 @@ func (_q *KnowledgeRelationshipQuery) Clone() *KnowledgeRelationshipQuery {
 		withSourceEntity: _q.withSourceEntity.Clone(),
 		withTargetEntity: _q.withTargetEntity.Clone(),
 		withAliases:      _q.withAliases.Clone(),
+		withMergedInto:   _q.withMergedInto.Clone(),
+		withRedirects:    _q.withRedirects.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -415,6 +469,28 @@ func (_q *KnowledgeRelationshipQuery) WithAliases(opts ...func(*KnowledgeSubject
 		opt(query)
 	}
 	_q.withAliases = query
+	return _q
+}
+
+// WithMergedInto tells the query-builder to eager-load the nodes that are connected to
+// the "merged_into" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeRelationshipQuery) WithMergedInto(opts ...func(*KnowledgeRelationshipQuery)) *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withMergedInto = query
+	return _q
+}
+
+// WithRedirects tells the query-builder to eager-load the nodes that are connected to
+// the "redirects" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeRelationshipQuery) WithRedirects(opts ...func(*KnowledgeRelationshipQuery)) *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withRedirects = query
 	return _q
 }
 
@@ -502,11 +578,13 @@ func (_q *KnowledgeRelationshipQuery) sqlAll(ctx context.Context, hooks ...query
 	var (
 		nodes       = []*KnowledgeRelationship{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withSourceEntity != nil,
 			_q.withTargetEntity != nil,
 			_q.withAliases != nil,
+			_q.withMergedInto != nil,
+			_q.withRedirects != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -554,6 +632,21 @@ func (_q *KnowledgeRelationshipQuery) sqlAll(ctx context.Context, hooks ...query
 		if err := _q.loadAliases(ctx, query, nodes,
 			func(n *KnowledgeRelationship) { n.Edges.Aliases = []*KnowledgeSubjectAlias{} },
 			func(n *KnowledgeRelationship, e *KnowledgeSubjectAlias) { n.Edges.Aliases = append(n.Edges.Aliases, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withMergedInto; query != nil {
+		if err := _q.loadMergedInto(ctx, query, nodes, nil,
+			func(n *KnowledgeRelationship, e *KnowledgeRelationship) { n.Edges.MergedInto = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withRedirects; query != nil {
+		if err := _q.loadRedirects(ctx, query, nodes,
+			func(n *KnowledgeRelationship) { n.Edges.Redirects = []*KnowledgeRelationship{} },
+			func(n *KnowledgeRelationship, e *KnowledgeRelationship) {
+				n.Edges.Redirects = append(n.Edges.Redirects, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -680,6 +773,71 @@ func (_q *KnowledgeRelationshipQuery) loadAliases(ctx context.Context, query *Kn
 	}
 	return nil
 }
+func (_q *KnowledgeRelationshipQuery) loadMergedInto(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *KnowledgeRelationship)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*KnowledgeRelationship)
+	for i := range nodes {
+		if nodes[i].MergedIntoID == nil {
+			continue
+		}
+		fk := *nodes[i].MergedIntoID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgerelationship.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "merged_into_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *KnowledgeRelationshipQuery) loadRedirects(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *KnowledgeRelationship)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*KnowledgeRelationship)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(knowledgerelationship.FieldMergedIntoID)
+	}
+	query.Where(predicate.KnowledgeRelationship(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(knowledgerelationship.RedirectsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.MergedIntoID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "merged_into_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "merged_into_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (_q *KnowledgeRelationshipQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -719,6 +877,9 @@ func (_q *KnowledgeRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTargetEntity != nil {
 			_spec.Node.AddColumnOnce(knowledgerelationship.FieldTargetEntityID)
+		}
+		if _q.withMergedInto != nil {
+			_spec.Node.AddColumnOnce(knowledgerelationship.FieldMergedIntoID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

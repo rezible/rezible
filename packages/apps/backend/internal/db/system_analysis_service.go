@@ -124,8 +124,9 @@ func (s *SystemAnalysisService) validateKnowledgeEntityTargets(ctx context.Conte
 	if entityIDs.IsEmpty() {
 		return nil
 	}
+	// A merged entity is available: the write stores its survivor.
 	queryEntities := tx.KnowledgeEntity.Query().Where(kne.IDIn(entityIDs.ToSlice()...))
-	count, queryErr := queryEntities.Count(ctx)
+	count, queryErr := queryEntities.Count(ent.IncludeMerged(ctx))
 	if queryErr != nil {
 		return fmt.Errorf("check knowledge entity access: %w", queryErr)
 	}
@@ -187,7 +188,8 @@ func (s *SystemAnalysisService) resolveRelationshipEntityIDs(ctx context.Context
 	query := tx.KnowledgeRelationship.Query().
 		Where(knr.IDIn(relIds.ToSlice()...)).
 		Select(knr.FieldSourceEntityID, knr.FieldTargetEntityID)
-	relationships, queryErr := query.All(ctx)
+	// A folded relationship is available, like a merged entity: the write stores the relationship kept.
+	relationships, queryErr := query.All(ent.IncludeMerged(ctx))
 	if queryErr != nil {
 		return nil, fmt.Errorf("query relationships: %w", queryErr)
 	}
@@ -232,7 +234,8 @@ func (s *SystemAnalysisService) ListSystemAnalysisEntities(ctx context.Context, 
 	query := s.db.Client(ctx).SystemAnalysisEntity.Query().
 		Where(params.Predicates...).
 		WithKnowledgeEntity(func(eq *ent.KnowledgeEntityQuery) {
-			eq.WithAliases(subjectAliasWithEvidence())
+			eq.WithAliases(subjectAliasWithEvidence()).
+				WithTargetRelationships(withParentClaim)
 		}).
 		Order(saent.ByCreatedAt(), saent.ByID())
 	return ent.DoListQuery[ent.SystemAnalysisEntity, *ent.SystemAnalysisEntityQuery](ctx, query, params.ListParams)

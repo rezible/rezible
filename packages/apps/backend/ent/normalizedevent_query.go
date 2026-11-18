@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -32,7 +33,6 @@ type NormalizedEventQuery struct {
 	withTenant      *TenantQuery
 	withIntegration *IntegrationQuery
 	withProjection  *NormalizedEventProjectionQuery
-	withFKs         bool
 	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -134,11 +134,11 @@ func (_q *NormalizedEventQuery) QueryProjection() *NormalizedEventProjectionQuer
 		step := sqlgraph.NewStep(
 			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, selector),
 			sqlgraph.To(normalizedeventprojection.Table, normalizedeventprojection.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, normalizedevent.ProjectionTable, normalizedevent.ProjectionColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, normalizedevent.ProjectionTable, normalizedevent.ProjectionColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.NormalizedEventProjection
-		step.Edge.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.NormalizedEventProjection
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -463,7 +463,6 @@ func (_q *NormalizedEventQuery) prepareQuery(ctx context.Context) error {
 func (_q *NormalizedEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*NormalizedEvent, error) {
 	var (
 		nodes       = []*NormalizedEvent{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withTenant != nil,
@@ -471,12 +470,6 @@ func (_q *NormalizedEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withProjection != nil,
 		}
 	)
-	if _q.withProjection != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, normalizedevent.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*NormalizedEvent).scanValues(nil, columns)
 	}
@@ -583,34 +576,29 @@ func (_q *NormalizedEventQuery) loadIntegration(ctx context.Context, query *Inte
 	return nil
 }
 func (_q *NormalizedEventQuery) loadProjection(ctx context.Context, query *NormalizedEventProjectionQuery, nodes []*NormalizedEvent, init func(*NormalizedEvent), assign func(*NormalizedEvent, *NormalizedEventProjection)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*NormalizedEvent)
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*NormalizedEvent)
 	for i := range nodes {
-		if nodes[i].normalized_event_projection == nil {
-			continue
-		}
-		fk := *nodes[i].normalized_event_projection
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
 	}
-	if len(ids) == 0 {
-		return nil
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(normalizedeventprojection.FieldEventID)
 	}
-	query.Where(normalizedeventprojection.IDIn(ids...))
+	query.Where(predicate.NormalizedEventProjection(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(normalizedevent.ProjectionColumn), fks...))
+	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		fk := n.EventID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "normalized_event_projection" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "event_id" returned %v for node %v`, fk, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
+		assign(node, n)
 	}
 	return nil
 }

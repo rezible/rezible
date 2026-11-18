@@ -12,6 +12,35 @@ import (
 	"github.com/rezible/rezible/ent/entpgx"
 )
 
+type includeArchivedContextKey struct{}
+
+// IncludeArchived returns a context whose queries of archivable schemas also read archived rows, and whose deletes
+// of them delete rather than archive.
+func IncludeArchived(parent context.Context) context.Context {
+	return context.WithValue(parent, includeArchivedContextKey{}, true)
+}
+
+// ArchivedIncluded reports whether ctx comes from IncludeArchived.
+func ArchivedIncluded(ctx context.Context) bool {
+	included, _ := ctx.Value(includeArchivedContextKey{}).(bool)
+	return included
+}
+
+type includeMergedContextKey struct{}
+
+// IncludeMerged returns a context whose knowledge entity and relationship queries also read the rows a merge left
+// as redirects, which every query leaves out by default. It covers the edge traversals and eager loads of those
+// queries too.
+func IncludeMerged(parent context.Context) context.Context {
+	return context.WithValue(parent, includeMergedContextKey{}, true)
+}
+
+// MergedIncluded reports whether ctx comes from IncludeMerged.
+func MergedIncluded(ctx context.Context) bool {
+	included, _ := ctx.Value(includeMergedContextKey{}).(bool)
+	return included
+}
+
 type ListParams struct {
 	Search          string
 	Page            int
@@ -43,7 +72,7 @@ func (p ListParams) GetOrder() entsql.OrderTermOption {
 
 func (p ListParams) GetQueryContext(parent context.Context) context.Context {
 	if p.IncludeArchived {
-		return context.WithValue(parent, "include_archived", true)
+		return IncludeArchived(parent)
 	}
 	return parent
 }

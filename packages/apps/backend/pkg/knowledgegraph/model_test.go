@@ -44,7 +44,6 @@ func TestValidateRelationship(t *testing.T) {
 		concern   = kne.CategoryConcern
 		decision  = kne.CategoryDecision
 		signal    = kne.CategorySignal
-		event     = kne.CategoryEvent
 	)
 	tests := []struct {
 		predicate knr.Predicate
@@ -63,7 +62,6 @@ func TestValidateRelationship(t *testing.T) {
 		{knr.PredicateContains, system, infra, false},
 		{knr.PredicateContains, container, code, false},
 		{knr.PredicateContains, actor, actor, true},
-		{knr.PredicateContains, event, event, false},
 		{knr.PredicateRunsOn, container, infra, true},
 		{knr.PredicateRunsOn, component, infra, true},
 		{knr.PredicateRunsOn, actor, infra, false},
@@ -72,7 +70,6 @@ func TestValidateRelationship(t *testing.T) {
 		{knr.PredicateBuiltFrom, system, code, false},
 		{knr.PredicateOwns, actor, container, true},
 		{knr.PredicateOwns, actor, actor, false},
-		{knr.PredicateOwns, actor, event, false},
 		{knr.PredicateMemberOf, actor, actor, true},
 		{knr.PredicateMemberOf, container, actor, false},
 		{knr.PredicateParticipatesIn, actor, process, true},
@@ -101,10 +98,6 @@ func TestValidateRelationship(t *testing.T) {
 		{knr.PredicateAddresses, concern, concern, false},
 		{knr.PredicateMitigates, container, concern, true},
 		{knr.PredicateMitigates, concern, concern, false},
-		{knr.PredicateImpacts, event, container, true},
-		{knr.PredicateImpacts, event, event, false},
-		{knr.PredicateTouches, event, code, true},
-		{knr.PredicateTouches, event, container, false},
 	}
 	for _, tc := range tests {
 		validErr := ValidateRelationship(tc.predicate, tc.source, tc.target)

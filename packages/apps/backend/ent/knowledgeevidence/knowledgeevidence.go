@@ -35,6 +35,8 @@ const (
 	FieldSubjectState = "subject_state"
 	// FieldStateMode holds the string denoting the state_mode field in the database.
 	FieldStateMode = "state_mode"
+	// FieldReobservedAt holds the string denoting the reobserved_at field in the database.
+	FieldReobservedAt = "reobserved_at"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -80,6 +82,7 @@ var Columns = []string{
 	FieldEffectiveAt,
 	FieldSubjectState,
 	FieldStateMode,
+	FieldReobservedAt,
 	FieldExpiresAt,
 }
 
@@ -204,6 +207,11 @@ func ByEffectiveAt(opts ...sql.OrderTermOption) OrderOption {
 // ByStateMode orders the results by the state_mode field.
 func ByStateMode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStateMode, opts...).ToFunc()
+}
+
+// ByReobservedAt orders the results by the reobserved_at field.
+func ByReobservedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReobservedAt, opts...).ToFunc()
 }
 
 // ByExpiresAt orders the results by the expires_at field.

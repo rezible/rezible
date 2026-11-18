@@ -10,6 +10,7 @@ import (
 
 	"github.com/firebase/genkit/go/ai"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	invfvl "github.com/rezible/rezible/ent/investigationfindingversionlink"
 	"github.com/rezible/rezible/ent/schema/schematypes"
@@ -40,6 +41,26 @@ func (so *SituationObservation) Ref() schematypes.SituationObservationRef {
 		ref.AlertEpisodeID = *so.AlertEpisodeID
 	}
 	return ref
+}
+
+// WithScopes loads each observation's scope with its entities and their knowledge entities.
+func (soq *SituationObservationQuery) WithScopes() *SituationObservationQuery {
+	return soq.WithAlertEpisode(func(q *AlertEpisodeQuery) {
+		q.Select(alertepisode.FieldID).
+			WithObservationScope(func(q *ObservationScopeQuery) {
+				q.WithEntities(func(q *ObservationScopeEntityQuery) {
+					q.WithKnowledgeEntity()
+				})
+			})
+	})
+}
+
+// Scope is the observation's scope loaded by WithScopes, or nil when none is stored.
+func (so *SituationObservation) Scope() *ObservationScope {
+	if episode := so.Edges.AlertEpisode; episode != nil {
+		return episode.Edges.ObservationScope
+	}
+	return nil
 }
 
 func (vcs VideoConferences) GetPrimary() *VideoConference {
@@ -182,4 +203,23 @@ func (s *Situation) Reference() string {
 // ParseSituationReference returns the number of a situation reference, such as SIT-12, sit-12 or 12.
 func ParseSituationReference(s string) (int, bool) {
 	return parseReference("SIT", s)
+}
+
+// ParentClaim returns the contains relationship chosen as the entity's parent, from its loaded target
+// relationships; nil when it has none or they were not loaded.
+func (ke *KnowledgeEntity) ParentClaim() *KnowledgeRelationship {
+	for _, relationship := range ke.Edges.TargetRelationships {
+		if relationship.IsParent {
+			return relationship
+		}
+	}
+	return nil
+}
+
+// ParentEntityID returns the source of ParentClaim, nil when there is none.
+func (ke *KnowledgeEntity) ParentEntityID() *uuid.UUID {
+	if claim := ke.ParentClaim(); claim != nil {
+		return &claim.SourceEntityID
+	}
+	return nil
 }

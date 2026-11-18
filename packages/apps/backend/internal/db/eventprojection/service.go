@@ -18,6 +18,7 @@ type ProjectionService struct {
 	knowledge      rez.KnowledgeGraphIngestionService
 	knowledgeQuery rez.KnowledgeGraphQueryService
 	alerts         rez.AlertService
+	changePoints   rez.ChangePointService
 
 	projFns map[string]rez.EventProjectorFunc
 }
@@ -32,7 +33,7 @@ func makeProjector[E any](decodeFn func(*ent.NormalizedEvent) (E, error), projFn
 	}
 }
 
-func NewProjectionService(db rez.Database, knowledge rez.KnowledgeGraphIngestionService, knowledgeQuery rez.KnowledgeGraphQueryService, users rez.UserService, incidents rez.IncidentDetailsService, alerts rez.AlertService) (*ProjectionService, error) {
+func NewProjectionService(db rez.Database, knowledge rez.KnowledgeGraphIngestionService, knowledgeQuery rez.KnowledgeGraphQueryService, users rez.UserService, incidents rez.IncidentDetailsService, alerts rez.AlertService, changePoints rez.ChangePointService) (*ProjectionService, error) {
 	s := &ProjectionService{
 		db:             db,
 		users:          users,
@@ -40,6 +41,7 @@ func NewProjectionService(db rez.Database, knowledge rez.KnowledgeGraphIngestion
 		knowledge:      knowledge,
 		knowledgeQuery: knowledgeQuery,
 		alerts:         alerts,
+		changePoints:   changePoints,
 		projFns:        map[string]rez.EventProjectorFunc{},
 	}
 	s.registerProjectorFuncs()

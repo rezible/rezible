@@ -16,7 +16,6 @@ import (
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/internal/integrations/slack"
 )
 
@@ -47,7 +46,7 @@ func (a *App) loadIncidentChannel(ctx context.Context, incidentID uuid.UUID) (*i
 		if !ent.IsNotFound(getErr) {
 			return nil, fmt.Errorf("get incident: %w", getErr)
 		}
-		archived, archivedErr := a.incidents.GetIncident(schema.IncludeArchived(ctx), incident.ID(incidentID))
+		archived, archivedErr := a.incidents.GetIncident(ent.IncludeArchived(ctx), incident.ID(incidentID))
 		if archivedErr != nil {
 			return nil, fmt.Errorf("get archived incident: %w", archivedErr)
 		}

@@ -23,7 +23,6 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/tenant"
@@ -87,16 +86,44 @@ func (_c *IncidentCreate) SetNillableArchiveTime(v *time.Time) *IncidentCreate {
 	return _c
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_c *IncidentCreate) SetKnowledgeEntityID(v uuid.UUID) *IncidentCreate {
-	_c.mutation.SetKnowledgeEntityID(v)
+// SetProvider sets the "provider" field.
+func (_c *IncidentCreate) SetProvider(v string) *IncidentCreate {
+	_c.mutation.SetProvider(v)
 	return _c
 }
 
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *IncidentCreate {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableProvider(v *string) *IncidentCreate {
 	if v != nil {
-		_c.SetKnowledgeEntityID(*v)
+		_c.SetProvider(*v)
+	}
+	return _c
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (_c *IncidentCreate) SetProviderNamespace(v string) *IncidentCreate {
+	_c.mutation.SetProviderNamespace(v)
+	return _c
+}
+
+// SetNillableProviderNamespace sets the "provider_namespace" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableProviderNamespace(v *string) *IncidentCreate {
+	if v != nil {
+		_c.SetProviderNamespace(*v)
+	}
+	return _c
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (_c *IncidentCreate) SetProviderResourceRef(v string) *IncidentCreate {
+	_c.mutation.SetProviderResourceRef(v)
+	return _c
+}
+
+// SetNillableProviderResourceRef sets the "provider_resource_ref" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableProviderResourceRef(v *string) *IncidentCreate {
+	if v != nil {
+		_c.SetProviderResourceRef(*v)
 	}
 	return _c
 }
@@ -256,11 +283,6 @@ func (_c *IncidentCreate) SetNillableID(v *uuid.UUID) *IncidentCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *IncidentCreate) SetTenant(v *Tenant) *IncidentCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_c *IncidentCreate) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentCreate {
-	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
@@ -530,6 +552,16 @@ func (_c *IncidentCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Incident.updated_at"`)}
 	}
+	if v, ok := _c.mutation.Provider(); ok {
+		if err := incident.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "Incident.provider": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.ProviderResourceRef(); ok {
+		if err := incident.ProviderResourceRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_resource_ref", err: fmt.Errorf(`ent: validator failed for field "Incident.provider_resource_ref": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Number(); !ok {
 		return &ValidationError{Name: "number", err: errors.New(`ent: missing required field "Incident.number"`)}
 	}
@@ -604,6 +636,18 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = &value
 	}
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(incident.FieldProvider, field.TypeString, value)
+		_node.Provider = &value
+	}
+	if value, ok := _c.mutation.ProviderNamespace(); ok {
+		_spec.SetField(incident.FieldProviderNamespace, field.TypeString, value)
+		_node.ProviderNamespace = &value
+	}
+	if value, ok := _c.mutation.ProviderResourceRef(); ok {
+		_spec.SetField(incident.FieldProviderResourceRef, field.TypeString, value)
+		_node.ProviderResourceRef = &value
+	}
 	if value, ok := _c.mutation.Number(); ok {
 		_spec.SetField(incident.FieldNumber, field.TypeInt, value)
 		_node.Number = value
@@ -652,24 +696,6 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incident.KnowledgeEntityTable,
-			Columns: []string{incident.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Incident
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.KnowledgeEntityID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.SeverityIDs(); len(nodes) > 0 {
@@ -1007,24 +1033,6 @@ func (u *IncidentUpsert) ClearArchiveTime() *IncidentUpsert {
 	return u
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *IncidentUpsert) SetKnowledgeEntityID(v uuid.UUID) *IncidentUpsert {
-	u.Set(incident.FieldKnowledgeEntityID, v)
-	return u
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateKnowledgeEntityID() *IncidentUpsert {
-	u.SetExcluded(incident.FieldKnowledgeEntityID)
-	return u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *IncidentUpsert) ClearKnowledgeEntityID() *IncidentUpsert {
-	u.SetNull(incident.FieldKnowledgeEntityID)
-	return u
-}
-
 // SetTitle sets the "title" field.
 func (u *IncidentUpsert) SetTitle(v string) *IncidentUpsert {
 	u.Set(incident.FieldTitle, v)
@@ -1207,6 +1215,15 @@ func (u *IncidentUpsertOne) UpdateNewValues() *IncidentUpsertOne {
 		if _, exists := u.create.mutation.TenantID(); exists {
 			s.SetIgnore(incident.FieldTenantID)
 		}
+		if _, exists := u.create.mutation.Provider(); exists {
+			s.SetIgnore(incident.FieldProvider)
+		}
+		if _, exists := u.create.mutation.ProviderNamespace(); exists {
+			s.SetIgnore(incident.FieldProviderNamespace)
+		}
+		if _, exists := u.create.mutation.ProviderResourceRef(); exists {
+			s.SetIgnore(incident.FieldProviderResourceRef)
+		}
 		if _, exists := u.create.mutation.Number(); exists {
 			s.SetIgnore(incident.FieldNumber)
 		}
@@ -1287,27 +1304,6 @@ func (u *IncidentUpsertOne) UpdateArchiveTime() *IncidentUpsertOne {
 func (u *IncidentUpsertOne) ClearArchiveTime() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearArchiveTime()
-	})
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *IncidentUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateKnowledgeEntityID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateKnowledgeEntityID()
-	})
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *IncidentUpsertOne) ClearKnowledgeEntityID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearKnowledgeEntityID()
 	})
 }
 
@@ -1686,6 +1682,15 @@ func (u *IncidentUpsertBulk) UpdateNewValues() *IncidentUpsertBulk {
 			if _, exists := b.mutation.TenantID(); exists {
 				s.SetIgnore(incident.FieldTenantID)
 			}
+			if _, exists := b.mutation.Provider(); exists {
+				s.SetIgnore(incident.FieldProvider)
+			}
+			if _, exists := b.mutation.ProviderNamespace(); exists {
+				s.SetIgnore(incident.FieldProviderNamespace)
+			}
+			if _, exists := b.mutation.ProviderResourceRef(); exists {
+				s.SetIgnore(incident.FieldProviderResourceRef)
+			}
 			if _, exists := b.mutation.Number(); exists {
 				s.SetIgnore(incident.FieldNumber)
 			}
@@ -1767,27 +1772,6 @@ func (u *IncidentUpsertBulk) UpdateArchiveTime() *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) ClearArchiveTime() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearArchiveTime()
-	})
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *IncidentUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetKnowledgeEntityID(v)
-	})
-}
-
-// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateKnowledgeEntityID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateKnowledgeEntityID()
-	})
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (u *IncidentUpsertBulk) ClearKnowledgeEntityID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearKnowledgeEntityID()
 	})
 }
 

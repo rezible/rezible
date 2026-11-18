@@ -110,11 +110,13 @@ func (s *InvestigationServiceSuite) TestCreateInvestigationUsesPreparedAnalysisA
 		SetKind("deployment").
 		SetAttributes(encodedAttributes).
 		SetOccurredAt(now).
+		SetLastOccurredAt(now).
 		SetReceivedAt(now)
 	event, eventErr := createEvent.Save(ctx)
 	s.Require().NoError(eventErr)
 
 	createAlias := client.KnowledgeSubjectAlias.Create().
+		SetAuthority(schematypes.KnowledgeAuthorityDeclared).
 		SetSubjectKind(ksa.SubjectKindEntity).
 		SetProvider("test").
 		SetProviderNamespace("investigation-tests").

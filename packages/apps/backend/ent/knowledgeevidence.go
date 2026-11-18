@@ -41,6 +41,8 @@ type KnowledgeEvidence struct {
 	SubjectState schematypes.KnowledgeGraphSubjectState `json:"subject_state,omitempty"`
 	// merge sets the fields stated; replace is a full snapshot that also unsets the properties it omits.
 	StateMode knowledgeevidence.StateMode `json:"state_mode,omitempty"`
+	// Latest provider statement time repeating this time-bounded observation.
+	ReobservedAt *time.Time `json:"reobserved_at,omitempty"`
 	// Effective time plus the producer's validity: the observation holds until then unless observed again.
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -106,7 +108,7 @@ func (*KnowledgeEvidence) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case knowledgeevidence.FieldKind, knowledgeevidence.FieldAssertion, knowledgeevidence.FieldStateMode:
 			values[i] = new(sql.NullString)
-		case knowledgeevidence.FieldCreatedAt, knowledgeevidence.FieldEffectiveAt, knowledgeevidence.FieldExpiresAt:
+		case knowledgeevidence.FieldCreatedAt, knowledgeevidence.FieldEffectiveAt, knowledgeevidence.FieldReobservedAt, knowledgeevidence.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
 		case knowledgeevidence.FieldID, knowledgeevidence.FieldEventID, knowledgeevidence.FieldSubjectAliasID:
 			values[i] = new(uuid.UUID)
@@ -186,6 +188,13 @@ func (_m *KnowledgeEvidence) assignValues(columns []string, values []any) error 
 				return fmt.Errorf("unexpected type %T for field state_mode", values[i])
 			} else if value.Valid {
 				_m.StateMode = knowledgeevidence.StateMode(value.String)
+			}
+		case knowledgeevidence.FieldReobservedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field reobserved_at", values[i])
+			} else if value.Valid {
+				_m.ReobservedAt = new(time.Time)
+				*_m.ReobservedAt = value.Time
 			}
 		case knowledgeevidence.FieldExpiresAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -271,6 +280,11 @@ func (_m *KnowledgeEvidence) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("state_mode=")
 	builder.WriteString(fmt.Sprintf("%v", _m.StateMode))
+	builder.WriteString(", ")
+	if v := _m.ReobservedAt; v != nil {
+		builder.WriteString("reobserved_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	if v := _m.ExpiresAt; v != nil {
 		builder.WriteString("expires_at=")

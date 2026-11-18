@@ -24,6 +24,7 @@ func (s *ProjectionServiceSuite) createUserProjectionEvent(ctx context.Context, 
 		SetProviderEventRef("user-event-" + uuid.NewString()).
 		SetKind(projections.KindUser).
 		SetOccurredAt(occurredAt).
+		SetLastOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
 		SetAttributes(encoded)
 	ev, eventErr := createEvent.Save(ctx)

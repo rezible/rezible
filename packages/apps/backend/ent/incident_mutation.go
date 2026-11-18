@@ -25,6 +25,9 @@ type IncidentMutation struct {
 	created_at               *time.Time
 	updated_at               *time.Time
 	archive_time             *time.Time
+	provider                 *string
+	provider_namespace       *string
+	provider_resource_ref    *string
 	number                   *int
 	addnumber                *int
 	title                    *string
@@ -37,8 +40,6 @@ type IncidentMutation struct {
 	clearedFields            map[string]struct{}
 	tenant                   *int
 	clearedtenant            bool
-	knowledge_entity         *uuid.UUID
-	clearedknowledge_entity  bool
 	severity                 *uuid.UUID
 	clearedseverity          bool
 	_type                    *uuid.UUID
@@ -343,53 +344,151 @@ func (m *IncidentMutation) ResetArchiveTime() {
 	delete(m.clearedFields, incident.FieldArchiveTime)
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (m *IncidentMutation) SetKnowledgeEntityID(u uuid.UUID) {
-	m.knowledge_entity = &u
+// SetProvider sets the "provider" field.
+func (m *IncidentMutation) SetProvider(s string) {
+	m.provider = &s
 }
 
-// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
-func (m *IncidentMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
-	v := m.knowledge_entity
+// Provider returns the value of the "provider" field in the mutation.
+func (m *IncidentMutation) Provider() (r string, exists bool) {
+	v := m.provider
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the Incident entity.
+// OldProvider returns the old "provider" field's value of the Incident entity.
 // If the Incident object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMutation) OldKnowledgeEntityID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *IncidentMutation) OldProvider(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
+		return v, errors.New("OldProvider requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
 	}
-	return oldValue.KnowledgeEntityID, nil
+	return oldValue.Provider, nil
 }
 
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (m *IncidentMutation) ClearKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	m.clearedFields[incident.FieldKnowledgeEntityID] = struct{}{}
+// ClearProvider clears the value of the "provider" field.
+func (m *IncidentMutation) ClearProvider() {
+	m.provider = nil
+	m.clearedFields[incident.FieldProvider] = struct{}{}
 }
 
-// KnowledgeEntityIDCleared returns if the "knowledge_entity_id" field was cleared in this mutation.
-func (m *IncidentMutation) KnowledgeEntityIDCleared() bool {
-	_, ok := m.clearedFields[incident.FieldKnowledgeEntityID]
+// ProviderCleared returns if the "provider" field was cleared in this mutation.
+func (m *IncidentMutation) ProviderCleared() bool {
+	_, ok := m.clearedFields[incident.FieldProvider]
 	return ok
 }
 
-// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
-func (m *IncidentMutation) ResetKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	delete(m.clearedFields, incident.FieldKnowledgeEntityID)
+// ResetProvider resets all changes to the "provider" field.
+func (m *IncidentMutation) ResetProvider() {
+	m.provider = nil
+	delete(m.clearedFields, incident.FieldProvider)
+}
+
+// SetProviderNamespace sets the "provider_namespace" field.
+func (m *IncidentMutation) SetProviderNamespace(s string) {
+	m.provider_namespace = &s
+}
+
+// ProviderNamespace returns the value of the "provider_namespace" field in the mutation.
+func (m *IncidentMutation) ProviderNamespace() (r string, exists bool) {
+	v := m.provider_namespace
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderNamespace returns the old "provider_namespace" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldProviderNamespace(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderNamespace is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderNamespace requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderNamespace: %w", err)
+	}
+	return oldValue.ProviderNamespace, nil
+}
+
+// ClearProviderNamespace clears the value of the "provider_namespace" field.
+func (m *IncidentMutation) ClearProviderNamespace() {
+	m.provider_namespace = nil
+	m.clearedFields[incident.FieldProviderNamespace] = struct{}{}
+}
+
+// ProviderNamespaceCleared returns if the "provider_namespace" field was cleared in this mutation.
+func (m *IncidentMutation) ProviderNamespaceCleared() bool {
+	_, ok := m.clearedFields[incident.FieldProviderNamespace]
+	return ok
+}
+
+// ResetProviderNamespace resets all changes to the "provider_namespace" field.
+func (m *IncidentMutation) ResetProviderNamespace() {
+	m.provider_namespace = nil
+	delete(m.clearedFields, incident.FieldProviderNamespace)
+}
+
+// SetProviderResourceRef sets the "provider_resource_ref" field.
+func (m *IncidentMutation) SetProviderResourceRef(s string) {
+	m.provider_resource_ref = &s
+}
+
+// ProviderResourceRef returns the value of the "provider_resource_ref" field in the mutation.
+func (m *IncidentMutation) ProviderResourceRef() (r string, exists bool) {
+	v := m.provider_resource_ref
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderResourceRef returns the old "provider_resource_ref" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldProviderResourceRef(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderResourceRef is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderResourceRef requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderResourceRef: %w", err)
+	}
+	return oldValue.ProviderResourceRef, nil
+}
+
+// ClearProviderResourceRef clears the value of the "provider_resource_ref" field.
+func (m *IncidentMutation) ClearProviderResourceRef() {
+	m.provider_resource_ref = nil
+	m.clearedFields[incident.FieldProviderResourceRef] = struct{}{}
+}
+
+// ProviderResourceRefCleared returns if the "provider_resource_ref" field was cleared in this mutation.
+func (m *IncidentMutation) ProviderResourceRefCleared() bool {
+	_, ok := m.clearedFields[incident.FieldProviderResourceRef]
+	return ok
+}
+
+// ResetProviderResourceRef resets all changes to the "provider_resource_ref" field.
+func (m *IncidentMutation) ResetProviderResourceRef() {
+	m.provider_resource_ref = nil
+	delete(m.clearedFields, incident.FieldProviderResourceRef)
 }
 
 // SetNumber sets the "number" field.
@@ -924,33 +1023,6 @@ func (m *IncidentMutation) TenantIDs() (ids []int) {
 func (m *IncidentMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (m *IncidentMutation) ClearKnowledgeEntity() {
-	m.clearedknowledge_entity = true
-	m.clearedFields[incident.FieldKnowledgeEntityID] = struct{}{}
-}
-
-// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
-func (m *IncidentMutation) KnowledgeEntityCleared() bool {
-	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
-}
-
-// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeEntityID instead. It exists only for internal usage by the builders.
-func (m *IncidentMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
-func (m *IncidentMutation) ResetKnowledgeEntity() {
-	m.knowledge_entity = nil
-	m.clearedknowledge_entity = false
 }
 
 // ClearSeverity clears the "severity" edge to the IncidentSeverity entity.
@@ -1647,7 +1719,7 @@ func (m *IncidentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentMutation) Fields() []string {
-	fields := make([]string, 0, 16)
+	fields := make([]string, 0, 18)
 	if m.tenant != nil {
 		fields = append(fields, incident.FieldTenantID)
 	}
@@ -1660,8 +1732,14 @@ func (m *IncidentMutation) Fields() []string {
 	if m.archive_time != nil {
 		fields = append(fields, incident.FieldArchiveTime)
 	}
-	if m.knowledge_entity != nil {
-		fields = append(fields, incident.FieldKnowledgeEntityID)
+	if m.provider != nil {
+		fields = append(fields, incident.FieldProvider)
+	}
+	if m.provider_namespace != nil {
+		fields = append(fields, incident.FieldProviderNamespace)
+	}
+	if m.provider_resource_ref != nil {
+		fields = append(fields, incident.FieldProviderResourceRef)
 	}
 	if m.number != nil {
 		fields = append(fields, incident.FieldNumber)
@@ -1712,8 +1790,12 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case incident.FieldArchiveTime:
 		return m.ArchiveTime()
-	case incident.FieldKnowledgeEntityID:
-		return m.KnowledgeEntityID()
+	case incident.FieldProvider:
+		return m.Provider()
+	case incident.FieldProviderNamespace:
+		return m.ProviderNamespace()
+	case incident.FieldProviderResourceRef:
+		return m.ProviderResourceRef()
 	case incident.FieldNumber:
 		return m.Number()
 	case incident.FieldTitle:
@@ -1753,8 +1835,12 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldUpdatedAt(ctx)
 	case incident.FieldArchiveTime:
 		return m.OldArchiveTime(ctx)
-	case incident.FieldKnowledgeEntityID:
-		return m.OldKnowledgeEntityID(ctx)
+	case incident.FieldProvider:
+		return m.OldProvider(ctx)
+	case incident.FieldProviderNamespace:
+		return m.OldProviderNamespace(ctx)
+	case incident.FieldProviderResourceRef:
+		return m.OldProviderResourceRef(ctx)
 	case incident.FieldNumber:
 		return m.OldNumber(ctx)
 	case incident.FieldTitle:
@@ -1814,12 +1900,26 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetArchiveTime(v)
 		return nil
-	case incident.FieldKnowledgeEntityID:
-		v, ok := value.(uuid.UUID)
+	case incident.FieldProvider:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetKnowledgeEntityID(v)
+		m.SetProvider(v)
+		return nil
+	case incident.FieldProviderNamespace:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderNamespace(v)
+		return nil
+	case incident.FieldProviderResourceRef:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderResourceRef(v)
 		return nil
 	case incident.FieldNumber:
 		v, ok := value.(int)
@@ -1946,8 +2046,14 @@ func (m *IncidentMutation) ClearedFields() []string {
 	if m.FieldCleared(incident.FieldArchiveTime) {
 		fields = append(fields, incident.FieldArchiveTime)
 	}
-	if m.FieldCleared(incident.FieldKnowledgeEntityID) {
-		fields = append(fields, incident.FieldKnowledgeEntityID)
+	if m.FieldCleared(incident.FieldProvider) {
+		fields = append(fields, incident.FieldProvider)
+	}
+	if m.FieldCleared(incident.FieldProviderNamespace) {
+		fields = append(fields, incident.FieldProviderNamespace)
+	}
+	if m.FieldCleared(incident.FieldProviderResourceRef) {
+		fields = append(fields, incident.FieldProviderResourceRef)
 	}
 	if m.FieldCleared(incident.FieldSeverityID) {
 		fields = append(fields, incident.FieldSeverityID)
@@ -1987,8 +2093,14 @@ func (m *IncidentMutation) ClearField(name string) error {
 	case incident.FieldArchiveTime:
 		m.ClearArchiveTime()
 		return nil
-	case incident.FieldKnowledgeEntityID:
-		m.ClearKnowledgeEntityID()
+	case incident.FieldProvider:
+		m.ClearProvider()
+		return nil
+	case incident.FieldProviderNamespace:
+		m.ClearProviderNamespace()
+		return nil
+	case incident.FieldProviderResourceRef:
+		m.ClearProviderResourceRef()
 		return nil
 	case incident.FieldSeverityID:
 		m.ClearSeverityID()
@@ -2031,8 +2143,14 @@ func (m *IncidentMutation) ResetField(name string) error {
 	case incident.FieldArchiveTime:
 		m.ResetArchiveTime()
 		return nil
-	case incident.FieldKnowledgeEntityID:
-		m.ResetKnowledgeEntityID()
+	case incident.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case incident.FieldProviderNamespace:
+		m.ResetProviderNamespace()
+		return nil
+	case incident.FieldProviderResourceRef:
+		m.ResetProviderResourceRef()
 		return nil
 	case incident.FieldNumber:
 		m.ResetNumber()
@@ -2073,12 +2191,9 @@ func (m *IncidentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 15)
 	if m.tenant != nil {
 		edges = append(edges, incident.EdgeTenant)
-	}
-	if m.knowledge_entity != nil {
-		edges = append(edges, incident.EdgeKnowledgeEntity)
 	}
 	if m.severity != nil {
 		edges = append(edges, incident.EdgeSeverity)
@@ -2131,10 +2246,6 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case incident.EdgeTenant:
 		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case incident.EdgeKnowledgeEntity:
-		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
 		}
 	case incident.EdgeSeverity:
@@ -2219,7 +2330,7 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 15)
 	if m.removedmilestones != nil {
 		edges = append(edges, incident.EdgeMilestones)
 	}
@@ -2323,12 +2434,9 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 15)
 	if m.clearedtenant {
 		edges = append(edges, incident.EdgeTenant)
-	}
-	if m.clearedknowledge_entity {
-		edges = append(edges, incident.EdgeKnowledgeEntity)
 	}
 	if m.clearedseverity {
 		edges = append(edges, incident.EdgeSeverity)
@@ -2381,8 +2489,6 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 	switch name {
 	case incident.EdgeTenant:
 		return m.clearedtenant
-	case incident.EdgeKnowledgeEntity:
-		return m.clearedknowledge_entity
 	case incident.EdgeSeverity:
 		return m.clearedseverity
 	case incident.EdgeType:
@@ -2422,9 +2528,6 @@ func (m *IncidentMutation) ClearEdge(name string) error {
 	case incident.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case incident.EdgeKnowledgeEntity:
-		m.ClearKnowledgeEntity()
-		return nil
 	case incident.EdgeSeverity:
 		m.ClearSeverity()
 		return nil
@@ -2447,9 +2550,6 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 	switch name {
 	case incident.EdgeTenant:
 		m.ResetTenant()
-		return nil
-	case incident.EdgeKnowledgeEntity:
-		m.ResetKnowledgeEntity()
 		return nil
 	case incident.EdgeSeverity:
 		m.ResetSeverity()

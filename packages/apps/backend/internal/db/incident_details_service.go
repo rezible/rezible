@@ -16,7 +16,6 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 )
@@ -215,9 +214,14 @@ func (s *IncidentDetailsService) SetChatDetailsMessage(ctx context.Context, id u
 // archived incident is left as it is. An observed incident is not run in Rezible, so nothing is published.
 func (s *IncidentDetailsService) RecordObservedIncident(ctx context.Context, params rez.RecordObservedIncidentParams) (uuid.UUID, error) {
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) (uuid.UUID, error) {
+		ref := params.ProviderResourceRef
 		queryExisting := tx.Incident.Query().
-			Where(incident.KnowledgeEntityID(params.KnowledgeEntityID))
-		existing, queryErr := queryExisting.Only(schema.IncludeArchived(ctx))
+			Where(
+				incident.Provider(ref.Provider),
+				incident.ProviderNamespace(ref.ProviderNamespace),
+				incident.ProviderResourceRef(ref.ResourceRef),
+			)
+		existing, queryErr := queryExisting.Only(ent.IncludeArchived(ctx))
 		if queryErr != nil && !ent.IsNotFound(queryErr) {
 			return uuid.Nil, fmt.Errorf("query observed incident: %w", queryErr)
 		}
@@ -243,7 +247,9 @@ func (s *IncidentDetailsService) RecordObservedIncident(ctx context.Context, par
 		}
 		create := tx.Incident.Create().
 			SetNumber(number).
-			SetKnowledgeEntityID(params.KnowledgeEntityID).
+			SetProvider(ref.Provider).
+			SetProviderNamespace(ref.ProviderNamespace).
+			SetProviderResourceRef(ref.ResourceRef).
 			SetTitle(params.Title).
 			SetSummary(params.Summary).
 			SetSeverityID(params.SeverityID).

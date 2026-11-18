@@ -24,8 +24,6 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
-	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldAlertDefinitionID holds the string denoting the alert_definition_id field in the database.
 	FieldAlertDefinitionID = "alert_definition_id"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
@@ -38,14 +36,14 @@ const (
 	FieldIdentityGroupLabels = "identity_group_labels"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
-	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgeAlertDefinition holds the string denoting the alert_definition edge name in mutations.
 	EdgeAlertDefinition = "alert_definition"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
 	// EdgeSituationObservations holds the string denoting the situation_observations edge name in mutations.
 	EdgeSituationObservations = "situation_observations"
+	// EdgeObservationScope holds the string denoting the observation_scope edge name in mutations.
+	EdgeObservationScope = "observation_scope"
 	// Table holds the table name of the alertepisode in the database.
 	Table = "alert_episodes"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -55,13 +53,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
-	KnowledgeEntityTable = "alert_episodes"
-	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
-	KnowledgeEntityInverseTable = "knowledge_entities"
-	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
-	KnowledgeEntityColumn = "knowledge_entity_id"
 	// AlertDefinitionTable is the table that holds the alert_definition relation/edge.
 	AlertDefinitionTable = "alert_episodes"
 	// AlertDefinitionInverseTable is the table name for the AlertDefinition entity.
@@ -83,6 +74,13 @@ const (
 	SituationObservationsInverseTable = "situation_observations"
 	// SituationObservationsColumn is the table column denoting the situation_observations relation/edge.
 	SituationObservationsColumn = "alert_episode_id"
+	// ObservationScopeTable is the table that holds the observation_scope relation/edge.
+	ObservationScopeTable = "observation_scopes"
+	// ObservationScopeInverseTable is the table name for the ObservationScope entity.
+	// It exists in this package in order to avoid circular dependency with the "observationscope" package.
+	ObservationScopeInverseTable = "observation_scopes"
+	// ObservationScopeColumn is the table column denoting the observation_scope relation/edge.
+	ObservationScopeColumn = "alert_episode_id"
 )
 
 // Columns holds all SQL columns for alertepisode fields.
@@ -91,7 +89,6 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldKnowledgeEntityID,
 	FieldAlertDefinitionID,
 	FieldStartedAt,
 	FieldClosedAt,
@@ -162,11 +159,6 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
-func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
-}
-
 // ByAlertDefinitionID orders the results by the alert_definition_id field.
 func ByAlertDefinitionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertDefinitionID, opts...).ToFunc()
@@ -191,13 +183,6 @@ func ByHighestSeverity(opts ...sql.OrderTermOption) OrderOption {
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByKnowledgeEntityField orders the results by knowledge_entity field.
-func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -235,18 +220,18 @@ func BySituationObservations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOp
 		sqlgraph.OrderByNeighborTerms(s, newSituationObservationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByObservationScopeField orders the results by observation_scope field.
+func ByObservationScopeField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newObservationScopeStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newKnowledgeEntityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
 func newAlertDefinitionStep() *sqlgraph.Step {
@@ -268,5 +253,12 @@ func newSituationObservationsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SituationObservationsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, SituationObservationsTable, SituationObservationsColumn),
+	)
+}
+func newObservationScopeStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ObservationScopeInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, ObservationScopeTable, ObservationScopeColumn),
 	)
 }

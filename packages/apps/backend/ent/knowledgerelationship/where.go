@@ -92,6 +92,11 @@ func ExpiresAt(v time.Time) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldExpiresAt, v))
 }
 
+// MergedIntoID applies equality check predicate on the "merged_into_id" field. It's identical to MergedIntoIDEQ.
+func MergedIntoID(v uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldMergedIntoID, v))
+}
+
 // SourceEntityID applies equality check predicate on the "source_entity_id" field. It's identical to SourceEntityIDEQ.
 func SourceEntityID(v uuid.UUID) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldSourceEntityID, v))
@@ -100,6 +105,11 @@ func SourceEntityID(v uuid.UUID) predicate.KnowledgeRelationship {
 // TargetEntityID applies equality check predicate on the "target_entity_id" field. It's identical to TargetEntityIDEQ.
 func TargetEntityID(v uuid.UUID) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldTargetEntityID, v))
+}
+
+// IsParent applies equality check predicate on the "is_parent" field. It's identical to IsParentEQ.
+func IsParent(v bool) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldIsParent, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -422,6 +432,36 @@ func ExpiresAtNotNil() predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldExpiresAt))
 }
 
+// MergedIntoIDEQ applies the EQ predicate on the "merged_into_id" field.
+func MergedIntoIDEQ(v uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldMergedIntoID, v))
+}
+
+// MergedIntoIDNEQ applies the NEQ predicate on the "merged_into_id" field.
+func MergedIntoIDNEQ(v uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldMergedIntoID, v))
+}
+
+// MergedIntoIDIn applies the In predicate on the "merged_into_id" field.
+func MergedIntoIDIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIn(FieldMergedIntoID, vs...))
+}
+
+// MergedIntoIDNotIn applies the NotIn predicate on the "merged_into_id" field.
+func MergedIntoIDNotIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldMergedIntoID, vs...))
+}
+
+// MergedIntoIDIsNil applies the IsNil predicate on the "merged_into_id" field.
+func MergedIntoIDIsNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldMergedIntoID))
+}
+
+// MergedIntoIDNotNil applies the NotNil predicate on the "merged_into_id" field.
+func MergedIntoIDNotNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldMergedIntoID))
+}
+
 // PredicateEQ applies the EQ predicate on the "predicate" field.
 func PredicateEQ(v Predicate) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldPredicate, v))
@@ -480,6 +520,16 @@ func TargetEntityIDIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
 // TargetEntityIDNotIn applies the NotIn predicate on the "target_entity_id" field.
 func TargetEntityIDNotIn(vs ...uuid.UUID) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldNotIn(FieldTargetEntityID, vs...))
+}
+
+// IsParentEQ applies the EQ predicate on the "is_parent" field.
+func IsParentEQ(v bool) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldIsParent, v))
+}
+
+// IsParentNEQ applies the NEQ predicate on the "is_parent" field.
+func IsParentNEQ(v bool) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNEQ(FieldIsParent, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -590,6 +640,64 @@ func HasAliasesWith(preds ...predicate.KnowledgeSubjectAlias) predicate.Knowledg
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeSubjectAlias
 		step.Edge.Schema = schemaConfig.KnowledgeSubjectAlias
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMergedInto applies the HasEdge predicate on the "merged_into" edge.
+func HasMergedInto() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, MergedIntoTable, MergedIntoColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeRelationship
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMergedIntoWith applies the HasEdge predicate on the "merged_into" edge with a given conditions (other predicates).
+func HasMergedIntoWith(preds ...predicate.KnowledgeRelationship) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(func(s *sql.Selector) {
+		step := newMergedIntoStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeRelationship
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRedirects applies the HasEdge predicate on the "redirects" edge.
+func HasRedirects() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RedirectsTable, RedirectsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeRelationship
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRedirectsWith applies the HasEdge predicate on the "redirects" edge with a given conditions (other predicates).
+func HasRedirectsWith(preds ...predicate.KnowledgeRelationship) predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(func(s *sql.Selector) {
+		step := newRedirectsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeRelationship
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

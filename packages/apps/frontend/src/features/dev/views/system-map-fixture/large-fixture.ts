@@ -28,7 +28,7 @@ const PREDICATES = ["calls", "reads_from", "writes_to", "publishes_to"];
 
 const BEHAVIOUR_RELATIONSHIP_COUNT = 100;
 
-/** Shared clusters, in one environment, that every service runs on; stores sit in the clusters. */
+/** Shared clusters, in one cloud account, that every service runs on; stores sit in the clusters. */
 const CLUSTERS = [
 	{ id: "rt-primary-cluster", name: "Primary cluster" },
 	{ id: "rt-secondary-cluster", name: "Secondary cluster" },
@@ -68,9 +68,9 @@ function buildLargeFixture(): FixtureGraph {
 		}
 	};
 
-	add({ id: "env-production", category: "infrastructure", kind: "environment", name: "production" });
+	add({ id: "acct-commerce-prod", category: "infrastructure", kind: "cloud_account", name: "commerce-prod" });
 	for (const { id, name } of CLUSTERS) {
-		add({ id, category: "infrastructure", kind: "kubernetes_cluster", name, parentId: "env-production" });
+		add({ id, category: "infrastructure", kind: "kubernetes_cluster", name, parentId: "acct-commerce-prod" });
 	}
 
 	LANDSCAPES.forEach((name) => {

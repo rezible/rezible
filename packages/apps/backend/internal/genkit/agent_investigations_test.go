@@ -19,6 +19,7 @@ import (
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	rezai "github.com/rezible/rezible/pkg/ai"
+	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 )
@@ -28,7 +29,7 @@ type investigationHarness struct {
 	outputs       *mocks.MockInvestigationOutputService
 	knowledge     *mocks.MockKnowledgeGraphQueryService
 	situations    *mocks.MockSituationService
-	changes       *mocks.MockChangesService
+	changePoints  *mocks.MockChangePointService
 	integrations  *mocks.MockIntegrationService
 	providerReads *mocks.MockAgentProviderReadService
 	proposals     *mocks.MockKnowledgeProposalService
@@ -42,12 +43,13 @@ func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 		outputs:       mocks.NewMockInvestigationOutputService(s.T()),
 		knowledge:     mocks.NewMockKnowledgeGraphQueryService(s.T()),
 		situations:    mocks.NewMockSituationService(s.T()),
-		changes:       mocks.NewMockChangesService(s.T()),
+		changePoints:  mocks.NewMockChangePointService(s.T()),
 		integrations:  mocks.NewMockIntegrationService(s.T()),
 		providerReads: mocks.NewMockAgentProviderReadService(s.T()),
 		proposals:     mocks.NewMockKnowledgeProposalService(s.T()),
 		sessions:      mocks.NewMockAiAgentSessionService(s.T()),
 	}
+	h.changePoints.EXPECT().ListChangePoints(mock.Anything, mock.Anything).Return(&rez.ChangePoints{}, nil).Maybe()
 	// Entities have no structure unless a test says so.
 	h.knowledge.EXPECT().ListAncestors(mock.Anything, mock.Anything).
 		Return(map[uuid.UUID][]*ent.KnowledgeEntity{}, nil).
@@ -60,7 +62,7 @@ func (s *AiRuntimeSuite) newInvestigationHarness() *investigationHarness {
 		outputs:       h.outputs,
 		knowledge:     h.knowledge,
 		situations:    h.situations,
-		changes:       h.changes,
+		changePoints:  h.changePoints,
 		integrations:  h.integrations,
 		providerReads: h.providerReads,
 		proposals:     h.proposals,
@@ -169,6 +171,7 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 		Summary:  "Checkout is failing requests.",
 		OpenedAt: openedAt,
 	}
+	scope := &ent.ObservationScope{}
 	for index := range 30 {
 		entity := &ent.KnowledgeEntity{
 			ID:       uuid.New(),
@@ -176,13 +179,15 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 			Kind:     "service",
 			State:    schematypes.KnowledgeGraphSubjectState{DisplayName: fmt.Sprintf("service-%02d", 29-index)},
 		}
-		member := &ent.SituationEntity{Edges: ent.SituationEntityEdges{KnowledgeEntity: entity}}
-		situation.Edges.Entities = append(situation.Edges.Entities, member)
+		member := &ent.ObservationScopeEntity{KnowledgeEntityID: entity.ID, Edges: ent.ObservationScopeEntityEdges{KnowledgeEntity: entity}}
+		scope.Edges.Entities = append(scope.Edges.Entities, member)
 	}
-	firstListed := situation.Edges.Entities[29].Edges.KnowledgeEntity
+	episode := &ent.AlertEpisode{Edges: ent.AlertEpisodeEdges{ObservationScope: scope}}
+	situation.Edges.Observations = []*ent.SituationObservation{{Edges: ent.SituationObservationEdges{AlertEpisode: episode}}}
+	firstListed := scope.Edges.Entities[29].Edges.KnowledgeEntity
 	entitiesByID := make(map[uuid.UUID]*ent.KnowledgeEntity)
-	for _, member := range situation.Edges.Entities {
-		entitiesByID[member.Edges.KnowledgeEntity.ID] = member.Edges.KnowledgeEntity
+	for _, member := range scope.Edges.Entities {
+		entitiesByID[member.KnowledgeEntityID] = member.Edges.KnowledgeEntity
 	}
 	// The introduction reads its entities with their linking attributes, and list_changes reads its service.
 	h.knowledge.EXPECT().GetEntity(mock.Anything, mock.Anything, mock.Anything).
@@ -193,16 +198,15 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	h.knowledge.EXPECT().ListRelationships(mock.Anything, mock.Anything).
 		RunAndReturn(func(_ context.Context, params rez.ListKnowledgeRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
 			listed := &ent.ListResult[ent.KnowledgeRelationship]{}
-			if params.EntityID == firstListed.ID && len(params.NeighbourCategories) == 0 {
+			if params.EntityID == firstListed.ID {
 				listed.Total = analysisToolDefaultPageSize + 1
 			}
 			return listed, nil
 		})
 	h.knowledge.EXPECT().SummarizeEvidence(mock.Anything, mock.Anything).Return(&ent.ListResult[rez.KnowledgeEvidenceSummary]{}, nil)
-	h.knowledge.EXPECT().ListSubjectAliases(mock.Anything, mock.Anything).Return(&ent.ListResult[ent.KnowledgeSubjectAlias]{}, nil)
-	deployment := &ent.KnowledgeEntity{ID: uuid.New(), Category: kne.CategoryEvent, Kind: "deployment"}
+	deployment := rez.ChangePoint{ChangePoint: &ent.ChangePoint{ID: uuid.New()}, Involvement: &ent.ChangePointInvolvement{EvidenceID: uuid.New()}}
 	var changesParams []rez.ListServiceChangesParams
-	h.changes.EXPECT().ListServiceChanges(mock.Anything, mock.Anything).
+	h.changePoints.EXPECT().ListServiceChanges(mock.Anything, mock.Anything).
 		RunAndReturn(func(_ context.Context, params rez.ListServiceChangesParams) (*rez.ServiceChanges, error) {
 			changesParams = append(changesParams, params)
 			listed := &rez.ServiceChanges{}
@@ -283,7 +287,7 @@ func (s *AiRuntimeSuite) TestInvestigationIntroduction() {
 	s.runInvestigationTool(ctx, h, rezai.ReadEntityTool.Name(), rezai.ReadEntityArgs{Ref: firstListed.ID.String()}, &firstRead)
 	s.Equal(firstRead.Text, introduction.Situation.Entities[0].Read, "the entity carries read_entity's first page")
 	s.True(introduction.Situation.Entities[0].ReadHasMore)
-	s.Contains(introduction.Situation.Entities[0].Changes, deployment.ID.String(), "a service carries its deployments")
+	s.Contains(introduction.Situation.Entities[0].Changes, deployment.Involvement.EvidenceID.String(), "a service carries its deployment evidence")
 	s.NotEmpty(introduction.Situation.Entities[introductionReadLimit-1].Read)
 	s.False(introduction.Situation.Entities[introductionReadLimit-1].ReadHasMore)
 	pastLimit := introduction.Situation.Entities[introductionReadLimit]
@@ -412,16 +416,10 @@ func (s *AiRuntimeSuite) TestReadEntityRendering() {
 	backstageSummary := &rez.KnowledgeEvidenceSummary{SubjectAliasID: ownsFromBackstage.ID, Count: 1, LatestID: uuid.New(), LatestAt: latestAt}
 	page := ent.ListParams{Page: 1, PageSize: analysisToolDefaultPageSize}
 	relationshipsParams := rez.ListKnowledgeRelationshipsParams{
-		ListParams:                  page,
-		EntityID:                    checkout.ID,
-		ExcludedNeighbourCategories: []kne.Category{kne.CategoryEvent},
-		NewestEvidenceFirst:         true,
-		Expand:                      rez.KnowledgeRelationshipExpand{Endpoints: true},
-	}
-	eventsParams := rez.ListKnowledgeRelationshipsParams{
-		PageSize:            1,
+		ListParams:          page,
 		EntityID:            checkout.ID,
-		NeighbourCategories: []kne.Category{kne.CategoryEvent},
+		NewestEvidenceFirst: true,
+		Expand:              rez.KnowledgeRelationshipExpand{Endpoints: true},
 	}
 	h.knowledge.EXPECT().GetEntity(mock.Anything, checkout.ID, rez.KnowledgeEntityExpand{LinkingAttributes: true}).Return(checkout, nil)
 	h.knowledge.EXPECT().ListRelationships(mock.Anything, relationshipsParams).
@@ -432,11 +430,28 @@ func (s *AiRuntimeSuite) TestReadEntityRendering() {
 	}
 	h.knowledge.EXPECT().SummarizeEvidence(mock.Anything, summaryParams).
 		Return(summaries(backstageSummary, aliasSummary, githubSummary), nil)
-	h.knowledge.EXPECT().ListRelationships(mock.Anything, eventsParams).
-		Return(&ent.ListResult[ent.KnowledgeRelationship]{Total: 12}, nil)
+	// Deployments are counted up to now, so a future-dated deployment is not.
+	deploymentsParams := rez.ListChangePointsParams{
+		Kind:          projections.KindDeployment,
+		EntityID:      checkout.ID,
+		Roles:         []string{projections.AssertionDeploymentService},
+		From:          h.clock.Now().Add(-7 * 24 * time.Hour),
+		FromInclusive: true,
+		To:            h.clock.Now(),
+		ToInclusive:   true,
+		Limit:         20,
+	}
+	h.changePoints.EXPECT().ListChangePoints(mock.Anything, mock.Anything).Unset()
+	h.changePoints.EXPECT().ListChangePoints(mock.Anything, deploymentsParams).
+		Return(&rez.ChangePoints{ChangePoints: make([]rez.ChangePoint, 12)}, nil)
+
 	commerce := &ent.KnowledgeEntity{ID: uuid.New(), Category: kne.CategorySystemFunction, State: schematypes.KnowledgeGraphSubjectState{DisplayName: "Online Commerce"}}
 	core := &ent.KnowledgeEntity{ID: uuid.New(), Category: kne.CategorySystem, State: schematypes.KnowledgeGraphSubjectState{DisplayName: "Commerce Core"}}
 	experience := &ent.KnowledgeEntity{ID: uuid.New(), Category: kne.CategorySystem, State: schematypes.KnowledgeGraphSubjectState{DisplayName: "Customer Experience"}}
+	parentClaim := &ent.KnowledgeRelationship{ID: uuid.New(), SourceEntityID: core.ID, IsParent: true, Edges: ent.KnowledgeRelationshipEdges{
+		Aliases: []*ent.KnowledgeSubjectAlias{{Provider: "kubernetes"}, {Provider: "github"}},
+	}}
+	checkout.Edges.TargetRelationships = []*ent.KnowledgeRelationship{parentClaim}
 	h.knowledge.EXPECT().ListAncestors(mock.Anything, mock.Anything).Unset()
 	h.knowledge.EXPECT().ListAncestors(mock.Anything, []uuid.UUID{checkout.ID}).
 		Return(map[uuid.UUID][]*ent.KnowledgeEntity{checkout.ID: {core, commerce}}, nil)
@@ -458,9 +473,44 @@ func (s *AiRuntimeSuite) TestReadEntityRendering() {
 	expectedRelationship := fmt.Sprintf("relationship %s owns direction=incoming other=%s Payments [actor/team] family=ownership dependency=none evidence=2 latest=2026-06-01T10:00:00Z latest_evidence=%s",
 		owns.ID, team.ID, backstageSummary.LatestID)
 	s.Contains(result.Text, expectedRelationship)
-	s.Contains(result.Text, "event_relationships=12 (not listed; use list_entity_evidence)")
+	s.Contains(result.Text, "deployments_7d=12 (use list_changes)")
 	s.Contains(result.Text, fmt.Sprintf("ancestors=%s Online Commerce > %s Commerce Core", commerce.ID, core.ID))
+	s.Contains(result.Text, fmt.Sprintf("parent_claim %s providers=kubernetes,github", parentClaim.ID))
 	s.Contains(result.Text, fmt.Sprintf("other_parent_claim %s Customer Experience providers=backstage", experience.ID))
+}
+
+func (s *AiRuntimeSuite) TestReadEntityCountsRepositoryMerges() {
+	ctx := s.T().Context()
+	h := s.newInvestigationHarness()
+	repository := &ent.KnowledgeEntity{
+		ID:       uuid.New(),
+		Category: kne.CategoryCode,
+		Kind:     "repository",
+		State:    schematypes.KnowledgeGraphSubjectState{DisplayName: "acme/checkout"},
+	}
+	h.knowledge.EXPECT().GetEntity(mock.Anything, repository.ID, rez.KnowledgeEntityExpand{LinkingAttributes: true}).Return(repository, nil)
+	h.knowledge.EXPECT().ListRelationships(mock.Anything, mock.Anything).Return(&ent.ListResult[ent.KnowledgeRelationship]{}, nil)
+	h.knowledge.EXPECT().SummarizeEvidence(mock.Anything, mock.Anything).Return(&ent.ListResult[rez.KnowledgeEvidenceSummary]{}, nil)
+	// Merges into any branch count, so the lookup filters on no attribute, and only up to now.
+	mergesParams := rez.ListChangePointsParams{
+		Kind:          projections.KindCodeChange,
+		EntityID:      repository.ID,
+		Roles:         []string{projections.AssertionChangeRepository},
+		From:          h.clock.Now().Add(-7 * 24 * time.Hour),
+		FromInclusive: true,
+		To:            h.clock.Now(),
+		ToInclusive:   true,
+		Limit:         20,
+	}
+	h.changePoints.EXPECT().ListChangePoints(mock.Anything, mock.Anything).Unset()
+	h.changePoints.EXPECT().ListChangePoints(mock.Anything, mergesParams).
+		Return(&rez.ChangePoints{ChangePoints: make([]rez.ChangePoint, 20), Cut: true}, nil)
+
+	var result rezai.TextToolResult
+	s.runInvestigationTool(ctx, h, rezai.ReadEntityTool.Name(), rezai.ReadEntityArgs{Ref: repository.ID.String()}, &result)
+
+	s.Contains(result.Text, "merged_changes_7d=20+ (use list_changes)", "a count cut at the limit is marked")
+	s.NotContains(result.Text, "deployments_7d")
 }
 
 func (s *AiRuntimeSuite) TestListEntityEvidenceRendering() {

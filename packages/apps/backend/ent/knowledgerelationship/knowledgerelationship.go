@@ -35,12 +35,16 @@ const (
 	FieldWithdrawnAt = "withdrawn_at"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
+	// FieldMergedIntoID holds the string denoting the merged_into_id field in the database.
+	FieldMergedIntoID = "merged_into_id"
 	// FieldPredicate holds the string denoting the predicate field in the database.
 	FieldPredicate = "predicate"
 	// FieldSourceEntityID holds the string denoting the source_entity_id field in the database.
 	FieldSourceEntityID = "source_entity_id"
 	// FieldTargetEntityID holds the string denoting the target_entity_id field in the database.
 	FieldTargetEntityID = "target_entity_id"
+	// FieldIsParent holds the string denoting the is_parent field in the database.
+	FieldIsParent = "is_parent"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeSourceEntity holds the string denoting the source_entity edge name in mutations.
@@ -49,6 +53,10 @@ const (
 	EdgeTargetEntity = "target_entity"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
 	EdgeAliases = "aliases"
+	// EdgeMergedInto holds the string denoting the merged_into edge name in mutations.
+	EdgeMergedInto = "merged_into"
+	// EdgeRedirects holds the string denoting the redirects edge name in mutations.
+	EdgeRedirects = "redirects"
 	// Table holds the table name of the knowledgerelationship in the database.
 	Table = "knowledge_relationships"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -79,6 +87,14 @@ const (
 	AliasesInverseTable = "knowledge_subject_alias"
 	// AliasesColumn is the table column denoting the aliases relation/edge.
 	AliasesColumn = "relationship_id"
+	// MergedIntoTable is the table that holds the merged_into relation/edge.
+	MergedIntoTable = "knowledge_relationships"
+	// MergedIntoColumn is the table column denoting the merged_into relation/edge.
+	MergedIntoColumn = "merged_into_id"
+	// RedirectsTable is the table that holds the redirects relation/edge.
+	RedirectsTable = "knowledge_relationships"
+	// RedirectsColumn is the table column denoting the redirects relation/edge.
+	RedirectsColumn = "merged_into_id"
 )
 
 // Columns holds all SQL columns for knowledgerelationship fields.
@@ -93,9 +109,11 @@ var Columns = []string{
 	FieldLastObservedAt,
 	FieldWithdrawnAt,
 	FieldExpiresAt,
+	FieldMergedIntoID,
 	FieldPredicate,
 	FieldSourceEntityID,
 	FieldTargetEntityID,
+	FieldIsParent,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -114,14 +132,17 @@ func ValidColumn(column string) bool {
 //
 //	import _ "github.com/rezible/rezible/ent/runtime"
 var (
-	Hooks  [1]ent.Hook
-	Policy ent.Policy
+	Hooks        [1]ent.Hook
+	Interceptors [1]ent.Interceptor
+	Policy       ent.Policy
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultIsParent holds the default value on creation for the "is_parent" field.
+	DefaultIsParent bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -149,8 +170,6 @@ const (
 	PredicateConstrains     Predicate = "constrains"
 	PredicateAddresses      Predicate = "addresses"
 	PredicateMitigates      Predicate = "mitigates"
-	PredicateImpacts        Predicate = "impacts"
-	PredicateTouches        Predicate = "touches"
 )
 
 func (pr Predicate) String() string {
@@ -160,7 +179,7 @@ func (pr Predicate) String() string {
 // PredicateValidator is a validator for the "predicate" field enum values. It is called by the builders before save.
 func PredicateValidator(pr Predicate) error {
 	switch pr {
-	case PredicateContains, PredicateRunsOn, PredicateBuiltFrom, PredicateOwns, PredicateMemberOf, PredicateParticipatesIn, PredicateUses, PredicateSupports, PredicateCalls, PredicateReadsFrom, PredicateWritesTo, PredicatePublishesTo, PredicateConsumesFrom, PredicateDependsOn, PredicateObserves, PredicateConstrains, PredicateAddresses, PredicateMitigates, PredicateImpacts, PredicateTouches:
+	case PredicateContains, PredicateRunsOn, PredicateBuiltFrom, PredicateOwns, PredicateMemberOf, PredicateParticipatesIn, PredicateUses, PredicateSupports, PredicateCalls, PredicateReadsFrom, PredicateWritesTo, PredicatePublishesTo, PredicateConsumesFrom, PredicateDependsOn, PredicateObserves, PredicateConstrains, PredicateAddresses, PredicateMitigates:
 		return nil
 	default:
 		return fmt.Errorf("knowledgerelationship: invalid enum value for predicate field: %q", pr)
@@ -210,6 +229,11 @@ func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
 }
 
+// ByMergedIntoID orders the results by the merged_into_id field.
+func ByMergedIntoID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMergedIntoID, opts...).ToFunc()
+}
+
 // ByPredicate orders the results by the predicate field.
 func ByPredicate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPredicate, opts...).ToFunc()
@@ -223,6 +247,11 @@ func BySourceEntityID(opts ...sql.OrderTermOption) OrderOption {
 // ByTargetEntityID orders the results by the target_entity_id field.
 func ByTargetEntityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTargetEntityID, opts...).ToFunc()
+}
+
+// ByIsParent orders the results by the is_parent field.
+func ByIsParent(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsParent, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -259,6 +288,27 @@ func ByAliases(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAliasesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByMergedIntoField orders the results by merged_into field.
+func ByMergedIntoField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMergedIntoStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByRedirectsCount orders the results by redirects count.
+func ByRedirectsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRedirectsStep(), opts...)
+	}
+}
+
+// ByRedirects orders the results by redirects terms.
+func ByRedirects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRedirectsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -287,6 +337,20 @@ func newAliasesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, AliasesTable, AliasesColumn),
 	)
 }
+func newMergedIntoStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, MergedIntoTable, MergedIntoColumn),
+	)
+}
+func newRedirectsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RedirectsTable, RedirectsColumn),
+	)
+}
 
 // PredicateValues contains all permitted values. Treat this slice as read-only.
 var PredicateValues = []string{
@@ -308,6 +372,4 @@ var PredicateValues = []string{
 	"constrains",
 	"addresses",
 	"mitigates",
-	"impacts",
-	"touches",
 }

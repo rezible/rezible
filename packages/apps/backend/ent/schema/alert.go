@@ -183,7 +183,6 @@ func (AlertEpisode) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
-		KnowledgeEntityLinkMixin{},
 	}
 }
 
@@ -217,6 +216,9 @@ func (AlertEpisode) Edges() []ent.Edge {
 			Field("alert_definition_id"),
 		edge.To("instances", AlertInstance.Type),
 		edge.To("situation_observations", SituationObservation.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("observation_scope", ObservationScope.Type).
+			Unique().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }

@@ -42,6 +42,12 @@ type AlertInstanceEvent func(*sql.Selector)
 // AlertMetrics is the predicate function for alertmetrics builders.
 type AlertMetrics func(*sql.Selector)
 
+// ChangePoint is the predicate function for changepoint builders.
+type ChangePoint func(*sql.Selector)
+
+// ChangePointInvolvement is the predicate function for changepointinvolvement builders.
+type ChangePointInvolvement func(*sql.Selector)
+
 // DiscussionComment is the predicate function for discussioncomment builders.
 type DiscussionComment func(*sql.Selector)
 
@@ -202,6 +208,12 @@ type NormalizedEventProjection func(*sql.Selector)
 // NormalizedEventProjectionEntity is the predicate function for normalizedeventprojectionentity builders.
 type NormalizedEventProjectionEntity func(*sql.Selector)
 
+// ObservationScope is the predicate function for observationscope builders.
+type ObservationScope func(*sql.Selector)
+
+// ObservationScopeEntity is the predicate function for observationscopeentity builders.
+type ObservationScopeEntity func(*sql.Selector)
+
 // OncallHandoverTemplate is the predicate function for oncallhandovertemplate builders.
 type OncallHandoverTemplate func(*sql.Selector)
 
@@ -249,9 +261,6 @@ type Situation func(*sql.Selector)
 
 // SituationAction is the predicate function for situationaction builders.
 type SituationAction func(*sql.Selector)
-
-// SituationEntity is the predicate function for situationentity builders.
-type SituationEntity func(*sql.Selector)
 
 // SituationJudgment is the predicate function for situationjudgment builders.
 type SituationJudgment func(*sql.Selector)

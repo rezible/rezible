@@ -14,8 +14,7 @@ type tenantReferences struct {
 
 // TenantReferences generates CheckTenantReferences on the mutation of every tenant-owned type. It counts the
 // rows each set or added edge ID names through the mutation's client, whose privacy filter scopes the query to
-// the context's tenant, and reports a missing or cross-tenant target as not found. Under
-// schema.ReportMissingReferences, a missing target is left to its foreign key instead (checkTenantReference).
+// the context's tenant, and reports a missing or cross-tenant target as not found (checkTenantReference).
 func TenantReferences() entc.Extension {
 	return tenantReferences{}
 }

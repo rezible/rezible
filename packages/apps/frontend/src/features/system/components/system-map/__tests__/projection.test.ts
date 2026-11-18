@@ -39,8 +39,8 @@ describe("system map projection", () => {
 		expect(card("rt-checkout-proxy").partOfLabel).toBe("Part of checkout");
 		expect(card("rt-search-api").alsoClaimedLabel).toBe("Also claimed by Commerce Core");
 		expect(card("rt-checkout").placement.shown.map(({ breadcrumb }) => breadcrumb)).toEqual([
-			"production › prod-use1",
-			"production › prod-euw1",
+			"commerce-prod › prod-use1",
+			"commerce-prod › prod-euw1",
 		]);
 	});
 

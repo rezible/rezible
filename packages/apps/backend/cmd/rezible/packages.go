@@ -178,7 +178,7 @@ var pkgGenkit = do.Package(
 			do.MustInvoke[rez.InvestigationOutputService](i),
 			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
 			do.MustInvoke[rez.SituationService](i),
-			do.MustInvoke[rez.ChangesService](i),
+			do.MustInvoke[rez.ChangePointService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.AgentProviderReadService](i),
 			do.MustInvoke[rez.KnowledgeProposalService](i),
@@ -346,6 +346,10 @@ var pkgIntegrations = do.Package(
 		}, nil
 	}),
 
+	do.Lazy(func(i do.Injector) (rez.ChangePointService, error) {
+		return db.NewChangePointService(do.MustInvoke[rez.Database](i))
+	}),
+
 	do.Lazy(func(i do.Injector) (rez.EventProjectionService, error) {
 		return eventprojection.NewProjectionService(
 			do.MustInvoke[rez.Database](i),
@@ -354,6 +358,7 @@ var pkgIntegrations = do.Package(
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.IncidentDetailsService](i),
 			do.MustInvoke[rez.AlertService](i),
+			do.MustInvoke[rez.ChangePointService](i),
 		)
 	}),
 
@@ -374,6 +379,7 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.ProviderEventProcessorRegistry](i),
 			do.MustInvoke[rez.EventProjectionService](i),
+			do.MustInvoke[*db.KnowledgeGraphIngestionService](i),
 		), nil
 	}),
 	do.Bind[*db.ProviderEventIngester, rez.ProviderEventIngester](),
@@ -502,16 +508,10 @@ var pkgDatabase = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (rez.ChangesService, error) {
-		return db.NewChangesService(
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
-		)
-	}),
-
-	do.Lazy(func(i do.Injector) (rez.KnowledgeGraphIngestionService, error) {
+	do.Lazy(func(i do.Injector) (*db.KnowledgeGraphIngestionService, error) {
 		return db.NewKnowledgeGraphIngestionService(do.MustInvoke[rez.Database](i))
 	}),
+	do.Bind[*db.KnowledgeGraphIngestionService, rez.KnowledgeGraphIngestionService](),
 
 	do.Lazy(func(i do.Injector) (rez.KnowledgeProposalService, error) {
 		return db.NewKnowledgeProposalService(
@@ -526,8 +526,7 @@ var pkgDatabase = do.Package(
 		return db.NewSituationBriefService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.Clock](i),
-			do.MustInvoke[rez.KnowledgeGraphQueryService](i),
-			do.MustInvoke[rez.ChangesService](i),
+			do.MustInvoke[rez.ChangePointService](i),
 			do.MustInvoke[rez.KnowledgeProposalService](i),
 			do.MustInvoke[rez.IntegrationService](i),
 		)
@@ -570,7 +569,6 @@ var pkgDatabase = do.Package(
 			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.KnowledgeGraphIngestionService](i),
 			do.MustInvoke[rez.SituationObservationService](i),
 		)
 	}),
@@ -705,6 +703,7 @@ var pkgOpenApiV1 = do.Package(
 		return apiv1.NewHandler(
 			do.MustInvoke[oapiv1.SecurityProvider](i),
 			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.AiAgentCatalogue](i),
 			do.MustInvoke[rez.AiAgentSessionService](i),
 			do.MustInvoke[rez.MessageQueue](i),
@@ -827,6 +826,7 @@ var pkgJobs = do.Package(
 		// TODO: maybe convert these to jobs.WorkerProvider
 		p.addInvokedProviderFunc(db.NewProcessProviderEventWorker)
 		p.addInvokedProviderFunc(db.NewProjectNormalizedEventWorker)
+		p.addInvokedProviderFunc(db.NewReobserveNormalizedEventWorker)
 		p.addInvokedProviderFunc(db.NewSendIncidentDebriefRequestsWorker)
 		p.addInvokedProviderFunc(db.NewGenerateIncidentDebriefResponseWorker)
 		p.addInvokedProviderFunc(db.NewGenerateIncidentDebriefSuggestionsWorker)

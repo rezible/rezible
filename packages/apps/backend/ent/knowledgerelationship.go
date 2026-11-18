@@ -40,12 +40,16 @@ type KnowledgeRelationship struct {
 	WithdrawnAt *time.Time `json:"withdrawn_at,omitempty"`
 	// When the subject goes stale; null when any live alias never expires.
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	// Set when a merge leaves the row as a redirect to the one that survived it, which is not itself merged.
+	MergedIntoID *uuid.UUID `json:"merged_into_id,omitempty"`
 	// Canonical directional meaning from source entity to target entity.
 	Predicate knowledgerelationship.Predicate `json:"predicate,omitempty"`
 	// Changed only when a confirmed match merges two entities.
 	SourceEntityID uuid.UUID `json:"source_entity_id,omitempty"`
 	// Changed only when a confirmed match merges two entities.
 	TargetEntityID uuid.UUID `json:"target_entity_id,omitempty"`
+	// Set on the one current contains relationship chosen as the target's parent; every reader of the tree uses it. Only placement, and a merge clearing it before endpoints move, write it.
+	IsParent bool `json:"is_parent,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeRelationshipQuery when eager-loading is set.
 	Edges        KnowledgeRelationshipEdges `json:"edges"`
@@ -62,9 +66,13 @@ type KnowledgeRelationshipEdges struct {
 	TargetEntity *KnowledgeEntity `json:"target_entity,omitempty"`
 	// Aliases holds the value of the aliases edge.
 	Aliases []*KnowledgeSubjectAlias `json:"aliases,omitempty"`
+	// MergedInto holds the value of the merged_into edge.
+	MergedInto *KnowledgeRelationship `json:"merged_into,omitempty"`
+	// Redirects holds the value of the redirects edge.
+	Redirects []*KnowledgeRelationship `json:"redirects,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -109,13 +117,37 @@ func (e KnowledgeRelationshipEdges) AliasesOrErr() ([]*KnowledgeSubjectAlias, er
 	return nil, &NotLoadedError{edge: "aliases"}
 }
 
+// MergedIntoOrErr returns the MergedInto value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e KnowledgeRelationshipEdges) MergedIntoOrErr() (*KnowledgeRelationship, error) {
+	if e.MergedInto != nil {
+		return e.MergedInto, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: knowledgerelationship.Label}
+	}
+	return nil, &NotLoadedError{edge: "merged_into"}
+}
+
+// RedirectsOrErr returns the Redirects value or an error if the edge
+// was not loaded in eager-loading.
+func (e KnowledgeRelationshipEdges) RedirectsOrErr() ([]*KnowledgeRelationship, error) {
+	if e.loadedTypes[5] {
+		return e.Redirects, nil
+	}
+	return nil, &NotLoadedError{edge: "redirects"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*KnowledgeRelationship) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case knowledgerelationship.FieldMergedIntoID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case knowledgerelationship.FieldState, knowledgerelationship.FieldStateSources:
 			values[i] = new([]byte)
+		case knowledgerelationship.FieldIsParent:
+			values[i] = new(sql.NullBool)
 		case knowledgerelationship.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case knowledgerelationship.FieldPredicate:
@@ -207,6 +239,13 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 				_m.ExpiresAt = new(time.Time)
 				*_m.ExpiresAt = value.Time
 			}
+		case knowledgerelationship.FieldMergedIntoID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field merged_into_id", values[i])
+			} else if value.Valid {
+				_m.MergedIntoID = new(uuid.UUID)
+				*_m.MergedIntoID = *value.S.(*uuid.UUID)
+			}
 		case knowledgerelationship.FieldPredicate:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field predicate", values[i])
@@ -224,6 +263,12 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field target_entity_id", values[i])
 			} else if value != nil {
 				_m.TargetEntityID = *value
+			}
+		case knowledgerelationship.FieldIsParent:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_parent", values[i])
+			} else if value.Valid {
+				_m.IsParent = value.Bool
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -256,6 +301,16 @@ func (_m *KnowledgeRelationship) QueryTargetEntity() *KnowledgeEntityQuery {
 // QueryAliases queries the "aliases" edge of the KnowledgeRelationship entity.
 func (_m *KnowledgeRelationship) QueryAliases() *KnowledgeSubjectAliasQuery {
 	return NewKnowledgeRelationshipClient(_m.config).QueryAliases(_m)
+}
+
+// QueryMergedInto queries the "merged_into" edge of the KnowledgeRelationship entity.
+func (_m *KnowledgeRelationship) QueryMergedInto() *KnowledgeRelationshipQuery {
+	return NewKnowledgeRelationshipClient(_m.config).QueryMergedInto(_m)
+}
+
+// QueryRedirects queries the "redirects" edge of the KnowledgeRelationship entity.
+func (_m *KnowledgeRelationship) QueryRedirects() *KnowledgeRelationshipQuery {
+	return NewKnowledgeRelationshipClient(_m.config).QueryRedirects(_m)
 }
 
 // Update returns a builder for updating this KnowledgeRelationship.
@@ -316,6 +371,11 @@ func (_m *KnowledgeRelationship) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
+	if v := _m.MergedIntoID; v != nil {
+		builder.WriteString("merged_into_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("predicate=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Predicate))
 	builder.WriteString(", ")
@@ -324,6 +384,9 @@ func (_m *KnowledgeRelationship) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("target_entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TargetEntityID))
+	builder.WriteString(", ")
+	builder.WriteString("is_parent=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsParent))
 	builder.WriteByte(')')
 	return builder.String()
 }

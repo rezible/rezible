@@ -49,9 +49,6 @@ type SituationMutation struct {
 	observations              map[uuid.UUID]struct{}
 	removedobservations       map[uuid.UUID]struct{}
 	clearedobservations       bool
-	entities                  map[uuid.UUID]struct{}
-	removedentities           map[uuid.UUID]struct{}
-	clearedentities           bool
 	actions                   map[uuid.UUID]struct{}
 	removedactions            map[uuid.UUID]struct{}
 	clearedactions            bool
@@ -61,6 +58,11 @@ type SituationMutation struct {
 	notices                   map[uuid.UUID]struct{}
 	removednotices            map[uuid.UUID]struct{}
 	clearednotices            bool
+	merged_into               *uuid.UUID
+	clearedmerged_into        bool
+	merged_sources            map[uuid.UUID]struct{}
+	removedmerged_sources     map[uuid.UUID]struct{}
+	clearedmerged_sources     bool
 	done                      bool
 	oldValue                  func(context.Context) (*Situation, error)
 	predicates                []predicate.Situation
@@ -798,6 +800,55 @@ func (m *SituationMutation) ResetInvestigationID() {
 	delete(m.clearedFields, situation.FieldInvestigationID)
 }
 
+// SetMergedIntoID sets the "merged_into_id" field.
+func (m *SituationMutation) SetMergedIntoID(u uuid.UUID) {
+	m.merged_into = &u
+}
+
+// MergedIntoID returns the value of the "merged_into_id" field in the mutation.
+func (m *SituationMutation) MergedIntoID() (r uuid.UUID, exists bool) {
+	v := m.merged_into
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMergedIntoID returns the old "merged_into_id" field's value of the Situation entity.
+// If the Situation object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SituationMutation) OldMergedIntoID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMergedIntoID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMergedIntoID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMergedIntoID: %w", err)
+	}
+	return oldValue.MergedIntoID, nil
+}
+
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (m *SituationMutation) ClearMergedIntoID() {
+	m.merged_into = nil
+	m.clearedFields[situation.FieldMergedIntoID] = struct{}{}
+}
+
+// MergedIntoIDCleared returns if the "merged_into_id" field was cleared in this mutation.
+func (m *SituationMutation) MergedIntoIDCleared() bool {
+	_, ok := m.clearedFields[situation.FieldMergedIntoID]
+	return ok
+}
+
+// ResetMergedIntoID resets all changes to the "merged_into_id" field.
+func (m *SituationMutation) ResetMergedIntoID() {
+	m.merged_into = nil
+	delete(m.clearedFields, situation.FieldMergedIntoID)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *SituationMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -1014,60 +1065,6 @@ func (m *SituationMutation) ResetObservations() {
 	m.removedobservations = nil
 }
 
-// AddEntityIDs adds the "entities" edge to the SituationEntity entity by ids.
-func (m *SituationMutation) AddEntityIDs(ids ...uuid.UUID) {
-	if m.entities == nil {
-		m.entities = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.entities[ids[i]] = struct{}{}
-	}
-}
-
-// ClearEntities clears the "entities" edge to the SituationEntity entity.
-func (m *SituationMutation) ClearEntities() {
-	m.clearedentities = true
-}
-
-// EntitiesCleared reports if the "entities" edge to the SituationEntity entity was cleared.
-func (m *SituationMutation) EntitiesCleared() bool {
-	return m.clearedentities
-}
-
-// RemoveEntityIDs removes the "entities" edge to the SituationEntity entity by IDs.
-func (m *SituationMutation) RemoveEntityIDs(ids ...uuid.UUID) {
-	if m.removedentities == nil {
-		m.removedentities = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.entities, ids[i])
-		m.removedentities[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedEntities returns the removed IDs of the "entities" edge to the SituationEntity entity.
-func (m *SituationMutation) RemovedEntitiesIDs() (ids []uuid.UUID) {
-	for id := range m.removedentities {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// EntitiesIDs returns the "entities" edge IDs in the mutation.
-func (m *SituationMutation) EntitiesIDs() (ids []uuid.UUID) {
-	for id := range m.entities {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetEntities resets all changes to the "entities" edge.
-func (m *SituationMutation) ResetEntities() {
-	m.entities = nil
-	m.clearedentities = false
-	m.removedentities = nil
-}
-
 // AddActionIDs adds the "actions" edge to the SituationAction entity by ids.
 func (m *SituationMutation) AddActionIDs(ids ...uuid.UUID) {
 	if m.actions == nil {
@@ -1230,6 +1227,87 @@ func (m *SituationMutation) ResetNotices() {
 	m.removednotices = nil
 }
 
+// ClearMergedInto clears the "merged_into" edge to the Situation entity.
+func (m *SituationMutation) ClearMergedInto() {
+	m.clearedmerged_into = true
+	m.clearedFields[situation.FieldMergedIntoID] = struct{}{}
+}
+
+// MergedIntoCleared reports if the "merged_into" edge to the Situation entity was cleared.
+func (m *SituationMutation) MergedIntoCleared() bool {
+	return m.MergedIntoIDCleared() || m.clearedmerged_into
+}
+
+// MergedIntoIDs returns the "merged_into" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// MergedIntoID instead. It exists only for internal usage by the builders.
+func (m *SituationMutation) MergedIntoIDs() (ids []uuid.UUID) {
+	if id := m.merged_into; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetMergedInto resets all changes to the "merged_into" edge.
+func (m *SituationMutation) ResetMergedInto() {
+	m.merged_into = nil
+	m.clearedmerged_into = false
+}
+
+// AddMergedSourceIDs adds the "merged_sources" edge to the Situation entity by ids.
+func (m *SituationMutation) AddMergedSourceIDs(ids ...uuid.UUID) {
+	if m.merged_sources == nil {
+		m.merged_sources = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.merged_sources[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMergedSources clears the "merged_sources" edge to the Situation entity.
+func (m *SituationMutation) ClearMergedSources() {
+	m.clearedmerged_sources = true
+}
+
+// MergedSourcesCleared reports if the "merged_sources" edge to the Situation entity was cleared.
+func (m *SituationMutation) MergedSourcesCleared() bool {
+	return m.clearedmerged_sources
+}
+
+// RemoveMergedSourceIDs removes the "merged_sources" edge to the Situation entity by IDs.
+func (m *SituationMutation) RemoveMergedSourceIDs(ids ...uuid.UUID) {
+	if m.removedmerged_sources == nil {
+		m.removedmerged_sources = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.merged_sources, ids[i])
+		m.removedmerged_sources[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMergedSources returns the removed IDs of the "merged_sources" edge to the Situation entity.
+func (m *SituationMutation) RemovedMergedSourcesIDs() (ids []uuid.UUID) {
+	for id := range m.removedmerged_sources {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MergedSourcesIDs returns the "merged_sources" edge IDs in the mutation.
+func (m *SituationMutation) MergedSourcesIDs() (ids []uuid.UUID) {
+	for id := range m.merged_sources {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMergedSources resets all changes to the "merged_sources" edge.
+func (m *SituationMutation) ResetMergedSources() {
+	m.merged_sources = nil
+	m.clearedmerged_sources = false
+	m.removedmerged_sources = nil
+}
+
 // Where appends a list predicates to the SituationMutation builder.
 func (m *SituationMutation) Where(ps ...predicate.Situation) {
 	m.predicates = append(m.predicates, ps...)
@@ -1264,7 +1342,7 @@ func (m *SituationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SituationMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 15)
 	if m.tenant != nil {
 		fields = append(fields, situation.FieldTenantID)
 	}
@@ -1307,6 +1385,9 @@ func (m *SituationMutation) Fields() []string {
 	if m.investigation != nil {
 		fields = append(fields, situation.FieldInvestigationID)
 	}
+	if m.merged_into != nil {
+		fields = append(fields, situation.FieldMergedIntoID)
+	}
 	return fields
 }
 
@@ -1343,6 +1424,8 @@ func (m *SituationMutation) Field(name string) (ent.Value, bool) {
 		return m.CloseReason()
 	case situation.FieldInvestigationID:
 		return m.InvestigationID()
+	case situation.FieldMergedIntoID:
+		return m.MergedIntoID()
 	}
 	return nil, false
 }
@@ -1380,6 +1463,8 @@ func (m *SituationMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldCloseReason(ctx)
 	case situation.FieldInvestigationID:
 		return m.OldInvestigationID(ctx)
+	case situation.FieldMergedIntoID:
+		return m.OldMergedIntoID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Situation field %s", name)
 }
@@ -1487,6 +1572,13 @@ func (m *SituationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetInvestigationID(v)
 		return nil
+	case situation.FieldMergedIntoID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMergedIntoID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Situation field %s", name)
 }
@@ -1556,6 +1648,9 @@ func (m *SituationMutation) ClearedFields() []string {
 	if m.FieldCleared(situation.FieldInvestigationID) {
 		fields = append(fields, situation.FieldInvestigationID)
 	}
+	if m.FieldCleared(situation.FieldMergedIntoID) {
+		fields = append(fields, situation.FieldMergedIntoID)
+	}
 	return fields
 }
 
@@ -1593,6 +1688,9 @@ func (m *SituationMutation) ClearField(name string) error {
 		return nil
 	case situation.FieldInvestigationID:
 		m.ClearInvestigationID()
+		return nil
+	case situation.FieldMergedIntoID:
+		m.ClearMergedIntoID()
 		return nil
 	}
 	return fmt.Errorf("unknown Situation nullable field %s", name)
@@ -1644,13 +1742,16 @@ func (m *SituationMutation) ResetField(name string) error {
 	case situation.FieldInvestigationID:
 		m.ResetInvestigationID()
 		return nil
+	case situation.FieldMergedIntoID:
+		m.ResetMergedIntoID()
+		return nil
 	}
 	return fmt.Errorf("unknown Situation field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SituationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 10)
 	if m.tenant != nil {
 		edges = append(edges, situation.EdgeTenant)
 	}
@@ -1666,9 +1767,6 @@ func (m *SituationMutation) AddedEdges() []string {
 	if m.observations != nil {
 		edges = append(edges, situation.EdgeObservations)
 	}
-	if m.entities != nil {
-		edges = append(edges, situation.EdgeEntities)
-	}
 	if m.actions != nil {
 		edges = append(edges, situation.EdgeActions)
 	}
@@ -1677,6 +1775,12 @@ func (m *SituationMutation) AddedEdges() []string {
 	}
 	if m.notices != nil {
 		edges = append(edges, situation.EdgeNotices)
+	}
+	if m.merged_into != nil {
+		edges = append(edges, situation.EdgeMergedInto)
+	}
+	if m.merged_sources != nil {
+		edges = append(edges, situation.EdgeMergedSources)
 	}
 	return edges
 }
@@ -1711,12 +1815,6 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case situation.EdgeEntities:
-		ids := make([]ent.Value, 0, len(m.entities))
-		for id := range m.entities {
-			ids = append(ids, id)
-		}
-		return ids
 	case situation.EdgeActions:
 		ids := make([]ent.Value, 0, len(m.actions))
 		for id := range m.actions {
@@ -1735,13 +1833,23 @@ func (m *SituationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case situation.EdgeMergedInto:
+		if id := m.merged_into; id != nil {
+			return []ent.Value{*id}
+		}
+	case situation.EdgeMergedSources:
+		ids := make([]ent.Value, 0, len(m.merged_sources))
+		for id := range m.merged_sources {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SituationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 10)
 	if m.removedobservation_groups != nil {
 		edges = append(edges, situation.EdgeObservationGroups)
 	}
@@ -1751,9 +1859,6 @@ func (m *SituationMutation) RemovedEdges() []string {
 	if m.removedobservations != nil {
 		edges = append(edges, situation.EdgeObservations)
 	}
-	if m.removedentities != nil {
-		edges = append(edges, situation.EdgeEntities)
-	}
 	if m.removedactions != nil {
 		edges = append(edges, situation.EdgeActions)
 	}
@@ -1762,6 +1867,9 @@ func (m *SituationMutation) RemovedEdges() []string {
 	}
 	if m.removednotices != nil {
 		edges = append(edges, situation.EdgeNotices)
+	}
+	if m.removedmerged_sources != nil {
+		edges = append(edges, situation.EdgeMergedSources)
 	}
 	return edges
 }
@@ -1788,12 +1896,6 @@ func (m *SituationMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case situation.EdgeEntities:
-		ids := make([]ent.Value, 0, len(m.removedentities))
-		for id := range m.removedentities {
-			ids = append(ids, id)
-		}
-		return ids
 	case situation.EdgeActions:
 		ids := make([]ent.Value, 0, len(m.removedactions))
 		for id := range m.removedactions {
@@ -1812,13 +1914,19 @@ func (m *SituationMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case situation.EdgeMergedSources:
+		ids := make([]ent.Value, 0, len(m.removedmerged_sources))
+		for id := range m.removedmerged_sources {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SituationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 10)
 	if m.clearedtenant {
 		edges = append(edges, situation.EdgeTenant)
 	}
@@ -1834,9 +1942,6 @@ func (m *SituationMutation) ClearedEdges() []string {
 	if m.clearedobservations {
 		edges = append(edges, situation.EdgeObservations)
 	}
-	if m.clearedentities {
-		edges = append(edges, situation.EdgeEntities)
-	}
 	if m.clearedactions {
 		edges = append(edges, situation.EdgeActions)
 	}
@@ -1845,6 +1950,12 @@ func (m *SituationMutation) ClearedEdges() []string {
 	}
 	if m.clearednotices {
 		edges = append(edges, situation.EdgeNotices)
+	}
+	if m.clearedmerged_into {
+		edges = append(edges, situation.EdgeMergedInto)
+	}
+	if m.clearedmerged_sources {
+		edges = append(edges, situation.EdgeMergedSources)
 	}
 	return edges
 }
@@ -1863,14 +1974,16 @@ func (m *SituationMutation) EdgeCleared(name string) bool {
 		return m.clearedincidents
 	case situation.EdgeObservations:
 		return m.clearedobservations
-	case situation.EdgeEntities:
-		return m.clearedentities
 	case situation.EdgeActions:
 		return m.clearedactions
 	case situation.EdgeJudgments:
 		return m.clearedjudgments
 	case situation.EdgeNotices:
 		return m.clearednotices
+	case situation.EdgeMergedInto:
+		return m.clearedmerged_into
+	case situation.EdgeMergedSources:
+		return m.clearedmerged_sources
 	}
 	return false
 }
@@ -1884,6 +1997,9 @@ func (m *SituationMutation) ClearEdge(name string) error {
 		return nil
 	case situation.EdgeInvestigation:
 		m.ClearInvestigation()
+		return nil
+	case situation.EdgeMergedInto:
+		m.ClearMergedInto()
 		return nil
 	}
 	return fmt.Errorf("unknown Situation unique edge %s", name)
@@ -1908,9 +2024,6 @@ func (m *SituationMutation) ResetEdge(name string) error {
 	case situation.EdgeObservations:
 		m.ResetObservations()
 		return nil
-	case situation.EdgeEntities:
-		m.ResetEntities()
-		return nil
 	case situation.EdgeActions:
 		m.ResetActions()
 		return nil
@@ -1919,6 +2032,12 @@ func (m *SituationMutation) ResetEdge(name string) error {
 		return nil
 	case situation.EdgeNotices:
 		m.ResetNotices()
+		return nil
+	case situation.EdgeMergedInto:
+		m.ResetMergedInto()
+		return nil
+	case situation.EdgeMergedSources:
+		m.ResetMergedSources()
 		return nil
 	}
 	return fmt.Errorf("unknown Situation edge %s", name)

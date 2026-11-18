@@ -6,6 +6,7 @@ import {
 	investigationRunStatus,
 	investigationUpdateNotice,
 	longRunningStatus,
+	mergedIntoLink,
 	situationStatus,
 	situationSummaryTimes,
 } from "./status";
@@ -48,6 +49,17 @@ test("situationStatus precedence: closed, muted, raised, watching", () => {
 		const status = situationStatus(situation(attributes));
 		expect([status.label, status.tone, status.description]).toEqual([label, tone, description]);
 	}
+});
+
+test("mergedIntoLink links a merged situation to its target", () => {
+	const mergedInto = { id: "target", reference: "SIT-123", title: "Checkout errors" };
+
+	expect(
+		mergedIntoLink(situation({ stage: "closed", closedAt: at, closeReason: "merged", mergedInto }))
+	).toEqual({ label: "Merged into SIT-123", ref: "SIT-123" });
+	expect(
+		mergedIntoLink(situation({ stage: "closed", closedAt: at, closeReason: "stabilized" }))
+	).toBeUndefined();
 });
 
 test("longRunningStatus marks only open, unmuted situations raised over a day ago", () => {

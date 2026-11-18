@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"github.com/rezible/rezible/pkg/situations"
 	"net/http"
 	"time"
 
@@ -69,6 +70,7 @@ type (
 		HoldUntil         *time.Time                  `json:"holdUntil,omitempty"`
 		ClosedAt          *time.Time                  `json:"closedAt,omitempty"`
 		CloseReason       *string                     `json:"closeReason,omitempty" enum:"stabilized,expired,merged,dismissed"`
+		MergedInto        *SituationMergeTarget       `json:"mergedInto,omitempty" doc:"Set when the situation was merged"`
 		UpdatedAt         time.Time                   `json:"updatedAt"`
 		LinkedIncidentIds []uuid.UUID                 `json:"linkedIncidentIds"`
 		InvestigationId   *uuid.UUID                  `json:"investigationId,omitempty"`
@@ -77,6 +79,13 @@ type (
 		Entities          []SituationEntity           `json:"entities"`
 		LatestJudgment    *SituationJudgment          `json:"latestJudgment,omitempty" doc:"Set when getting one situation"`
 		Notices           []SituationNotice           `json:"notices"`
+	}
+
+	// SituationMergeTarget is the situation a merged situation was merged into.
+	SituationMergeTarget struct {
+		Id        uuid.UUID `json:"id"`
+		Reference string    `json:"reference"`
+		Title     string    `json:"title"`
 	}
 
 	// SituationNotice is the chat message announcing the situation in one installation's channel.
@@ -179,14 +188,14 @@ func SituationObservationFromEnt(o *ent.SituationObservation) SituationObservati
 	}
 }
 
-func SituationEntityFromEnt(e *ent.SituationEntity) SituationEntity {
-	entity := SituationEntity{Id: e.KnowledgeEntityID, Matching: e.Matching}
-	if knowledgeEntity := e.Edges.KnowledgeEntity; knowledgeEntity != nil {
-		entity.Category = knowledgeEntity.Category.String()
-		entity.Kind = knowledgeEntity.Kind
-		entity.DisplayName = knowledgeEntity.State.DisplayName
+func SituationEntityFromEnt(e situations.RuntimeEntity) SituationEntity {
+	return SituationEntity{
+		Id:          e.Entity.ID,
+		Matching:    e.Matching,
+		Category:    e.Entity.Category.String(),
+		Kind:        e.Entity.Kind,
+		DisplayName: e.Entity.State.DisplayName,
 	}
-	return entity
 }
 
 func SituationFromEnt(s *ent.Situation) Situation {
@@ -205,7 +214,7 @@ func SituationFromEnt(s *ent.Situation) Situation {
 		InvestigationId:   s.InvestigationID,
 		Observations:      ConvertSlice(s.Edges.Observations, SituationObservationFromEnt),
 		ObservationGroups: ConvertSlice(s.Edges.ObservationGroups, SituationObservationGroupFromEnt),
-		Entities:          ConvertSlice(s.Edges.Entities, SituationEntityFromEnt),
+		Entities:          ConvertSlice(situations.RuntimeEntities(s.Edges.Observations), SituationEntityFromEnt),
 		LinkedIncidentIds: make([]uuid.UUID, len(s.Edges.Incidents)),
 	}
 	for i, incident := range s.Edges.Incidents {
@@ -216,6 +225,9 @@ func SituationFromEnt(s *ent.Situation) Situation {
 	}
 	if s.CloseReason != nil {
 		attrs.CloseReason = new(s.CloseReason.String())
+	}
+	if target := s.Edges.MergedInto; target != nil {
+		attrs.MergedInto = &SituationMergeTarget{Id: target.ID, Reference: target.Reference(), Title: target.Title}
 	}
 	if s.RaisedAt != nil {
 		for _, action := range s.Edges.Actions {
@@ -362,16 +374,16 @@ type (
 	}
 
 	SituationBriefDeployment struct {
-		Id               uuid.UUID  `json:"id" doc:"The deployment's knowledge entity"`
-		DeployedAt       time.Time  `json:"deployedAt"`
-		AfterOpened      bool       `json:"afterOpened"`
-		Environment      string     `json:"environment"`
-		Status           string     `json:"status"`
-		Sha              string     `json:"sha"`
-		Version          string     `json:"version"`
-		Url              string     `json:"url"`
-		LatestEvidenceId *uuid.UUID `json:"latestEvidenceId,omitempty"`
-		RepositoryName   string     `json:"repositoryName"`
+		Id               uuid.UUID `json:"id" doc:"The deployment's change point"`
+		DeployedAt       time.Time `json:"deployedAt"`
+		AfterOpened      bool      `json:"afterOpened"`
+		Environment      string    `json:"environment"`
+		Status           string    `json:"status"`
+		Sha              string    `json:"sha"`
+		Version          string    `json:"version"`
+		Url              string    `json:"url"`
+		LatestEvidenceId uuid.UUID `json:"latestEvidenceId" doc:"The deployment's involvement evidence on the service, to cite"`
+		RepositoryName   string    `json:"repositoryName"`
 		// MergedChangesUnlinked says why merged changes cannot be linked; empty when they can.
 		MergedChangesUnlinked string                       `json:"mergedChangesUnlinked" enum:",no_repository,repository_not_from_code_forge"`
 		MergedChanges         []SituationBriefMergedChange `json:"mergedChanges"`
@@ -379,7 +391,7 @@ type (
 	}
 
 	SituationBriefMergedChange struct {
-		Id       uuid.UUID `json:"id" doc:"The change's knowledge entity"`
+		Id       uuid.UUID `json:"id" doc:"The merged change's change point"`
 		Number   int       `json:"number"`
 		Title    string    `json:"title"`
 		Author   string    `json:"author"`
@@ -455,7 +467,7 @@ func situationBriefServiceChangesFromRez(changes rez.SituationBriefServiceChange
 
 func situationBriefDeploymentFromRez(deployment rez.SituationBriefDeployment) SituationBriefDeployment {
 	converted := SituationBriefDeployment{
-		Id:                    deployment.Deployment.ID,
+		Id:                    deployment.Deployment.ChangePoint.ID,
 		DeployedAt:            deployment.DeployedAt,
 		AfterOpened:           deployment.AfterOpened,
 		Environment:           deployment.Environment,
@@ -463,7 +475,7 @@ func situationBriefDeploymentFromRez(deployment rez.SituationBriefDeployment) Si
 		Sha:                   deployment.Sha,
 		Version:               deployment.Version,
 		Url:                   deployment.URL,
-		LatestEvidenceId:      deployment.LatestEvidenceID,
+		LatestEvidenceId:      deployment.Deployment.Involvement.EvidenceID,
 		RepositoryName:        deployment.RepositoryName,
 		MergedChangesUnlinked: string(deployment.MergedChangesUnlinked),
 		MergedChanges:         make([]SituationBriefMergedChange, len(deployment.MergedChanges)),
@@ -471,9 +483,9 @@ func situationBriefDeploymentFromRez(deployment rez.SituationBriefDeployment) Si
 	}
 	for index, change := range deployment.MergedChanges {
 		converted.MergedChanges[index] = SituationBriefMergedChange{
-			Id:       change.Change.ID,
+			Id:       change.Change.ChangePoint.ID,
 			Number:   change.Number,
-			Title:    change.Change.State.DisplayName,
+			Title:    change.Title,
 			Author:   change.Author,
 			MergedAt: change.MergedAt,
 			Url:      change.URL,

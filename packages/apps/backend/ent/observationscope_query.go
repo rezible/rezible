@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -14,63 +15,63 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/observationscope"
+	"github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// SituationEntityQuery is the builder for querying SituationEntity entities.
-type SituationEntityQuery struct {
+// ObservationScopeQuery is the builder for querying ObservationScope entities.
+type ObservationScopeQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []situationentity.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.SituationEntity
-	withTenant          *TenantQuery
-	withSituation       *SituationQuery
-	withKnowledgeEntity *KnowledgeEntityQuery
-	modifiers           []func(*sql.Selector)
+	ctx              *QueryContext
+	order            []observationscope.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.ObservationScope
+	withTenant       *TenantQuery
+	withAlertEpisode *AlertEpisodeQuery
+	withEntities     *ObservationScopeEntityQuery
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the SituationEntityQuery builder.
-func (_q *SituationEntityQuery) Where(ps ...predicate.SituationEntity) *SituationEntityQuery {
+// Where adds a new predicate for the ObservationScopeQuery builder.
+func (_q *ObservationScopeQuery) Where(ps ...predicate.ObservationScope) *ObservationScopeQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *SituationEntityQuery) Limit(limit int) *SituationEntityQuery {
+func (_q *ObservationScopeQuery) Limit(limit int) *ObservationScopeQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *SituationEntityQuery) Offset(offset int) *SituationEntityQuery {
+func (_q *ObservationScopeQuery) Offset(offset int) *ObservationScopeQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *SituationEntityQuery) Unique(unique bool) *SituationEntityQuery {
+func (_q *ObservationScopeQuery) Unique(unique bool) *ObservationScopeQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *SituationEntityQuery) Order(o ...situationentity.OrderOption) *SituationEntityQuery {
+func (_q *ObservationScopeQuery) Order(o ...observationscope.OrderOption) *ObservationScopeQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *SituationEntityQuery) QueryTenant() *TenantQuery {
+func (_q *ObservationScopeQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -81,22 +82,22 @@ func (_q *SituationEntityQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(situationentity.Table, situationentity.FieldID, selector),
+			sqlgraph.From(observationscope.Table, observationscope.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, situationentity.TenantTable, situationentity.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, observationscope.TenantTable, observationscope.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SituationEntity
+		step.Edge.Schema = schemaConfig.ObservationScope
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QuerySituation chains the current query on the "situation" edge.
-func (_q *SituationEntityQuery) QuerySituation() *SituationQuery {
-	query := (&SituationClient{config: _q.config}).Query()
+// QueryAlertEpisode chains the current query on the "alert_episode" edge.
+func (_q *ObservationScopeQuery) QueryAlertEpisode() *AlertEpisodeQuery {
+	query := (&AlertEpisodeClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -106,22 +107,22 @@ func (_q *SituationEntityQuery) QuerySituation() *SituationQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(situationentity.Table, situationentity.FieldID, selector),
-			sqlgraph.To(situation.Table, situation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, situationentity.SituationTable, situationentity.SituationColumn),
+			sqlgraph.From(observationscope.Table, observationscope.FieldID, selector),
+			sqlgraph.To(alertepisode.Table, alertepisode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, observationscope.AlertEpisodeTable, observationscope.AlertEpisodeColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Situation
-		step.Edge.Schema = schemaConfig.SituationEntity
+		step.To.Schema = schemaConfig.AlertEpisode
+		step.Edge.Schema = schemaConfig.ObservationScope
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
-func (_q *SituationEntityQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+// QueryEntities chains the current query on the "entities" edge.
+func (_q *ObservationScopeQuery) QueryEntities() *ObservationScopeEntityQuery {
+	query := (&ObservationScopeEntityClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -131,34 +132,34 @@ func (_q *SituationEntityQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(situationentity.Table, situationentity.FieldID, selector),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, situationentity.KnowledgeEntityTable, situationentity.KnowledgeEntityColumn),
+			sqlgraph.From(observationscope.Table, observationscope.FieldID, selector),
+			sqlgraph.To(observationscopeentity.Table, observationscopeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, observationscope.EntitiesTable, observationscope.EntitiesColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.SituationEntity
+		step.To.Schema = schemaConfig.ObservationScopeEntity
+		step.Edge.Schema = schemaConfig.ObservationScopeEntity
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// First returns the first SituationEntity entity from the query.
-// Returns a *NotFoundError when no SituationEntity was found.
-func (_q *SituationEntityQuery) First(ctx context.Context) (*SituationEntity, error) {
+// First returns the first ObservationScope entity from the query.
+// Returns a *NotFoundError when no ObservationScope was found.
+func (_q *ObservationScopeQuery) First(ctx context.Context) (*ObservationScope, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{situationentity.Label}
+		return nil, &NotFoundError{observationscope.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *SituationEntityQuery) FirstX(ctx context.Context) *SituationEntity {
+func (_q *ObservationScopeQuery) FirstX(ctx context.Context) *ObservationScope {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -166,22 +167,22 @@ func (_q *SituationEntityQuery) FirstX(ctx context.Context) *SituationEntity {
 	return node
 }
 
-// FirstID returns the first SituationEntity ID from the query.
-// Returns a *NotFoundError when no SituationEntity ID was found.
-func (_q *SituationEntityQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first ObservationScope ID from the query.
+// Returns a *NotFoundError when no ObservationScope ID was found.
+func (_q *ObservationScopeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{situationentity.Label}
+		err = &NotFoundError{observationscope.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *SituationEntityQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *ObservationScopeQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -189,10 +190,10 @@ func (_q *SituationEntityQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single SituationEntity entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one SituationEntity entity is found.
-// Returns a *NotFoundError when no SituationEntity entities are found.
-func (_q *SituationEntityQuery) Only(ctx context.Context) (*SituationEntity, error) {
+// Only returns a single ObservationScope entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one ObservationScope entity is found.
+// Returns a *NotFoundError when no ObservationScope entities are found.
+func (_q *ObservationScopeQuery) Only(ctx context.Context) (*ObservationScope, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -201,14 +202,14 @@ func (_q *SituationEntityQuery) Only(ctx context.Context) (*SituationEntity, err
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{situationentity.Label}
+		return nil, &NotFoundError{observationscope.Label}
 	default:
-		return nil, &NotSingularError{situationentity.Label}
+		return nil, &NotSingularError{observationscope.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *SituationEntityQuery) OnlyX(ctx context.Context) *SituationEntity {
+func (_q *ObservationScopeQuery) OnlyX(ctx context.Context) *ObservationScope {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -216,10 +217,10 @@ func (_q *SituationEntityQuery) OnlyX(ctx context.Context) *SituationEntity {
 	return node
 }
 
-// OnlyID is like Only, but returns the only SituationEntity ID in the query.
-// Returns a *NotSingularError when more than one SituationEntity ID is found.
+// OnlyID is like Only, but returns the only ObservationScope ID in the query.
+// Returns a *NotSingularError when more than one ObservationScope ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *SituationEntityQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *ObservationScopeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -228,15 +229,15 @@ func (_q *SituationEntityQuery) OnlyID(ctx context.Context) (id uuid.UUID, err e
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{situationentity.Label}
+		err = &NotFoundError{observationscope.Label}
 	default:
-		err = &NotSingularError{situationentity.Label}
+		err = &NotSingularError{observationscope.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *SituationEntityQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *ObservationScopeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -244,18 +245,18 @@ func (_q *SituationEntityQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of SituationEntities.
-func (_q *SituationEntityQuery) All(ctx context.Context) ([]*SituationEntity, error) {
+// All executes the query and returns a list of ObservationScopes.
+func (_q *ObservationScopeQuery) All(ctx context.Context) ([]*ObservationScope, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*SituationEntity, *SituationEntityQuery]()
-	return withInterceptors[[]*SituationEntity](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*ObservationScope, *ObservationScopeQuery]()
+	return withInterceptors[[]*ObservationScope](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *SituationEntityQuery) AllX(ctx context.Context) []*SituationEntity {
+func (_q *ObservationScopeQuery) AllX(ctx context.Context) []*ObservationScope {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -263,20 +264,20 @@ func (_q *SituationEntityQuery) AllX(ctx context.Context) []*SituationEntity {
 	return nodes
 }
 
-// IDs executes the query and returns a list of SituationEntity IDs.
-func (_q *SituationEntityQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of ObservationScope IDs.
+func (_q *ObservationScopeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(situationentity.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(observationscope.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *SituationEntityQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *ObservationScopeQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -285,16 +286,16 @@ func (_q *SituationEntityQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *SituationEntityQuery) Count(ctx context.Context) (int, error) {
+func (_q *ObservationScopeQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*SituationEntityQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*ObservationScopeQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *SituationEntityQuery) CountX(ctx context.Context) int {
+func (_q *ObservationScopeQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -303,7 +304,7 @@ func (_q *SituationEntityQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *SituationEntityQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *ObservationScopeQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -316,7 +317,7 @@ func (_q *SituationEntityQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *SituationEntityQuery) ExistX(ctx context.Context) bool {
+func (_q *ObservationScopeQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -324,21 +325,21 @@ func (_q *SituationEntityQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the SituationEntityQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the ObservationScopeQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *SituationEntityQuery) Clone() *SituationEntityQuery {
+func (_q *ObservationScopeQuery) Clone() *ObservationScopeQuery {
 	if _q == nil {
 		return nil
 	}
-	return &SituationEntityQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]situationentity.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.SituationEntity{}, _q.predicates...),
-		withTenant:          _q.withTenant.Clone(),
-		withSituation:       _q.withSituation.Clone(),
-		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
+	return &ObservationScopeQuery{
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]observationscope.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.ObservationScope{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withAlertEpisode: _q.withAlertEpisode.Clone(),
+		withEntities:     _q.withEntities.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -348,7 +349,7 @@ func (_q *SituationEntityQuery) Clone() *SituationEntityQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationEntityQuery) WithTenant(opts ...func(*TenantQuery)) *SituationEntityQuery {
+func (_q *ObservationScopeQuery) WithTenant(opts ...func(*TenantQuery)) *ObservationScopeQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -357,25 +358,25 @@ func (_q *SituationEntityQuery) WithTenant(opts ...func(*TenantQuery)) *Situatio
 	return _q
 }
 
-// WithSituation tells the query-builder to eager-load the nodes that are connected to
-// the "situation" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationEntityQuery) WithSituation(opts ...func(*SituationQuery)) *SituationEntityQuery {
-	query := (&SituationClient{config: _q.config}).Query()
+// WithAlertEpisode tells the query-builder to eager-load the nodes that are connected to
+// the "alert_episode" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ObservationScopeQuery) WithAlertEpisode(opts ...func(*AlertEpisodeQuery)) *ObservationScopeQuery {
+	query := (&AlertEpisodeClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withSituation = query
+	_q.withAlertEpisode = query
 	return _q
 }
 
-// WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
-// the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationEntityQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *SituationEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+// WithEntities tells the query-builder to eager-load the nodes that are connected to
+// the "entities" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ObservationScopeQuery) WithEntities(opts ...func(*ObservationScopeEntityQuery)) *ObservationScopeQuery {
+	query := (&ObservationScopeEntityClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withKnowledgeEntity = query
+	_q.withEntities = query
 	return _q
 }
 
@@ -389,15 +390,15 @@ func (_q *SituationEntityQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntit
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.SituationEntity.Query().
-//		GroupBy(situationentity.FieldTenantID).
+//	client.ObservationScope.Query().
+//		GroupBy(observationscope.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *SituationEntityQuery) GroupBy(field string, fields ...string) *SituationEntityGroupBy {
+func (_q *ObservationScopeQuery) GroupBy(field string, fields ...string) *ObservationScopeGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SituationEntityGroupBy{build: _q}
+	grbuild := &ObservationScopeGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = situationentity.Label
+	grbuild.label = observationscope.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -411,23 +412,23 @@ func (_q *SituationEntityQuery) GroupBy(field string, fields ...string) *Situati
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.SituationEntity.Query().
-//		Select(situationentity.FieldTenantID).
+//	client.ObservationScope.Query().
+//		Select(observationscope.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *SituationEntityQuery) Select(fields ...string) *SituationEntitySelect {
+func (_q *ObservationScopeQuery) Select(fields ...string) *ObservationScopeSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &SituationEntitySelect{SituationEntityQuery: _q}
-	sbuild.label = situationentity.Label
+	sbuild := &ObservationScopeSelect{ObservationScopeQuery: _q}
+	sbuild.label = observationscope.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a SituationEntitySelect configured with the given aggregations.
-func (_q *SituationEntityQuery) Aggregate(fns ...AggregateFunc) *SituationEntitySelect {
+// Aggregate returns a ObservationScopeSelect configured with the given aggregations.
+func (_q *ObservationScopeQuery) Aggregate(fns ...AggregateFunc) *ObservationScopeSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *SituationEntityQuery) prepareQuery(ctx context.Context) error {
+func (_q *ObservationScopeQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -439,7 +440,7 @@ func (_q *SituationEntityQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !situationentity.ValidColumn(f) {
+		if !observationscope.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -450,35 +451,35 @@ func (_q *SituationEntityQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if situationentity.Policy == nil {
-		return errors.New("ent: uninitialized situationentity.Policy (forgotten import ent/runtime?)")
+	if observationscope.Policy == nil {
+		return errors.New("ent: uninitialized observationscope.Policy (forgotten import ent/runtime?)")
 	}
-	if err := situationentity.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := observationscope.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *SituationEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SituationEntity, error) {
+func (_q *ObservationScopeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ObservationScope, error) {
 	var (
-		nodes       = []*SituationEntity{}
+		nodes       = []*ObservationScope{}
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withTenant != nil,
-			_q.withSituation != nil,
-			_q.withKnowledgeEntity != nil,
+			_q.withAlertEpisode != nil,
+			_q.withEntities != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*SituationEntity).scanValues(nil, columns)
+		return (*ObservationScope).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SituationEntity{config: _q.config}
+		node := &ObservationScope{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.SituationEntity
+	_spec.Node.Schema = _q.schemaConfig.ObservationScope
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -494,28 +495,29 @@ func (_q *SituationEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *SituationEntity, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *ObservationScope, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withSituation; query != nil {
-		if err := _q.loadSituation(ctx, query, nodes, nil,
-			func(n *SituationEntity, e *Situation) { n.Edges.Situation = e }); err != nil {
+	if query := _q.withAlertEpisode; query != nil {
+		if err := _q.loadAlertEpisode(ctx, query, nodes, nil,
+			func(n *ObservationScope, e *AlertEpisode) { n.Edges.AlertEpisode = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withKnowledgeEntity; query != nil {
-		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
-			func(n *SituationEntity, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
+	if query := _q.withEntities; query != nil {
+		if err := _q.loadEntities(ctx, query, nodes,
+			func(n *ObservationScope) { n.Edges.Entities = []*ObservationScopeEntity{} },
+			func(n *ObservationScope, e *ObservationScopeEntity) { n.Edges.Entities = append(n.Edges.Entities, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *SituationEntityQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SituationEntity, init func(*SituationEntity), assign func(*SituationEntity, *Tenant)) error {
+func (_q *ObservationScopeQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*ObservationScope, init func(*ObservationScope), assign func(*ObservationScope, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*SituationEntity)
+	nodeids := make(map[int][]*ObservationScope)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -542,11 +544,14 @@ func (_q *SituationEntityQuery) loadTenant(ctx context.Context, query *TenantQue
 	}
 	return nil
 }
-func (_q *SituationEntityQuery) loadSituation(ctx context.Context, query *SituationQuery, nodes []*SituationEntity, init func(*SituationEntity), assign func(*SituationEntity, *Situation)) error {
+func (_q *ObservationScopeQuery) loadAlertEpisode(ctx context.Context, query *AlertEpisodeQuery, nodes []*ObservationScope, init func(*ObservationScope), assign func(*ObservationScope, *AlertEpisode)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SituationEntity)
+	nodeids := make(map[uuid.UUID][]*ObservationScope)
 	for i := range nodes {
-		fk := nodes[i].SituationID
+		if nodes[i].AlertEpisodeID == nil {
+			continue
+		}
+		fk := *nodes[i].AlertEpisodeID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -555,7 +560,7 @@ func (_q *SituationEntityQuery) loadSituation(ctx context.Context, query *Situat
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(situation.IDIn(ids...))
+	query.Where(alertepisode.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -563,7 +568,7 @@ func (_q *SituationEntityQuery) loadSituation(ctx context.Context, query *Situat
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "situation_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "alert_episode_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -571,39 +576,40 @@ func (_q *SituationEntityQuery) loadSituation(ctx context.Context, query *Situat
 	}
 	return nil
 }
-func (_q *SituationEntityQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*SituationEntity, init func(*SituationEntity), assign func(*SituationEntity, *KnowledgeEntity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SituationEntity)
+func (_q *ObservationScopeQuery) loadEntities(ctx context.Context, query *ObservationScopeEntityQuery, nodes []*ObservationScope, init func(*ObservationScope), assign func(*ObservationScope, *ObservationScopeEntity)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*ObservationScope)
 	for i := range nodes {
-		fk := nodes[i].KnowledgeEntityID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
 		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(ids) == 0 {
-		return nil
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(observationscopeentity.FieldScopeID)
 	}
-	query.Where(knowledgeentity.IDIn(ids...))
+	query.Where(predicate.ObservationScopeEntity(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(observationscope.EntitiesColumn), fks...))
+	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		fk := n.ScopeID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "knowledge_entity_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "scope_id" returned %v for node %v`, fk, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
+		assign(node, n)
 	}
 	return nil
 }
 
-func (_q *SituationEntityQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *ObservationScopeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.SituationEntity
+	_spec.Node.Schema = _q.schemaConfig.ObservationScope
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -615,8 +621,8 @@ func (_q *SituationEntityQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *SituationEntityQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(situationentity.Table, situationentity.Columns, sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID))
+func (_q *ObservationScopeQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(observationscope.Table, observationscope.Columns, sqlgraph.NewFieldSpec(observationscope.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -625,20 +631,17 @@ func (_q *SituationEntityQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, situationentity.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, observationscope.FieldID)
 		for i := range fields {
-			if fields[i] != situationentity.FieldID {
+			if fields[i] != observationscope.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(situationentity.FieldTenantID)
+			_spec.Node.AddColumnOnce(observationscope.FieldTenantID)
 		}
-		if _q.withSituation != nil {
-			_spec.Node.AddColumnOnce(situationentity.FieldSituationID)
-		}
-		if _q.withKnowledgeEntity != nil {
-			_spec.Node.AddColumnOnce(situationentity.FieldKnowledgeEntityID)
+		if _q.withAlertEpisode != nil {
+			_spec.Node.AddColumnOnce(observationscope.FieldAlertEpisodeID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -664,12 +667,12 @@ func (_q *SituationEntityQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *SituationEntityQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *ObservationScopeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(situationentity.Table)
+	t1 := builder.Table(observationscope.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = situationentity.Columns
+		columns = observationscope.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -679,7 +682,7 @@ func (_q *SituationEntityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.SituationEntity)
+	t1.Schema(_q.schemaConfig.ObservationScope)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -705,7 +708,7 @@ func (_q *SituationEntityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 // ForUpdate locks the selected rows against concurrent updates, and prevent them from being
 // updated, deleted or "selected ... for update" by other sessions, until the transaction is
 // either committed or rolled-back.
-func (_q *SituationEntityQuery) ForUpdate(opts ...sql.LockOption) *SituationEntityQuery {
+func (_q *ObservationScopeQuery) ForUpdate(opts ...sql.LockOption) *ObservationScopeQuery {
 	if _q.driver.Dialect() == dialect.Postgres {
 		_q.Unique(false)
 	}
@@ -718,7 +721,7 @@ func (_q *SituationEntityQuery) ForUpdate(opts ...sql.LockOption) *SituationEnti
 // ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
 // on any rows that are read. Other sessions can read the rows, but cannot modify them
 // until your transaction commits.
-func (_q *SituationEntityQuery) ForShare(opts ...sql.LockOption) *SituationEntityQuery {
+func (_q *ObservationScopeQuery) ForShare(opts ...sql.LockOption) *ObservationScopeQuery {
 	if _q.driver.Dialect() == dialect.Postgres {
 		_q.Unique(false)
 	}
@@ -729,33 +732,33 @@ func (_q *SituationEntityQuery) ForShare(opts ...sql.LockOption) *SituationEntit
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *SituationEntityQuery) Modify(modifiers ...func(s *sql.Selector)) *SituationEntitySelect {
+func (_q *ObservationScopeQuery) Modify(modifiers ...func(s *sql.Selector)) *ObservationScopeSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// SituationEntityGroupBy is the group-by builder for SituationEntity entities.
-type SituationEntityGroupBy struct {
+// ObservationScopeGroupBy is the group-by builder for ObservationScope entities.
+type ObservationScopeGroupBy struct {
 	selector
-	build *SituationEntityQuery
+	build *ObservationScopeQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *SituationEntityGroupBy) Aggregate(fns ...AggregateFunc) *SituationEntityGroupBy {
+func (_g *ObservationScopeGroupBy) Aggregate(fns ...AggregateFunc) *ObservationScopeGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *SituationEntityGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *ObservationScopeGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SituationEntityQuery, *SituationEntityGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*ObservationScopeQuery, *ObservationScopeGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *SituationEntityGroupBy) sqlScan(ctx context.Context, root *SituationEntityQuery, v any) error {
+func (_g *ObservationScopeGroupBy) sqlScan(ctx context.Context, root *ObservationScopeQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -782,28 +785,28 @@ func (_g *SituationEntityGroupBy) sqlScan(ctx context.Context, root *SituationEn
 	return sql.ScanSlice(rows, v)
 }
 
-// SituationEntitySelect is the builder for selecting fields of SituationEntity entities.
-type SituationEntitySelect struct {
-	*SituationEntityQuery
+// ObservationScopeSelect is the builder for selecting fields of ObservationScope entities.
+type ObservationScopeSelect struct {
+	*ObservationScopeQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *SituationEntitySelect) Aggregate(fns ...AggregateFunc) *SituationEntitySelect {
+func (_s *ObservationScopeSelect) Aggregate(fns ...AggregateFunc) *ObservationScopeSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *SituationEntitySelect) Scan(ctx context.Context, v any) error {
+func (_s *ObservationScopeSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SituationEntityQuery, *SituationEntitySelect](ctx, _s.SituationEntityQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*ObservationScopeQuery, *ObservationScopeSelect](ctx, _s.ObservationScopeQuery, _s, _s.inters, v)
 }
 
-func (_s *SituationEntitySelect) sqlScan(ctx context.Context, root *SituationEntityQuery, v any) error {
+func (_s *ObservationScopeSelect) sqlScan(ctx context.Context, root *ObservationScopeQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -825,7 +828,7 @@ func (_s *SituationEntitySelect) sqlScan(ctx context.Context, root *SituationEnt
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *SituationEntitySelect) Modify(modifiers ...func(s *sql.Selector)) *SituationEntitySelect {
+func (_s *ObservationScopeSelect) Modify(modifiers ...func(s *sql.Selector)) *ObservationScopeSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

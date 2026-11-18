@@ -10,14 +10,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/schema"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
-)
-
-const (
-	knowledgeAssertionIncidentObserved = "incident_observed"
 )
 
 func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projections.IncidentEvent) ([]rez.ProjectedEntityRef, error) {
@@ -29,36 +22,21 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 		openedAt = event.OccurredAt
 	}
 
-	incidentResourceRef := rez.ProviderResourceRef{
+	incidentRef := rez.ProviderResourceRef{
 		Provider:          event.Provider,
 		ProviderNamespace: event.ProviderNamespace,
 		ResourceRef:       event.ProviderResourceRef,
 	}
-	incidentEntityRef := rez.KnowledgeEntityRef{
-		Category:            kne.CategoryEvent,
-		Kind:                knowledgeEntityKindIncident,
-		ProviderResourceRef: incidentResourceRef,
-	}
-	incidentObservedEvidence := rez.KnowledgeEvidenceRef{
-		Kind:        projectionEvidenceKind(event),
-		Assertion:   knowledgeAssertionIncidentObserved,
-		EffectiveAt: openedAt,
-		SubjectState: schematypes.KnowledgeGraphSubjectState{
-			DisplayName: attrs.Title,
-			Description: attrs.Summary,
-		},
-		Subject: rez.KnowledgeSubjectRef{Entity: &incidentEntityRef},
-	}
 
 	return ent.WithTxReturning(ctx, s.db, func(ctx context.Context, tx *ent.Client) ([]rez.ProjectedEntityRef, error) {
 		var projected []rez.ProjectedEntityRef
-		knowledgeEntityId, ingestErr := s.ingestEntityEvidence(ctx, event, incidentObservedEvidence)
-		if ingestErr != nil {
-			return nil, fmt.Errorf("incident knowledge evidence: %w", ingestErr)
-		}
-
-		queryExisting := tx.Incident.Query().Where(incident.KnowledgeEntityID(knowledgeEntityId))
-		existing, existingErr := queryExisting.Only(schema.IncludeArchived(ctx))
+		queryExisting := tx.Incident.Query().
+			Where(
+				incident.Provider(incidentRef.Provider),
+				incident.ProviderNamespace(incidentRef.ProviderNamespace),
+				incident.ProviderResourceRef(incidentRef.ResourceRef),
+			)
+		existing, existingErr := queryExisting.Only(ent.IncludeArchived(ctx))
 		if existingErr != nil && !ent.IsNotFound(existingErr) {
 			return nil, fmt.Errorf("query existing incident: %w", existingErr)
 		}
@@ -86,19 +64,19 @@ func (s *ProjectionService) handleIncidentEvent(ctx context.Context, e *projecti
 		}
 
 		observeParams := rez.RecordObservedIncidentParams{
-			KnowledgeEntityID: knowledgeEntityId,
-			Title:             attrs.Title,
-			Summary:           attrs.Summary,
-			SeverityID:        severityID,
-			TypeID:            typeID,
-			OpenedAt:          openedAt,
+			ProviderResourceRef: incidentRef,
+			Title:               attrs.Title,
+			Summary:             attrs.Summary,
+			SeverityID:          severityID,
+			TypeID:              typeID,
+			OpenedAt:            openedAt,
 		}
 		incidentID, observeErr := s.incidents.RecordObservedIncident(ctx, observeParams)
 		if observeErr != nil {
 			return nil, fmt.Errorf("observe incident: %w", observeErr)
 		}
 		projected = append(projected, rez.ProjectedEntityRef{
-			Kind: knowledgeEntityKindIncident,
+			Kind: projections.KindIncident,
 			Id:   incidentID,
 		})
 

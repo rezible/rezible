@@ -51,16 +51,6 @@ var KnowledgeEntityReferences = []KnowledgeReference{
 		},
 	},
 	{
-		Table:  "alert_episodes",
-		Column: "knowledge_entity_id",
-		Update: func(ctx context.Context, client *Client, where func(*sql.Selector), id uuid.UUID) error {
-			update := client.AlertEpisode.Update().
-				Where(predicate.AlertEpisode(where)).
-				SetKnowledgeEntityID(id)
-			return update.Exec(ctx)
-		},
-	},
-	{
 		Table:  "discussion_threads",
 		Column: "target_knowledge_entity_id",
 		Update: func(ctx context.Context, client *Client, where func(*sql.Selector), id uuid.UUID) error {
@@ -88,29 +78,19 @@ var KnowledgeEntityReferences = []KnowledgeReference{
 		},
 	},
 	{
-		Table:  "incidents",
-		Column: "knowledge_entity_id",
-		Update: func(ctx context.Context, client *Client, where func(*sql.Selector), id uuid.UUID) error {
-			update := client.Incident.Update().
-				Where(predicate.Incident(where)).
-				SetKnowledgeEntityID(id)
-			return update.Exec(ctx)
-		},
-	},
-	{
-		Table:            "situation_entities",
+		Table:            "observation_scope_entities",
 		Column:           "knowledge_entity_id",
 		DeleteDuplicates: true,
-		UniqueWith:       []string{"tenant_id", "situation_id"},
+		UniqueWith:       []string{"tenant_id", "scope_id"},
 		Update: func(ctx context.Context, client *Client, where func(*sql.Selector), id uuid.UUID) error {
-			update := client.SituationEntity.Update().
-				Where(predicate.SituationEntity(where)).
+			update := client.ObservationScopeEntity.Update().
+				Where(predicate.ObservationScopeEntity(where)).
 				SetKnowledgeEntityID(id)
 			return update.Exec(ctx)
 		},
 		Delete: func(ctx context.Context, client *Client, where func(*sql.Selector)) (int, error) {
-			deleteRows := client.SituationEntity.Delete().
-				Where(predicate.SituationEntity(where))
+			deleteRows := client.ObservationScopeEntity.Delete().
+				Where(predicate.ObservationScopeEntity(where))
 			return deleteRows.Exec(ctx)
 		},
 	},
@@ -258,31 +238,71 @@ var KnowledgeRelationshipReferences = []KnowledgeReference{
 	},
 }
 
-// KnowledgeForeignKeyConstraints are the names Postgres reports for every foreign key to knowledge entities or
-// relationships, the knowledge graph's own included.
-var KnowledgeForeignKeyConstraints = []string{
-	"agent_provider_reads_knowledge_entities_service_entity",
-	"alert_definitions_knowledge_entities_knowledge_entity",
-	"alert_episodes_knowledge_entities_knowledge_entity",
-	"discussion_threads_knowledge_entities_target_knowledge_entity",
-	"discussion_threads_knowledge_r_ffaf506c4baef0b857b7dfa76ee423ab",
-	"incident_impacts_knowledge_entities_knowledge_entity",
-	"incidents_knowledge_entities_knowledge_entity",
-	"knowledge_entities_knowledge_entities_children",
-	"knowledge_entity_linking_attributes_knowledge_entities_entity",
-	"knowledge_relationships_knowledge_entities_source_entity",
-	"knowledge_relationships_knowledge_entities_target_entity",
-	"knowledge_subject_alias_knowledge_entities_entity",
-	"knowledge_subject_alias_knowledge_relationships_relationship",
-	"situation_entities_knowledge_entities_knowledge_entity",
-	"system_analyses_knowledge_entities_scope_entity",
-	"system_analyses_knowledge_entities_subject_entity",
-	"system_analysis_entities_knowledge_entities_knowledge_entity",
-	"system_analysis_entry_subjects_49d5b666fad2cccccfff680228c04fc3",
-	"system_analysis_entry_subjects_900e59485c580b401fec755bd8cd2504",
-	"system_analysis_relationships__b7ca708fb4a6c01cc857332c522e01e3",
-	"system_hazards_knowledge_entities_knowledge_entity",
-	"team_memberships_knowledge_relationships_knowledge_relationship",
-	"teams_knowledge_entities_knowledge_entity",
-	"users_knowledge_entities_knowledge_entity",
+// KnowledgeReferenceField is a field holding the ID of a knowledge entity or, with Relationship, a knowledge
+// relationship.
+type KnowledgeReferenceField struct {
+	Name         string
+	Relationship bool
+}
+
+// KnowledgeReferenceFields are the fields holding every column that refers to a knowledge entity or
+// relationship, the knowledge graph's own included, by schema type.
+var KnowledgeReferenceFields = map[string][]KnowledgeReferenceField{
+	"AgentProviderRead": {
+		{Name: "service_entity_id"},
+	},
+	"AlertDefinition": {
+		{Name: "knowledge_entity_id"},
+	},
+	"DiscussionThread": {
+		{Name: "target_knowledge_entity_id"},
+		{Name: "target_knowledge_relationship_id", Relationship: true},
+	},
+	"IncidentImpact": {
+		{Name: "knowledge_entity_id"},
+	},
+	"KnowledgeEntity": {
+		{Name: "merged_into_id"},
+	},
+	"KnowledgeEntityLinkingAttribute": {
+		{Name: "entity_id"},
+	},
+	"KnowledgeRelationship": {
+		{Name: "merged_into_id", Relationship: true},
+		{Name: "source_entity_id"},
+		{Name: "target_entity_id"},
+	},
+	"KnowledgeSubjectAlias": {
+		{Name: "entity_id"},
+		{Name: "relationship_id", Relationship: true},
+	},
+	"ObservationScopeEntity": {
+		{Name: "knowledge_entity_id"},
+	},
+	"SystemAnalysis": {
+		{Name: "scope_entity_id"},
+		{Name: "subject_entity_id"},
+	},
+	"SystemAnalysisEntity": {
+		{Name: "knowledge_entity_id"},
+	},
+	"SystemAnalysisEntrySubject": {
+		{Name: "knowledge_entity_id"},
+		{Name: "knowledge_relationship_id", Relationship: true},
+	},
+	"SystemAnalysisRelationship": {
+		{Name: "knowledge_relationship_id", Relationship: true},
+	},
+	"SystemHazard": {
+		{Name: "knowledge_entity_id"},
+	},
+	"Team": {
+		{Name: "knowledge_entity_id"},
+	},
+	"TeamMembership": {
+		{Name: "knowledge_relationship_id", Relationship: true},
+	},
+	"User": {
+		{Name: "knowledge_entity_id"},
+	},
 }

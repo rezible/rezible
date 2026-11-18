@@ -296,7 +296,8 @@ func (h *investigationHarness) loadCitedEvidence(ctx context.Context, evidenceID
 	}
 	client := h.db.Client(ctx)
 	queryEvidence := client.KnowledgeEvidence.Query().
-		Where(kev.IDIn(evidenceIDs...))
+		Where(kev.IDIn(evidenceIDs...)).
+		WithEvent()
 	evidence, evidenceErr := queryEvidence.All(ctx)
 	if evidenceErr != nil {
 		return nil, fmt.Errorf("query cited evidence: %w", evidenceErr)
@@ -341,7 +342,7 @@ func (h *investigationHarness) loadCitedEvidence(ctx context.Context, evidenceID
 	}
 	recordedEntities := make(map[uuid.UUID]RecordedEntity, len(entities))
 	for _, entity := range entities {
-		recordedEntities[entity.ID] = RecordedEntity{Kind: entity.Kind, Name: entity.State.DisplayName, Properties: entity.State.Properties}
+		recordedEntities[entity.ID] = RecordedEntity{Kind: entity.Kind, Name: entity.State.DisplayName}
 	}
 	subjects := make(map[uuid.UUID][]uuid.UUID, len(aliases))
 	for _, alias := range aliases {
@@ -359,7 +360,11 @@ func (h *investigationHarness) loadCitedEvidence(ctx context.Context, evidenceID
 				about = append(about, entity)
 			}
 		}
-		cited[item.ID] = CitedEvidence{Entities: about}
+		var attributes map[string]any
+		if decodeErr := json.Unmarshal(item.Edges.Event.Attributes, &attributes); decodeErr != nil {
+			return nil, fmt.Errorf("decode cited event attributes: %w", decodeErr)
+		}
+		cited[item.ID] = CitedEvidence{Entities: about, EventKind: item.Edges.Event.Kind, Attributes: attributes}
 	}
 	return cited, nil
 }

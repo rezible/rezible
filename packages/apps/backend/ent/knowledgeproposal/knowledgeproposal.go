@@ -143,7 +143,6 @@ const (
 	CategoryConcern        Category = "concern"
 	CategoryDecision       Category = "decision"
 	CategorySignal         Category = "signal"
-	CategoryEvent          Category = "event"
 )
 
 func (c Category) String() string {
@@ -153,7 +152,7 @@ func (c Category) String() string {
 // CategoryValidator is a validator for the "category" field enum values. It is called by the builders before save.
 func CategoryValidator(c Category) error {
 	switch c {
-	case CategorySystemFunction, CategorySystem, CategoryContainer, CategoryComponent, CategoryInfrastructure, CategoryCode, CategoryActor, CategoryProcess, CategoryConcern, CategoryDecision, CategorySignal, CategoryEvent:
+	case CategorySystemFunction, CategorySystem, CategoryContainer, CategoryComponent, CategoryInfrastructure, CategoryCode, CategoryActor, CategoryProcess, CategoryConcern, CategoryDecision, CategorySignal:
 		return nil
 	default:
 		return fmt.Errorf("knowledgeproposal: invalid enum value for category field: %q", c)
@@ -340,7 +339,6 @@ var CategoryValues = []string{
 	"concern",
 	"decision",
 	"signal",
-	"event",
 }
 
 // StatusValues contains all permitted values. Treat this slice as read-only.

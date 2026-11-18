@@ -35,12 +35,14 @@ const (
 	FieldWithdrawnAt = "withdrawn_at"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
+	// FieldMergedIntoID holds the string denoting the merged_into_id field in the database.
+	FieldMergedIntoID = "merged_into_id"
 	// FieldCategory holds the string denoting the category field in the database.
 	FieldCategory = "category"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
-	// FieldParentID holds the string denoting the parent_id field in the database.
-	FieldParentID = "parent_id"
+	// FieldParentIsFallback holds the string denoting the parent_is_fallback field in the database.
+	FieldParentIsFallback = "parent_is_fallback"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
@@ -51,10 +53,10 @@ const (
 	EdgeSourceRelationships = "source_relationships"
 	// EdgeTargetRelationships holds the string denoting the target_relationships edge name in mutations.
 	EdgeTargetRelationships = "target_relationships"
-	// EdgeParent holds the string denoting the parent edge name in mutations.
-	EdgeParent = "parent"
-	// EdgeChildren holds the string denoting the children edge name in mutations.
-	EdgeChildren = "children"
+	// EdgeMergedInto holds the string denoting the merged_into edge name in mutations.
+	EdgeMergedInto = "merged_into"
+	// EdgeRedirects holds the string denoting the redirects edge name in mutations.
+	EdgeRedirects = "redirects"
 	// Table holds the table name of the knowledgeentity in the database.
 	Table = "knowledge_entities"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -92,14 +94,14 @@ const (
 	TargetRelationshipsInverseTable = "knowledge_relationships"
 	// TargetRelationshipsColumn is the table column denoting the target_relationships relation/edge.
 	TargetRelationshipsColumn = "target_entity_id"
-	// ParentTable is the table that holds the parent relation/edge.
-	ParentTable = "knowledge_entities"
-	// ParentColumn is the table column denoting the parent relation/edge.
-	ParentColumn = "parent_id"
-	// ChildrenTable is the table that holds the children relation/edge.
-	ChildrenTable = "knowledge_entities"
-	// ChildrenColumn is the table column denoting the children relation/edge.
-	ChildrenColumn = "parent_id"
+	// MergedIntoTable is the table that holds the merged_into relation/edge.
+	MergedIntoTable = "knowledge_entities"
+	// MergedIntoColumn is the table column denoting the merged_into relation/edge.
+	MergedIntoColumn = "merged_into_id"
+	// RedirectsTable is the table that holds the redirects relation/edge.
+	RedirectsTable = "knowledge_entities"
+	// RedirectsColumn is the table column denoting the redirects relation/edge.
+	RedirectsColumn = "merged_into_id"
 )
 
 // Columns holds all SQL columns for knowledgeentity fields.
@@ -114,9 +116,10 @@ var Columns = []string{
 	FieldLastObservedAt,
 	FieldWithdrawnAt,
 	FieldExpiresAt,
+	FieldMergedIntoID,
 	FieldCategory,
 	FieldKind,
-	FieldParentID,
+	FieldParentIsFallback,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -135,8 +138,9 @@ func ValidColumn(column string) bool {
 //
 //	import _ "github.com/rezible/rezible/ent/runtime"
 var (
-	Hooks  [1]ent.Hook
-	Policy ent.Policy
+	Hooks        [1]ent.Hook
+	Interceptors [1]ent.Interceptor
+	Policy       ent.Policy
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -145,6 +149,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	KindValidator func(string) error
+	// DefaultParentIsFallback holds the default value on creation for the "parent_is_fallback" field.
+	DefaultParentIsFallback bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -165,7 +171,6 @@ const (
 	CategoryConcern        Category = "concern"
 	CategoryDecision       Category = "decision"
 	CategorySignal         Category = "signal"
-	CategoryEvent          Category = "event"
 )
 
 func (c Category) String() string {
@@ -175,7 +180,7 @@ func (c Category) String() string {
 // CategoryValidator is a validator for the "category" field enum values. It is called by the builders before save.
 func CategoryValidator(c Category) error {
 	switch c {
-	case CategorySystemFunction, CategorySystem, CategoryContainer, CategoryComponent, CategoryInfrastructure, CategoryCode, CategoryActor, CategoryProcess, CategoryConcern, CategoryDecision, CategorySignal, CategoryEvent:
+	case CategorySystemFunction, CategorySystem, CategoryContainer, CategoryComponent, CategoryInfrastructure, CategoryCode, CategoryActor, CategoryProcess, CategoryConcern, CategoryDecision, CategorySignal:
 		return nil
 	default:
 		return fmt.Errorf("knowledgeentity: invalid enum value for category field: %q", c)
@@ -225,6 +230,11 @@ func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
 }
 
+// ByMergedIntoID orders the results by the merged_into_id field.
+func ByMergedIntoID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMergedIntoID, opts...).ToFunc()
+}
+
 // ByCategory orders the results by the category field.
 func ByCategory(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCategory, opts...).ToFunc()
@@ -235,9 +245,9 @@ func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
-// ByParentID orders the results by the parent_id field.
-func ByParentID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldParentID, opts...).ToFunc()
+// ByParentIsFallback orders the results by the parent_is_fallback field.
+func ByParentIsFallback(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldParentIsFallback, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -303,24 +313,24 @@ func ByTargetRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOpti
 	}
 }
 
-// ByParentField orders the results by parent field.
-func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByMergedIntoField orders the results by merged_into field.
+func ByMergedIntoField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newParentStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newMergedIntoStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByChildrenCount orders the results by children count.
-func ByChildrenCount(opts ...sql.OrderTermOption) OrderOption {
+// ByRedirectsCount orders the results by redirects count.
+func ByRedirectsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newChildrenStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newRedirectsStep(), opts...)
 	}
 }
 
-// ByChildren orders the results by children terms.
-func ByChildren(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByRedirects orders the results by redirects terms.
+func ByRedirects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newChildrenStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newRedirectsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -358,18 +368,18 @@ func newTargetRelationshipsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, TargetRelationshipsTable, TargetRelationshipsColumn),
 	)
 }
-func newParentStep() *sqlgraph.Step {
+func newMergedIntoStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, ParentTable, ParentColumn),
+		sqlgraph.Edge(sqlgraph.M2O, true, MergedIntoTable, MergedIntoColumn),
 	)
 }
-func newChildrenStep() *sqlgraph.Step {
+func newRedirectsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ChildrenTable, ChildrenColumn),
+		sqlgraph.Edge(sqlgraph.O2M, false, RedirectsTable, RedirectsColumn),
 	)
 }
 
@@ -386,5 +396,4 @@ var CategoryValues = []string{
 	"concern",
 	"decision",
 	"signal",
-	"event",
 }

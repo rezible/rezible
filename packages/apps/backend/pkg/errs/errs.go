@@ -60,8 +60,9 @@ var (
 	ErrNotFound             = New(CodeNotFound, "")
 	ErrNotImplemented       = New(CodeNotImplemented, "")
 	ErrRateLimited          = New(CodeRateLimited, "")
-	// ErrKnowledgeSubjectMerged is a knowledge entity or relationship that an entity merge deleted after the
-	// caller read it. Work retried against the merged graph finds the survivor.
+	// ErrKnowledgeSubjectMerged is a knowledge entity or relationship whose aliases an entity merge moved while
+	// the caller waited for its locks: a re-read under the locks finds them on a subject it did not lock, or finds a
+	// subject it touched redirected. Work retried against the merged graph finds the survivor.
 	ErrKnowledgeSubjectMerged = Wrap(fmt.Errorf("knowledge subject was merged into another: %w", ErrConflict), CodeConflict, "")
 )
 

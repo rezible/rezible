@@ -39,10 +39,10 @@ const entityRows: EntityRow[] = [
 			"sys-fulfilment",
 		];
 	}),
-	// Deployment: environment → cluster → namespace.
-	["env-production", "infrastructure", "environment", "production"],
-	["cl-prod-use1", "infrastructure", "kubernetes_cluster", "prod-use1", "env-production"],
-	["cl-prod-euw1", "infrastructure", "kubernetes_cluster", "prod-euw1", "env-production"],
+	// Deployment: cloud account → cluster → namespace.
+	["acct-commerce-prod", "infrastructure", "cloud_account", "commerce-prod"],
+	["cl-prod-use1", "infrastructure", "kubernetes_cluster", "prod-use1", "acct-commerce-prod"],
+	["cl-prod-euw1", "infrastructure", "kubernetes_cluster", "prod-euw1", "acct-commerce-prod"],
 	["ns-commerce", "infrastructure", "kubernetes_namespace", "commerce", "cl-prod-use1"],
 	["ns-search", "infrastructure", "kubernetes_namespace", "search", "cl-prod-use1"],
 	["ns-commerce-eu", "infrastructure", "kubernetes_namespace", "commerce", "cl-prod-euw1"],
@@ -70,10 +70,10 @@ const parentClaims = entities
 const relationships: GraphRelationship[] = [
 	...parentClaims,
 	relates("sys-commerce-core", "contains", "rt-search-api"),
-	// checkout runs in two namespaces; its placement on production is implied by them, so not shown.
+	// checkout runs in two namespaces; its placement on the account is implied by them, so not shown.
 	relates("rt-checkout", "runs_on", "ns-commerce"),
 	relates("rt-checkout", "runs_on", "ns-commerce-eu"),
-	relates("rt-checkout", "runs_on", "env-production"),
+	relates("rt-checkout", "runs_on", "acct-commerce-prod"),
 	relates("rt-payment-service", "runs_on", "ns-commerce"),
 	relates("rt-payment-worker", "runs_on", "ns-commerce"),
 	relates("rt-search-api", "runs_on", "ns-search"),
@@ -89,7 +89,7 @@ const relationships: GraphRelationship[] = [
 
 /**
  * The checkout example with nested systems, a sidecar container, a disputed parent, roots, a twelve-container
- * system and an environment → cluster → namespace chain.
+ * system and a cloud account → cluster → namespace chain.
  */
 export const fullFixture: FixtureGraph = {
 	entities,

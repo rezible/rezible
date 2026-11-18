@@ -10,14 +10,14 @@ import (
 func TestCheckKinds(t *testing.T) {
 	latestTurn := uuid.New()
 	alert := RecordedEntity{Kind: "alert", Name: "CheckoutHighErrorRate"}
-	deployment := RecordedEntity{Kind: "deployment", Properties: map[string]any{"version": "checkout-api@2041"}}
+	deployment := CitedEvidence{EventKind: "deployment", Attributes: map[string]any{"version": "checkout-api@2041"}}
 	read := RecordedRead{Tool: "search_logs", Service: "payments-api", Outcome: "succeeded"}
 	records := Records{
 		Reads: []RecordedRead{read},
 		Investigation: InvestigationRecords{
 			Reports: []RecordedOutput{
 				{Text: "Checkout may be failing.", NextChecks: []string{"Open the dashboard — metrics are not read"}},
-				{Text: "Checkout is failing.", Evidence: []CitedEvidence{{Entities: []RecordedEntity{deployment}}}},
+				{Text: "Checkout is failing.", Evidence: []CitedEvidence{deployment}},
 			},
 			Findings:              []RecordedOutput{{Title: "Errors", Evidence: []CitedEvidence{{Entities: []RecordedEntity{alert}}}}},
 			Hypotheses:            []RecordedOutput{{Title: "Upstream timeout"}},
@@ -36,7 +36,9 @@ func TestCheckKinds(t *testing.T) {
 		{CheckSpec{Kind: CheckOutputCount, Output: "hypothesis", Max: count(0)}, false},
 		{CheckSpec{Kind: CheckOutputsCite}, false},
 		{CheckSpec{Kind: CheckCitesEntity, EntityKind: "alert", Name: "CheckoutHighErrorRate"}, true},
-		{CheckSpec{Kind: CheckCitesEntity, EntityKind: "deployment", Property: map[string]any{"version": "checkout-api@2040"}}, false},
+		{CheckSpec{Kind: CheckCitesChangePoint, EventKind: "deployment", Attribute: map[string]any{"version": "checkout-api@2040"}}, false},
+		{CheckSpec{Kind: CheckCitesChangePoint, EventKind: "deployment", Attribute: map[string]any{"version": "checkout-api@2041"}}, true},
+		{CheckSpec{Kind: CheckCitesChangePoint, EventKind: "code_change", Attribute: map[string]any{"version": "checkout-api@2041"}}, false},
 		{CheckSpec{Kind: CheckProviderReads, Service: "payments-api", Min: count(1)}, true},
 		{CheckSpec{Kind: CheckCitesProviderRead, Tool: "count_logs"}, false},
 		{CheckSpec{Kind: CheckNextChecks, Min: count(1)}, false},

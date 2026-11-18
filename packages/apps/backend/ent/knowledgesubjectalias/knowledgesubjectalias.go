@@ -35,6 +35,8 @@ const (
 	FieldMergedByProposalID = "merged_by_proposal_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldAuthority holds the string denoting the authority field in the database.
+	FieldAuthority = "authority"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
 	// FieldFirstObservedAt holds the string denoting the first_observed_at field in the database.
@@ -106,6 +108,7 @@ var Columns = []string{
 	FieldRelationshipID,
 	FieldMergedByProposalID,
 	FieldCreatedAt,
+	FieldAuthority,
 	FieldState,
 	FieldFirstObservedAt,
 	FieldLastObservedAt,
@@ -215,6 +218,11 @@ func ByMergedByProposalID(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByAuthority orders the results by the authority field.
+func ByAuthority(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthority, opts...).ToFunc()
 }
 
 // ByFirstObservedAt orders the results by the first_observed_at field.

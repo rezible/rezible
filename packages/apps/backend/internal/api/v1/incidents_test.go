@@ -63,7 +63,7 @@ func (s *IncidentsHandlerSuite) TestGetIncidentByReference() {
 	api.UseMiddleware(func(hctx huma.Context, next func(huma.Context)) {
 		next(huma.WithContext(hctx, execution.NewUserContext(hctx.Context(), identity.Session)))
 	})
-	huma.Register(api, oapi.GetIncident, newIncidentsHandler(nil, details, nil).GetIncident)
+	huma.Register(api, oapi.GetIncident, newIncidentsHandler(nil, test.NewClock(time.Now()), details, nil).GetIncident)
 
 	for _, key := range []string{"INC-2", "inc-2", "2", second.ID.String()} {
 		response := api.Get("/incidents/" + key)
@@ -117,7 +117,7 @@ func (s *IncidentsHandlerSuite) TestReferencesToAnotherTenantAreNotFound() {
 	api.UseMiddleware(func(hctx huma.Context, next func(huma.Context)) {
 		next(huma.WithContext(hctx, execution.NewUserContext(hctx.Context(), identity.Session)))
 	})
-	incidents := newIncidentsHandler(nil, details, management)
+	incidents := newIncidentsHandler(nil, test.NewClock(time.Now()), details, management)
 	huma.Register(api, oapi.GetIncident, incidents.GetIncident)
 	huma.Register(api, oapi.UpdateIncident, incidents.UpdateIncident)
 	huma.Register(api, oapi.CreateIncidentRoleAssignment, incidents.CreateIncidentRoleAssignment)

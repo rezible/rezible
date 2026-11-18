@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"slices"
 	"sort"
 	"strings"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -20,7 +20,6 @@ import (
 	"github.com/rezible/rezible/ent/entpgx"
 	"github.com/rezible/rezible/ent/hook"
 	_ "github.com/rezible/rezible/ent/runtime"
-	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/rezible/rezible/pkg/errs"
@@ -52,7 +51,8 @@ func newDatabaseClient(driver dialect.Driver, encryptionKey []byte) (*DatabaseCl
 	}
 	dbc := &DatabaseClient{}
 	dbc.client = ent.NewClient(ent.Driver(driver))
-	dbc.client.Use(dbc.ensureTenantIdSetHook(), dbc.tenantReferencesHook(), dbc.missingReferenceHook())
+	// The first hook runs outermost: references are canonical before the tenant reference check counts them.
+	dbc.client.Use(dbc.ensureTenantIdSetHook(), dbc.canonicalKnowledgeReferencesHook(), dbc.tenantReferencesHook(), dbc.missingReferenceHook())
 	dbc.client.Intercept(dbc.setTenantContextInterceptor())
 	return dbc, nil
 }
@@ -115,16 +115,6 @@ func (dbc *DatabaseClient) IsConstraintError(err error) (string, bool) {
 		return "", false
 	}
 	return pgErr.ConstraintName, true
-}
-
-// IsForeignKeyError reports whether opErr is a foreign key violation (SQLSTATE 23503) of one of the named
-// constraints.
-func (dbc *DatabaseClient) IsForeignKeyError(opErr error, constraints ...string) bool {
-	pgErr, ok := errors.AsType[*pgconn.PgError](opErr)
-	if !ok || pgErr.Code != foreignKeyViolation {
-		return false
-	}
-	return slices.Contains(constraints, pgErr.ConstraintName)
 }
 
 func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Context, tx *ent.Client) error, opts ...ent.TxOption) error {
@@ -237,9 +227,48 @@ func (dbc *DatabaseClient) ensureTenantIdSetHook() ent.Hook {
 	}
 }
 
+// canonicalKnowledgeReferencesHook makes a write naming a merged knowledge subject store its survivor, so call
+// sites need not know about merges. It reads each subject FOR KEY SHARE, which holds off a merge only inside a
+// transaction; outside one, a racing write can still store the merged subject, which stays readable.
+func (dbc *DatabaseClient) canonicalKnowledgeReferencesHook() ent.Hook {
+	type clientMutation interface {
+		Client() *ent.Client
+	}
+	return hook.On(func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			for _, field := range ent.KnowledgeReferenceFields[m.Type()] {
+				value, isSet := m.Field(field.Name)
+				if !isSet {
+					continue
+				}
+				id, isID := value.(uuid.UUID)
+				if !isID {
+					return nil, fmt.Errorf("canonicalize %s.%s: %T is not a UUID", m.Type(), field.Name, value)
+				}
+				resolve := ent.ResolveKnowledgeEntityID
+				if field.Relationship {
+					resolve = ent.ResolveKnowledgeRelationshipID
+				}
+				canonical, resolveErr := resolve(ctx, m.(clientMutation).Client(), id)
+				if ent.IsNotFound(resolveErr) {
+					// Left to the tenant reference check and the foreign key to report.
+					continue
+				} else if resolveErr != nil {
+					return nil, fmt.Errorf("canonicalize %s.%s: %w", m.Type(), field.Name, resolveErr)
+				}
+				if canonical != id {
+					if setErr := m.SetField(field.Name, canonical); setErr != nil {
+						return nil, setErr
+					}
+				}
+			}
+			return next.Mutate(ctx, m)
+		})
+	}, ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne)
+}
+
 // tenantReferencesHook rejects a write that sets or adds an edge to a missing row or one in another tenant, before
-// the write runs. Under schema.ReportMissingReferences a missing row is left to the foreign key. Archived rows
-// count as present: archiving is not a tenant boundary.
+// the write runs. Archived rows and merged knowledge subjects count as present: neither is a tenant boundary.
 func (dbc *DatabaseClient) tenantReferencesHook() ent.Hook {
 	type tenantReferencesMutation interface {
 		CheckTenantReferences(context.Context) error
@@ -247,7 +276,7 @@ func (dbc *DatabaseClient) tenantReferencesHook() ent.Hook {
 	return hook.On(func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if rm, ok := m.(tenantReferencesMutation); ok {
-				if checkErr := rm.CheckTenantReferences(schema.IncludeArchived(ctx)); checkErr != nil {
+				if checkErr := rm.CheckTenantReferences(ent.IncludeMerged(ent.IncludeArchived(ctx))); checkErr != nil {
 					if ent.IsNotFound(checkErr) {
 						return nil, fmt.Errorf("%w: %w", errs.ErrNotFound, checkErr)
 					}

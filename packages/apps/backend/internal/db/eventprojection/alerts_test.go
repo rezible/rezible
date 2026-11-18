@@ -27,6 +27,7 @@ func (s *ProjectionServiceSuite) createAlertProjectionEvent(ctx context.Context,
 		SetProviderEventRef("alert-event-" + uuid.NewString()).
 		SetKind(projections.KindAlertInstance).
 		SetOccurredAt(occurredAt).
+		SetLastOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
 		SetAttributes(encoded)
 	event, saveErr := createEvent.Save(ctx)

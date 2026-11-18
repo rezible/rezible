@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -26,6 +28,8 @@ type NormalizedEventProjection struct {
 	EventID uuid.UUID `json:"event_id,omitempty"`
 	// CompletedAt holds the value of the "completed_at" field.
 	CompletedAt time.Time `json:"completed_at,omitempty"`
+	// SkippedRefs holds the value of the "skipped_refs" field.
+	SkippedRefs []schematypes.SkippedEvidenceRef `json:"skipped_refs,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NormalizedEventProjectionQuery when eager-loading is set.
 	Edges        NormalizedEventProjectionEdges `json:"edges"`
@@ -81,6 +85,8 @@ func (*NormalizedEventProjection) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case normalizedeventprojection.FieldSkippedRefs:
+			values[i] = new([]byte)
 		case normalizedeventprojection.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case normalizedeventprojection.FieldCompletedAt:
@@ -125,6 +131,14 @@ func (_m *NormalizedEventProjection) assignValues(columns []string, values []any
 				return fmt.Errorf("unexpected type %T for field completed_at", values[i])
 			} else if value.Valid {
 				_m.CompletedAt = value.Time
+			}
+		case normalizedeventprojection.FieldSkippedRefs:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field skipped_refs", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.SkippedRefs); err != nil {
+					return fmt.Errorf("unmarshal field skipped_refs: %w", err)
+				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -185,6 +199,9 @@ func (_m *NormalizedEventProjection) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("completed_at=")
 	builder.WriteString(_m.CompletedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("skipped_refs=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SkippedRefs))
 	builder.WriteByte(')')
 	return builder.String()
 }

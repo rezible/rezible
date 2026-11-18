@@ -12,8 +12,8 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
-	sitent "github.com/rezible/rezible/ent/situationentity"
 	sitjudg "github.com/rezible/rezible/ent/situationjudgment"
+	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 	"github.com/rezible/rezible/pkg/situations"
@@ -93,41 +93,45 @@ func (s *SituationService) applyModelJudgment(ctx context.Context, captured *can
 }
 
 // loadJudgeContext loads what only the model judge reads: the situation's entities with their names and
-// properties, each member observation's runtime entities, the depends-on and adjacent relationships among the
-// entities.
+// properties, each member observation's stored runtime entities, the depends-on and adjacent relationships
+// among the entities.
 func (s *SituationService) loadJudgeContext(ctx context.Context, situationID uuid.UUID, input situations.EvaluationInput) (*situations.JudgeContext, error) {
 	judgeContext := &situations.JudgeContext{
 		ObservationEntityIDs: make(map[rez.SituationObservationRef][]uuid.UUID, len(input.Members)),
 	}
-	client := s.db.Client(ctx)
-	queryEntities := client.SituationEntity.Query().
-		Where(sitent.SituationID(situationID)).
-		WithKnowledgeEntity()
-	entities, entitiesErr := queryEntities.All(ctx)
-	if entitiesErr != nil {
-		return nil, fmt.Errorf("query situation entities: %w", entitiesErr)
+	queryMembers := s.db.Client(ctx).SituationObservation.Query().
+		Where(sitobs.SituationID(situationID)).
+		WithScopes()
+	members, membersErr := queryMembers.All(ctx)
+	if membersErr != nil {
+		return nil, fmt.Errorf("query situation observations: %w", membersErr)
 	}
+	entities := situations.RuntimeEntities(members)
 	entityIDs := make([]uuid.UUID, 0, len(entities))
-	for _, row := range entities {
-		entity := row.Edges.KnowledgeEntity
+	for _, runtimeEntity := range entities {
+		entity := runtimeEntity.Entity
 		entityFacts := schematypes.SituationEntityFacts{
 			ID:          entity.ID,
 			Category:    string(entity.Category),
 			Kind:        entity.Kind,
 			DisplayName: entity.State.DisplayName,
 			Properties:  entity.State.Properties,
-			Matching:    row.Matching,
+			Matching:    runtimeEntity.Matching,
 		}
 		judgeContext.Entities = append(judgeContext.Entities, entityFacts)
 		entityIDs = append(entityIDs, entity.ID)
 	}
 
-	for _, member := range input.Members {
-		observationEntities, observationErr := s.observationRuntimeEntities(ctx, member.Observation)
-		if observationErr != nil {
-			return nil, observationErr
+	for _, member := range members {
+		scope := member.Scope()
+		if scope == nil {
+			continue
 		}
-		judgeContext.ObservationEntityIDs[member.Observation.Ref] = observationEntities.ToSlice()
+		observationEntityIDs := make([]uuid.UUID, len(scope.Edges.Entities))
+		for i, row := range scope.Edges.Entities {
+			observationEntityIDs[i] = row.KnowledgeEntityID
+		}
+		judgeContext.ObservationEntityIDs[member.Ref()] = observationEntityIDs
 	}
 
 	if len(entityIDs) > 0 {

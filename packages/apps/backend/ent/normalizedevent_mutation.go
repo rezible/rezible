@@ -31,6 +31,7 @@ type NormalizedEventMutation struct {
 	attributes            *[]byte
 	created_at            *time.Time
 	occurred_at           *time.Time
+	last_occurred_at      *time.Time
 	received_at           *time.Time
 	clearedFields         map[string]struct{}
 	tenant                *int
@@ -557,6 +558,42 @@ func (m *NormalizedEventMutation) ResetOccurredAt() {
 	m.occurred_at = nil
 }
 
+// SetLastOccurredAt sets the "last_occurred_at" field.
+func (m *NormalizedEventMutation) SetLastOccurredAt(t time.Time) {
+	m.last_occurred_at = &t
+}
+
+// LastOccurredAt returns the value of the "last_occurred_at" field in the mutation.
+func (m *NormalizedEventMutation) LastOccurredAt() (r time.Time, exists bool) {
+	v := m.last_occurred_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastOccurredAt returns the old "last_occurred_at" field's value of the NormalizedEvent entity.
+// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NormalizedEventMutation) OldLastOccurredAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastOccurredAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastOccurredAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastOccurredAt: %w", err)
+	}
+	return oldValue.LastOccurredAt, nil
+}
+
+// ResetLastOccurredAt resets all changes to the "last_occurred_at" field.
+func (m *NormalizedEventMutation) ResetLastOccurredAt() {
+	m.last_occurred_at = nil
+}
+
 // SetReceivedAt sets the "received_at" field.
 func (m *NormalizedEventMutation) SetReceivedAt(t time.Time) {
 	m.received_at = &t
@@ -720,7 +757,7 @@ func (m *NormalizedEventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NormalizedEventMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.tenant != nil {
 		fields = append(fields, normalizedevent.FieldTenantID)
 	}
@@ -753,6 +790,9 @@ func (m *NormalizedEventMutation) Fields() []string {
 	}
 	if m.occurred_at != nil {
 		fields = append(fields, normalizedevent.FieldOccurredAt)
+	}
+	if m.last_occurred_at != nil {
+		fields = append(fields, normalizedevent.FieldLastOccurredAt)
 	}
 	if m.received_at != nil {
 		fields = append(fields, normalizedevent.FieldReceivedAt)
@@ -787,6 +827,8 @@ func (m *NormalizedEventMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case normalizedevent.FieldOccurredAt:
 		return m.OccurredAt()
+	case normalizedevent.FieldLastOccurredAt:
+		return m.LastOccurredAt()
 	case normalizedevent.FieldReceivedAt:
 		return m.ReceivedAt()
 	}
@@ -820,6 +862,8 @@ func (m *NormalizedEventMutation) OldField(ctx context.Context, name string) (en
 		return m.OldCreatedAt(ctx)
 	case normalizedevent.FieldOccurredAt:
 		return m.OldOccurredAt(ctx)
+	case normalizedevent.FieldLastOccurredAt:
+		return m.OldLastOccurredAt(ctx)
 	case normalizedevent.FieldReceivedAt:
 		return m.OldReceivedAt(ctx)
 	}
@@ -907,6 +951,13 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOccurredAt(v)
+		return nil
+	case normalizedevent.FieldLastOccurredAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastOccurredAt(v)
 		return nil
 	case normalizedevent.FieldReceivedAt:
 		v, ok := value.(time.Time)
@@ -1008,6 +1059,9 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 		return nil
 	case normalizedevent.FieldOccurredAt:
 		m.ResetOccurredAt()
+		return nil
+	case normalizedevent.FieldLastOccurredAt:
+		m.ResetLastOccurredAt()
 		return nil
 	case normalizedevent.FieldReceivedAt:
 		m.ResetReceivedAt()

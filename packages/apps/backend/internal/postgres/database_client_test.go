@@ -12,7 +12,10 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgesubjectalias"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -264,15 +267,6 @@ func (s *DatabaseClientSuite) TestIsTransientErrorClassifiesPostgresConcurrencyE
 	s.False(tdb.IsTransientError(errors.New("plain error")))
 }
 
-func (s *DatabaseClientSuite) TestIsForeignKeyErrorMatchesNamedConstraints() {
-	tdb := postgres.DatabaseClient{}
-	violation := &pgconn.PgError{Code: "23503", ConstraintName: "named_fk"}
-	s.True(tdb.IsForeignKeyError(fmt.Errorf("wrapped: %w", violation), "other_fk", "named_fk"))
-	s.False(tdb.IsForeignKeyError(violation, "other_fk"))
-	s.False(tdb.IsForeignKeyError(&pgconn.PgError{Code: "23505", ConstraintName: "named_fk"}, "named_fk"))
-	s.False(tdb.IsForeignKeyError(errors.New("plain error"), "named_fk"))
-}
-
 func (s *DatabaseClientSuite) TestWithTxReturningNestedServiceRollback() {
 	ctx, tdb := s.SetupTestDatabase(test.WithFreshDatabase())
 	txCtx, cancelTx := context.WithTimeout(ctx, 10*time.Second)
@@ -459,27 +453,59 @@ func (s *DatabaseClientSuite) TestWriteReferencingAnotherTenantsRowIsNotFound() 
 	s.Require().NoError(sameTenant.Exec(ctx))
 }
 
-func (s *DatabaseClientSuite) TestReportMissingReferencesLeavesAMissingRowToItsForeignKey() {
+func (s *DatabaseClientSuite) TestWriteNamingAMergedSubjectStoresTheSurvivor() {
 	ctx, tdb := s.SetupTestDatabase()
 	otherCtx, _ := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
-	incident := client.Incident.Create().SetNumber(1).SetTitle("incident").SaveX(ctx)
-	otherSeverity := tdb.Client(otherCtx).IncidentSeverity.Create().SetName("sev").SetRank(1).SaveX(otherCtx)
-	reportCtx := schema.ReportMissingReferences(ctx)
+	createService := func(ctx context.Context) *ent.KnowledgeEntityCreate {
+		return tdb.Client(ctx).KnowledgeEntity.Create().
+			SetCategory(knowledgeentity.CategoryContainer).
+			SetKind("service")
+	}
+	survivor := createService(ctx).SaveX(ctx)
+	merged := createService(ctx).SaveX(ctx)
+	alert := client.KnowledgeEntity.Create().
+		SetCategory(knowledgeentity.CategorySignal).
+		SetKind("alert").
+		SaveX(ctx)
+	createObserves := func(targetID uuid.UUID) *ent.KnowledgeRelationshipCreate {
+		return client.KnowledgeRelationship.Create().
+			SetPredicate(knowledgerelationship.PredicateObserves).
+			SetSourceEntityID(alert.ID).
+			SetTargetEntityID(targetID)
+	}
+	kept := createObserves(survivor.ID).SaveX(ctx)
+	// The folded relationship still names the merged entity, as a merge leaves it.
+	folded := createObserves(merged.ID).SetMergedIntoID(kept.ID).SaveX(ctx)
+	client.KnowledgeEntity.UpdateOneID(merged.ID).SetMergedIntoID(survivor.ID).ExecX(ctx)
+	analysis := client.SystemAnalysis.Create().SaveX(ctx)
 
-	checkErr := client.Incident.UpdateOneID(incident.ID).SetSeverityID(uuid.New()).Exec(ctx)
-	s.ErrorIs(checkErr, errs.ErrNotFound)
-	_, isPgErr := errors.AsType[*pgconn.PgError](checkErr)
-	s.False(isPgErr, "rejected before the write")
+	createAnalysisEntity := client.SystemAnalysisEntity.Create().
+		SetAnalysisID(analysis.ID).
+		SetKnowledgeEntityID(merged.ID)
+	s.Equal(survivor.ID, createAnalysisEntity.SaveX(ctx).KnowledgeEntityID, "an outside table")
+	createAnalysisRelationship := client.SystemAnalysisRelationship.Create().
+		SetAnalysisID(analysis.ID).
+		SetKnowledgeRelationshipID(folded.ID)
+	s.Equal(kept.ID, createAnalysisRelationship.SaveX(ctx).KnowledgeRelationshipID, "a folded relationship")
+	createAlias := client.KnowledgeSubjectAlias.Create().
+		SetProvider("test").
+		SetProviderNamespace("tests").
+		SetProviderResourceRef("service:checkout").
+		SetSubjectKind(knowledgesubjectalias.SubjectKindEntity).
+		SetAuthority(schematypes.KnowledgeAuthorityObserved).
+		SetEntityID(merged.ID)
+	alias := createAlias.SaveX(ctx)
+	s.Equal(&survivor.ID, alias.EntityID, "an alias")
+	moveAlias := client.KnowledgeSubjectAlias.UpdateOneID(alias.ID).SetEntityID(merged.ID)
+	s.Equal(&survivor.ID, moveAlias.SaveX(ctx).EntityID, "an update")
 
-	fkErr := client.Incident.UpdateOneID(incident.ID).SetSeverityID(uuid.New()).Exec(reportCtx)
-	s.ErrorIs(fkErr, errs.ErrNotFound)
-	pgErr, isPgErr := errors.AsType[*pgconn.PgError](fkErr)
-	s.Require().True(isPgErr, "rejected by the foreign key")
-	s.Equal("23503", pgErr.Code)
-
-	crossErr := client.Incident.UpdateOneID(incident.ID).SetSeverityID(otherSeverity.ID).Exec(reportCtx)
-	s.ErrorIs(crossErr, errs.ErrNotFound, "another tenant's row is still not found")
+	otherSurvivor := createService(otherCtx).SaveX(otherCtx)
+	otherMerged := createService(otherCtx).SetMergedIntoID(otherSurvivor.ID).SaveX(otherCtx)
+	createCrossTenant := client.SystemAnalysisEntity.Create().
+		SetAnalysisID(analysis.ID).
+		SetKnowledgeEntityID(otherMerged.ID)
+	s.ErrorIs(createCrossTenant.Exec(ctx), errs.ErrNotFound, "another tenant's redirect is not followed")
 }
 
 func (s *DatabaseClientSuite) TestDeletingAReferencedRowKeepsItsError() {

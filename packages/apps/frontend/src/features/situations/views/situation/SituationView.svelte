@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import RiFileTextLine from "remixicon-svelte/icons/file-text-line";
+	import RiGitMergeLine from "remixicon-svelte/icons/git-merge-line";
 	import RiSearchLine from "remixicon-svelte/icons/search-line";
 	import { registerPageDescriptor } from "$lib/app-shell.svelte";
+	import * as Alert from "$components/ui/alert";
 	import { situationStatus } from "$features/situations/lib/status";
 
 	import FeatureNavigationRail from "$components/layout/feature-navigation-rail/FeatureNavigationRail.svelte";
@@ -49,6 +51,19 @@
 			component: SituationInvestigationView,
 		},
 	]}
-/>
+>
+	{#snippet header()}
+		{#if controller.mergedInto && controller.mergedIntoHref}
+			<Alert.Root class="shrink-0 rounded-none border-x-0 border-t-0">
+				<RiGitMergeLine aria-hidden="true" />
+				<Alert.Title>
+					<a href={controller.mergedIntoHref} class="underline underline-offset-2">
+						{controller.mergedInto.label}
+					</a>
+				</Alert.Title>
+			</Alert.Root>
+		{/if}
+	{/snippet}
+</FeatureNavigationRail>
 
 <SituationActionDialogs {controller} />

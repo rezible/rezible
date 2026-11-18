@@ -24,6 +24,8 @@ import (
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinstanceevent"
 	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/changepoint"
+	"github.com/rezible/rezible/ent/changepointinvolvement"
 	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
@@ -70,6 +72,8 @@ import (
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
+	"github.com/rezible/rezible/ent/observationscope"
+	"github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -86,7 +90,6 @@ import (
 	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
-	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationnotice"
 	"github.com/rezible/rezible/ent/situationobservation"
@@ -179,6 +182,8 @@ func checkColumn(t, c string) error {
 			alertinstance.Table:                   alertinstance.ValidColumn,
 			alertinstanceevent.Table:              alertinstanceevent.ValidColumn,
 			alertmetrics.Table:                    alertmetrics.ValidColumn,
+			changepoint.Table:                     changepoint.ValidColumn,
+			changepointinvolvement.Table:          changepointinvolvement.ValidColumn,
 			discussioncomment.Table:               discussioncomment.ValidColumn,
 			discussionthread.Table:                discussionthread.ValidColumn,
 			document.Table:                        document.ValidColumn,
@@ -225,6 +230,8 @@ func checkColumn(t, c string) error {
 			normalizedevent.Table:                 normalizedevent.ValidColumn,
 			normalizedeventprojection.Table:       normalizedeventprojection.ValidColumn,
 			normalizedeventprojectionentity.Table: normalizedeventprojectionentity.ValidColumn,
+			observationscope.Table:                observationscope.ValidColumn,
+			observationscopeentity.Table:          observationscopeentity.ValidColumn,
 			oncallhandovertemplate.Table:          oncallhandovertemplate.ValidColumn,
 			oncallroster.Table:                    oncallroster.ValidColumn,
 			oncallrostermetrics.Table:             oncallrostermetrics.ValidColumn,
@@ -241,7 +248,6 @@ func checkColumn(t, c string) error {
 			sequencecounter.Table:                 sequencecounter.ValidColumn,
 			situation.Table:                       situation.ValidColumn,
 			situationaction.Table:                 situationaction.ValidColumn,
-			situationentity.Table:                 situationentity.ValidColumn,
 			situationjudgment.Table:               situationjudgment.ValidColumn,
 			situationnotice.Table:                 situationnotice.ValidColumn,
 			situationobservation.Table:            situationobservation.ValidColumn,

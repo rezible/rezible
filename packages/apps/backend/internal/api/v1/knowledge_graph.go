@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	kp "github.com/rezible/rezible/ent/knowledgeproposal"
@@ -16,13 +17,14 @@ import (
 )
 
 type knowledgeGraphHandler struct {
+	clock     rez.Clock
 	knowledge rez.KnowledgeGraphQueryService
 	aliases   rez.KnowledgeEntityAliasService
 	proposals rez.KnowledgeProposalService
 }
 
-func newKnowledgeGraphHandler(knowledge rez.KnowledgeGraphQueryService, aliases rez.KnowledgeEntityAliasService, proposals rez.KnowledgeProposalService) *knowledgeGraphHandler {
-	return &knowledgeGraphHandler{knowledge: knowledge, aliases: aliases, proposals: proposals}
+func newKnowledgeGraphHandler(clock rez.Clock, knowledge rez.KnowledgeGraphQueryService, aliases rez.KnowledgeEntityAliasService, proposals rez.KnowledgeProposalService) *knowledgeGraphHandler {
+	return &knowledgeGraphHandler{clock: clock, knowledge: knowledge, aliases: aliases, proposals: proposals}
 }
 
 func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, request *oapi.ListKnowledgeGraphEntitiesRequest) (*oapi.ListKnowledgeGraphEntitiesResponse, error) {
@@ -58,7 +60,10 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphEntities(ctx context.Context, 
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "failed to list knowledge graph entities", listErr)
 	}
-	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.KnowledgeGraphEntityWithAliasesFromRez)
+	now := h.clock.Now()
+	response.Body = oapi.ConvertPaginatedResultBody(result, func(entity *rez.KnowledgeEntityWithAliases) oapi.KnowledgeGraphEntity {
+		return oapi.KnowledgeGraphEntityWithAliasesFromRez(entity, now)
+	})
 	return &response, nil
 }
 
@@ -69,7 +74,7 @@ func (h *knowledgeGraphHandler) GetKnowledgeGraphEntity(ctx context.Context, req
 	if entityErr != nil {
 		return nil, oapi.Error(ctx, "failed to get knowledge graph entity", entityErr)
 	}
-	response.Body.Data = oapi.KnowledgeGraphEntityWithAliasesFromRez(result)
+	response.Body.Data = oapi.KnowledgeGraphEntityWithAliasesFromRez(result, h.clock.Now())
 	return &response, nil
 }
 
@@ -101,7 +106,10 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphRelationships(ctx context.Cont
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to list knowledge graph relationships", queryErr)
 	}
-	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.KnowledgeGraphRelationshipFromEnt)
+	now := h.clock.Now()
+	response.Body = oapi.ConvertPaginatedResultBody(result, func(relationship *ent.KnowledgeRelationship) oapi.KnowledgeGraphRelationship {
+		return oapi.KnowledgeGraphRelationshipFromEnt(relationship, now)
+	})
 	return &response, nil
 }
 
@@ -111,7 +119,7 @@ func (h *knowledgeGraphHandler) GetKnowledgeGraphRelationship(ctx context.Contex
 	if relErr != nil {
 		return nil, oapi.Error(ctx, "failed to get knowledge graph relationship", relErr)
 	}
-	response.Body.Data = oapi.KnowledgeGraphRelationshipFromEnt(rel)
+	response.Body.Data = oapi.KnowledgeGraphRelationshipFromEnt(rel, h.clock.Now())
 	return &response, nil
 }
 
@@ -127,7 +135,10 @@ func (h *knowledgeGraphHandler) ListKnowledgeGraphSubjectAliases(ctx context.Con
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to list knowledge graph relationships", queryErr)
 	}
-	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.KnowledgeGraphSubjectAliasFromEnt)
+	now := h.clock.Now()
+	response.Body = oapi.ConvertPaginatedResultBody(result, func(alias *ent.KnowledgeSubjectAlias) oapi.KnowledgeGraphSubjectAlias {
+		return oapi.KnowledgeGraphSubjectAliasFromEnt(alias, now)
+	})
 	return &response, nil
 }
 
@@ -137,7 +148,7 @@ func (h *knowledgeGraphHandler) GetKnowledgeGraphSubjectAliases(ctx context.Cont
 	if aliasErr != nil {
 		return nil, oapi.Error(ctx, "failed to get subject alias", aliasErr)
 	}
-	response.Body.Data = oapi.KnowledgeGraphSubjectAliasFromEnt(alias)
+	response.Body.Data = oapi.KnowledgeGraphSubjectAliasFromEnt(alias, h.clock.Now())
 	return &response, nil
 }
 
@@ -195,7 +206,7 @@ func (h *knowledgeGraphHandler) SelectKnowledgeGraphEntities(ctx context.Context
 	}
 
 	var resp oapi.SelectKnowledgeGraphEntitiesResponse
-	resp.Body.Data = oapi.KnowledgeGraphEntitiesPageFromRez(page)
+	resp.Body.Data = oapi.KnowledgeGraphEntitiesPageFromRez(page, h.clock.Now())
 	return &resp, nil
 }
 
@@ -216,8 +227,11 @@ func (h *knowledgeGraphHandler) ExpandKnowledgeGraphRelationships(ctx context.Co
 	}
 
 	var resp oapi.ExpandKnowledgeGraphRelationshipsResponse
+	now := h.clock.Now()
 	data := oapi.KnowledgeGraphRelationshipsPage{
-		Relationships: oapi.ConvertSlice(page.Relationships, oapi.KnowledgeGraphRelationshipSummaryFromEnt),
+		Relationships: oapi.ConvertSlice(page.Relationships, func(relationship *ent.KnowledgeRelationship) oapi.KnowledgeGraphRelationshipSummary {
+			return oapi.KnowledgeGraphRelationshipSummaryFromEnt(relationship, now)
+		}),
 	}
 	if page.NextCursor != nil {
 		data.NextCursor = new(string(*page.NextCursor))
@@ -243,7 +257,10 @@ func (h *knowledgeGraphHandler) ListKnowledgeProposals(ctx context.Context, requ
 	}
 
 	var response oapi.ListKnowledgeProposalsResponse
-	response.Body = oapi.ConvertPaginatedResultBody(result, oapi.KnowledgeProposalFromRez)
+	now := h.clock.Now()
+	response.Body = oapi.ConvertPaginatedResultBody(result, func(proposal *rez.KnowledgeProposalWithValues) oapi.KnowledgeProposal {
+		return oapi.KnowledgeProposalFromRez(proposal, now)
+	})
 	return &response, nil
 }
 
@@ -256,7 +273,7 @@ func (h *knowledgeGraphHandler) GetKnowledgeProposal(ctx context.Context, reques
 	if impliedErr != nil {
 		return nil, oapi.Error(ctx, "failed to list implied knowledge proposals", impliedErr)
 	}
-	converted := oapi.KnowledgeProposalFromRez(proposal)
+	converted := oapi.KnowledgeProposalFromRez(proposal, h.clock.Now())
 	converted.Attributes.Implies = oapi.ConvertSlice(implied, oapi.KnowledgeProposalImplicationFromEnt)
 
 	var response oapi.GetKnowledgeProposalResponse
@@ -270,7 +287,7 @@ func (h *knowledgeGraphHandler) ConfirmKnowledgeProposal(ctx context.Context, re
 		return nil, oapi.Error(ctx, "failed to confirm knowledge proposal", confirmErr)
 	}
 	var response oapi.ConfirmKnowledgeProposalResponse
-	response.Body.Data = oapi.KnowledgeProposalFromRez(proposal)
+	response.Body.Data = oapi.KnowledgeProposalFromRez(proposal, h.clock.Now())
 	return &response, nil
 }
 
@@ -280,7 +297,7 @@ func (h *knowledgeGraphHandler) RejectKnowledgeProposal(ctx context.Context, req
 		return nil, oapi.Error(ctx, "failed to reject knowledge proposal", rejectErr)
 	}
 	var response oapi.RejectKnowledgeProposalResponse
-	response.Body.Data = oapi.KnowledgeProposalFromRez(proposal)
+	response.Body.Data = oapi.KnowledgeProposalFromRez(proposal, h.clock.Now())
 	return &response, nil
 }
 

@@ -26,6 +26,7 @@ func (s *ProjectionServiceSuite) createIncidentProjectionEvent(ctx context.Conte
 		SetProviderEventRef("incident-event-" + uuid.NewString()).
 		SetKind(projections.KindIncident).
 		SetOccurredAt(occurredAt).
+		SetLastOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
 		SetAttributes(encoded)
 	event, eventErr := createEvent.Save(ctx)

@@ -77,9 +77,19 @@ func ArchiveTime(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldArchiveTime, v))
 }
 
-// KnowledgeEntityID applies equality check predicate on the "knowledge_entity_id" field. It's identical to KnowledgeEntityIDEQ.
-func KnowledgeEntityID(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldKnowledgeEntityID, v))
+// Provider applies equality check predicate on the "provider" field. It's identical to ProviderEQ.
+func Provider(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldProvider, v))
+}
+
+// ProviderNamespace applies equality check predicate on the "provider_namespace" field. It's identical to ProviderNamespaceEQ.
+func ProviderNamespace(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldProviderNamespace, v))
+}
+
+// ProviderResourceRef applies equality check predicate on the "provider_resource_ref" field. It's identical to ProviderResourceRefEQ.
+func ProviderResourceRef(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldProviderResourceRef, v))
 }
 
 // Number applies equality check predicate on the "number" field. It's identical to NumberEQ.
@@ -282,34 +292,229 @@ func ArchiveTimeNotNil() predicate.Incident {
 	return predicate.Incident(sql.FieldNotNull(FieldArchiveTime))
 }
 
-// KnowledgeEntityIDEQ applies the EQ predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldKnowledgeEntityID, v))
+// ProviderEQ applies the EQ predicate on the "provider" field.
+func ProviderEQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldProvider, v))
 }
 
-// KnowledgeEntityIDNEQ applies the NEQ predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldKnowledgeEntityID, v))
+// ProviderNEQ applies the NEQ predicate on the "provider" field.
+func ProviderNEQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldProvider, v))
 }
 
-// KnowledgeEntityIDIn applies the In predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldKnowledgeEntityID, vs...))
+// ProviderIn applies the In predicate on the "provider" field.
+func ProviderIn(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldProvider, vs...))
 }
 
-// KnowledgeEntityIDNotIn applies the NotIn predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNotIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldKnowledgeEntityID, vs...))
+// ProviderNotIn applies the NotIn predicate on the "provider" field.
+func ProviderNotIn(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldProvider, vs...))
 }
 
-// KnowledgeEntityIDIsNil applies the IsNil predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDIsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldKnowledgeEntityID))
+// ProviderGT applies the GT predicate on the "provider" field.
+func ProviderGT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldProvider, v))
 }
 
-// KnowledgeEntityIDNotNil applies the NotNil predicate on the "knowledge_entity_id" field.
-func KnowledgeEntityIDNotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldKnowledgeEntityID))
+// ProviderGTE applies the GTE predicate on the "provider" field.
+func ProviderGTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldProvider, v))
+}
+
+// ProviderLT applies the LT predicate on the "provider" field.
+func ProviderLT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldProvider, v))
+}
+
+// ProviderLTE applies the LTE predicate on the "provider" field.
+func ProviderLTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldProvider, v))
+}
+
+// ProviderContains applies the Contains predicate on the "provider" field.
+func ProviderContains(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContains(FieldProvider, v))
+}
+
+// ProviderHasPrefix applies the HasPrefix predicate on the "provider" field.
+func ProviderHasPrefix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasPrefix(FieldProvider, v))
+}
+
+// ProviderHasSuffix applies the HasSuffix predicate on the "provider" field.
+func ProviderHasSuffix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasSuffix(FieldProvider, v))
+}
+
+// ProviderIsNil applies the IsNil predicate on the "provider" field.
+func ProviderIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldProvider))
+}
+
+// ProviderNotNil applies the NotNil predicate on the "provider" field.
+func ProviderNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldProvider))
+}
+
+// ProviderEqualFold applies the EqualFold predicate on the "provider" field.
+func ProviderEqualFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEqualFold(FieldProvider, v))
+}
+
+// ProviderContainsFold applies the ContainsFold predicate on the "provider" field.
+func ProviderContainsFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContainsFold(FieldProvider, v))
+}
+
+// ProviderNamespaceEQ applies the EQ predicate on the "provider_namespace" field.
+func ProviderNamespaceEQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceNEQ applies the NEQ predicate on the "provider_namespace" field.
+func ProviderNamespaceNEQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceIn applies the In predicate on the "provider_namespace" field.
+func ProviderNamespaceIn(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldProviderNamespace, vs...))
+}
+
+// ProviderNamespaceNotIn applies the NotIn predicate on the "provider_namespace" field.
+func ProviderNamespaceNotIn(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldProviderNamespace, vs...))
+}
+
+// ProviderNamespaceGT applies the GT predicate on the "provider_namespace" field.
+func ProviderNamespaceGT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceGTE applies the GTE predicate on the "provider_namespace" field.
+func ProviderNamespaceGTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceLT applies the LT predicate on the "provider_namespace" field.
+func ProviderNamespaceLT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceLTE applies the LTE predicate on the "provider_namespace" field.
+func ProviderNamespaceLTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceContains applies the Contains predicate on the "provider_namespace" field.
+func ProviderNamespaceContains(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContains(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceHasPrefix applies the HasPrefix predicate on the "provider_namespace" field.
+func ProviderNamespaceHasPrefix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasPrefix(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceHasSuffix applies the HasSuffix predicate on the "provider_namespace" field.
+func ProviderNamespaceHasSuffix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasSuffix(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceIsNil applies the IsNil predicate on the "provider_namespace" field.
+func ProviderNamespaceIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldProviderNamespace))
+}
+
+// ProviderNamespaceNotNil applies the NotNil predicate on the "provider_namespace" field.
+func ProviderNamespaceNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldProviderNamespace))
+}
+
+// ProviderNamespaceEqualFold applies the EqualFold predicate on the "provider_namespace" field.
+func ProviderNamespaceEqualFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEqualFold(FieldProviderNamespace, v))
+}
+
+// ProviderNamespaceContainsFold applies the ContainsFold predicate on the "provider_namespace" field.
+func ProviderNamespaceContainsFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContainsFold(FieldProviderNamespace, v))
+}
+
+// ProviderResourceRefEQ applies the EQ predicate on the "provider_resource_ref" field.
+func ProviderResourceRefEQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefNEQ applies the NEQ predicate on the "provider_resource_ref" field.
+func ProviderResourceRefNEQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefIn applies the In predicate on the "provider_resource_ref" field.
+func ProviderResourceRefIn(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldProviderResourceRef, vs...))
+}
+
+// ProviderResourceRefNotIn applies the NotIn predicate on the "provider_resource_ref" field.
+func ProviderResourceRefNotIn(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldProviderResourceRef, vs...))
+}
+
+// ProviderResourceRefGT applies the GT predicate on the "provider_resource_ref" field.
+func ProviderResourceRefGT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefGTE applies the GTE predicate on the "provider_resource_ref" field.
+func ProviderResourceRefGTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefLT applies the LT predicate on the "provider_resource_ref" field.
+func ProviderResourceRefLT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefLTE applies the LTE predicate on the "provider_resource_ref" field.
+func ProviderResourceRefLTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefContains applies the Contains predicate on the "provider_resource_ref" field.
+func ProviderResourceRefContains(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContains(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefHasPrefix applies the HasPrefix predicate on the "provider_resource_ref" field.
+func ProviderResourceRefHasPrefix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasPrefix(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefHasSuffix applies the HasSuffix predicate on the "provider_resource_ref" field.
+func ProviderResourceRefHasSuffix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasSuffix(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefIsNil applies the IsNil predicate on the "provider_resource_ref" field.
+func ProviderResourceRefIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldProviderResourceRef))
+}
+
+// ProviderResourceRefNotNil applies the NotNil predicate on the "provider_resource_ref" field.
+func ProviderResourceRefNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldProviderResourceRef))
+}
+
+// ProviderResourceRefEqualFold applies the EqualFold predicate on the "provider_resource_ref" field.
+func ProviderResourceRefEqualFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEqualFold(FieldProviderResourceRef, v))
+}
+
+// ProviderResourceRefContainsFold applies the ContainsFold predicate on the "provider_resource_ref" field.
+func ProviderResourceRefContainsFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContainsFold(FieldProviderResourceRef, v))
 }
 
 // NumberEQ applies the EQ predicate on the "number" field.
@@ -862,35 +1067,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Incident {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.Incident
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasKnowledgeEntity applies the HasEdge predicate on the "knowledge_entity" edge.
-func HasKnowledgeEntity() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.Incident
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasKnowledgeEntityWith applies the HasEdge predicate on the "knowledge_entity" edge with a given conditions (other predicates).
-func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newKnowledgeEntityStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.Incident
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -7,7 +7,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
-	"github.com/rezible/rezible/ent/schema"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -139,7 +138,7 @@ func (h *incidentDebriefsHandler) ListIncidentDebriefQuestions(ctx context.Conte
 
 	query := h.db.Client(ctx).IncidentDebriefQuestion.Query()
 	if request.IncludeArchived {
-		ctx = schema.IncludeArchived(ctx)
+		ctx = ent.IncludeArchived(ctx)
 	}
 
 	questions, queryErr := query.All(ctx)

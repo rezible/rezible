@@ -117,6 +117,11 @@ func InvestigationID(v uuid.UUID) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldInvestigationID, v))
 }
 
+// MergedIntoID applies equality check predicate on the "merged_into_id" field. It's identical to MergedIntoIDEQ.
+func MergedIntoID(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldMergedIntoID, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.Situation {
 	return predicate.Situation(sql.FieldEQ(FieldTenantID, v))
@@ -727,6 +732,36 @@ func InvestigationIDNotNil() predicate.Situation {
 	return predicate.Situation(sql.FieldNotNull(FieldInvestigationID))
 }
 
+// MergedIntoIDEQ applies the EQ predicate on the "merged_into_id" field.
+func MergedIntoIDEQ(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldEQ(FieldMergedIntoID, v))
+}
+
+// MergedIntoIDNEQ applies the NEQ predicate on the "merged_into_id" field.
+func MergedIntoIDNEQ(v uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldNEQ(FieldMergedIntoID, v))
+}
+
+// MergedIntoIDIn applies the In predicate on the "merged_into_id" field.
+func MergedIntoIDIn(vs ...uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldIn(FieldMergedIntoID, vs...))
+}
+
+// MergedIntoIDNotIn applies the NotIn predicate on the "merged_into_id" field.
+func MergedIntoIDNotIn(vs ...uuid.UUID) predicate.Situation {
+	return predicate.Situation(sql.FieldNotIn(FieldMergedIntoID, vs...))
+}
+
+// MergedIntoIDIsNil applies the IsNil predicate on the "merged_into_id" field.
+func MergedIntoIDIsNil() predicate.Situation {
+	return predicate.Situation(sql.FieldIsNull(FieldMergedIntoID))
+}
+
+// MergedIntoIDNotNil applies the NotNil predicate on the "merged_into_id" field.
+func MergedIntoIDNotNil() predicate.Situation {
+	return predicate.Situation(sql.FieldNotNull(FieldMergedIntoID))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
@@ -872,35 +907,6 @@ func HasObservationsWith(preds ...predicate.SituationObservation) predicate.Situ
 	})
 }
 
-// HasEntities applies the HasEdge predicate on the "entities" edge.
-func HasEntities() predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, EntitiesTable, EntitiesColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationEntity
-		step.Edge.Schema = schemaConfig.SituationEntity
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasEntitiesWith applies the HasEdge predicate on the "entities" edge with a given conditions (other predicates).
-func HasEntitiesWith(preds ...predicate.SituationEntity) predicate.Situation {
-	return predicate.Situation(func(s *sql.Selector) {
-		step := newEntitiesStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SituationEntity
-		step.Edge.Schema = schemaConfig.SituationEntity
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasActions applies the HasEdge predicate on the "actions" edge.
 func HasActions() predicate.Situation {
 	return predicate.Situation(func(s *sql.Selector) {
@@ -980,6 +986,64 @@ func HasNoticesWith(preds ...predicate.SituationNotice) predicate.Situation {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SituationNotice
 		step.Edge.Schema = schemaConfig.SituationNotice
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMergedInto applies the HasEdge predicate on the "merged_into" edge.
+func HasMergedInto() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, MergedIntoTable, MergedIntoColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.Situation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMergedIntoWith applies the HasEdge predicate on the "merged_into" edge with a given conditions (other predicates).
+func HasMergedIntoWith(preds ...predicate.Situation) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newMergedIntoStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.Situation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMergedSources applies the HasEdge predicate on the "merged_sources" edge.
+func HasMergedSources() predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MergedSourcesTable, MergedSourcesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.Situation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMergedSourcesWith applies the HasEdge predicate on the "merged_sources" edge with a given conditions (other predicates).
+func HasMergedSourcesWith(preds ...predicate.Situation) predicate.Situation {
+	return predicate.Situation(func(s *sql.Selector) {
+		step := newMergedSourcesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.Situation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

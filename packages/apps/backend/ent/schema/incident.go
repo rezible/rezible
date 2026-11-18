@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -22,7 +23,8 @@ func (Incident) Mixin() []ent.Mixin {
 		TenantMixin{},
 		TimestampsMixin{},
 		ArchiveMixin{},
-		KnowledgeEntityLinkMixin{},
+		// The provider reference identifies an incident observed through a provider. A declared incident has none.
+		ProviderResourceReferenceMixin{Optional: true},
 	}
 }
 
@@ -49,6 +51,9 @@ func (Incident) Indexes() []ent.Index {
 		index.Fields("tenant_id", "number").
 			Unique().
 			StorageKey("incidents_number_key"),
+		index.Fields("tenant_id", "provider", "provider_namespace", "provider_resource_ref").
+			Unique().
+			Annotations(entsql.IndexWhere("provider IS NOT NULL")),
 	}
 }
 

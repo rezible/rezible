@@ -16,13 +16,13 @@ const entities = new Map(graph.entities.map((entity) => [entity.id, entity]));
 test("a source shows only its most specific placements, each with its infrastructure ancestry", () => {
 	const targets = placementTargets(graph).get("rt-checkout")!;
 
-	// checkout also runs_on production, which its namespaces imply.
+	// checkout also runs_on the account, which its namespaces imply.
 	expect(targets.map(({ id }) => id)).toEqual(["ns-commerce", "ns-commerce-eu"]);
 	expect(targets.map(({ id }) => breadcrumb(entities, id))).toEqual([
-		"production › prod-use1",
-		"production › prod-euw1",
+		"commerce-prod › prod-use1",
+		"commerce-prod › prod-euw1",
 	]);
-	expect(placementSources(graph, placementTargets(graph)).has("env-production")).toBe(false);
+	expect(placementSources(graph, placementTargets(graph)).has("acct-commerce-prod")).toBe(false);
 });
 
 test("placement is unknown only for containers without a loaded target", () => {

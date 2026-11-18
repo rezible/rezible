@@ -3,7 +3,6 @@ package projections
 import (
 	"fmt"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -83,34 +82,11 @@ type (
 
 const KindCodeChange = "code_change"
 
-// The merged code change entity's state properties. Every value is a string.
+// The code change attributes the changes lookup filters merged changes on.
 const (
-	CodeChangePropertyMergedAt          = "merged_at"
-	CodeChangePropertyMergeCommitSha    = "merge_commit_sha"
-	CodeChangePropertyBaseRef           = "base_ref"
-	CodeChangePropertyIntoDefaultBranch = "into_default_branch"
-	CodeChangePropertyNumber            = "number"
-	CodeChangePropertyURL               = "url"
-	CodeChangePropertyAuthor            = "author"
+	CodeChangeMergeCommitSha    AttributePath = "merge/merge_commit_sha"
+	CodeChangeIntoDefaultBranch AttributePath = "merge/into_default_branch"
 )
-
-// StateProperties are the merged code change entity's state properties, omitting an absent URL or author.
-func (m CodeChangeMerge) StateProperties() map[string]any {
-	properties := map[string]any{
-		CodeChangePropertyMergedAt:          m.MergedAt.UTC().Format(time.RFC3339Nano),
-		CodeChangePropertyMergeCommitSha:    m.MergeCommitSha,
-		CodeChangePropertyBaseRef:           m.BaseRef,
-		CodeChangePropertyIntoDefaultBranch: strconv.FormatBool(m.IntoDefaultBranch),
-		CodeChangePropertyNumber:            strconv.Itoa(m.Number),
-	}
-	if m.URL != "" {
-		properties[CodeChangePropertyURL] = m.URL
-	}
-	if m.AuthorLogin != "" {
-		properties[CodeChangePropertyAuthor] = m.AuthorLogin
-	}
-	return properties
-}
 
 func DecodeCodeChangeEvent(ev *ent.NormalizedEvent) (*CodeChangeEvent, error) {
 	return DecodeEventAttributes[CodeChangeEventAttributes](ev)
@@ -455,17 +431,11 @@ type (
 
 const KindDeployment = "deployment"
 
-// The deployment entity's state properties. Every value is a string.
+// The deployment attributes the changes lookup filters deployments on.
 const (
-	DeploymentPropertyEnvironment = "environment"
-	DeploymentPropertyStatus      = "status"
-	DeploymentPropertyExternalID  = "external_id"
-	DeploymentPropertySha         = "sha"
-	DeploymentPropertyVersion     = "version"
-	DeploymentPropertyURL         = "url"
-	DeploymentPropertyRepository  = "repository"
-	DeploymentPropertyStartedAt   = "started_at"
-	DeploymentPropertyFinishedAt  = "finished_at"
+	DeploymentStatus             AttributePath = "status"
+	DeploymentEnvironmentName    AttributePath = "environment/name"
+	DeploymentRepositoryFullName AttributePath = "repository/linking_attributes/" + LinkingAttributeRepositoryFullName
 )
 
 const (
@@ -477,36 +447,6 @@ const (
 // Finished reports whether the report's status is terminal.
 func (a DeploymentEventAttributes) Finished() bool {
 	return a.Status == DeploymentStatusSucceeded || a.Status == DeploymentStatusFailed
-}
-
-// StateProperties are the deployment entity's state properties, omitting absent values. A report is complete,
-// so they replace the previous report's properties whole.
-func (a DeploymentEventAttributes) StateProperties() map[string]any {
-	properties := map[string]any{
-		DeploymentPropertyEnvironment: a.Environment.Name,
-		DeploymentPropertyStatus:      a.Status,
-		DeploymentPropertyExternalID:  a.ExternalID,
-	}
-	optional := map[string]string{
-		DeploymentPropertySha:     a.Sha,
-		DeploymentPropertyVersion: a.Version,
-		DeploymentPropertyURL:     a.URL,
-	}
-	if a.Repository != nil {
-		optional[DeploymentPropertyRepository] = a.Repository.LinkingAttributes[LinkingAttributeRepositoryFullName]
-	}
-	if a.StartedAt != nil {
-		optional[DeploymentPropertyStartedAt] = a.StartedAt.UTC().Format(time.RFC3339Nano)
-	}
-	if a.FinishedAt != nil {
-		optional[DeploymentPropertyFinishedAt] = a.FinishedAt.UTC().Format(time.RFC3339Nano)
-	}
-	for key, value := range optional {
-		if value != "" {
-			properties[key] = value
-		}
-	}
-	return properties
 }
 
 func DecodeDeploymentEvent(ev *ent.NormalizedEvent) (*DeploymentEvent, error) {

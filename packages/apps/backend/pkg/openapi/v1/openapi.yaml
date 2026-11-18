@@ -710,8 +710,6 @@ components:
           items:
             $ref: "#/components/schemas/AlertInstance"
           type: array
-        knowledgeEntityId:
-          type: string
         startedAt:
           format: date-time
           type: string
@@ -2775,9 +2773,14 @@ components:
           items:
             $ref: "#/components/schemas/EventProjectionEntity"
           type: array
+        skippedRefs:
+          items:
+            $ref: "#/components/schemas/EventProjectionSkippedRef"
+          type: array
       required:
         - completedAt
         - entities
+        - skippedRefs
       type: object
     EventProjectionEntity:
       additionalProperties: false
@@ -2789,6 +2792,20 @@ components:
       required:
         - entityId
         - entityKind
+      type: object
+    EventProjectionSkippedRef:
+      additionalProperties: false
+      properties:
+        error:
+          type: string
+        reason:
+          type: string
+        resourceRef:
+          type: string
+      required:
+        - reason
+        - resourceRef
+        - error
       type: object
     ExpandKnowledgeGraphRelationshipsResponseBody:
       additionalProperties: false
@@ -5032,7 +5049,6 @@ components:
             - concern
             - decision
             - signal
-            - event
           type: string
       required:
         - value
@@ -5109,7 +5125,6 @@ components:
             - concern
             - decision
             - signal
-            - event
           type: string
         createdAt:
           format: date-time
@@ -5125,11 +5140,19 @@ components:
           items:
             $ref: "#/components/schemas/KnowledgeGraphLinkingAttribute"
           type: array
+        mergedIntoId:
+          type: string
         otherParentClaims:
           items:
             $ref: "#/components/schemas/KnowledgeGraphParentClaim"
           type: array
         parentId:
+          type: string
+        parentProviders:
+          items:
+            type: string
+          type: array
+        parentRelationshipId:
           type: string
         stale:
           type: boolean
@@ -5171,7 +5194,6 @@ components:
             - concern
             - decision
             - signal
-            - event
           type: string
         displayName:
           type: string
@@ -5254,7 +5276,6 @@ components:
               - concern
               - decision
               - signal
-              - event
             type: string
           type: array
         value:
@@ -5340,7 +5361,6 @@ components:
             - flow
             - observation
             - governance
-            - occurrence
           type: string
         rollsUp:
           type: boolean
@@ -5360,7 +5380,6 @@ components:
               - concern
               - decision
               - signal
-              - event
             type: string
           type: array
         targetCategories:
@@ -5377,7 +5396,6 @@ components:
               - concern
               - decision
               - signal
-              - event
             type: string
           type: array
         value:
@@ -5400,8 +5418,6 @@ components:
             - constrains
             - addresses
             - mitigates
-            - impacts
-            - touches
           type: string
       required:
         - value
@@ -5436,6 +5452,8 @@ components:
         lastObservedAt:
           format: date-time
           type: string
+        mergedIntoId:
+          type: string
         predicate:
           enum:
             - contains
@@ -5456,8 +5474,6 @@ components:
             - constrains
             - addresses
             - mitigates
-            - impacts
-            - touches
           type: string
         sourceEntityId:
           type: string
@@ -5511,8 +5527,6 @@ components:
             - constrains
             - addresses
             - mitigates
-            - impacts
-            - touches
           type: string
         sourceId:
           type: string
@@ -5544,11 +5558,17 @@ components:
       properties:
         aliasId:
           type: string
+        authority:
+          enum:
+            - observed
+            - declared
+          type: string
         effectiveAt:
           format: date-time
           type: string
       required:
         - aliasId
+        - authority
         - effectiveAt
       type: object
     KnowledgeGraphStateSources:
@@ -5665,7 +5685,6 @@ components:
             - concern
             - decision
             - signal
-            - event
           type: string
         createdAt:
           format: date-time
@@ -8035,6 +8054,9 @@ components:
           items:
             type: string
           type: array
+        mergedInto:
+          $ref: "#/components/schemas/SituationMergeTarget"
+          description: Set when the situation was merged
         muteReason:
           enum:
             - not_noteworthy
@@ -8170,9 +8192,10 @@ components:
         environment:
           type: string
         id:
-          description: The deployment's knowledge entity
+          description: The deployment's change point
           type: string
         latestEvidenceId:
+          description: The deployment's involvement evidence on the service, to cite
           type: string
         mergedChanges:
           items:
@@ -8205,6 +8228,7 @@ components:
         - sha
         - version
         - url
+        - latestEvidenceId
         - repositoryName
         - mergedChangesUnlinked
         - mergedChanges
@@ -8216,7 +8240,7 @@ components:
         author:
           type: string
         id:
-          description: The change's knowledge entity
+          description: The merged change's change point
           type: string
         link:
           enum:
@@ -8475,6 +8499,20 @@ components:
       required:
         - id
         - attributes
+      type: object
+    SituationMergeTarget:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        reference:
+          type: string
+        title:
+          type: string
+      required:
+        - id
+        - reference
+        - title
       type: object
     SituationNotice:
       additionalProperties: false
@@ -17561,7 +17599,6 @@ paths:
                 - concern
                 - decision
                 - signal
-                - event
               type: string
             type: array
         - explode: false
@@ -17840,7 +17877,6 @@ paths:
                 - concern
                 - decision
                 - signal
-                - event
               type: string
             type: array
         - explode: false
@@ -17941,8 +17977,6 @@ paths:
                 - constrains
                 - addresses
                 - mitigates
-                - impacts
-                - touches
               type: string
             type: array
         - explode: false

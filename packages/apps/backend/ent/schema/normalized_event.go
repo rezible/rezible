@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type NormalizedEvent struct {
@@ -33,10 +34,13 @@ func (NormalizedEvent) Fields() []ent.Field {
 			Comment("Provider-specific event stream or webhook source the event came from."),
 		field.String("provider_event_ref").Immutable().NotEmpty().
 			Comment("Stable provider reference for the source event, used with the provider fields for idempotency."),
-		field.Bytes("attributes").Immutable().
-			Comment("Normalized JSON attributes for this event kind."),
+		field.Bytes("attributes").
+			SchemaType(schemaTypeJsonB).
+			Immutable().
+			Comment("Normalized JSON attributes for this event kind. Stored as jsonb, so queries filter on them; jsonb keeps neither key order nor whitespace."),
 		field.Time("created_at").Immutable().Default(time.Now),
 		field.Time("occurred_at").Immutable(),
+		field.Time("last_occurred_at"),
 		field.Time("received_at").Immutable(),
 	}
 }
@@ -47,7 +51,8 @@ func (NormalizedEvent) Edges() []ent.Edge {
 			Unique().
 			Field("integration_id").
 			Annotations(entsql.OnDelete(entsql.SetNull)),
-		edge.To("projection", NormalizedEventProjection.Type).Unique(),
+		edge.To("projection", NormalizedEventProjection.Type).
+			Unique(),
 	}
 }
 
@@ -75,18 +80,31 @@ func (NormalizedEventProjection) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("event_id", uuid.UUID{}).Immutable(),
 		field.Time("completed_at").Default(time.Now).Immutable(),
+		field.JSON("skipped_refs", []schematypes.SkippedEvidenceRef{}).Default([]schematypes.SkippedEvidenceRef{}),
 	}
 }
 
 func (NormalizedEventProjection) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("event", NormalizedEvent.Type).
+		// The inverse of NormalizedEvent.projection: an event's receipt, held by event_id.
+		edge.From("event", NormalizedEvent.Type).
+			Ref("projection").
 			Immutable().
 			Required().
 			Unique().
 			Field("event_id"),
 		edge.From("projection_entities", NormalizedEventProjectionEntity.Type).
 			Ref("projection"),
+	}
+}
+
+func (NormalizedEventProjection) Indexes() []ent.Index {
+	return []ent.Index{
+		// One receipt per event. The one-to-one edge makes event_id unique; under the name of that constraint,
+		// this index replaces it with one scoped to the tenant, as receipt lookups are.
+		index.Fields("tenant_id", "event_id").
+			Unique().
+			StorageKey("normalized_event_projections_event_id_key"),
 	}
 }
 

@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"regexp"
+	"log/slog"
 	"slices"
 	"strings"
 	"time"
@@ -39,12 +39,13 @@ func NewKnowledgeGraphQueryService(db rez.Database) (*KnowledgeGraphQueryService
 	return &KnowledgeGraphQueryService{db: db}, nil
 }
 
-// currentKnowledgeEntity keeps entities that are not withdrawn.
+// currentKnowledgeEntity keeps entities that are not withdrawn. Queries leave merged entities out already.
 func currentKnowledgeEntity() predicate.KnowledgeEntity {
 	return kne.WithdrawnAtIsNil()
 }
 
 // currentKnowledgeRelationship keeps relationships that are not withdrawn and whose endpoints are both current.
+// Queries leave folded relationships out already, and a relationship that is not folded has no merged endpoint.
 func currentKnowledgeRelationship() predicate.KnowledgeRelationship {
 	return knr.And(
 		knr.WithdrawnAtIsNil(),
@@ -53,9 +54,119 @@ func currentKnowledgeRelationship() predicate.KnowledgeRelationship {
 	)
 }
 
+// withParentClaim loads, as an entity's target relationships, only the contains relationship chosen as its
+// parent, for ent.KnowledgeEntity.ParentClaim.
+func withParentClaim(rq *ent.KnowledgeRelationshipQuery) {
+	rq.Where(knr.IsParent(true))
+}
+
+// otherParentClaim keeps the current contains claims on the entities that were not chosen as their parent,
+// leaving out an entity's claim to contain itself.
+func otherParentClaim(entityIDs []uuid.UUID) predicate.KnowledgeRelationship {
+	return knr.And(
+		knr.PredicateEQ(knr.PredicateContains),
+		knr.TargetEntityIDIn(entityIDs...),
+		knr.IsParent(false),
+		func(s *sql.Selector) {
+			s.Where(sql.ColumnsNEQ(s.C(knr.FieldSourceEntityID), s.C(knr.FieldTargetEntityID)))
+		},
+		currentKnowledgeRelationship(),
+	)
+}
+
+// knowledgeAncestor is an entity's ancestor depth steps above it, read by ancestryQuery.
+type knowledgeAncestor struct {
+	EntityID   uuid.UUID `sql:"entity_id"`
+	AncestorID uuid.UUID `sql:"source_entity_id"`
+	Depth      int       `sql:"depth"`
+	IsCycle    bool      `sql:"is_cycle"`
+}
+
+// ancestryQuery walks the flagged parent claims up from the entities in one recursive query, at most maxDepth
+// steps, or all of them when maxDepth is 0. The generated query's WHERE, tenant filter included, applies at every
+// level. A cycle is corrupt data: the step that closes one has IsCycle set, and the walk ends there.
+func ancestryQuery(ctx context.Context, client *ent.Client, entityIDs []uuid.UUID, maxDepth int) ([]knowledgeAncestor, error) {
+	var ancestors []knowledgeAncestor
+	if len(entityIDs) == 0 {
+		return ancestors, nil
+	}
+	starts := make([]any, len(entityIDs))
+	for i, id := range entityIDs {
+		starts[i] = id
+	}
+	walk := func(s *sql.Selector) {
+		// The selector's predicates are added after the modifiers run, and read only when the query is built. They
+		// carry bound arguments (is_parent and the tenant filter), which every ancestry read numbers correctly.
+		generated := sql.P(func(b *sql.Builder) {
+			b.Join(s.P())
+		})
+		builder := sql.Dialect(s.Dialect())
+		relationships := s.Table()
+		ancestry := sql.WithRecursive("knowledge_ancestry", "entity_id", "relationship_id", "ancestor_id", "depth")
+		steps := builder.Table(ancestry.Name()).As("ancestry")
+		start := builder.Select(
+			relationships.C(knr.FieldTargetEntityID),
+			relationships.C(knr.FieldID),
+			relationships.C(knr.FieldSourceEntityID),
+		).
+			AppendSelectExpr(sql.Expr("1")).
+			From(relationships).
+			Where(sql.And(generated, sql.In(relationships.C(knr.FieldTargetEntityID), starts...)))
+		climb := builder.Select(
+			steps.C("entity_id"),
+			relationships.C(knr.FieldID),
+			relationships.C(knr.FieldSourceEntityID),
+		).
+			AppendSelectExpr(sql.Expr(steps.C("depth")+" + 1")).
+			From(relationships).
+			Join(steps).
+			On(relationships.C(knr.FieldTargetEntityID), steps.C("ancestor_id")).
+			Where(generated)
+		if maxDepth > 0 {
+			climb.Where(sql.LT(steps.C("depth"), maxDepth))
+		}
+		ancestry.As(start.UnionAll(climb))
+		s.Prefix(cycleClause{ancestry}).
+			Join(steps).
+			On(s.C(knr.FieldID), steps.C("relationship_id")).
+			AppendSelect(steps.C("entity_id"), steps.C("depth"), steps.C("is_cycle"))
+	}
+	queryAncestry := client.KnowledgeRelationship.Query().
+		Where(knr.IsParent(true)).
+		Select(knr.FieldSourceEntityID).
+		Modify(walk)
+	if queryErr := queryAncestry.Scan(ctx, &ancestors); queryErr != nil {
+		return nil, fmt.Errorf("query ancestry: %w", queryErr)
+	}
+	return ancestors, nil
+}
+
+// cyclicAncestry returns the entities whose ancestry steps close a cycle.
+func cyclicAncestry(ancestors []knowledgeAncestor) mapset.Set[uuid.UUID] {
+	cyclic := mapset.NewSet[uuid.UUID]()
+	for _, ancestor := range ancestors {
+		if ancestor.IsCycle {
+			cyclic.Add(ancestor.EntityID)
+		}
+	}
+	return cyclic
+}
+
+// cycleClause adds Postgres's CYCLE clause to the single recursive CTE of ancestryQuery, marking a step that
+// returns to an ancestor already on its path as is_cycle and ending the walk there.
+type cycleClause struct {
+	*sql.WithBuilder
+}
+
+func (c cycleClause) Query() (string, []any) {
+	query, args := c.WithBuilder.Query()
+	return query + " CYCLE ancestor_id SET is_cycle USING ancestry_path", args
+}
+
 func (s *KnowledgeGraphQueryService) ListEntities(ctx context.Context, params rez.ListKnowledgeEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error) {
 	query := s.db.Client(ctx).KnowledgeEntity.Query().
 		WithAliases().
+		WithTargetRelationships(withParentClaim).
 		Order(kne.ByID(params.GetOrder()))
 	if !params.IncludeWithdrawn {
 		query.Where(currentKnowledgeEntity())
@@ -98,6 +209,7 @@ func (s *KnowledgeGraphQueryService) displayNameContainsFold(text string) predic
 	}
 }
 
+// GetEntity returns a merged entity too, with its redirect.
 func (s *KnowledgeGraphQueryService) GetEntity(ctx context.Context, id uuid.UUID, expand rez.KnowledgeEntityExpand) (*ent.KnowledgeEntity, error) {
 	query := s.db.Client(ctx).KnowledgeEntity.Query().
 		Where(kne.ID(id))
@@ -109,7 +221,11 @@ func (s *KnowledgeGraphQueryService) GetEntity(ctx context.Context, id uuid.UUID
 	if expand.LinkingAttributes {
 		query.WithLinkingAttributes()
 	}
-	return query.Only(ctx)
+	query.WithTargetRelationships(func(rq *ent.KnowledgeRelationshipQuery) {
+		withParentClaim(rq)
+		rq.WithAliases(liveClaimAliases)
+	})
+	return query.Only(ent.IncludeMerged(ctx))
 }
 
 func (s *KnowledgeGraphQueryService) ListRelationships(ctx context.Context, params rez.ListKnowledgeRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
@@ -122,20 +238,13 @@ func (s *KnowledgeGraphQueryService) ListRelationships(ctx context.Context, para
 		query.Where(params.Predicates...)
 	}
 	if params.EntityID != uuid.Nil {
-		var neighbour []predicate.KnowledgeEntity
-		if len(params.NeighbourCategories) > 0 {
-			neighbour = append(neighbour, kne.CategoryIn(params.NeighbourCategories...))
+		entityID, canonicalErr := ent.CanonicalKnowledgeEntityID(ctx, s.db.Client(ctx), params.EntityID)
+		if canonicalErr != nil {
+			return nil, fmt.Errorf("resolve entity redirect: %w", canonicalErr)
 		}
-		if len(params.ExcludedNeighbourCategories) > 0 {
-			neighbour = append(neighbour, kne.CategoryNotIn(params.ExcludedNeighbourCategories...))
-		}
-		query.Where(knr.Or(
-			knr.And(knr.SourceEntityID(params.EntityID), knr.HasTargetEntityWith(neighbour...)),
-			knr.And(knr.TargetEntityID(params.EntityID), knr.HasSourceEntityWith(neighbour...)),
-		))
-	} else if len(params.NeighbourCategories)+len(params.ExcludedNeighbourCategories) > 0 {
-		return nil, fmt.Errorf("%w: neighbour categories need an entity ID", errs.ErrInvalidInput)
+		query.Where(knr.Or(knr.SourceEntityID(entityID), knr.TargetEntityID(entityID)))
 	}
+
 	if params.NewestEvidenceFirst {
 		query.Order(s.byLatestEvidence, knr.ByID())
 	} else {
@@ -163,6 +272,8 @@ func (s *KnowledgeGraphQueryService) byLatestEvidence(sel *sql.Selector) {
 	})
 }
 
+// GetRelationship returns a folded relationship too, with its redirect and the endpoints it was left with, which
+// may be merged entities.
 func (s *KnowledgeGraphQueryService) GetRelationship(ctx context.Context, id uuid.UUID) (*ent.KnowledgeRelationship, error) {
 	return s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.ID(id)).
@@ -173,7 +284,7 @@ func (s *KnowledgeGraphQueryService) GetRelationship(ctx context.Context, id uui
 		WithTargetEntity(func(eq *ent.KnowledgeEntityQuery) {
 			eq.WithAliases()
 		}).
-		Only(ctx)
+		Only(ent.IncludeMerged(ctx))
 }
 
 func (s *KnowledgeGraphQueryService) relationshipQueryWithEvidence(ctx context.Context, id uuid.UUID, evP ...predicate.KnowledgeEvidence) *ent.KnowledgeRelationshipQuery {
@@ -246,8 +357,12 @@ func (s *KnowledgeGraphQueryService) SummarizeEvidence(ctx context.Context, para
 
 	var predicates []predicate.KnowledgeEvidence
 	if params.EntityID != uuid.Nil {
+		entityID, canonicalErr := ent.CanonicalKnowledgeEntityID(ctx, client, params.EntityID)
+		if canonicalErr != nil {
+			return nil, fmt.Errorf("resolve entity redirect: %w", canonicalErr)
+		}
 		queryEntity := client.KnowledgeEntity.Query().
-			Where(kne.ID(params.EntityID))
+			Where(kne.ID(entityID))
 		entityExists, existsErr := queryEntity.Exist(ctx)
 		if existsErr != nil {
 			return nil, fmt.Errorf("check knowledge entity: %w", existsErr)
@@ -256,8 +371,8 @@ func (s *KnowledgeGraphQueryService) SummarizeEvidence(ctx context.Context, para
 			return nil, fmt.Errorf("%w: no knowledge entity %s", errs.ErrNotFound, params.EntityID)
 		}
 		onEntityOrRelationships := ksa.Or(
-			ksa.EntityID(params.EntityID),
-			ksa.HasRelationshipWith(knr.Or(knr.SourceEntityID(params.EntityID), knr.TargetEntityID(params.EntityID))),
+			ksa.EntityID(entityID),
+			ksa.HasRelationshipWith(knr.Or(knr.SourceEntityID(entityID), knr.TargetEntityID(entityID))),
 		)
 		predicates = append(predicates, ke.HasSubjectAliasWith(onEntityOrRelationships))
 	}
@@ -460,7 +575,8 @@ func (s *KnowledgeGraphQueryService) SelectGraphEntities(ctx context.Context, pa
 	}
 
 	selectEntitySummaryFields := s.selectedEntitiesQuery(ctx, selection, +1).
-		Select(kne.FieldID, kne.FieldCategory, kne.FieldKind, kne.FieldState, kne.FieldParentID, kne.FieldExpiresAt)
+		Select(kne.FieldID, kne.FieldCategory, kne.FieldKind, kne.FieldState, kne.FieldExpiresAt).
+		WithTargetRelationships(withParentClaim)
 	entities, queryErr := selectEntitySummaryFields.All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("select knowledge graph entities: %w", queryErr)
@@ -486,16 +602,11 @@ func (s *KnowledgeGraphQueryService) SelectGraphEntities(ctx context.Context, pa
 	for i, entity := range page.Entities {
 		ids[i] = entity.ID
 	}
-	claims, claimsErr := s.ListParentClaims(ctx, ids)
-	if claimsErr != nil {
-		return nil, fmt.Errorf("list other parent claims: %w", claimsErr)
+	otherParentIDs, otherParentsErr := s.listOtherParentIDs(ctx, ids)
+	if otherParentsErr != nil {
+		return nil, fmt.Errorf("list other parent ids: %w", otherParentsErr)
 	}
-	page.OtherParentIDs = make(map[uuid.UUID][]uuid.UUID, len(claims))
-	for entityID, entityClaims := range claims {
-		for _, claim := range entityClaims {
-			page.OtherParentIDs[entityID] = append(page.OtherParentIDs[entityID], claim.SourceEntityID)
-		}
-	}
+	page.OtherParentIDs = otherParentIDs
 	return page, nil
 }
 
@@ -610,64 +721,55 @@ func (s *KnowledgeGraphQueryService) ExpandGraphRelationships(ctx context.Contex
 	return page, nil
 }
 
-// ListAncestors walks parent_id one level at a time for all the entities together, so the reads are at most
-// knowledgegraph.MaxAncestryDepth queries. A repeated or withdrawn ancestor ends an entity's walk.
 func (s *KnowledgeGraphQueryService) ListAncestors(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeEntity, error) {
+	return s.listAncestors(ctx, entityIDs, 0)
+}
+
+// listAncestors returns each entity's ancestors, nearest first, at most maxDepth of them, or all when maxDepth is
+// 0. An ancestor that is not current ends an entity's chain. A cycle is logged and ends the chain before it
+// repeats an entity, so corrupt parent claims do not fail every read of the chain.
+func (s *KnowledgeGraphQueryService) listAncestors(ctx context.Context, entityIDs []uuid.UUID, maxDepth int) (map[uuid.UUID][]*ent.KnowledgeEntity, error) {
 	ancestors := make(map[uuid.UUID][]*ent.KnowledgeEntity)
-	if len(entityIDs) == 0 {
+	client := s.db.Client(ctx)
+	steps, ancestryErr := ancestryQuery(ctx, client, entityIDs, maxDepth)
+	if ancestryErr != nil {
+		return nil, ancestryErr
+	}
+	if cyclic := cyclicAncestry(steps); !cyclic.IsEmpty() {
+		slog.ErrorContext(ctx, "parent claims form a cycle", "entity_ids", cyclic.ToSlice())
+	}
+	if len(steps) == 0 {
 		return ancestors, nil
 	}
-	loaded := make(map[uuid.UUID]*ent.KnowledgeEntity)
-	load := func(ids mapset.Set[uuid.UUID]) error {
-		missing := slices.DeleteFunc(ids.ToSlice(), func(id uuid.UUID) bool {
-			_, found := loaded[id]
-			return found
-		})
-		if len(missing) == 0 {
-			return nil
-		}
-		entities, queryErr := s.db.Client(ctx).KnowledgeEntity.Query().
-			Where(kne.IDIn(missing...)).
-			All(ctx)
-		for _, entity := range entities {
-			loaded[entity.ID] = entity
-		}
-		return queryErr
+	ancestorIDs := mapset.NewSet[uuid.UUID]()
+	for _, step := range steps {
+		ancestorIDs.Add(step.AncestorID)
 	}
-	if loadErr := load(mapset.NewSet(entityIDs...)); loadErr != nil {
-		return nil, fmt.Errorf("load entities: %w", loadErr)
+	queryEntities := client.KnowledgeEntity.Query().
+		Where(kne.IDIn(ancestorIDs.ToSlice()...), currentKnowledgeEntity()).
+		WithTargetRelationships(withParentClaim)
+	entities, queryErr := queryEntities.All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("load ancestors: %w", queryErr)
 	}
-
-	// next is each walking entity's next ancestor to append.
-	next := make(map[uuid.UUID]uuid.UUID)
-	visited := make(map[uuid.UUID]mapset.Set[uuid.UUID])
-	for _, id := range entityIDs {
-		if entity, found := loaded[id]; found && entity.ParentID != nil {
-			next[id] = *entity.ParentID
-			visited[id] = mapset.NewSet(id)
-		}
+	loaded := make(map[uuid.UUID]*ent.KnowledgeEntity, len(entities))
+	for _, entity := range entities {
+		loaded[entity.ID] = entity
 	}
-	for depth := 0; depth < knowledgegraph.MaxAncestryDepth && len(next) > 0; depth++ {
-		wanted := mapset.NewSet[uuid.UUID]()
-		for _, ancestorID := range next {
-			wanted.Add(ancestorID)
+	slices.SortFunc(steps, func(a, b knowledgeAncestor) int {
+		return a.Depth - b.Depth
+	})
+	ended := mapset.NewSet[uuid.UUID]()
+	for _, step := range steps {
+		if ended.Contains(step.EntityID) {
+			continue
 		}
-		if loadErr := load(wanted); loadErr != nil {
-			return nil, fmt.Errorf("load ancestors: %w", loadErr)
+		ancestor, found := loaded[step.AncestorID]
+		if !found || step.IsCycle || step.AncestorID == step.EntityID {
+			ended.Add(step.EntityID)
+			continue
 		}
-		for id, ancestorID := range next {
-			ancestor, found := loaded[ancestorID]
-			if !found || ancestor.WithdrawnAt != nil || !visited[id].Add(ancestorID) {
-				delete(next, id)
-				continue
-			}
-			ancestors[id] = append(ancestors[id], ancestor)
-			if ancestor.ParentID == nil {
-				delete(next, id)
-			} else {
-				next[id] = *ancestor.ParentID
-			}
-		}
+		ancestors[step.EntityID] = append(ancestors[step.EntityID], ancestor)
 	}
 	return ancestors, nil
 }
@@ -678,28 +780,45 @@ func (s *KnowledgeGraphQueryService) ListParentClaims(ctx context.Context, entit
 		return claims, nil
 	}
 	queryClaims := s.db.Client(ctx).KnowledgeRelationship.Query().
-		Where(
-			knr.PredicateEQ(knr.PredicateContains),
-			knr.TargetEntityIDIn(entityIDs...),
-			currentKnowledgeRelationship(),
-		).
-		WithSourceEntity().
-		WithTargetEntity().
-		WithAliases().
-		Order(knr.ByCreatedAt(), knr.ByID())
+		Where(otherParentClaim(entityIDs)).
+		WithSourceEntity(func(eq *ent.KnowledgeEntityQuery) {
+			eq.WithTargetRelationships(withParentClaim)
+		}).
+		WithAliases(liveClaimAliases)
 	relationships, queryErr := queryClaims.All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("query parent claims: %w", queryErr)
 	}
+	slices.SortFunc(relationships, func(a, b *ent.KnowledgeRelationship) int {
+		return knowledgegraph.RankParentClaims(parentClaimOf(a), parentClaimOf(b))
+	})
 	for _, relationship := range relationships {
-		target := relationship.Edges.TargetEntity
-		isParent := target.ParentID != nil && *target.ParentID == relationship.SourceEntityID
-		if isParent || relationship.SourceEntityID == relationship.TargetEntityID {
-			continue
-		}
-		claims[target.ID] = append(claims[target.ID], relationship)
+		claims[relationship.TargetEntityID] = append(claims[relationship.TargetEntityID], relationship)
 	}
 	return claims, nil
+}
+
+// listOtherParentIDs reads only the source entity IDs of the claims ListParentClaims returns, in the same order.
+func (s *KnowledgeGraphQueryService) listOtherParentIDs(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error) {
+	otherParentIDs := make(map[uuid.UUID][]uuid.UUID)
+	if len(entityIDs) == 0 {
+		return otherParentIDs, nil
+	}
+	queryClaims := s.db.Client(ctx).KnowledgeRelationship.Query().
+		Where(otherParentClaim(entityIDs)).
+		Select(knr.FieldTargetEntityID, knr.FieldSourceEntityID).
+		WithAliases(liveParentClaimAliases)
+	claims, queryErr := queryClaims.All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("query other parent claims: %w", queryErr)
+	}
+	slices.SortFunc(claims, func(a, b *ent.KnowledgeRelationship) int {
+		return knowledgegraph.RankParentClaims(parentClaimOf(a), parentClaimOf(b))
+	})
+	for _, claim := range claims {
+		otherParentIDs[claim.TargetEntityID] = append(otherParentIDs[claim.TargetEntityID], claim.SourceEntityID)
+	}
+	return otherParentIDs, nil
 }
 
 func (s *KnowledgeGraphQueryService) ResolveRepresentatives(ctx context.Context, entityIDs []uuid.UUID, categories []kne.Category, maxDepth int) (map[uuid.UUID]uuid.UUID, error) {
@@ -721,12 +840,15 @@ func (s *KnowledgeGraphQueryService) ResolveRepresentatives(ctx context.Context,
 			climbing = append(climbing, entity.ID)
 		}
 	}
-	ancestors, ancestorsErr := s.ListAncestors(ctx, climbing)
+	if maxDepth < 1 {
+		return representatives, nil
+	}
+	ancestors, ancestorsErr := s.listAncestors(ctx, climbing, maxDepth)
 	if ancestorsErr != nil {
 		return nil, ancestorsErr
 	}
 	for id, chain := range ancestors {
-		for _, ancestor := range chain[:min(len(chain), maxDepth)] {
+		for _, ancestor := range chain {
 			if slices.Contains(categories, ancestor.Category) {
 				representatives[id] = ancestor.ID
 				break
@@ -734,92 +856,6 @@ func (s *KnowledgeGraphQueryService) ResolveRepresentatives(ctx context.Context,
 		}
 	}
 	return representatives, nil
-}
-
-// relatedEventPropertyKeyPattern bounds property filter keys, which the JSON path writes into the query text.
-var relatedEventPropertyKeyPattern = regexp.MustCompile(`^[A-Za-z0-9_]+$`)
-
-func (s *KnowledgeGraphQueryService) validateListRelatedEventsParams(p rez.ListRelatedEventsParams) error {
-	if p.Limit < 1 {
-		return fmt.Errorf("%w: limit must be positive", errs.ErrInvalidInput)
-	}
-	if p.Kind == "" {
-		return fmt.Errorf("%w: event kind is required", errs.ErrInvalidInput)
-	}
-	if validationErr := knr.PredicateValidator(p.Predicate); validationErr != nil {
-		return fmt.Errorf("%w: invalid relationship predicate", errs.ErrInvalidInput)
-	}
-	for key := range p.PropertyEquals {
-		if !relatedEventPropertyKeyPattern.MatchString(key) {
-			return fmt.Errorf("%w: invalid property key", errs.ErrInvalidInput)
-		}
-	}
-	for _, key := range p.PropertyAbsent {
-		if !relatedEventPropertyKeyPattern.MatchString(key) {
-			return fmt.Errorf("%w: invalid property key", errs.ErrInvalidInput)
-		}
-	}
-	return nil
-}
-
-func (s *KnowledgeGraphQueryService) ListRelatedEvents(ctx context.Context, params rez.ListRelatedEventsParams) (*rez.RelatedEvents, error) {
-	if paramsErr := s.validateListRelatedEventsParams(params); paramsErr != nil {
-		return nil, paramsErr
-	}
-
-	query := s.db.Client(ctx).KnowledgeEntity.Query().
-		Where(
-			kne.CategoryEQ(kne.CategoryEvent),
-			kne.Kind(params.Kind),
-			kne.StateEffectiveAtNotNil(),
-			kne.HasSourceRelationshipsWith(
-				knr.PredicateEQ(params.Predicate),
-				knr.TargetEntityID(params.EntityID),
-				currentKnowledgeRelationship(),
-			),
-		)
-	if !params.From.IsZero() {
-		if params.FromInclusive {
-			query.Where(kne.StateEffectiveAtGTE(params.From))
-		} else {
-			query.Where(kne.StateEffectiveAtGT(params.From))
-		}
-	}
-	if !params.To.IsZero() {
-		if params.ToInclusive {
-			query.Where(kne.StateEffectiveAtLTE(params.To))
-		} else {
-			query.Where(kne.StateEffectiveAtLT(params.To))
-		}
-	}
-	for key, value := range params.PropertyEquals {
-		// state->'properties'->>key = value
-		query.Where(func(sel *sql.Selector) {
-			sel.Where(sqljson.ValueEQ(sel.C(kne.FieldState), value, sqljson.Path("properties", key)))
-		})
-	}
-	for _, key := range params.PropertyAbsent {
-		// state->'properties'->>key IS NULL
-		query.Where(func(sel *sql.Selector) {
-			sel.Where(sql.Not(sqljson.HasKey(sel.C(kne.FieldState), sqljson.Path("properties", key), sqljson.Unquote(true))))
-		})
-	}
-	query.
-		Order(kne.ByStateEffectiveAt(sql.OrderDesc()), kne.ByID()).
-		Limit(params.Limit + 1)
-
-	events, queryErr := query.All(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("query related events: %w", queryErr)
-	}
-	result := &rez.RelatedEvents{
-		Events: events,
-	}
-	if len(events) > params.Limit {
-		result.Events = events[:params.Limit]
-		result.Cut = true
-	}
-	return result, nil
 }
 
 const knowledgeGraphQueryVersion = 1

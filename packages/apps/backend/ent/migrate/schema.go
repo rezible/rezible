@@ -443,7 +443,6 @@ var (
 		{Name: "identity_group_labels", Type: field.TypeJSON, Nullable: true},
 		{Name: "alert_definition_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AlertEpisodesTable holds the schema information for the "alert_episodes" table.
 	AlertEpisodesTable = &schema.Table{
@@ -463,23 +462,12 @@ var (
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
-			{
-				Symbol:     "alert_episodes_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{AlertEpisodesColumns[9]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "alertepisode_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{AlertEpisodesColumns[8]},
-			},
-			{
-				Name:    "alertepisode_tenant_id_knowledge_entity_id",
-				Unique:  true,
-				Columns: []*schema.Column{AlertEpisodesColumns[8], AlertEpisodesColumns[9]},
 			},
 			{
 				Name:    "alertepisode_tenant_id_alert_definition_id_started_at",
@@ -615,6 +603,114 @@ var (
 				Name:    "alertinstanceevent_tenant_id_event_id",
 				Unique:  true,
 				Columns: []*schema.Column{AlertInstanceEventsColumns[2], AlertInstanceEventsColumns[3]},
+			},
+		},
+	}
+	// ChangePointsColumns holds the columns for the "change_points" table.
+	ChangePointsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "provider_namespace", Type: field.TypeString},
+		{Name: "provider_resource_ref", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeString},
+		{Name: "occurred_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "latest_event_id", Type: field.TypeUUID},
+	}
+	// ChangePointsTable holds the schema information for the "change_points" table.
+	ChangePointsTable = &schema.Table{
+		Name:       "change_points",
+		Columns:    ChangePointsColumns,
+		PrimaryKey: []*schema.Column{ChangePointsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "change_points_tenants_tenant",
+				Columns:    []*schema.Column{ChangePointsColumns[8]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "change_points_normalized_events_latest_event",
+				Columns:    []*schema.Column{ChangePointsColumns[9]},
+				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "changepoint_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{ChangePointsColumns[8]},
+			},
+			{
+				Name:    "changepoint_tenant_id_kind_provider_provider_namespace_provider_resource_ref",
+				Unique:  true,
+				Columns: []*schema.Column{ChangePointsColumns[8], ChangePointsColumns[6], ChangePointsColumns[3], ChangePointsColumns[4], ChangePointsColumns[5]},
+			},
+			{
+				Name:    "changepoint_tenant_id_kind_occurred_at",
+				Unique:  false,
+				Columns: []*schema.Column{ChangePointsColumns[8], ChangePointsColumns[6], ChangePointsColumns[7]},
+			},
+		},
+	}
+	// ChangePointInvolvementsColumns holds the columns for the "change_point_involvements" table.
+	ChangePointInvolvementsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "role", Type: field.TypeString},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "change_point_id", Type: field.TypeUUID},
+		{Name: "subject_alias_id", Type: field.TypeUUID},
+		{Name: "evidence_id", Type: field.TypeUUID},
+	}
+	// ChangePointInvolvementsTable holds the schema information for the "change_point_involvements" table.
+	ChangePointInvolvementsTable = &schema.Table{
+		Name:       "change_point_involvements",
+		Columns:    ChangePointInvolvementsColumns,
+		PrimaryKey: []*schema.Column{ChangePointInvolvementsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "change_point_involvements_tenants_tenant",
+				Columns:    []*schema.Column{ChangePointInvolvementsColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "change_point_involvements_change_points_change_point",
+				Columns:    []*schema.Column{ChangePointInvolvementsColumns[3]},
+				RefColumns: []*schema.Column{ChangePointsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "change_point_involvements_knowledge_subject_alias_subject_alias",
+				Columns:    []*schema.Column{ChangePointInvolvementsColumns[4]},
+				RefColumns: []*schema.Column{KnowledgeSubjectAliasColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "change_point_involvements_knowledge_evidences_evidence",
+				Columns:    []*schema.Column{ChangePointInvolvementsColumns[5]},
+				RefColumns: []*schema.Column{KnowledgeEvidencesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "changepointinvolvement_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{ChangePointInvolvementsColumns[2]},
+			},
+			{
+				Name:    "changepointinvolvement_change_point_id_subject_alias_id",
+				Unique:  true,
+				Columns: []*schema.Column{ChangePointInvolvementsColumns[3], ChangePointInvolvementsColumns[4]},
+			},
+			{
+				Name:    "changepointinvolvement_tenant_id_subject_alias_id_role",
+				Unique:  false,
+				Columns: []*schema.Column{ChangePointInvolvementsColumns[2], ChangePointInvolvementsColumns[4], ChangePointInvolvementsColumns[1]},
 			},
 		},
 	}
@@ -911,6 +1007,9 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
+		{Name: "provider", Type: field.TypeString, Nullable: true},
+		{Name: "provider_namespace", Type: field.TypeString, Nullable: true},
+		{Name: "provider_resource_ref", Type: field.TypeString, Nullable: true},
 		{Name: "number", Type: field.TypeInt},
 		{Name: "title", Type: field.TypeString},
 		{Name: "summary", Type: field.TypeString, Nullable: true},
@@ -920,7 +1019,6 @@ var (
 		{Name: "response_state", Type: field.TypeEnum, Enums: []string{"started", "mitigated", "resolved"}, Default: "started"},
 		{Name: "resolved_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "severity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "type_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "declared_by_id", Type: field.TypeUUID, Nullable: true},
@@ -933,31 +1031,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incidents_tenants_tenant",
-				Columns:    []*schema.Column{IncidentsColumns[12]},
+				Columns:    []*schema.Column{IncidentsColumns[15]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "incidents_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{IncidentsColumns[13]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "incidents_incident_severities_severity",
-				Columns:    []*schema.Column{IncidentsColumns[14]},
+				Columns:    []*schema.Column{IncidentsColumns[16]},
 				RefColumns: []*schema.Column{IncidentSeveritiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "incidents_incident_types_type",
-				Columns:    []*schema.Column{IncidentsColumns[15]},
+				Columns:    []*schema.Column{IncidentsColumns[17]},
 				RefColumns: []*schema.Column{IncidentTypesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "incidents_users_declared_by",
-				Columns:    []*schema.Column{IncidentsColumns[16]},
+				Columns:    []*schema.Column{IncidentsColumns[18]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -966,17 +1058,20 @@ var (
 			{
 				Name:    "incident_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IncidentsColumns[12]},
-			},
-			{
-				Name:    "incident_tenant_id_knowledge_entity_id",
-				Unique:  true,
-				Columns: []*schema.Column{IncidentsColumns[12], IncidentsColumns[13]},
+				Columns: []*schema.Column{IncidentsColumns[15]},
 			},
 			{
 				Name:    "incidents_number_key",
 				Unique:  true,
-				Columns: []*schema.Column{IncidentsColumns[12], IncidentsColumns[4]},
+				Columns: []*schema.Column{IncidentsColumns[15], IncidentsColumns[7]},
+			},
+			{
+				Name:    "incident_tenant_id_provider_provider_namespace_provider_resource_ref",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentsColumns[15], IncidentsColumns[4], IncidentsColumns[5], IncidentsColumns[6]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "provider IS NOT NULL",
+				},
 			},
 		},
 	}
@@ -2278,10 +2373,11 @@ var (
 		{Name: "last_observed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "withdrawn_at", Type: field.TypeTime, Nullable: true},
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
-		{Name: "category", Type: field.TypeEnum, Enums: []string{"system_function", "system", "container", "component", "infrastructure", "code", "actor", "process", "concern", "decision", "signal", "event"}},
+		{Name: "category", Type: field.TypeEnum, Enums: []string{"system_function", "system", "container", "component", "infrastructure", "code", "actor", "process", "concern", "decision", "signal"}},
 		{Name: "kind", Type: field.TypeString},
+		{Name: "parent_is_fallback", Type: field.TypeBool, Default: false},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "merged_into_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// KnowledgeEntitiesTable holds the schema information for the "knowledge_entities" table.
 	KnowledgeEntitiesTable = &schema.Table{
@@ -2291,42 +2387,50 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_entities_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeEntitiesColumns[11]},
+				Columns:    []*schema.Column{KnowledgeEntitiesColumns[12]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "knowledge_entities_knowledge_entities_children",
-				Columns:    []*schema.Column{KnowledgeEntitiesColumns[12]},
+				Symbol:     "knowledge_entities_knowledge_entities_redirects",
+				Columns:    []*schema.Column{KnowledgeEntitiesColumns[13]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "knowledgeentity_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntitiesColumns[11]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[12]},
+			},
+			{
+				Name:    "knowledgeentity_tenant_id_merged_into_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[12], KnowledgeEntitiesColumns[13]},
 			},
 			{
 				Name:    "knowledgeentity_tenant_id_category_kind",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntitiesColumns[11], KnowledgeEntitiesColumns[9], KnowledgeEntitiesColumns[10]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[12], KnowledgeEntitiesColumns[9], KnowledgeEntitiesColumns[10]},
 			},
 			{
 				Name:    "knowledgeentity_tenant_id_kind_state_effective_at",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntitiesColumns[11], KnowledgeEntitiesColumns[10], KnowledgeEntitiesColumns[5]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[12], KnowledgeEntitiesColumns[10], KnowledgeEntitiesColumns[5]},
 			},
 			{
 				Name:    "knowledgeentity_tenant_id_withdrawn_at",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntitiesColumns[11], KnowledgeEntitiesColumns[7]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[12], KnowledgeEntitiesColumns[7]},
 			},
 			{
-				Name:    "knowledgeentity_tenant_id_parent_id",
+				Name:    "knowledgeentity_tenant_id_parent_is_fallback",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntitiesColumns[11], KnowledgeEntitiesColumns[12]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[12]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "parent_is_fallback",
+				},
 			},
 		},
 	}
@@ -2384,6 +2488,7 @@ var (
 		{Name: "effective_at", Type: field.TypeTime},
 		{Name: "subject_state", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "state_mode", Type: field.TypeEnum, Enums: []string{"merge", "replace"}, Default: "merge"},
+		{Name: "reobserved_at", Type: field.TypeTime, Nullable: true},
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "event_id", Type: field.TypeUUID},
@@ -2397,19 +2502,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_evidences_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeEvidencesColumns[8]},
+				Columns:    []*schema.Column{KnowledgeEvidencesColumns[9]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_evidences_normalized_events_event",
-				Columns:    []*schema.Column{KnowledgeEvidencesColumns[9]},
+				Columns:    []*schema.Column{KnowledgeEvidencesColumns[10]},
 				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_evidences_knowledge_subject_alias_subject_alias",
-				Columns:    []*schema.Column{KnowledgeEvidencesColumns[10]},
+				Columns:    []*schema.Column{KnowledgeEvidencesColumns[11]},
 				RefColumns: []*schema.Column{KnowledgeSubjectAliasColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2418,22 +2523,22 @@ var (
 			{
 				Name:    "knowledgeevidence_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEvidencesColumns[8]},
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[9]},
 			},
 			{
 				Name:    "knowledgeevidence_tenant_id_event_id_subject_alias_id",
 				Unique:  true,
-				Columns: []*schema.Column{KnowledgeEvidencesColumns[8], KnowledgeEvidencesColumns[9], KnowledgeEvidencesColumns[10]},
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[9], KnowledgeEvidencesColumns[10], KnowledgeEvidencesColumns[11]},
 			},
 			{
 				Name:    "knowledgeevidence_tenant_id_subject_alias_id_effective_at",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEvidencesColumns[8], KnowledgeEvidencesColumns[10], KnowledgeEvidencesColumns[4]},
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[9], KnowledgeEvidencesColumns[11], KnowledgeEvidencesColumns[4]},
 			},
 			{
 				Name:    "knowledgeevidence_tenant_id_event_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEvidencesColumns[8], KnowledgeEvidencesColumns[9]},
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[9], KnowledgeEvidencesColumns[10]},
 			},
 		},
 	}
@@ -2442,7 +2547,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "category", Type: field.TypeEnum, Enums: []string{"system_function", "system", "container", "component", "infrastructure", "code", "actor", "process", "concern", "decision", "signal", "event"}},
+		{Name: "category", Type: field.TypeEnum, Enums: []string{"system_function", "system", "container", "component", "infrastructure", "code", "actor", "process", "concern", "decision", "signal"}},
 		{Name: "kind", Type: field.TypeString},
 		{Name: "attribute", Type: field.TypeString},
 		{Name: "value_a", Type: field.TypeString},
@@ -2555,10 +2660,12 @@ var (
 		{Name: "last_observed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "withdrawn_at", Type: field.TypeTime, Nullable: true},
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
-		{Name: "predicate", Type: field.TypeEnum, Enums: []string{"contains", "runs_on", "built_from", "owns", "member_of", "participates_in", "uses", "supports", "calls", "reads_from", "writes_to", "publishes_to", "consumes_from", "depends_on", "observes", "constrains", "addresses", "mitigates", "impacts", "touches"}},
+		{Name: "predicate", Type: field.TypeEnum, Enums: []string{"contains", "runs_on", "built_from", "owns", "member_of", "participates_in", "uses", "supports", "calls", "reads_from", "writes_to", "publishes_to", "consumes_from", "depends_on", "observes", "constrains", "addresses", "mitigates"}},
+		{Name: "is_parent", Type: field.TypeBool, Default: false},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "source_entity_id", Type: field.TypeUUID},
 		{Name: "target_entity_id", Type: field.TypeUUID},
+		{Name: "merged_into_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// KnowledgeRelationshipsTable holds the schema information for the "knowledge_relationships" table.
 	KnowledgeRelationshipsTable = &schema.Table{
@@ -2568,20 +2675,26 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_relationships_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[10]},
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[11]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_relationships_knowledge_entities_source_entity",
-				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[11]},
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[12]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_relationships_knowledge_entities_target_entity",
-				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[12]},
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[13]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_relationships_knowledge_relationships_redirects",
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[14]},
+				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -2589,32 +2702,45 @@ var (
 			{
 				Name:    "knowledgerelationship_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[11]},
+			},
+			{
+				Name:    "knowledgerelationship_tenant_id_merged_into_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[11], KnowledgeRelationshipsColumns[14]},
 			},
 			{
 				Name:    "knowledgerelationship_tenant_id_predicate_source_entity_id_target_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[9], KnowledgeRelationshipsColumns[11], KnowledgeRelationshipsColumns[12]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[11], KnowledgeRelationshipsColumns[9], KnowledgeRelationshipsColumns[12], KnowledgeRelationshipsColumns[13]},
 			},
 			{
 				Name:    "knowledgerelationship_tenant_id_source_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[11]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[11], KnowledgeRelationshipsColumns[12]},
 			},
 			{
 				Name:    "knowledgerelationship_tenant_id_target_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[12]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[11], KnowledgeRelationshipsColumns[13]},
+			},
+			{
+				Name:    "knowledgerelationship_tenant_id_target_entity_id_is_parent",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[11], KnowledgeRelationshipsColumns[13]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "is_parent",
+				},
 			},
 			{
 				Name:    "knowledgerelationship_tenant_id_predicate",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[9]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[11], KnowledgeRelationshipsColumns[9]},
 			},
 			{
 				Name:    "knowledgerelationship_tenant_id_withdrawn_at",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[7]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[11], KnowledgeRelationshipsColumns[7]},
 			},
 		},
 	}
@@ -2626,6 +2752,7 @@ var (
 		{Name: "provider_resource_ref", Type: field.TypeString},
 		{Name: "subject_kind", Type: field.TypeEnum, Enums: []string{"entity", "relationship"}},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "authority", Type: field.TypeString, SchemaType: map[string]string{"postgres": "smallint"}},
 		{Name: "state", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "first_observed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "last_observed_at", Type: field.TypeTime, Nullable: true},
@@ -2644,25 +2771,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_subject_alias_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[11]},
+				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[12]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_subject_alias_knowledge_entities_entity",
-				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[12]},
+				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[13]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "knowledge_subject_alias_knowledge_relationships_relationship",
-				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[13]},
+				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[14]},
 				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "knowledge_subject_alias_knowledge_proposals_merged_by_proposal",
-				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[14]},
+				Columns:    []*schema.Column{KnowledgeSubjectAliasColumns[15]},
 				RefColumns: []*schema.Column{KnowledgeProposalsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -2671,22 +2798,22 @@ var (
 			{
 				Name:    "knowledgesubjectalias_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[11]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[12]},
 			},
 			{
 				Name:    "knowledgesubjectalias_tenant_id_provider_provider_namespace_provider_resource_ref",
 				Unique:  true,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[11], KnowledgeSubjectAliasColumns[1], KnowledgeSubjectAliasColumns[2], KnowledgeSubjectAliasColumns[3]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[12], KnowledgeSubjectAliasColumns[1], KnowledgeSubjectAliasColumns[2], KnowledgeSubjectAliasColumns[3]},
 			},
 			{
 				Name:    "knowledgesubjectalias_tenant_id_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[11], KnowledgeSubjectAliasColumns[12]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[12], KnowledgeSubjectAliasColumns[13]},
 			},
 			{
 				Name:    "knowledgesubjectalias_tenant_id_relationship_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[11], KnowledgeSubjectAliasColumns[13]},
+				Columns: []*schema.Column{KnowledgeSubjectAliasColumns[12], KnowledgeSubjectAliasColumns[14]},
 			},
 		},
 	}
@@ -2774,13 +2901,13 @@ var (
 		{Name: "kind", Type: field.TypeString},
 		{Name: "provider_event_source", Type: field.TypeString},
 		{Name: "provider_event_ref", Type: field.TypeString},
-		{Name: "attributes", Type: field.TypeBytes},
+		{Name: "attributes", Type: field.TypeBytes, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "occurred_at", Type: field.TypeTime},
+		{Name: "last_occurred_at", Type: field.TypeTime},
 		{Name: "received_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "integration_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "normalized_event_projection", Type: field.TypeUUID, Nullable: true},
 	}
 	// NormalizedEventsTable holds the schema information for the "normalized_events" table.
 	NormalizedEventsTable = &schema.Table{
@@ -2790,20 +2917,14 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "normalized_events_tenants_tenant",
-				Columns:    []*schema.Column{NormalizedEventsColumns[11]},
+				Columns:    []*schema.Column{NormalizedEventsColumns[12]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "normalized_events_integrations_integration",
-				Columns:    []*schema.Column{NormalizedEventsColumns[12]},
-				RefColumns: []*schema.Column{IntegrationsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "normalized_events_normalized_event_projections_projection",
 				Columns:    []*schema.Column{NormalizedEventsColumns[13]},
-				RefColumns: []*schema.Column{NormalizedEventProjectionsColumns[0]},
+				RefColumns: []*schema.Column{IntegrationsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -2811,17 +2932,17 @@ var (
 			{
 				Name:    "normalizedevent_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventsColumns[11]},
+				Columns: []*schema.Column{NormalizedEventsColumns[12]},
 			},
 			{
 				Name:    "normalizedevent_tenant_id_provider_provider_namespace_provider_event_source_provider_event_ref_provider_resource_ref",
 				Unique:  true,
-				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[6], NormalizedEventsColumns[3]},
+				Columns: []*schema.Column{NormalizedEventsColumns[12], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[6], NormalizedEventsColumns[3]},
 			},
 			{
 				Name:    "normalizedevent_tenant_id_provider_provider_namespace_provider_event_source_occurred_at",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[9]},
+				Columns: []*schema.Column{NormalizedEventsColumns[12], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[9]},
 			},
 		},
 	}
@@ -2829,8 +2950,9 @@ var (
 	NormalizedEventProjectionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "completed_at", Type: field.TypeTime},
+		{Name: "skipped_refs", Type: field.TypeJSON},
+		{Name: "event_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "event_id", Type: field.TypeUUID},
 	}
 	// NormalizedEventProjectionsTable holds the schema information for the "normalized_event_projections" table.
 	NormalizedEventProjectionsTable = &schema.Table{
@@ -2839,15 +2961,15 @@ var (
 		PrimaryKey: []*schema.Column{NormalizedEventProjectionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "normalized_event_projections_tenants_tenant",
-				Columns:    []*schema.Column{NormalizedEventProjectionsColumns[2]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
+				Symbol:     "normalized_event_projections_normalized_events_projection",
+				Columns:    []*schema.Column{NormalizedEventProjectionsColumns[3]},
+				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "normalized_event_projections_normalized_events_event",
-				Columns:    []*schema.Column{NormalizedEventProjectionsColumns[3]},
-				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
+				Symbol:     "normalized_event_projections_tenants_tenant",
+				Columns:    []*schema.Column{NormalizedEventProjectionsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -2855,7 +2977,12 @@ var (
 			{
 				Name:    "normalizedeventprojection_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventProjectionsColumns[2]},
+				Columns: []*schema.Column{NormalizedEventProjectionsColumns[4]},
+			},
+			{
+				Name:    "normalized_event_projections_event_id_key",
+				Unique:  true,
+				Columns: []*schema.Column{NormalizedEventProjectionsColumns[4], NormalizedEventProjectionsColumns[3]},
 			},
 		},
 	}
@@ -2901,6 +3028,91 @@ var (
 				Name:    "normalizedeventprojectionentity_tenant_id_domain_entity_kind",
 				Unique:  false,
 				Columns: []*schema.Column{NormalizedEventProjectionEntitiesColumns[3], NormalizedEventProjectionEntitiesColumns[1]},
+			},
+		},
+	}
+	// ObservationScopesColumns holds the columns for the "observation_scopes" table.
+	ObservationScopesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "revision", Type: field.TypeInt},
+		{Name: "broad", Type: field.TypeBool},
+		{Name: "alert_episode_id", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// ObservationScopesTable holds the schema information for the "observation_scopes" table.
+	ObservationScopesTable = &schema.Table{
+		Name:       "observation_scopes",
+		Columns:    ObservationScopesColumns,
+		PrimaryKey: []*schema.Column{ObservationScopesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "observation_scopes_alert_episodes_observation_scope",
+				Columns:    []*schema.Column{ObservationScopesColumns[3]},
+				RefColumns: []*schema.Column{AlertEpisodesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "observation_scopes_tenants_tenant",
+				Columns:    []*schema.Column{ObservationScopesColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "observationscope_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{ObservationScopesColumns[4]},
+			},
+		},
+	}
+	// ObservationScopeEntitiesColumns holds the columns for the "observation_scope_entities" table.
+	ObservationScopeEntitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "scope_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID},
+	}
+	// ObservationScopeEntitiesTable holds the schema information for the "observation_scope_entities" table.
+	ObservationScopeEntitiesTable = &schema.Table{
+		Name:       "observation_scope_entities",
+		Columns:    ObservationScopeEntitiesColumns,
+		PrimaryKey: []*schema.Column{ObservationScopeEntitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "observation_scope_entities_observation_scopes_entities",
+				Columns:    []*schema.Column{ObservationScopeEntitiesColumns[1]},
+				RefColumns: []*schema.Column{ObservationScopesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "observation_scope_entities_tenants_tenant",
+				Columns:    []*schema.Column{ObservationScopeEntitiesColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "observation_scope_entities_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{ObservationScopeEntitiesColumns[3]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "observationscopeentity_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{ObservationScopeEntitiesColumns[2]},
+			},
+			{
+				Name:    "observationscopeentity_tenant_id_scope_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{ObservationScopeEntitiesColumns[2], ObservationScopeEntitiesColumns[1], ObservationScopeEntitiesColumns[3]},
+			},
+			{
+				Name:    "observationscopeentity_tenant_id_knowledge_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{ObservationScopeEntitiesColumns[2], ObservationScopeEntitiesColumns[3]},
 			},
 		},
 	}
@@ -3505,6 +3717,7 @@ var (
 		{Name: "close_reason", Type: field.TypeEnum, Nullable: true, Enums: []string{"stabilized", "expired", "merged", "dismissed"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "investigation_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "merged_into_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SituationsTable holds the schema information for the "situations" table.
 	SituationsTable = &schema.Table{
@@ -3523,6 +3736,12 @@ var (
 				Columns:    []*schema.Column{SituationsColumns[14]},
 				RefColumns: []*schema.Column{InvestigationsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "situations_situations_merged_sources",
+				Columns:    []*schema.Column{SituationsColumns[15]},
+				RefColumns: []*schema.Column{SituationsColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -3550,6 +3769,11 @@ var (
 				Name:    "situation_tenant_id_investigation_id",
 				Unique:  false,
 				Columns: []*schema.Column{SituationsColumns[13], SituationsColumns[14]},
+			},
+			{
+				Name:    "situation_tenant_id_merged_into_id",
+				Unique:  false,
+				Columns: []*schema.Column{SituationsColumns[13], SituationsColumns[15]},
 			},
 		},
 	}
@@ -3598,60 +3822,6 @@ var (
 				Name:    "situationaction_tenant_id_situation_id_at",
 				Unique:  false,
 				Columns: []*schema.Column{SituationActionsColumns[4], SituationActionsColumns[5], SituationActionsColumns[3]},
-			},
-		},
-	}
-	// SituationEntitiesColumns holds the columns for the "situation_entities" table.
-	SituationEntitiesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "matching", Type: field.TypeBool},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "situation_id", Type: field.TypeUUID},
-		{Name: "knowledge_entity_id", Type: field.TypeUUID},
-	}
-	// SituationEntitiesTable holds the schema information for the "situation_entities" table.
-	SituationEntitiesTable = &schema.Table{
-		Name:       "situation_entities",
-		Columns:    SituationEntitiesColumns,
-		PrimaryKey: []*schema.Column{SituationEntitiesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "situation_entities_tenants_tenant",
-				Columns:    []*schema.Column{SituationEntitiesColumns[2]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_entities_situations_situation",
-				Columns:    []*schema.Column{SituationEntitiesColumns[3]},
-				RefColumns: []*schema.Column{SituationsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "situation_entities_knowledge_entities_knowledge_entity",
-				Columns:    []*schema.Column{SituationEntitiesColumns[4]},
-				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "situationentity_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SituationEntitiesColumns[2]},
-			},
-			{
-				Name:    "situationentity_tenant_id_situation_id_knowledge_entity_id",
-				Unique:  true,
-				Columns: []*schema.Column{SituationEntitiesColumns[2], SituationEntitiesColumns[3], SituationEntitiesColumns[4]},
-			},
-			{
-				Name:    "situationentity_tenant_id_knowledge_entity_id",
-				Unique:  false,
-				Columns: []*schema.Column{SituationEntitiesColumns[2], SituationEntitiesColumns[4]},
-				Annotation: &entsql.IndexAnnotation{
-					Where: "matching",
-				},
 			},
 		},
 	}
@@ -5049,6 +5219,8 @@ var (
 		AlertFeedbacksTable,
 		AlertInstancesTable,
 		AlertInstanceEventsTable,
+		ChangePointsTable,
+		ChangePointInvolvementsTable,
 		DiscussionCommentsTable,
 		DiscussionThreadsTable,
 		DocumentsTable,
@@ -5095,6 +5267,8 @@ var (
 		NormalizedEventsTable,
 		NormalizedEventProjectionsTable,
 		NormalizedEventProjectionEntitiesTable,
+		ObservationScopesTable,
+		ObservationScopeEntitiesTable,
 		OncallHandoverTemplatesTable,
 		OncallRostersTable,
 		OncallRosterMetricsTable,
@@ -5111,7 +5285,6 @@ var (
 		SequenceCountersTable,
 		SituationsTable,
 		SituationActionsTable,
-		SituationEntitiesTable,
 		SituationJudgmentsTable,
 		SituationNoticesTable,
 		SituationObservationsTable,
@@ -5173,7 +5346,6 @@ func init() {
 	AlertDefinitionsTable.ForeignKeys[2].RefTable = SituationSignalAttentionsTable
 	AlertEpisodesTable.ForeignKeys[0].RefTable = AlertDefinitionsTable
 	AlertEpisodesTable.ForeignKeys[1].RefTable = TenantsTable
-	AlertEpisodesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertFeedbacksTable.ForeignKeys[1].RefTable = AlertInstancesTable
 	AlertInstancesTable.ForeignKeys[0].RefTable = AlertEpisodesTable
@@ -5181,6 +5353,12 @@ func init() {
 	AlertInstanceEventsTable.ForeignKeys[0].RefTable = AlertInstancesTable
 	AlertInstanceEventsTable.ForeignKeys[1].RefTable = TenantsTable
 	AlertInstanceEventsTable.ForeignKeys[2].RefTable = NormalizedEventsTable
+	ChangePointsTable.ForeignKeys[0].RefTable = TenantsTable
+	ChangePointsTable.ForeignKeys[1].RefTable = NormalizedEventsTable
+	ChangePointInvolvementsTable.ForeignKeys[0].RefTable = TenantsTable
+	ChangePointInvolvementsTable.ForeignKeys[1].RefTable = ChangePointsTable
+	ChangePointInvolvementsTable.ForeignKeys[2].RefTable = KnowledgeSubjectAliasTable
+	ChangePointInvolvementsTable.ForeignKeys[3].RefTable = KnowledgeEvidencesTable
 	DiscussionCommentsTable.ForeignKeys[0].RefTable = TenantsTable
 	DiscussionCommentsTable.ForeignKeys[1].RefTable = DiscussionThreadsTable
 	DiscussionCommentsTable.ForeignKeys[2].RefTable = DiscussionCommentsTable
@@ -5208,10 +5386,13 @@ func init() {
 	EventAnnotationsTable.ForeignKeys[1].RefTable = NormalizedEventsTable
 	EventAnnotationsTable.ForeignKeys[2].RefTable = UsersTable
 	IncidentsTable.ForeignKeys[0].RefTable = TenantsTable
-	IncidentsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
-	IncidentsTable.ForeignKeys[2].RefTable = IncidentSeveritiesTable
-	IncidentsTable.ForeignKeys[3].RefTable = IncidentTypesTable
-	IncidentsTable.ForeignKeys[4].RefTable = UsersTable
+	IncidentsTable.ForeignKeys[1].RefTable = IncidentSeveritiesTable
+	IncidentsTable.ForeignKeys[2].RefTable = IncidentTypesTable
+	IncidentsTable.ForeignKeys[3].RefTable = UsersTable
+	IncidentsTable.Annotation = &entsql.Annotation{}
+	IncidentsTable.Annotation.Checks = map[string]string{
+		"provider_reference_all_or_none": "num_nulls(provider, provider_namespace, provider_resource_ref) IN (0, 3)",
+	}
 	IncidentDebriefsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentDebriefsTable.ForeignKeys[1].RefTable = TenantsTable
 	IncidentDebriefsTable.ForeignKeys[2].RefTable = UsersTable
@@ -5291,6 +5472,10 @@ func init() {
 	InvestigationUserInputsTable.ForeignKeys[2].RefTable = AgentTurnsTable
 	KnowledgeEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEntitiesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	KnowledgeEntitiesTable.Annotation = &entsql.Annotation{}
+	KnowledgeEntitiesTable.Annotation.Checks = map[string]string{
+		"not_merged_into_itself": "merged_into_id <> id",
+	}
 	KnowledgeEntityLinkingAttributesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEntityLinkingAttributesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	KnowledgeEvidencesTable.ForeignKeys[0].RefTable = TenantsTable
@@ -5305,12 +5490,20 @@ func init() {
 	KnowledgeRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeRelationshipsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	KnowledgeRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	KnowledgeRelationshipsTable.ForeignKeys[3].RefTable = KnowledgeRelationshipsTable
+	KnowledgeRelationshipsTable.Annotation = &entsql.Annotation{}
+	KnowledgeRelationshipsTable.Annotation.Checks = map[string]string{
+		"knowledge_relationship_parent_is_contains":  "NOT is_parent OR (predicate = 'contains' AND source_entity_id <> target_entity_id)",
+		"knowledge_relationship_redirect_not_parent": "NOT (is_parent AND merged_into_id IS NOT NULL)",
+		"not_merged_into_itself":                     "merged_into_id <> id",
+	}
 	KnowledgeSubjectAliasTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeSubjectAliasTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	KnowledgeSubjectAliasTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
 	KnowledgeSubjectAliasTable.ForeignKeys[3].RefTable = KnowledgeProposalsTable
 	KnowledgeSubjectAliasTable.Annotation = &entsql.Annotation{}
 	KnowledgeSubjectAliasTable.Annotation.Checks = map[string]string{
+		"knowledge_subject_alias_authority_defined":   "authority IN (10, 20)",
 		"knowledge_subject_alias_exactly_one_subject": "(subject_kind = 'entity' AND entity_id IS NOT NULL AND relationship_id IS NULL) OR (subject_kind = 'relationship' AND relationship_id IS NOT NULL AND entity_id IS NULL)",
 	}
 	MeetingSchedulesTable.ForeignKeys[0].RefTable = TenantsTable
@@ -5318,11 +5511,20 @@ func init() {
 	MeetingSessionsTable.ForeignKeys[1].RefTable = MeetingSchedulesTable
 	NormalizedEventsTable.ForeignKeys[0].RefTable = TenantsTable
 	NormalizedEventsTable.ForeignKeys[1].RefTable = IntegrationsTable
-	NormalizedEventsTable.ForeignKeys[2].RefTable = NormalizedEventProjectionsTable
-	NormalizedEventProjectionsTable.ForeignKeys[0].RefTable = TenantsTable
-	NormalizedEventProjectionsTable.ForeignKeys[1].RefTable = NormalizedEventsTable
+	NormalizedEventProjectionsTable.ForeignKeys[0].RefTable = NormalizedEventsTable
+	NormalizedEventProjectionsTable.ForeignKeys[1].RefTable = TenantsTable
 	NormalizedEventProjectionEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
 	NormalizedEventProjectionEntitiesTable.ForeignKeys[1].RefTable = NormalizedEventProjectionsTable
+	ObservationScopesTable.ForeignKeys[0].RefTable = AlertEpisodesTable
+	ObservationScopesTable.ForeignKeys[1].RefTable = TenantsTable
+	ObservationScopesTable.Annotation = &entsql.Annotation{}
+	ObservationScopesTable.Annotation.Checks = map[string]string{
+		"observation_scope_exactly_one_reference": "num_nonnulls(alert_episode_id) = 1",
+		"observation_scope_revision_nonnegative":  "revision >= 0",
+	}
+	ObservationScopeEntitiesTable.ForeignKeys[0].RefTable = ObservationScopesTable
+	ObservationScopeEntitiesTable.ForeignKeys[1].RefTable = TenantsTable
+	ObservationScopeEntitiesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	OncallHandoverTemplatesTable.ForeignKeys[0].RefTable = TenantsTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
 	OncallRostersTable.ForeignKeys[1].RefTable = TenantsTable
@@ -5364,12 +5566,14 @@ func init() {
 	SequenceCountersTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationsTable.ForeignKeys[1].RefTable = InvestigationsTable
+	SituationsTable.ForeignKeys[2].RefTable = SituationsTable
+	SituationsTable.Annotation = &entsql.Annotation{}
+	SituationsTable.Annotation.Checks = map[string]string{
+		"situation_merged_into_exactly_when_merged": "(close_reason IS NOT DISTINCT FROM 'merged') = (merged_into_id IS NOT NULL)",
+	}
 	SituationActionsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationActionsTable.ForeignKeys[1].RefTable = SituationsTable
 	SituationActionsTable.ForeignKeys[2].RefTable = UsersTable
-	SituationEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
-	SituationEntitiesTable.ForeignKeys[1].RefTable = SituationsTable
-	SituationEntitiesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	SituationJudgmentsTable.ForeignKeys[0].RefTable = TenantsTable
 	SituationJudgmentsTable.ForeignKeys[1].RefTable = SituationsTable
 	SituationNoticesTable.ForeignKeys[0].RefTable = SituationsTable

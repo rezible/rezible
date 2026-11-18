@@ -2,9 +2,15 @@
 package situations
 
 import (
+	"bytes"
+	"maps"
+	"slices"
 	"time"
 
+	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	ssa "github.com/rezible/rezible/ent/situationsignalattention"
 )
@@ -23,4 +29,36 @@ func Seeds(observation rez.SituationObservation) bool {
 // eligible.
 func EligibleAt(observation rez.SituationObservation, now time.Time) bool {
 	return observation.FinishedAt == nil || now.Sub(*observation.FinishedAt) <= OneHopWindow
+}
+
+// RuntimeEntity is one of a situation's runtime entities. It is matching when an observation that is not broad
+// touches it.
+type RuntimeEntity struct {
+	Entity   *ent.KnowledgeEntity
+	Matching bool
+}
+
+// RuntimeEntities are the distinct entities of the observations' scopes, loaded with
+// ent.SituationObservationQuery.WithScopes, ordered by ID.
+func RuntimeEntities(observations []*ent.SituationObservation) []RuntimeEntity {
+	byID := make(map[uuid.UUID]*RuntimeEntity)
+	for _, observation := range observations {
+		scope := observation.Scope()
+		if scope == nil {
+			continue
+		}
+		for _, row := range scope.Edges.Entities {
+			entity, seen := byID[row.KnowledgeEntityID]
+			if !seen {
+				entity = &RuntimeEntity{Entity: row.Edges.KnowledgeEntity}
+				byID[row.KnowledgeEntityID] = entity
+			}
+			entity.Matching = entity.Matching || !scope.Broad
+		}
+	}
+	entities := make([]RuntimeEntity, 0, len(byID))
+	for _, id := range slices.SortedFunc(maps.Keys(byID), func(a, b uuid.UUID) int { return bytes.Compare(a[:], b[:]) }) {
+		entities = append(entities, *byID[id])
+	}
+	return entities
 }

@@ -18,8 +18,8 @@ test("a container shows its components, placements with ancestry, code and undra
 
 	expect(checkout.structureFacts).toEqual(["2 implementation entities grouped"]);
 	expect(checkout.runsOn.map(({ text }) => text)).toEqual([
-		"production › prod-use1 › commerce · ns-commerce",
-		"production › prod-euw1 › commerce · ns-commerce-eu",
+		"commerce-prod › prod-use1 › commerce · ns-commerce",
+		"commerce-prod › prod-euw1 › commerce · ns-commerce-eu",
 	]);
 	expect(checkout.builtFrom.map(({ id }) => id)).toEqual(["repo-checkout"]);
 	expect(checkout.incidentRelationships.map(({ id }) => id)).toEqual([

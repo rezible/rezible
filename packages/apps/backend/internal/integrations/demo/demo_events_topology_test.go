@@ -72,7 +72,7 @@ func TestDemoTopologyFollowsTheModel(t *testing.T) {
 			t.Errorf("entity %q has %d contains parents", ref, count)
 		}
 	}
-	notFromTopology := []knr.Predicate{knr.PredicateMemberOf, knr.PredicateImpacts, knr.PredicateTouches}
+	notFromTopology := []knr.Predicate{knr.PredicateMemberOf}
 	for _, spec := range knowledgegraph.PredicateSpecs() {
 		if !usedPredicates.Contains(spec.Predicate) && !slices.Contains(notFromTopology, spec.Predicate) {
 			t.Errorf("demo topology does not use %s", spec.Predicate)

@@ -16,8 +16,7 @@ import (
 // unnamedServicePrefix is what OpenTelemetry reports for a service that sets no name.
 const unnamedServicePrefix = "unknown_service"
 
-// serviceListingValidFor is how long a service listing's observation holds: services stop being confirmed by
-// Grafana once three hourly syncs have missed them.
+// serviceListingValidFor holds a service's observation for three hours after the latest poll that lists it.
 const serviceListingValidFor = 3 * time.Hour
 
 // EventProcessor normalizes Grafana provider events. It has no dependencies.

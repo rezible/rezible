@@ -15,7 +15,6 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/predicate"
-	sitent "github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/knowledgegraph"
 )
@@ -46,25 +45,33 @@ func (s *KnowledgeGraphIngestionService) MergeEntities(ctx context.Context, para
 			return nil, kindErr
 		}
 
+		// Clearing the parent flags around the two entities writes is_parent, so it holds the tenant's structure
+		// lock, as placement does (placeParents). The merge takes it after locking its two entities and before
+		// flush locks the rest, so it can wait for another flush's row locks while holding it; a deadlock aborts one
+		// transaction and its request or job retries.
+		if lockErr := s.db.AcquireTxLocks(ctx, knowledgeStructureLockNamespace, "tenant"); lockErr != nil {
+			return nil, fmt.Errorf("lock knowledge structure: %w", lockErr)
+		}
 		m := &knowledgeEntityMerge{
-			ingestion:  s,
 			tx:         tx,
 			proposalID: proposal.ID,
 			survivor:   survivor,
 			other:      other,
+			refresh:    newSubjectRefresh(),
 		}
 		if mergeErr := m.run(ctx); mergeErr != nil {
 			return nil, mergeErr
+		}
+		if refreshErr := s.flush(ctx, m.refresh); refreshErr != nil {
+			return nil, fmt.Errorf("refresh merged subjects: %w", refreshErr)
 		}
 		return &rez.MergeEntitiesResult{SurvivorID: survivor.ID, Merged: true}, nil
 	})
 }
 
-// lockMergingEntities locks the entities holding the proposal's names FOR UPDATE, in ID order, so that nothing
-// can refer to them anew until the merge commits: every write that points at an entity takes a key-share lock on
-// it, through its foreign key or lockResolvedEntity. After the locks are held it resolves the names again, since
-// an overlapping merge (`a`-`b` and `b`-`c`) may have committed while it waited, and locks the entities it now
-// finds. It returns one entity when the names are on one already.
+// lockMergingEntities locks the entities holding the proposal's names FOR UPDATE, in ID order, which blocks every
+// writer's key-share lock until the merge commits. It then resolves the names again, since an overlapping merge may
+// have moved one while it waited. It returns one entity when both names are already on it.
 func (s *KnowledgeGraphIngestionService) lockMergingEntities(ctx context.Context, proposal *ent.KnowledgeProposal, entityIDs [2]uuid.UUID) ([]*ent.KnowledgeEntity, error) {
 	client := s.db.Client(ctx)
 	lockIDs := entityIDs[:]
@@ -121,17 +128,23 @@ func checkMergeableKinds(survivor, other *ent.KnowledgeEntity) error {
 	return nil
 }
 
-// knowledgeEntityMerge moves everything of other onto survivor and deletes other. Both rows are locked, so every
-// move is a set-based update of what refers to them now.
+// knowledgeEntityMerge moves everything of other onto survivor and leaves other as a redirect to it. Both rows are
+// locked, so every move is a set-based update of what refers to them now. It touches the survivor and the
+// relationships it moved or folded in refresh, and marks the survivor and the targets of the moved and folded
+// claims for placement, for the caller to flush: a move neither creates a claim nor flips its withdrawal.
 type knowledgeEntityMerge struct {
-	ingestion  *KnowledgeGraphIngestionService
 	tx         *ent.Client
 	proposalID uuid.UUID
 	survivor   *ent.KnowledgeEntity
 	other      *ent.KnowledgeEntity
+	refresh    *subjectRefresh
 }
 
 func (m *knowledgeEntityMerge) run(ctx context.Context) error {
+	if clearErr := m.clearParentClaims(ctx); clearErr != nil {
+		return fmt.Errorf("clear parent claims: %w", clearErr)
+	}
+
 	moveLinkingAttributes := m.tx.KnowledgeEntityLinkingAttribute.Update().
 		Where(kela.EntityID(m.other.ID)).
 		SetEntityID(m.survivor.ID)
@@ -147,39 +160,58 @@ func (m *knowledgeEntityMerge) run(ctx context.Context) error {
 		return fmt.Errorf("move aliases: %w", moveErr)
 	}
 
-	foldedInto, relationshipsErr := m.moveRelationships(ctx)
-	if relationshipsErr != nil {
+	if relationshipsErr := m.moveRelationships(ctx); relationshipsErr != nil {
 		return fmt.Errorf("move relationships: %w", relationshipsErr)
 	}
 
-	if matchingErr := m.mergeSituationMatching(ctx); matchingErr != nil {
-		return fmt.Errorf("merge situation matching: %w", matchingErr)
-	}
 	for _, reference := range ent.KnowledgeEntityReferences {
 		if repointErr := m.repoint(ctx, reference, m.other.ID, m.survivor.ID); repointErr != nil {
 			return fmt.Errorf("re-point %s.%s: %w", reference.Table, reference.Column, repointErr)
 		}
 	}
 
-	if deleteErr := m.tx.KnowledgeEntity.DeleteOneID(m.other.ID).Exec(ctx); deleteErr != nil {
-		return fmt.Errorf("delete merged entity: %w", deleteErr)
+	// Redirects to other move to the survivor too, so redirects stay flat.
+	redirect := m.tx.KnowledgeEntity.Update().
+		Where(kne.Or(kne.ID(m.other.ID), kne.MergedIntoID(m.other.ID))).
+		SetMergedIntoID(m.survivor.ID)
+	if redirectErr := redirect.Exec(ctx); redirectErr != nil {
+		return fmt.Errorf("redirect merged entity: %w", redirectErr)
 	}
-
-	// The survivor and the relationships that gained aliases are merged again from their aliases.
-	if stateErr := m.ingestion.mergeEntityState(ctx, m.survivor.ID); stateErr != nil {
-		return fmt.Errorf("merge survivor state: %w", stateErr)
-	}
-	for _, kept := range foldedInto {
-		if _, stateErr := m.ingestion.mergeRelationshipState(ctx, kept); stateErr != nil {
-			return fmt.Errorf("merge relationship state: %w", stateErr)
-		}
-	}
-	// Every entity whose parent was either merged entity is now contained by the survivor, and the moved claims
-	// may change the survivor's own parent. A survivor that now contains itself is never its own parent.
-	if parentErr := m.ingestion.recomputeParentsAround(ctx, m.survivor.ID); parentErr != nil {
-		return fmt.Errorf("recompute parents: %w", parentErr)
-	}
+	// The survivor gained aliases. Every entity whose parent was the other is now the target of a moved claim,
+	// and the moved claims may change the survivor's own parent.
+	m.refresh.entities.Add(m.survivor.ID)
+	m.refresh.placements.Add(m.survivor.ID)
 	return nil
+}
+
+// clearParentClaims clears is_parent on every relationship with either entity as an endpoint, before any
+// endpoint moves: a moved flagged claim could give the survivor a second flagged parent claim, or turn a flagged
+// claim between the two into a flagged one from the survivor to itself. It touches the cleared relationships and
+// marks their targets for placement, so flush flags each child's claim again. The caller holds the structure lock.
+func (m *knowledgeEntityMerge) clearParentClaims(ctx context.Context) error {
+	endpoints := []uuid.UUID{m.survivor.ID, m.other.ID}
+	queryFlagged := m.tx.KnowledgeRelationship.Query().
+		Where(
+			knr.IsParent(true),
+			knr.Or(knr.SourceEntityIDIn(endpoints...), knr.TargetEntityIDIn(endpoints...)),
+		)
+	flagged, flaggedErr := queryFlagged.All(ctx)
+	if flaggedErr != nil {
+		return fmt.Errorf("query flagged claims: %w", flaggedErr)
+	}
+	if len(flagged) == 0 {
+		return nil
+	}
+	ids := make([]uuid.UUID, len(flagged))
+	for i, relationship := range flagged {
+		ids[i] = relationship.ID
+		m.refresh.relationships.Add(relationship.ID)
+		m.refresh.placements.Add(relationship.TargetEntityID)
+	}
+	clearFlags := m.tx.KnowledgeRelationship.Update().
+		Where(knr.IDIn(ids...)).
+		SetIsParent(false)
+	return clearFlags.Exec(ctx)
 }
 
 // knowledgeRelationshipKey is a relationship's identity under its unique index.
@@ -189,22 +221,20 @@ type knowledgeRelationshipKey struct {
 	targetEntityID uuid.UUID
 }
 
-// moveRelationships re-points the other entity's relationships to the survivor. A relationship that would then
-// repeat one the survivor already has, or another moved one, is folded into it: its aliases and references move
-// onto that relationship, and it is deleted. A relationship between the two becomes one from the survivor to
-// itself. The relationships it reads to find duplicates cannot change meanwhile: each has one of the two locked
-// entities as an endpoint, and inserting or re-pointing one takes a key-share lock on its endpoints. It returns
-// the relationships others were folded into.
-func (m *knowledgeEntityMerge) moveRelationships(ctx context.Context) ([]uuid.UUID, error) {
+// moveRelationships re-points the other entity's relationships to the survivor. One that would duplicate an
+// existing relationship is folded into it: its aliases and references move over, and it stays as a redirect with
+// its old endpoints. The relationships it reads cannot change meanwhile, because both endpoints' entities are
+// locked.
+func (m *knowledgeEntityMerge) moveRelationships(ctx context.Context) error {
 	queryMoving := m.tx.KnowledgeRelationship.Query().
 		Where(knr.Or(knr.SourceEntityID(m.other.ID), knr.TargetEntityID(m.other.ID))).
 		Order(knr.ByCreatedAt(), knr.ByID())
 	moving, movingErr := queryMoving.All(ctx)
 	if movingErr != nil {
-		return nil, fmt.Errorf("query relationships: %w", movingErr)
+		return fmt.Errorf("query relationships: %w", movingErr)
 	}
 	if len(moving) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	movedKey := func(relationship *ent.KnowledgeRelationship) knowledgeRelationshipKey {
@@ -234,7 +264,7 @@ func (m *knowledgeEntityMerge) moveRelationships(ctx context.Context) ([]uuid.UU
 		Where(knr.Or(existingPreds...))
 	existing, existingErr := queryExisting.All(ctx)
 	if existingErr != nil {
-		return nil, fmt.Errorf("query survivor relationships: %w", existingErr)
+		return fmt.Errorf("query survivor relationships: %w", existingErr)
 	}
 
 	keptByKey := make(map[knowledgeRelationshipKey]uuid.UUID, len(existing)+len(moving))
@@ -246,46 +276,58 @@ func (m *knowledgeEntityMerge) moveRelationships(ctx context.Context) ([]uuid.UU
 	for _, relationship := range moving {
 		key := movedKey(relationship)
 		kept, isDuplicate := keptByKey[key]
+		if key.predicate == knr.PredicateContains {
+			m.refresh.placements.Add(key.targetEntityID)
+		}
 		if !isDuplicate {
 			keptByKey[key] = relationship.ID
+			m.refresh.relationships.Add(relationship.ID)
 			continue
 		}
 		if _, seen := foldedInto[kept]; !seen {
 			keptOrder = append(keptOrder, kept)
+			m.refresh.relationships.Add(kept)
 		}
 		foldedInto[kept] = append(foldedInto[kept], relationship.ID)
 	}
 
 	if lockErr := m.lockFoldedRelationships(ctx, foldedInto); lockErr != nil {
-		return nil, lockErr
+		return lockErr
 	}
 	for _, kept := range keptOrder {
 		if foldErr := m.foldRelationships(ctx, kept, foldedInto[kept]); foldErr != nil {
-			return nil, foldErr
+			return foldErr
 		}
 	}
 
+	// Queries leave redirects out, updates do not, so the moves below exclude them themselves. A relationship from
+	// the other to itself moves both endpoints at once: moving one would leave it from the survivor to the other, or
+	// back, which is the key of a relationship folded into it.
+	moveSelfLoops := m.tx.KnowledgeRelationship.Update().
+		Where(knr.SourceEntityID(m.other.ID), knr.TargetEntityID(m.other.ID), knr.MergedIntoIDIsNil()).
+		SetSourceEntityID(m.survivor.ID).
+		SetTargetEntityID(m.survivor.ID)
+	if moveErr := moveSelfLoops.Exec(ctx); moveErr != nil {
+		return fmt.Errorf("move relationships to the other itself: %w", moveErr)
+	}
 	moveSources := m.tx.KnowledgeRelationship.Update().
-		Where(knr.SourceEntityID(m.other.ID)).
+		Where(knr.SourceEntityID(m.other.ID), knr.MergedIntoIDIsNil()).
 		SetSourceEntityID(m.survivor.ID)
 	if moveErr := moveSources.Exec(ctx); moveErr != nil {
-		return nil, fmt.Errorf("move relationship sources: %w", moveErr)
+		return fmt.Errorf("move relationship sources: %w", moveErr)
 	}
 	moveTargets := m.tx.KnowledgeRelationship.Update().
-		Where(knr.TargetEntityID(m.other.ID)).
+		Where(knr.TargetEntityID(m.other.ID), knr.MergedIntoIDIsNil()).
 		SetTargetEntityID(m.survivor.ID)
 	if moveErr := moveTargets.Exec(ctx); moveErr != nil {
-		return nil, fmt.Errorf("move relationship targets: %w", moveErr)
+		return fmt.Errorf("move relationship targets: %w", moveErr)
 	}
-	return keptOrder, nil
+	return nil
 }
 
 // lockFoldedRelationships locks the relationships to be folded and those they fold into FOR UPDATE, in ID order,
-// after the entity locks and before anything moves. A foreign key to a relationship takes a key-share lock on the
-// relationship, not on its endpoints, so the entity locks do not stop a writer from inserting a reference to a
-// duplicate between its references being re-pointed and its deletion, which would then fail the merge. With the
-// lock, such a writer either commits first and its reference is re-pointed with the rest, or waits and fails on
-// the foreign key once the duplicate is gone. The locks are held until the merge commits.
+// after the entity locks and before anything moves, and holds them until the merge commits. A writer naming one of
+// them then either commits before its reference is re-pointed, or waits and stores the relationship it folds into.
 func (m *knowledgeEntityMerge) lockFoldedRelationships(ctx context.Context, foldedInto map[uuid.UUID][]uuid.UUID) error {
 	if len(foldedInto) == 0 {
 		return nil
@@ -320,35 +362,14 @@ func (m *knowledgeEntityMerge) foldRelationships(ctx context.Context, kept uuid.
 			}
 		}
 	}
-	deleteDuplicates := m.tx.KnowledgeRelationship.Delete().
-		Where(knr.IDIn(duplicates...))
-	if _, deleteErr := deleteDuplicates.Exec(ctx); deleteErr != nil {
-		return fmt.Errorf("delete duplicate relationships: %w", deleteErr)
+	// Redirects to the duplicates move to kept too, so redirects stay flat.
+	redirect := m.tx.KnowledgeRelationship.Update().
+		Where(knr.Or(knr.IDIn(duplicates...), knr.MergedIntoIDIn(duplicates...))).
+		SetMergedIntoID(kept)
+	if redirectErr := redirect.Exec(ctx); redirectErr != nil {
+		return fmt.Errorf("redirect duplicate relationships: %w", redirectErr)
 	}
 	return nil
-}
-
-// mergeSituationMatching keeps an open situation attracting signals through the survivor when either entity did:
-// in every situation where the other's row is matching, the survivor's becomes matching. Re-pointing then deletes
-// the other's row in situations that hold both.
-func (m *knowledgeEntityMerge) mergeSituationMatching(ctx context.Context) error {
-	queryMatching := m.tx.SituationEntity.Query().
-		Where(sitent.KnowledgeEntityID(m.other.ID), sitent.Matching(true))
-	matching, queryErr := queryMatching.All(ctx)
-	if queryErr != nil {
-		return fmt.Errorf("query matching situation entities: %w", queryErr)
-	}
-	if len(matching) == 0 {
-		return nil
-	}
-	situationIDs := make([]uuid.UUID, len(matching))
-	for i, row := range matching {
-		situationIDs[i] = row.SituationID
-	}
-	setMatching := m.tx.SituationEntity.Update().
-		Where(sitent.KnowledgeEntityID(m.survivor.ID), sitent.SituationIDIn(situationIDs...), sitent.Matching(false)).
-		SetMatching(true)
-	return setMatching.Exec(ctx)
 }
 
 // repoint makes the rows of reference referring to from refer to to. For a reference that deletes duplicates, it

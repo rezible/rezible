@@ -126,15 +126,34 @@ func (FingerprintMixin) Fields() []ent.Field {
 	}
 }
 
+// ProviderResourceReferenceMixin holds the provider's reference to the resource a row is about. With Optional, a
+// row may have no reference, but never part of one.
 type ProviderResourceReferenceMixin struct {
 	mixin.Schema
+	Optional bool
 }
 
-func (ProviderResourceReferenceMixin) Fields() []ent.Field {
-	return []ent.Field{
-		field.String("provider").NotEmpty().Immutable(),
-		field.String("provider_namespace").Immutable(),
-		field.String("provider_resource_ref").NotEmpty().Immutable(),
+func (m ProviderResourceReferenceMixin) Fields() []ent.Field {
+	provider := field.String("provider").NotEmpty().Immutable()
+	namespace := field.String("provider_namespace").Immutable()
+	resourceRef := field.String("provider_resource_ref").NotEmpty().Immutable()
+	if m.Optional {
+		provider.Optional().Nillable()
+		namespace.Optional().Nillable()
+		resourceRef.Optional().Nillable()
+	}
+	return []ent.Field{provider, namespace, resourceRef}
+}
+
+func (m ProviderResourceReferenceMixin) Annotations() []schema.Annotation {
+	if !m.Optional {
+		return nil
+	}
+	// A check name only has to be unique within its table, so the mixin's name needs no table prefix.
+	return []schema.Annotation{
+		entsql.Annotation{Checks: map[string]string{
+			"provider_reference_all_or_none": "num_nulls(provider, provider_namespace, provider_resource_ref) IN (0, 3)",
+		}},
 	}
 }
 
@@ -150,24 +169,11 @@ func (ArchiveMixin) Fields() []ent.Field {
 	}
 }
 
-const includeArchivedContextKey = "include_archived"
-
-func IncludeArchived(parent context.Context) context.Context {
-	return context.WithValue(parent, includeArchivedContextKey, true)
-}
-
-// ReportMissingReferences makes a write that references a missing row fail with its foreign key violation,
-// which names the constraint, rather than the tenant reference check's not found. A row in another tenant is
-// still not found.
-func ReportMissingReferences(parent context.Context) context.Context {
-	return context.WithValue(parent, gen.ReportMissingReferencesKey{}, true)
-}
-
 func (d ArchiveMixin) Interceptors() []ent.Interceptor {
 	return []ent.Interceptor{
 		intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {
 			// Skip archive, means include archived entities.
-			if skip, _ := ctx.Value(includeArchivedContextKey).(bool); skip {
+			if gen.ArchivedIncluded(ctx) {
 				return nil
 			}
 			d.P(q)
@@ -187,7 +193,7 @@ func (d ArchiveMixin) Hooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-					if skip, _ := ctx.Value(includeArchivedContextKey).(bool); skip {
+					if gen.ArchivedIncluded(ctx) {
 						return next.Mutate(ctx, m)
 					}
 					mx, ok := m.(ArchiveableMutation)

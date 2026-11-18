@@ -66,6 +66,7 @@ func (s *SystemAnalysisServiceSuite) createNormalizedEvent(ctx context.Context, 
 		SetProviderEventRef(uuid.NewString()).
 		SetKind(projections.KindSystemComponent).
 		SetOccurredAt(now).
+		SetLastOccurredAt(now).
 		SetReceivedAt(now).
 		SetAttributes(encodedAttributes)
 	event, createErr := create.Save(ctx)
@@ -95,6 +96,7 @@ func (s *SystemAnalysisServiceSuite) createGraphFixture(ctx context.Context, tdb
 	s.Require().NoError(relationshipErr)
 
 	createAlias := client.KnowledgeSubjectAlias.Create().
+		SetAuthority(schematypes.KnowledgeAuthorityDeclared).
 		SetSubjectKind(ksa.SubjectKindEntity).
 		SetProvider("test").
 		SetProviderNamespace("system-analysis-tests").

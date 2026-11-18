@@ -2,10 +2,14 @@ package db
 
 import (
 	"context"
+	stdsql "database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 
@@ -15,9 +19,10 @@ import (
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
+	osc "github.com/rezible/rezible/ent/observationscope"
+	osce "github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	sit "github.com/rezible/rezible/ent/situation"
-	sitent "github.com/rezible/rezible/ent/situationentity"
 	sitobs "github.com/rezible/rezible/ent/situationobservation"
 	sitog "github.com/rezible/rezible/ent/situationobservationgroup"
 	"github.com/rezible/rezible/pkg/errs"
@@ -77,9 +82,6 @@ func (s *SituationService) AttachSituationObservations(ctx context.Context, para
 		if lowerErr := s.lowerOpenedAt(ctx, situation, s.earliestStart(observations)); lowerErr != nil {
 			return lowerErr
 		}
-		if entitiesErr := s.recomputeSituationEntities(ctx, situation.ID); entitiesErr != nil {
-			return entitiesErr
-		}
 		return s.requestEvaluation(ctx, situation.ID)
 	})
 }
@@ -110,52 +112,6 @@ func (s *SituationService) lowerOpenedAt(ctx context.Context, situation *ent.Sit
 		return fmt.Errorf("lower situation opened time: %w", updateErr)
 	}
 	situation.OpenedAt = startedAt
-	return nil
-}
-
-// recomputeSituationEntities replaces the situation's entity rows with the union of its observations'
-// runtime entities, resolving each again. An entity is matching when an observation that is not broad
-// touches it.
-func (s *SituationService) recomputeSituationEntities(ctx context.Context, situationID uuid.UUID) error {
-	refs, refsErr := s.observedRefs(ctx, situationID)
-	if refsErr != nil {
-		return refsErr
-	}
-	matching := make(map[uuid.UUID]bool)
-	if len(refs) > 0 {
-		observations, loadErr := s.LoadObservations(ctx, refs, rez.LoadSituationObservationsOptions{})
-		if loadErr != nil {
-			return loadErr
-		}
-		for _, observation := range observations {
-			entityIDs, entitiesErr := s.observationRuntimeEntities(ctx, observation)
-			if entitiesErr != nil {
-				return entitiesErr
-			}
-			broad := situations.IsBroad(entityIDs.Cardinality())
-			for entityID := range entityIDs.Iter() {
-				matching[entityID] = matching[entityID] || !broad
-			}
-		}
-	}
-
-	client := s.db.Client(ctx)
-	deleteEntities := client.SituationEntity.Delete().
-		Where(sitent.SituationID(situationID))
-	if _, deleteErr := deleteEntities.Exec(ctx); deleteErr != nil {
-		return fmt.Errorf("delete situation entities: %w", deleteErr)
-	}
-	creates := make([]*ent.SituationEntityCreate, 0, len(matching))
-	for entityID, isMatching := range matching {
-		createEntity := client.SituationEntity.Create().
-			SetSituationID(situationID).
-			SetKnowledgeEntityID(entityID).
-			SetMatching(isMatching)
-		creates = append(creates, createEntity)
-	}
-	if createErr := client.SituationEntity.CreateBulk(creates...).Exec(ctx); createErr != nil {
-		return fmt.Errorf("create situation entities: %w", createErr)
-	}
 	return nil
 }
 
@@ -207,7 +163,88 @@ func (s *SituationService) observationRuntimeEntities(ctx context.Context, obser
 	return runtime, nil
 }
 
-// MergeSituations moves the source's observations into the target and closes the source as merged.
+// storeObservationScope computes the observation's scope and stores it. A stored scope from the same or a newer
+// revision is kept. An empty scope is computed again, since the graph may have learned the observation's
+// entities since.
+func (s *SituationService) storeObservationScope(ctx context.Context, observation rez.SituationObservation) error {
+	queryCurrent := s.db.Client(ctx).ObservationScope.Query().
+		Where(s.scopeOf(observation.Ref), osc.RevisionGTE(observation.Revision), osc.HasEntities())
+	if current, currentErr := queryCurrent.Exist(ctx); currentErr != nil {
+		return fmt.Errorf("query observation scope: %w", currentErr)
+	} else if current {
+		return nil
+	}
+	entityIDs, entitiesErr := s.observationRuntimeEntities(ctx, observation)
+	if entitiesErr != nil {
+		return entitiesErr
+	}
+	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		create, refColumn := s.setScopeRef(tx.ObservationScope.Create(), observation.Ref)
+		create.SetRevision(observation.Revision).
+			SetBroad(situations.IsBroad(entityIDs.Cardinality()))
+		// The conflicting row stays locked until commit whether or not it is updated, so concurrent jobs for one
+		// observation replace its entities one at a time, each against the revision the previous one stored.
+		// Entities found for the stored revision replace only an empty scope stored for it. Ent's predicates cannot
+		// read the conflicting row's entities, so this is a NOT EXISTS subquery on it.
+		builder := sql.Dialect(dialect.Postgres)
+		stored, entities := builder.Table(osc.Table), builder.Table(osce.Table)
+		replaceable := sql.LT(stored.C(osc.FieldRevision), observation.Revision)
+		if !entityIDs.IsEmpty() {
+			storedEntities := builder.Select(entities.C(osce.FieldID)).
+				From(entities).
+				Where(sql.ColumnsEQ(entities.C(osce.FieldScopeID), stored.C(osc.FieldID)))
+			replaceable = sql.Or(
+				replaceable,
+				sql.And(sql.EQ(stored.C(osc.FieldRevision), observation.Revision), sql.NotExists(storedEntities)),
+			)
+		}
+		upsert := create.OnConflict(sql.ConflictColumns(refColumn), sql.UpdateWhere(replaceable)).
+			UpdateRevision().
+			UpdateBroad()
+		scopeID, upsertErr := upsert.ID(ctx)
+		if upsertErr != nil {
+			if errors.Is(upsertErr, stdsql.ErrNoRows) {
+				return nil
+			}
+			return fmt.Errorf("upsert observation scope: %w", upsertErr)
+		}
+		deleteEntities := tx.ObservationScopeEntity.Delete().
+			Where(osce.ScopeID(scopeID))
+		if _, deleteErr := deleteEntities.Exec(ctx); deleteErr != nil {
+			return fmt.Errorf("delete observation scope entities: %w", deleteErr)
+		}
+		ids := entityIDs.ToSlice()
+		// Two of the entities can be merged into one survivor after they were resolved, and the canonical reference
+		// hook stores both as the survivor, so a repeat is skipped.
+		createEntities := tx.ObservationScopeEntity.MapCreateBulk(ids, func(c *ent.ObservationScopeEntityCreate, i int) {
+			c.SetScopeID(scopeID).
+				SetKnowledgeEntityID(ids[i])
+		}).
+			OnConflictColumns(osce.FieldTenantID, osce.FieldScopeID, osce.FieldKnowledgeEntityID).
+			DoNothing()
+		if createErr := createEntities.Exec(ctx); createErr != nil {
+			return fmt.Errorf("create observation scope entities: %w", createErr)
+		}
+		return nil
+	})
+}
+
+// storedScopeEntities reads the entities of the observation's stored scope.
+func (s *SituationService) storedScopeEntities(ctx context.Context, ref rez.SituationObservationRef) (mapset.Set[uuid.UUID], error) {
+	queryEntities := s.db.Client(ctx).ObservationScopeEntity.Query().
+		Where(osce.HasScopeWith(s.scopeOf(ref)))
+	entities, queryErr := queryEntities.All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("query observation scope entities: %w", queryErr)
+	}
+	entityIDs := mapset.NewSet[uuid.UUID]()
+	for _, entity := range entities {
+		entityIDs.Add(entity.KnowledgeEntityID)
+	}
+	return entityIDs, nil
+}
+
+// MergeSituations moves the source's observations into the target and closes the source as merged into it.
 func (s *SituationService) MergeSituations(ctx context.Context, params rez.MergeSituationsParams) (*ent.Situation, error) {
 	if params.SourceID == uuid.Nil || params.TargetID == uuid.Nil {
 		return nil, fmt.Errorf("%w: source and target situations are required", errs.ErrInvalidInput)
@@ -230,16 +267,28 @@ func (s *SituationService) MergeSituations(ctx context.Context, params rez.Merge
 		if moveErr := s.moveObservations(ctx, source.ID, target.ID, explanation, now); moveErr != nil {
 			return nil, moveErr
 		}
-		if closeErr := s.closeLocked(ctx, source, sit.CloseReasonMerged, explanation, now, now); closeErr != nil {
+		if closeErr := s.closeLocked(ctx, source, sit.CloseReasonMerged, &target.ID, explanation, now, now); closeErr != nil {
 			return nil, closeErr
+		}
+		// Situations already merged into the source follow it, so a merge target is never itself merged.
+		queryRedirected := tx.Situation.Query().Where(sit.MergedIntoID(source.ID))
+		redirectedIDs, redirectedErr := queryRedirected.IDs(ctx)
+		if redirectedErr != nil {
+			return nil, fmt.Errorf("query merged situations: %w", redirectedErr)
+		}
+		redirectSources := tx.Situation.Update().
+			Where(sit.IDIn(redirectedIDs...)).
+			SetMergedIntoID(target.ID)
+		if redirectErr := redirectSources.Exec(ctx); redirectErr != nil {
+			return nil, fmt.Errorf("redirect merged situations: %w", redirectErr)
+		}
+		for _, redirectedID := range redirectedIDs {
+			if publishErr := s.msgs.Publish(ctx, rez.EventOnSituationUpdated{SituationID: redirectedID}); publishErr != nil {
+				return nil, fmt.Errorf("publish situation updated: %w", publishErr)
+			}
 		}
 		if lowerErr := s.lowerOpenedAt(ctx, target, source.OpenedAt); lowerErr != nil {
 			return nil, lowerErr
-		}
-		for _, situationID := range []uuid.UUID{source.ID, target.ID} {
-			if entitiesErr := s.recomputeSituationEntities(ctx, situationID); entitiesErr != nil {
-				return nil, entitiesErr
-			}
 		}
 		if evaluateErr := s.requestEvaluation(ctx, target.ID); evaluateErr != nil {
 			return nil, evaluateErr

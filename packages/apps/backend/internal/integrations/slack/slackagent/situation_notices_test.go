@@ -163,8 +163,10 @@ func (s *AppSuite) TestNoticeWording() {
 			setup: func(content *noticeContent) {
 				content.Situation.ClosedAt = new(noticeTestOpenedAt.Add(time.Hour))
 				content.Situation.CloseReason = new(sit.CloseReasonMerged)
+				content.Situation.Edges.MergedInto = &ent.Situation{ID: uuid.New(), Number: 20}
+				content.MergedIntoURL = "https://rezible.test/situations/SIT-20"
 			},
-			stage: "Merged into another situation",
+			stage: "Merged into <https://rezible.test/situations/SIT-20|SIT-20>",
 		},
 	}
 	for _, stage := range stages {

@@ -13,75 +13,61 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/situationentity"
 )
 
-// SituationEntityUpdate is the builder for updating SituationEntity entities.
-type SituationEntityUpdate struct {
+// ObservationScopeEntityUpdate is the builder for updating ObservationScopeEntity entities.
+type ObservationScopeEntityUpdate struct {
 	config
 	hooks     []Hook
-	mutation  *SituationEntityMutation
+	mutation  *ObservationScopeEntityMutation
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// Where appends a list predicates to the SituationEntityUpdate builder.
-func (_u *SituationEntityUpdate) Where(ps ...predicate.SituationEntity) *SituationEntityUpdate {
+// Where appends a list predicates to the ObservationScopeEntityUpdate builder.
+func (_u *ObservationScopeEntityUpdate) Where(ps ...predicate.ObservationScopeEntity) *ObservationScopeEntityUpdate {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *SituationEntityUpdate) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpdate {
+func (_u *ObservationScopeEntityUpdate) SetKnowledgeEntityID(v uuid.UUID) *ObservationScopeEntityUpdate {
 	_u.mutation.SetKnowledgeEntityID(v)
 	return _u
 }
 
 // SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *SituationEntityUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *SituationEntityUpdate {
+func (_u *ObservationScopeEntityUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *ObservationScopeEntityUpdate {
 	if v != nil {
 		_u.SetKnowledgeEntityID(*v)
 	}
 	return _u
 }
 
-// SetMatching sets the "matching" field.
-func (_u *SituationEntityUpdate) SetMatching(v bool) *SituationEntityUpdate {
-	_u.mutation.SetMatching(v)
-	return _u
-}
-
-// SetNillableMatching sets the "matching" field if the given value is not nil.
-func (_u *SituationEntityUpdate) SetNillableMatching(v *bool) *SituationEntityUpdate {
-	if v != nil {
-		_u.SetMatching(*v)
-	}
-	return _u
-}
-
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *SituationEntityUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *SituationEntityUpdate {
+func (_u *ObservationScopeEntityUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *ObservationScopeEntityUpdate {
 	return _u.SetKnowledgeEntityID(v.ID)
 }
 
-// Mutation returns the SituationEntityMutation object of the builder.
-func (_u *SituationEntityUpdate) Mutation() *SituationEntityMutation {
+// Mutation returns the ObservationScopeEntityMutation object of the builder.
+func (_u *ObservationScopeEntityUpdate) Mutation() *ObservationScopeEntityMutation {
 	return _u.mutation
 }
 
 // ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *SituationEntityUpdate) ClearKnowledgeEntity() *SituationEntityUpdate {
+func (_u *ObservationScopeEntityUpdate) ClearKnowledgeEntity() *ObservationScopeEntityUpdate {
 	_u.mutation.ClearKnowledgeEntity()
 	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (_u *SituationEntityUpdate) Save(ctx context.Context) (int, error) {
+func (_u *ObservationScopeEntityUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *SituationEntityUpdate) SaveX(ctx context.Context) int {
+func (_u *ObservationScopeEntityUpdate) SaveX(ctx context.Context) int {
 	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -90,43 +76,43 @@ func (_u *SituationEntityUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (_u *SituationEntityUpdate) Exec(ctx context.Context) error {
+func (_u *ObservationScopeEntityUpdate) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *SituationEntityUpdate) ExecX(ctx context.Context) {
+func (_u *ObservationScopeEntityUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *SituationEntityUpdate) check() error {
+func (_u *ObservationScopeEntityUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationEntity.tenant"`)
+		return errors.New(`ent: clearing a required unique edge "ObservationScopeEntity.tenant"`)
 	}
-	if _u.mutation.SituationCleared() && len(_u.mutation.SituationIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationEntity.situation"`)
+	if _u.mutation.ScopeCleared() && len(_u.mutation.ScopeIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ObservationScopeEntity.scope"`)
 	}
 	if _u.mutation.KnowledgeEntityCleared() && len(_u.mutation.KnowledgeEntityIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationEntity.knowledge_entity"`)
+		return errors.New(`ent: clearing a required unique edge "ObservationScopeEntity.knowledge_entity"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *SituationEntityUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationEntityUpdate {
+func (_u *ObservationScopeEntityUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ObservationScopeEntityUpdate {
 	_u.modifiers = append(_u.modifiers, modifiers...)
 	return _u
 }
 
-func (_u *SituationEntityUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+func (_u *ObservationScopeEntityUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(situationentity.Table, situationentity.Columns, sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(observationscopeentity.Table, observationscopeentity.Columns, sqlgraph.NewFieldSpec(observationscopeentity.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -134,46 +120,43 @@ func (_u *SituationEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 			}
 		}
 	}
-	if value, ok := _u.mutation.Matching(); ok {
-		_spec.SetField(situationentity.FieldMatching, field.TypeBool, value)
-	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   situationentity.KnowledgeEntityTable,
-			Columns: []string{situationentity.KnowledgeEntityColumn},
+			Table:   observationscopeentity.KnowledgeEntityTable,
+			Columns: []string{observationscopeentity.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SituationEntity
+		edge.Schema = _u.schemaConfig.ObservationScopeEntity
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   situationentity.KnowledgeEntityTable,
-			Columns: []string{situationentity.KnowledgeEntityColumn},
+			Table:   observationscopeentity.KnowledgeEntityTable,
+			Columns: []string{observationscopeentity.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SituationEntity
+		edge.Schema = _u.schemaConfig.ObservationScopeEntity
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.Node.Schema = _u.schemaConfig.SituationEntity
+	_spec.Node.Schema = _u.schemaConfig.ObservationScopeEntity
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{situationentity.Label}
+			err = &NotFoundError{observationscopeentity.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -183,79 +166,65 @@ func (_u *SituationEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 	return _node, nil
 }
 
-// SituationEntityUpdateOne is the builder for updating a single SituationEntity entity.
-type SituationEntityUpdateOne struct {
+// ObservationScopeEntityUpdateOne is the builder for updating a single ObservationScopeEntity entity.
+type ObservationScopeEntityUpdateOne struct {
 	config
 	fields    []string
 	hooks     []Hook
-	mutation  *SituationEntityMutation
+	mutation  *ObservationScopeEntityMutation
 	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *SituationEntityUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpdateOne {
+func (_u *ObservationScopeEntityUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *ObservationScopeEntityUpdateOne {
 	_u.mutation.SetKnowledgeEntityID(v)
 	return _u
 }
 
 // SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *SituationEntityUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *SituationEntityUpdateOne {
+func (_u *ObservationScopeEntityUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *ObservationScopeEntityUpdateOne {
 	if v != nil {
 		_u.SetKnowledgeEntityID(*v)
 	}
 	return _u
 }
 
-// SetMatching sets the "matching" field.
-func (_u *SituationEntityUpdateOne) SetMatching(v bool) *SituationEntityUpdateOne {
-	_u.mutation.SetMatching(v)
-	return _u
-}
-
-// SetNillableMatching sets the "matching" field if the given value is not nil.
-func (_u *SituationEntityUpdateOne) SetNillableMatching(v *bool) *SituationEntityUpdateOne {
-	if v != nil {
-		_u.SetMatching(*v)
-	}
-	return _u
-}
-
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *SituationEntityUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *SituationEntityUpdateOne {
+func (_u *ObservationScopeEntityUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *ObservationScopeEntityUpdateOne {
 	return _u.SetKnowledgeEntityID(v.ID)
 }
 
-// Mutation returns the SituationEntityMutation object of the builder.
-func (_u *SituationEntityUpdateOne) Mutation() *SituationEntityMutation {
+// Mutation returns the ObservationScopeEntityMutation object of the builder.
+func (_u *ObservationScopeEntityUpdateOne) Mutation() *ObservationScopeEntityMutation {
 	return _u.mutation
 }
 
 // ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *SituationEntityUpdateOne) ClearKnowledgeEntity() *SituationEntityUpdateOne {
+func (_u *ObservationScopeEntityUpdateOne) ClearKnowledgeEntity() *ObservationScopeEntityUpdateOne {
 	_u.mutation.ClearKnowledgeEntity()
 	return _u
 }
 
-// Where appends a list predicates to the SituationEntityUpdate builder.
-func (_u *SituationEntityUpdateOne) Where(ps ...predicate.SituationEntity) *SituationEntityUpdateOne {
+// Where appends a list predicates to the ObservationScopeEntityUpdate builder.
+func (_u *ObservationScopeEntityUpdateOne) Where(ps ...predicate.ObservationScopeEntity) *ObservationScopeEntityUpdateOne {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (_u *SituationEntityUpdateOne) Select(field string, fields ...string) *SituationEntityUpdateOne {
+func (_u *ObservationScopeEntityUpdateOne) Select(field string, fields ...string) *ObservationScopeEntityUpdateOne {
 	_u.fields = append([]string{field}, fields...)
 	return _u
 }
 
-// Save executes the query and returns the updated SituationEntity entity.
-func (_u *SituationEntityUpdateOne) Save(ctx context.Context) (*SituationEntity, error) {
+// Save executes the query and returns the updated ObservationScopeEntity entity.
+func (_u *ObservationScopeEntityUpdateOne) Save(ctx context.Context) (*ObservationScopeEntity, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *SituationEntityUpdateOne) SaveX(ctx context.Context) *SituationEntity {
+func (_u *ObservationScopeEntityUpdateOne) SaveX(ctx context.Context) *ObservationScopeEntity {
 	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -264,56 +233,56 @@ func (_u *SituationEntityUpdateOne) SaveX(ctx context.Context) *SituationEntity 
 }
 
 // Exec executes the query on the entity.
-func (_u *SituationEntityUpdateOne) Exec(ctx context.Context) error {
+func (_u *ObservationScopeEntityUpdateOne) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *SituationEntityUpdateOne) ExecX(ctx context.Context) {
+func (_u *ObservationScopeEntityUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *SituationEntityUpdateOne) check() error {
+func (_u *ObservationScopeEntityUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationEntity.tenant"`)
+		return errors.New(`ent: clearing a required unique edge "ObservationScopeEntity.tenant"`)
 	}
-	if _u.mutation.SituationCleared() && len(_u.mutation.SituationIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationEntity.situation"`)
+	if _u.mutation.ScopeCleared() && len(_u.mutation.ScopeIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ObservationScopeEntity.scope"`)
 	}
 	if _u.mutation.KnowledgeEntityCleared() && len(_u.mutation.KnowledgeEntityIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SituationEntity.knowledge_entity"`)
+		return errors.New(`ent: clearing a required unique edge "ObservationScopeEntity.knowledge_entity"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (_u *SituationEntityUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SituationEntityUpdateOne {
+func (_u *ObservationScopeEntityUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ObservationScopeEntityUpdateOne {
 	_u.modifiers = append(_u.modifiers, modifiers...)
 	return _u
 }
 
-func (_u *SituationEntityUpdateOne) sqlSave(ctx context.Context) (_node *SituationEntity, err error) {
+func (_u *ObservationScopeEntityUpdateOne) sqlSave(ctx context.Context) (_node *ObservationScopeEntity, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(situationentity.Table, situationentity.Columns, sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(observationscopeentity.Table, observationscopeentity.Columns, sqlgraph.NewFieldSpec(observationscopeentity.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SituationEntity.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ObservationScopeEntity.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, situationentity.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, observationscopeentity.FieldID)
 		for _, f := range fields {
-			if !situationentity.ValidColumn(f) {
+			if !observationscopeentity.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != situationentity.FieldID {
+			if f != observationscopeentity.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -325,49 +294,46 @@ func (_u *SituationEntityUpdateOne) sqlSave(ctx context.Context) (_node *Situati
 			}
 		}
 	}
-	if value, ok := _u.mutation.Matching(); ok {
-		_spec.SetField(situationentity.FieldMatching, field.TypeBool, value)
-	}
 	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   situationentity.KnowledgeEntityTable,
-			Columns: []string{situationentity.KnowledgeEntityColumn},
+			Table:   observationscopeentity.KnowledgeEntityTable,
+			Columns: []string{observationscopeentity.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SituationEntity
+		edge.Schema = _u.schemaConfig.ObservationScopeEntity
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   situationentity.KnowledgeEntityTable,
-			Columns: []string{situationentity.KnowledgeEntityColumn},
+			Table:   observationscopeentity.KnowledgeEntityTable,
+			Columns: []string{observationscopeentity.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SituationEntity
+		edge.Schema = _u.schemaConfig.ObservationScopeEntity
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.Node.Schema = _u.schemaConfig.SituationEntity
+	_spec.Node.Schema = _u.schemaConfig.ObservationScopeEntity
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
-	_node = &SituationEntity{config: _u.config}
+	_node = &ObservationScopeEntity{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{situationentity.Label}
+			err = &NotFoundError{observationscopeentity.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}

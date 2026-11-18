@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // ID filters vertices based on their ID field.
@@ -95,6 +96,11 @@ func MergedByProposalID(v uuid.UUID) predicate.KnowledgeSubjectAlias {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// Authority applies equality check predicate on the "authority" field. It's identical to AuthorityEQ.
+func Authority(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldAuthority, v))
 }
 
 // FirstObservedAt applies equality check predicate on the "first_observed_at" field. It's identical to FirstObservedAtEQ.
@@ -480,6 +486,76 @@ func CreatedAtLT(v time.Time) predicate.KnowledgeSubjectAlias {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.KnowledgeSubjectAlias {
 	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// AuthorityEQ applies the EQ predicate on the "authority" field.
+func AuthorityEQ(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldEQ(FieldAuthority, v))
+}
+
+// AuthorityNEQ applies the NEQ predicate on the "authority" field.
+func AuthorityNEQ(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNEQ(FieldAuthority, v))
+}
+
+// AuthorityIn applies the In predicate on the "authority" field.
+func AuthorityIn(vs ...schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldIn(FieldAuthority, vs...))
+}
+
+// AuthorityNotIn applies the NotIn predicate on the "authority" field.
+func AuthorityNotIn(vs ...schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldNotIn(FieldAuthority, vs...))
+}
+
+// AuthorityGT applies the GT predicate on the "authority" field.
+func AuthorityGT(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGT(FieldAuthority, v))
+}
+
+// AuthorityGTE applies the GTE predicate on the "authority" field.
+func AuthorityGTE(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldGTE(FieldAuthority, v))
+}
+
+// AuthorityLT applies the LT predicate on the "authority" field.
+func AuthorityLT(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLT(FieldAuthority, v))
+}
+
+// AuthorityLTE applies the LTE predicate on the "authority" field.
+func AuthorityLTE(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	return predicate.KnowledgeSubjectAlias(sql.FieldLTE(FieldAuthority, v))
+}
+
+// AuthorityContains applies the Contains predicate on the "authority" field.
+func AuthorityContains(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	vc := string(v)
+	return predicate.KnowledgeSubjectAlias(sql.FieldContains(FieldAuthority, vc))
+}
+
+// AuthorityHasPrefix applies the HasPrefix predicate on the "authority" field.
+func AuthorityHasPrefix(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	vc := string(v)
+	return predicate.KnowledgeSubjectAlias(sql.FieldHasPrefix(FieldAuthority, vc))
+}
+
+// AuthorityHasSuffix applies the HasSuffix predicate on the "authority" field.
+func AuthorityHasSuffix(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	vc := string(v)
+	return predicate.KnowledgeSubjectAlias(sql.FieldHasSuffix(FieldAuthority, vc))
+}
+
+// AuthorityEqualFold applies the EqualFold predicate on the "authority" field.
+func AuthorityEqualFold(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	vc := string(v)
+	return predicate.KnowledgeSubjectAlias(sql.FieldEqualFold(FieldAuthority, vc))
+}
+
+// AuthorityContainsFold applies the ContainsFold predicate on the "authority" field.
+func AuthorityContainsFold(v schematypes.KnowledgeAuthority) predicate.KnowledgeSubjectAlias {
+	vc := string(v)
+	return predicate.KnowledgeSubjectAlias(sql.FieldContainsFold(FieldAuthority, vc))
 }
 
 // StateIsNil applies the IsNil predicate on the "state" field.

@@ -63,7 +63,7 @@ export function placementSources(
 	return sources;
 }
 
-/** Ancestor names, outermost first, joined for display: "production › prod-use1". */
+/** Ancestor names, outermost first, joined for display: "commerce-prod › prod-use1". */
 export function breadcrumb(entities: ReadonlyMap<string, GraphEntity>, id: string): string {
 	return loadedAncestors(entities, id).reverse().map(entityLabel).join(" › ");
 }

@@ -92,14 +92,19 @@ func ExpiresAt(v time.Time) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldEQ(FieldExpiresAt, v))
 }
 
+// MergedIntoID applies equality check predicate on the "merged_into_id" field. It's identical to MergedIntoIDEQ.
+func MergedIntoID(v uuid.UUID) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldEQ(FieldMergedIntoID, v))
+}
+
 // Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
 func Kind(v string) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldEQ(FieldKind, v))
 }
 
-// ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
-func ParentID(v uuid.UUID) predicate.KnowledgeEntity {
-	return predicate.KnowledgeEntity(sql.FieldEQ(FieldParentID, v))
+// ParentIsFallback applies equality check predicate on the "parent_is_fallback" field. It's identical to ParentIsFallbackEQ.
+func ParentIsFallback(v bool) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldEQ(FieldParentIsFallback, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -422,6 +427,36 @@ func ExpiresAtNotNil() predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldNotNull(FieldExpiresAt))
 }
 
+// MergedIntoIDEQ applies the EQ predicate on the "merged_into_id" field.
+func MergedIntoIDEQ(v uuid.UUID) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldEQ(FieldMergedIntoID, v))
+}
+
+// MergedIntoIDNEQ applies the NEQ predicate on the "merged_into_id" field.
+func MergedIntoIDNEQ(v uuid.UUID) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldNEQ(FieldMergedIntoID, v))
+}
+
+// MergedIntoIDIn applies the In predicate on the "merged_into_id" field.
+func MergedIntoIDIn(vs ...uuid.UUID) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldIn(FieldMergedIntoID, vs...))
+}
+
+// MergedIntoIDNotIn applies the NotIn predicate on the "merged_into_id" field.
+func MergedIntoIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldNotIn(FieldMergedIntoID, vs...))
+}
+
+// MergedIntoIDIsNil applies the IsNil predicate on the "merged_into_id" field.
+func MergedIntoIDIsNil() predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldIsNull(FieldMergedIntoID))
+}
+
+// MergedIntoIDNotNil applies the NotNil predicate on the "merged_into_id" field.
+func MergedIntoIDNotNil() predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldNotNull(FieldMergedIntoID))
+}
+
 // CategoryEQ applies the EQ predicate on the "category" field.
 func CategoryEQ(v Category) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldEQ(FieldCategory, v))
@@ -507,34 +542,14 @@ func KindContainsFold(v string) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldContainsFold(FieldKind, v))
 }
 
-// ParentIDEQ applies the EQ predicate on the "parent_id" field.
-func ParentIDEQ(v uuid.UUID) predicate.KnowledgeEntity {
-	return predicate.KnowledgeEntity(sql.FieldEQ(FieldParentID, v))
+// ParentIsFallbackEQ applies the EQ predicate on the "parent_is_fallback" field.
+func ParentIsFallbackEQ(v bool) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldEQ(FieldParentIsFallback, v))
 }
 
-// ParentIDNEQ applies the NEQ predicate on the "parent_id" field.
-func ParentIDNEQ(v uuid.UUID) predicate.KnowledgeEntity {
-	return predicate.KnowledgeEntity(sql.FieldNEQ(FieldParentID, v))
-}
-
-// ParentIDIn applies the In predicate on the "parent_id" field.
-func ParentIDIn(vs ...uuid.UUID) predicate.KnowledgeEntity {
-	return predicate.KnowledgeEntity(sql.FieldIn(FieldParentID, vs...))
-}
-
-// ParentIDNotIn applies the NotIn predicate on the "parent_id" field.
-func ParentIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEntity {
-	return predicate.KnowledgeEntity(sql.FieldNotIn(FieldParentID, vs...))
-}
-
-// ParentIDIsNil applies the IsNil predicate on the "parent_id" field.
-func ParentIDIsNil() predicate.KnowledgeEntity {
-	return predicate.KnowledgeEntity(sql.FieldIsNull(FieldParentID))
-}
-
-// ParentIDNotNil applies the NotNil predicate on the "parent_id" field.
-func ParentIDNotNil() predicate.KnowledgeEntity {
-	return predicate.KnowledgeEntity(sql.FieldNotNull(FieldParentID))
+// ParentIsFallbackNEQ applies the NEQ predicate on the "parent_is_fallback" field.
+func ParentIsFallbackNEQ(v bool) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldNEQ(FieldParentIsFallback, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -682,12 +697,12 @@ func HasTargetRelationshipsWith(preds ...predicate.KnowledgeRelationship) predic
 	})
 }
 
-// HasParent applies the HasEdge predicate on the "parent" edge.
-func HasParent() predicate.KnowledgeEntity {
+// HasMergedInto applies the HasEdge predicate on the "merged_into" edge.
+func HasMergedInto() predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ParentTable, ParentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, MergedIntoTable, MergedIntoColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEntity
@@ -696,10 +711,10 @@ func HasParent() predicate.KnowledgeEntity {
 	})
 }
 
-// HasParentWith applies the HasEdge predicate on the "parent" edge with a given conditions (other predicates).
-func HasParentWith(preds ...predicate.KnowledgeEntity) predicate.KnowledgeEntity {
+// HasMergedIntoWith applies the HasEdge predicate on the "merged_into" edge with a given conditions (other predicates).
+func HasMergedIntoWith(preds ...predicate.KnowledgeEntity) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(func(s *sql.Selector) {
-		step := newParentStep()
+		step := newMergedIntoStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.KnowledgeEntity
@@ -711,12 +726,12 @@ func HasParentWith(preds ...predicate.KnowledgeEntity) predicate.KnowledgeEntity
 	})
 }
 
-// HasChildren applies the HasEdge predicate on the "children" edge.
-func HasChildren() predicate.KnowledgeEntity {
+// HasRedirects applies the HasEdge predicate on the "redirects" edge.
+func HasRedirects() predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ChildrenTable, ChildrenColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, RedirectsTable, RedirectsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEntity
@@ -725,10 +740,10 @@ func HasChildren() predicate.KnowledgeEntity {
 	})
 }
 
-// HasChildrenWith applies the HasEdge predicate on the "children" edge with a given conditions (other predicates).
-func HasChildrenWith(preds ...predicate.KnowledgeEntity) predicate.KnowledgeEntity {
+// HasRedirectsWith applies the HasEdge predicate on the "redirects" edge with a given conditions (other predicates).
+func HasRedirectsWith(preds ...predicate.KnowledgeEntity) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(func(s *sql.Selector) {
-		step := newChildrenStep()
+		step := newRedirectsStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.KnowledgeEntity

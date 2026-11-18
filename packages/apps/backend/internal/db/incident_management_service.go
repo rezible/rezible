@@ -12,7 +12,6 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/pkg/errs"
@@ -308,7 +307,7 @@ func (s *IncidentManagementService) SetRoleAssignment(ctx context.Context, incid
 		if _, lockErr := lockIncident.Only(ctx); lockErr != nil {
 			return nil, fmt.Errorf("lock incident: %w", lockErr)
 		}
-		role, roleErr := tx.IncidentRole.Get(schema.IncludeArchived(ctx), roleID)
+		role, roleErr := tx.IncidentRole.Get(ent.IncludeArchived(ctx), roleID)
 		if roleErr != nil {
 			return nil, fmt.Errorf("get incident role: %w", roleErr)
 		}

@@ -141,6 +141,30 @@ func (f AlertInstanceEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertInstanceEventMutation", m)
 }
 
+// The ChangePointFunc type is an adapter to allow the use of ordinary
+// function as ChangePoint mutator.
+type ChangePointFunc func(context.Context, *ent.ChangePointMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ChangePointFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ChangePointMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChangePointMutation", m)
+}
+
+// The ChangePointInvolvementFunc type is an adapter to allow the use of ordinary
+// function as ChangePointInvolvement mutator.
+type ChangePointInvolvementFunc func(context.Context, *ent.ChangePointInvolvementMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ChangePointInvolvementFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ChangePointInvolvementMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChangePointInvolvementMutation", m)
+}
+
 // The DiscussionCommentFunc type is an adapter to allow the use of ordinary
 // function as DiscussionComment mutator.
 type DiscussionCommentFunc func(context.Context, *ent.DiscussionCommentMutation) (ent.Value, error)
@@ -693,6 +717,30 @@ func (f NormalizedEventProjectionEntityFunc) Mutate(ctx context.Context, m ent.M
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NormalizedEventProjectionEntityMutation", m)
 }
 
+// The ObservationScopeFunc type is an adapter to allow the use of ordinary
+// function as ObservationScope mutator.
+type ObservationScopeFunc func(context.Context, *ent.ObservationScopeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ObservationScopeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ObservationScopeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ObservationScopeMutation", m)
+}
+
+// The ObservationScopeEntityFunc type is an adapter to allow the use of ordinary
+// function as ObservationScopeEntity mutator.
+type ObservationScopeEntityFunc func(context.Context, *ent.ObservationScopeEntityMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ObservationScopeEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ObservationScopeEntityMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ObservationScopeEntityMutation", m)
+}
+
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary
 // function as OncallHandoverTemplate mutator.
 type OncallHandoverTemplateFunc func(context.Context, *ent.OncallHandoverTemplateMutation) (ent.Value, error)
@@ -883,18 +931,6 @@ func (f SituationActionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationActionMutation", m)
-}
-
-// The SituationEntityFunc type is an adapter to allow the use of ordinary
-// function as SituationEntity mutator.
-type SituationEntityFunc func(context.Context, *ent.SituationEntityMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SituationEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SituationEntityMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SituationEntityMutation", m)
 }
 
 // The SituationJudgmentFunc type is an adapter to allow the use of ordinary

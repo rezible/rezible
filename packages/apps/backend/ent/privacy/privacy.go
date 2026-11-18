@@ -387,6 +387,54 @@ func (f AlertMetricsQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) e
 	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertMetricsQuery", q)
 }
 
+// The ChangePointQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type ChangePointQueryRuleFunc func(context.Context, *ent.ChangePointQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f ChangePointQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ChangePointQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ChangePointQuery", q)
+}
+
+// The ChangePointMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type ChangePointMutationRuleFunc func(context.Context, *ent.ChangePointMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f ChangePointMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ChangePointMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ChangePointMutation", m)
+}
+
+// The ChangePointInvolvementQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type ChangePointInvolvementQueryRuleFunc func(context.Context, *ent.ChangePointInvolvementQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f ChangePointInvolvementQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ChangePointInvolvementQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ChangePointInvolvementQuery", q)
+}
+
+// The ChangePointInvolvementMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type ChangePointInvolvementMutationRuleFunc func(context.Context, *ent.ChangePointInvolvementMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f ChangePointInvolvementMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ChangePointInvolvementMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ChangePointInvolvementMutation", m)
+}
+
 // The DiscussionCommentQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type DiscussionCommentQueryRuleFunc func(context.Context, *ent.DiscussionCommentQuery) error
@@ -1491,6 +1539,54 @@ func (f NormalizedEventProjectionEntityMutationRuleFunc) EvalMutation(ctx contex
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.NormalizedEventProjectionEntityMutation", m)
 }
 
+// The ObservationScopeQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type ObservationScopeQueryRuleFunc func(context.Context, *ent.ObservationScopeQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f ObservationScopeQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ObservationScopeQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ObservationScopeQuery", q)
+}
+
+// The ObservationScopeMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type ObservationScopeMutationRuleFunc func(context.Context, *ent.ObservationScopeMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f ObservationScopeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ObservationScopeMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ObservationScopeMutation", m)
+}
+
+// The ObservationScopeEntityQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type ObservationScopeEntityQueryRuleFunc func(context.Context, *ent.ObservationScopeEntityQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f ObservationScopeEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ObservationScopeEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ObservationScopeEntityQuery", q)
+}
+
+// The ObservationScopeEntityMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type ObservationScopeEntityMutationRuleFunc func(context.Context, *ent.ObservationScopeEntityMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f ObservationScopeEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ObservationScopeEntityMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ObservationScopeEntityMutation", m)
+}
+
 // The OncallHandoverTemplateQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type OncallHandoverTemplateQueryRuleFunc func(context.Context, *ent.OncallHandoverTemplateQuery) error
@@ -1873,30 +1969,6 @@ func (f SituationActionMutationRuleFunc) EvalMutation(ctx context.Context, m ent
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationActionMutation", m)
-}
-
-// The SituationEntityQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SituationEntityQueryRuleFunc func(context.Context, *ent.SituationEntityQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SituationEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationEntityQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SituationEntityQuery", q)
-}
-
-// The SituationEntityMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SituationEntityMutationRuleFunc func(context.Context, *ent.SituationEntityMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SituationEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SituationEntityMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SituationEntityMutation", m)
 }
 
 // The SituationJudgmentQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -2438,6 +2510,10 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AlertMetricsQuery:
 		return q.Filter(), nil
+	case *ent.ChangePointQuery:
+		return q.Filter(), nil
+	case *ent.ChangePointInvolvementQuery:
+		return q.Filter(), nil
 	case *ent.DiscussionCommentQuery:
 		return q.Filter(), nil
 	case *ent.DiscussionThreadQuery:
@@ -2530,6 +2606,10 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.NormalizedEventProjectionEntityQuery:
 		return q.Filter(), nil
+	case *ent.ObservationScopeQuery:
+		return q.Filter(), nil
+	case *ent.ObservationScopeEntityQuery:
+		return q.Filter(), nil
 	case *ent.OncallHandoverTemplateQuery:
 		return q.Filter(), nil
 	case *ent.OncallRosterQuery:
@@ -2561,8 +2641,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 	case *ent.SituationQuery:
 		return q.Filter(), nil
 	case *ent.SituationActionQuery:
-		return q.Filter(), nil
-	case *ent.SituationEntityQuery:
 		return q.Filter(), nil
 	case *ent.SituationJudgmentQuery:
 		return q.Filter(), nil
@@ -2632,6 +2710,10 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AlertInstanceMutation:
 		return m.Filter(), nil
 	case *ent.AlertInstanceEventMutation:
+		return m.Filter(), nil
+	case *ent.ChangePointMutation:
+		return m.Filter(), nil
+	case *ent.ChangePointInvolvementMutation:
 		return m.Filter(), nil
 	case *ent.DiscussionCommentMutation:
 		return m.Filter(), nil
@@ -2725,6 +2807,10 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.NormalizedEventProjectionEntityMutation:
 		return m.Filter(), nil
+	case *ent.ObservationScopeMutation:
+		return m.Filter(), nil
+	case *ent.ObservationScopeEntityMutation:
+		return m.Filter(), nil
 	case *ent.OncallHandoverTemplateMutation:
 		return m.Filter(), nil
 	case *ent.OncallRosterMutation:
@@ -2756,8 +2842,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.SituationMutation:
 		return m.Filter(), nil
 	case *ent.SituationActionMutation:
-		return m.Filter(), nil
-	case *ent.SituationEntityMutation:
 		return m.Filter(), nil
 	case *ent.SituationJudgmentMutation:
 		return m.Filter(), nil

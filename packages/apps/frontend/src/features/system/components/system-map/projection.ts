@@ -64,7 +64,7 @@ export type RegionNodeData = NodeState & {
 export type CardPlacement = {
 	entity: GraphEntity;
 	label: string;
-	/** The target's infrastructure ancestry: "production › prod-use1". */
+	/** The target's infrastructure ancestry: "commerce-prod › prod-use1". */
 	breadcrumb: string;
 	/** "3 entities run here", or "At least 3" on a partial graph. */
 	countLine: string;

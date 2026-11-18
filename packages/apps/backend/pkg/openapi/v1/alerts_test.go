@@ -16,12 +16,9 @@ import (
 func TestAlertEpisodeIdentityAndWindows(t *testing.T) {
 	start := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
 	end := start.Add(time.Minute)
-	entityID := uuid.New()
-	episode := &ent.AlertEpisode{ID: uuid.New(), KnowledgeEntityID: &entityID, StartedAt: start, HighestSeverity: schematypes.SignalSeverityCritical}
+	episode := &ent.AlertEpisode{ID: uuid.New(), StartedAt: start, HighestSeverity: schematypes.SignalSeverityCritical}
 	empty := AlertEpisodeFromEnt(episode)
 	require.Equal(t, episode.ID, empty.Id)
-	require.Equal(t, &entityID, empty.Attributes.KnowledgeEntityId)
-	require.NotEqual(t, empty.Id, *empty.Attributes.KnowledgeEntityId)
 	require.NotNil(t, empty.Attributes.Instances)
 	require.Empty(t, empty.Attributes.Instances)
 	encoded, marshalErr := json.Marshal(empty)

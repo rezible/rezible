@@ -634,13 +634,9 @@ func (s *AiRuntimeSuite) TestListChanges() {
 	ctx := s.T().Context()
 	h := s.newInvestigationHarness()
 	deployedAt := time.Date(2026, 6, 1, 9, 30, 0, 0, time.UTC)
-	deployment := &ent.KnowledgeEntity{ID: uuid.New(), Category: kne.CategoryEvent, Kind: "deployment"}
-	change := &ent.KnowledgeEntity{
-		ID:       uuid.New(),
-		Category: kne.CategoryEvent,
-		Kind:     "code_change",
-		State:    schematypes.KnowledgeGraphSubjectState{DisplayName: "Shrink the payments pool"},
-	}
+	deployment := rez.ChangePoint{ChangePoint: &ent.ChangePoint{ID: uuid.New()}, Involvement: &ent.ChangePointInvolvement{EvidenceID: uuid.New()}}
+	change := rez.ChangePoint{ChangePoint: &ent.ChangePoint{ID: uuid.New()}, Involvement: &ent.ChangePointInvolvement{EvidenceID: uuid.New()}}
+
 	serviceID := uuid.New()
 	service := &ent.KnowledgeEntity{ID: serviceID, Category: kne.CategoryContainer, Kind: "service"}
 	h.knowledge.EXPECT().GetEntity(mock.Anything, serviceID, rez.KnowledgeEntityExpand{}).Return(service, nil)
@@ -663,24 +659,14 @@ func (s *AiRuntimeSuite) TestListChanges() {
 		RepositorySeenByCodeForge: true,
 		MergedChanges: []rez.LinkedMergedChange{{
 			Change:   change,
+			Title:    "Shrink the payments pool",
 			MergedAt: deployedAt.Add(-10 * time.Minute),
 			Number:   7,
 			Author:   "alice",
 			Link:     rez.MergedChangeLinkMergeCommit,
 		}},
 	}}}
-	h.changes.EXPECT().ListServiceChanges(mock.Anything, params).Return(listed, nil)
-	deploymentAlias := &ent.KnowledgeSubjectAlias{ID: uuid.New(), EntityID: &deployment.ID}
-	changeAlias := &ent.KnowledgeSubjectAlias{ID: uuid.New(), EntityID: &change.ID}
-	aliases := &ent.ListResult[ent.KnowledgeSubjectAlias]{Data: []*ent.KnowledgeSubjectAlias{deploymentAlias, changeAlias}}
-	h.knowledge.EXPECT().ListSubjectAliases(mock.Anything, mock.Anything).Return(aliases, nil)
-	deploymentEvidence, changeEvidence := uuid.New(), uuid.New()
-	summaries := &ent.ListResult[rez.KnowledgeEvidenceSummary]{Data: []*rez.KnowledgeEvidenceSummary{
-		{SubjectAliasID: deploymentAlias.ID, Count: 2, LatestAt: deployedAt, LatestID: deploymentEvidence},
-		{SubjectAliasID: changeAlias.ID, Count: 1, LatestAt: deployedAt, LatestID: changeEvidence},
-	}}
-	h.knowledge.EXPECT().SummarizeEvidence(mock.Anything, mock.Anything).Return(summaries, nil)
-
+	h.changePoints.EXPECT().ListServiceChanges(mock.Anything, params).Return(listed, nil)
 	input := rezai.ListChangesArgs{
 		Service: serviceID.String(),
 		Start:   params.Start.Format(time.RFC3339),
@@ -689,7 +675,7 @@ func (s *AiRuntimeSuite) TestListChanges() {
 	var result rezai.TextToolResult
 	s.runInvestigationToolResult(ctx, h, rezai.ListChangesTool.Name(), input, &result)
 
-	for _, ref := range []uuid.UUID{deployment.ID, deploymentEvidence, change.ID, changeEvidence} {
+	for _, ref := range []uuid.UUID{deployment.Involvement.EvidenceID, change.Involvement.EvidenceID} {
 		s.Contains(result.Text, ref.String())
 	}
 	for _, field := range []string{"production", "succeeded", "abc123", "v42", "https://ci.example.com/42", "acme/checkout", "merge_commit", "7", "Shrink the payments pool", "alice"} {
@@ -698,8 +684,8 @@ func (s *AiRuntimeSuite) TestListChanges() {
 	// Not a provider read: the provider read service mock expects no calls.
 
 	s.Run("invalid service", func() {
-		h.changes.EXPECT().ListServiceChanges(mock.Anything, mock.Anything).Unset()
-		h.changes.EXPECT().ListServiceChanges(mock.Anything, mock.Anything).
+		h.changePoints.EXPECT().ListServiceChanges(mock.Anything, mock.Anything).Unset()
+		h.changePoints.EXPECT().ListServiceChanges(mock.Anything, mock.Anything).
 			Return(nil, fmt.Errorf("%w: not a known service", errs.ErrInvalidInput))
 		var invalid map[string]any
 		s.runInvestigationToolResult(ctx, h, rezai.ListChangesTool.Name(), input, &invalid)

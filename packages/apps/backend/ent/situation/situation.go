@@ -45,6 +45,8 @@ const (
 	FieldCloseReason = "close_reason"
 	// FieldInvestigationID holds the string denoting the investigation_id field in the database.
 	FieldInvestigationID = "investigation_id"
+	// FieldMergedIntoID holds the string denoting the merged_into_id field in the database.
+	FieldMergedIntoID = "merged_into_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeInvestigation holds the string denoting the investigation edge name in mutations.
@@ -55,14 +57,16 @@ const (
 	EdgeIncidents = "incidents"
 	// EdgeObservations holds the string denoting the observations edge name in mutations.
 	EdgeObservations = "observations"
-	// EdgeEntities holds the string denoting the entities edge name in mutations.
-	EdgeEntities = "entities"
 	// EdgeActions holds the string denoting the actions edge name in mutations.
 	EdgeActions = "actions"
 	// EdgeJudgments holds the string denoting the judgments edge name in mutations.
 	EdgeJudgments = "judgments"
 	// EdgeNotices holds the string denoting the notices edge name in mutations.
 	EdgeNotices = "notices"
+	// EdgeMergedInto holds the string denoting the merged_into edge name in mutations.
+	EdgeMergedInto = "merged_into"
+	// EdgeMergedSources holds the string denoting the merged_sources edge name in mutations.
+	EdgeMergedSources = "merged_sources"
 	// Table holds the table name of the situation in the database.
 	Table = "situations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -98,13 +102,6 @@ const (
 	ObservationsInverseTable = "situation_observations"
 	// ObservationsColumn is the table column denoting the observations relation/edge.
 	ObservationsColumn = "situation_id"
-	// EntitiesTable is the table that holds the entities relation/edge.
-	EntitiesTable = "situation_entities"
-	// EntitiesInverseTable is the table name for the SituationEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "situationentity" package.
-	EntitiesInverseTable = "situation_entities"
-	// EntitiesColumn is the table column denoting the entities relation/edge.
-	EntitiesColumn = "situation_id"
 	// ActionsTable is the table that holds the actions relation/edge.
 	ActionsTable = "situation_actions"
 	// ActionsInverseTable is the table name for the SituationAction entity.
@@ -126,6 +123,14 @@ const (
 	NoticesInverseTable = "situation_notices"
 	// NoticesColumn is the table column denoting the notices relation/edge.
 	NoticesColumn = "situation_id"
+	// MergedIntoTable is the table that holds the merged_into relation/edge.
+	MergedIntoTable = "situations"
+	// MergedIntoColumn is the table column denoting the merged_into relation/edge.
+	MergedIntoColumn = "merged_into_id"
+	// MergedSourcesTable is the table that holds the merged_sources relation/edge.
+	MergedSourcesTable = "situations"
+	// MergedSourcesColumn is the table column denoting the merged_sources relation/edge.
+	MergedSourcesColumn = "merged_into_id"
 )
 
 // Columns holds all SQL columns for situation fields.
@@ -145,6 +150,7 @@ var Columns = []string{
 	FieldClosedAt,
 	FieldCloseReason,
 	FieldInvestigationID,
+	FieldMergedIntoID,
 }
 
 var (
@@ -311,6 +317,11 @@ func ByInvestigationID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldInvestigationID, opts...).ToFunc()
 }
 
+// ByMergedIntoID orders the results by the merged_into_id field.
+func ByMergedIntoID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMergedIntoID, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -367,20 +378,6 @@ func ByObservations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByEntitiesCount orders the results by entities count.
-func ByEntitiesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEntitiesStep(), opts...)
-	}
-}
-
-// ByEntities orders the results by entities terms.
-func ByEntities(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEntitiesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByActionsCount orders the results by actions count.
 func ByActionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -422,6 +419,27 @@ func ByNotices(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newNoticesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByMergedIntoField orders the results by merged_into field.
+func ByMergedIntoField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMergedIntoStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByMergedSourcesCount orders the results by merged_sources count.
+func ByMergedSourcesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMergedSourcesStep(), opts...)
+	}
+}
+
+// ByMergedSources orders the results by merged_sources terms.
+func ByMergedSources(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMergedSourcesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -457,13 +475,6 @@ func newObservationsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, ObservationsTable, ObservationsColumn),
 	)
 }
-func newEntitiesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EntitiesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, EntitiesTable, EntitiesColumn),
-	)
-}
 func newActionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -483,6 +494,20 @@ func newNoticesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(NoticesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, NoticesTable, NoticesColumn),
+	)
+}
+func newMergedIntoStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, MergedIntoTable, MergedIntoColumn),
+	)
+}
+func newMergedSourcesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MergedSourcesTable, MergedSourcesColumn),
 	)
 }
 

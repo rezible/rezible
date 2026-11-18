@@ -28,6 +28,7 @@ type KnowledgeSubjectAliasMutation struct {
 	provider_resource_ref     *string
 	subject_kind              *knowledgesubjectalias.SubjectKind
 	created_at                *time.Time
+	authority                 *schematypes.KnowledgeAuthority
 	state                     *schematypes.KnowledgeAliasState
 	first_observed_at         *time.Time
 	last_observed_at          *time.Time
@@ -517,6 +518,42 @@ func (m *KnowledgeSubjectAliasMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
+// SetAuthority sets the "authority" field.
+func (m *KnowledgeSubjectAliasMutation) SetAuthority(sa schematypes.KnowledgeAuthority) {
+	m.authority = &sa
+}
+
+// Authority returns the value of the "authority" field in the mutation.
+func (m *KnowledgeSubjectAliasMutation) Authority() (r schematypes.KnowledgeAuthority, exists bool) {
+	v := m.authority
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthority returns the old "authority" field's value of the KnowledgeSubjectAlias entity.
+// If the KnowledgeSubjectAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeSubjectAliasMutation) OldAuthority(ctx context.Context) (v schematypes.KnowledgeAuthority, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthority is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthority requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthority: %w", err)
+	}
+	return oldValue.Authority, nil
+}
+
+// ResetAuthority resets all changes to the "authority" field.
+func (m *KnowledgeSubjectAliasMutation) ResetAuthority() {
+	m.authority = nil
+}
+
 // SetState sets the "state" field.
 func (m *KnowledgeSubjectAliasMutation) SetState(sas schematypes.KnowledgeAliasState) {
 	m.state = &sas
@@ -958,7 +995,7 @@ func (m *KnowledgeSubjectAliasMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeSubjectAliasMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 15)
 	if m.tenant != nil {
 		fields = append(fields, knowledgesubjectalias.FieldTenantID)
 	}
@@ -985,6 +1022,9 @@ func (m *KnowledgeSubjectAliasMutation) Fields() []string {
 	}
 	if m.created_at != nil {
 		fields = append(fields, knowledgesubjectalias.FieldCreatedAt)
+	}
+	if m.authority != nil {
+		fields = append(fields, knowledgesubjectalias.FieldAuthority)
 	}
 	if m.state != nil {
 		fields = append(fields, knowledgesubjectalias.FieldState)
@@ -1027,6 +1067,8 @@ func (m *KnowledgeSubjectAliasMutation) Field(name string) (ent.Value, bool) {
 		return m.MergedByProposalID()
 	case knowledgesubjectalias.FieldCreatedAt:
 		return m.CreatedAt()
+	case knowledgesubjectalias.FieldAuthority:
+		return m.Authority()
 	case knowledgesubjectalias.FieldState:
 		return m.State()
 	case knowledgesubjectalias.FieldFirstObservedAt:
@@ -1064,6 +1106,8 @@ func (m *KnowledgeSubjectAliasMutation) OldField(ctx context.Context, name strin
 		return m.OldMergedByProposalID(ctx)
 	case knowledgesubjectalias.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case knowledgesubjectalias.FieldAuthority:
+		return m.OldAuthority(ctx)
 	case knowledgesubjectalias.FieldState:
 		return m.OldState(ctx)
 	case knowledgesubjectalias.FieldFirstObservedAt:
@@ -1145,6 +1189,13 @@ func (m *KnowledgeSubjectAliasMutation) SetField(name string, value ent.Value) e
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
+		return nil
+	case knowledgesubjectalias.FieldAuthority:
+		v, ok := value.(schematypes.KnowledgeAuthority)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthority(v)
 		return nil
 	case knowledgesubjectalias.FieldState:
 		v, ok := value.(schematypes.KnowledgeAliasState)
@@ -1310,6 +1361,9 @@ func (m *KnowledgeSubjectAliasMutation) ResetField(name string) error {
 		return nil
 	case knowledgesubjectalias.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case knowledgesubjectalias.FieldAuthority:
+		m.ResetAuthority()
 		return nil
 	case knowledgesubjectalias.FieldState:
 		m.ResetState()

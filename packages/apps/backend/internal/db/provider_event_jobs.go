@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
@@ -29,18 +30,21 @@ func (s *ProviderEventPipelineService) HandleProcessEventJob(ctx context.Context
 }
 
 func (s *ProviderEventPipelineService) processAndQueueProjections(ctx context.Context, ev rez.ProviderEvent) (int, error) {
-	ids, ingestErr := s.ingester.ProcessProviderEvent(ctx, ev)
+	result, ingestErr := s.ingester.ProcessProviderEvent(ctx, ev)
 	if ingestErr != nil {
 		return 0, ingestErr
 	}
-	savedCount := len(ids)
+	savedCount := len(result.NewEventIDs)
 	var jobsErr error
-	if savedCount > 0 {
+	if savedCount+len(result.Reobservations) > 0 {
 		params := make([]river.InsertManyParams, savedCount)
-		for i, id := range ids {
+		for i, id := range result.NewEventIDs {
 			params[i] = river.InsertManyParams{
 				Args: jobs.ProjectNormalizedEvent{EventId: id},
 			}
+		}
+		for _, repeat := range result.Reobservations {
+			params = append(params, river.InsertManyParams{Args: jobs.ReobserveNormalizedEvent{EventId: repeat.EventID, At: repeat.At}})
 		}
 		if _, insertErr := s.jobs.InsertMany(ctx, params); insertErr != nil {
 			jobsErr = fmt.Errorf("inserting project events: %w", insertErr)
@@ -49,27 +53,51 @@ func (s *ProviderEventPipelineService) processAndQueueProjections(ctx context.Co
 	return savedCount, jobsErr
 }
 
+// The fifth projection attempt records missing endpoints instead of retrying them. It must stay below
+// jobs.ProjectNormalizedEventMaxAttempts.
+const missingEndpointSkipAttempt = 5
+
 func NewProjectNormalizedEventWorker(service *ProviderEventPipelineService) jobs.WorkerDefinition {
-	return jobs.DefineWorkerFunc(service.HandleEventProjectionJob)
+	return jobs.DefineWorker(river.WorkFunc(service.HandleEventProjectionJob))
 }
 
-func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
-	projectionErr := s.ingester.ProjectNormalizedEvent(ctx, args.EventId)
-	if projectionErr == nil {
-		return projectionErr
+func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Context, job *river.Job[jobs.ProjectNormalizedEvent]) error {
+	return s.classifyEventJobError(ctx, job.Args.EventId, "projection", s.ingester.ProjectNormalizedEvent(ctx, job.Args.EventId, job.Attempt < missingEndpointSkipAttempt))
+}
+
+func (s *ProviderEventPipelineService) classifyEventJobError(ctx context.Context, eventID uuid.UUID, operation string, jobErr error) error {
+	if jobErr == nil {
+		return nil
 	}
-	// A merge that deleted a knowledge subject the projection resolved, found gone at its lock or by a write's
-	// foreign key, leaves the projection to resolve it again.
-	mergedSubject := errors.Is(projectionErr, errs.ErrKnowledgeSubjectMerged) ||
-		s.db.IsForeignKeyError(projectionErr, ent.KnowledgeForeignKeyConstraints...)
-	if s.db.IsTransientError(projectionErr) || mergedSubject {
-		return jobs.MarkRetryableError(projectionErr)
-	} else if jobs.IsRetryableError(projectionErr) {
-		return projectionErr
+	// A merge that moved a resolved subject's aliases while the job waited for its locks leaves either worker to
+	// resolve it again.
+	if s.db.IsTransientError(jobErr) || errors.Is(jobErr, errs.ErrKnowledgeSubjectMerged) {
+		return jobs.MarkRetryableError(jobErr)
 	}
-	slog.ErrorContext(ctx, "fatal event projection error",
-		"error", projectionErr.Error(),
-		"event_id", args.EventId,
+	// A unique violation means a concurrent job created the row this one looked up and did not find. The
+	// retry finds it.
+	if _, isUnique := s.db.IsConstraintError(jobErr); isUnique {
+		return jobs.MarkRetryableError(jobErr)
+	}
+	// The worker was stopped, or the job timed out, before the work finished.
+	if errors.Is(jobErr, context.Canceled) || errors.Is(jobErr, context.DeadlineExceeded) {
+		return jobs.MarkRetryableError(jobErr)
+	}
+	if jobs.IsRetryableError(jobErr) {
+		return jobErr
+	}
+	slog.ErrorContext(ctx, "fatal event job error",
+		"operation", operation,
+		"error", jobErr.Error(),
+		"event_id", eventID,
 	)
-	return river.JobCancel(projectionErr)
+	return river.JobCancel(jobErr)
+}
+
+func NewReobserveNormalizedEventWorker(service *ProviderEventPipelineService) jobs.WorkerDefinition {
+	return jobs.DefineWorkerFunc(service.HandleEventReobservationJob)
+}
+
+func (s *ProviderEventPipelineService) HandleEventReobservationJob(ctx context.Context, args jobs.ReobserveNormalizedEvent) error {
+	return s.classifyEventJobError(ctx, args.EventId, "re-observation", s.ingester.ReobserveNormalizedEvent(ctx, args.EventId, args.At))
 }

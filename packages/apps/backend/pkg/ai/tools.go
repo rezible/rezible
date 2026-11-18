@@ -78,7 +78,7 @@ type (
 
 var ReadEntityTool = defineTool[ToolDefinition[ReadEntityArgs, *TextToolResult]](
 	"read_entity",
-	"Read a knowledge entity: its state, linking attributes, aliases and one page of its relationships with their latest evidence, newest first. Relationships to events are counted; list_entity_evidence covers them.",
+	"Read a knowledge entity: its state, linking attributes, aliases and one page of its relationships with their latest evidence, newest first. A service counts its deployments (deployments_7d) and a repository its merges into any branch (merged_changes_7d) in the last seven days; list_changes lists them with the evidence to cite.",
 )
 
 type (

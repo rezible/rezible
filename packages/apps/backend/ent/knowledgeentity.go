@@ -39,12 +39,14 @@ type KnowledgeEntity struct {
 	WithdrawnAt *time.Time `json:"withdrawn_at,omitempty"`
 	// When the subject goes stale; null when any live alias never expires.
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	// Set when a merge leaves the row as a redirect to the one that survived it, which is not itself merged.
+	MergedIntoID *uuid.UUID `json:"merged_into_id,omitempty"`
 	// Stable semantic category used by graph queries, generated views, and agent reasoning.
 	Category knowledgeentity.Category `json:"category,omitempty"`
 	// Canonical domain type within the entity category.
 	Kind string `json:"kind,omitempty"`
-	// Source of the one current contains relationship chosen as the entity's parent; every reader of the tree uses it. Kept current on every write that can change the choice.
-	ParentID *uuid.UUID `json:"parent_id,omitempty"`
+	// Set when a better-ranked current contains claim was skipped because it would close a cycle, so placement runs again when another parent changes. Only placement writes it.
+	ParentIsFallback bool `json:"parent_is_fallback,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEntityQuery when eager-loading is set.
 	Edges        KnowledgeEntityEdges `json:"edges"`
@@ -63,10 +65,10 @@ type KnowledgeEntityEdges struct {
 	SourceRelationships []*KnowledgeRelationship `json:"source_relationships,omitempty"`
 	// TargetRelationships holds the value of the target_relationships edge.
 	TargetRelationships []*KnowledgeRelationship `json:"target_relationships,omitempty"`
-	// Parent holds the value of the parent edge.
-	Parent *KnowledgeEntity `json:"parent,omitempty"`
-	// Children holds the value of the children edge.
-	Children []*KnowledgeEntity `json:"children,omitempty"`
+	// MergedInto holds the value of the merged_into edge.
+	MergedInto *KnowledgeEntity `json:"merged_into,omitempty"`
+	// Redirects holds the value of the redirects edge.
+	Redirects []*KnowledgeEntity `json:"redirects,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [7]bool
@@ -119,24 +121,24 @@ func (e KnowledgeEntityEdges) TargetRelationshipsOrErr() ([]*KnowledgeRelationsh
 	return nil, &NotLoadedError{edge: "target_relationships"}
 }
 
-// ParentOrErr returns the Parent value or an error if the edge
+// MergedIntoOrErr returns the MergedInto value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e KnowledgeEntityEdges) ParentOrErr() (*KnowledgeEntity, error) {
-	if e.Parent != nil {
-		return e.Parent, nil
+func (e KnowledgeEntityEdges) MergedIntoOrErr() (*KnowledgeEntity, error) {
+	if e.MergedInto != nil {
+		return e.MergedInto, nil
 	} else if e.loadedTypes[5] {
 		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
-	return nil, &NotLoadedError{edge: "parent"}
+	return nil, &NotLoadedError{edge: "merged_into"}
 }
 
-// ChildrenOrErr returns the Children value or an error if the edge
+// RedirectsOrErr returns the Redirects value or an error if the edge
 // was not loaded in eager-loading.
-func (e KnowledgeEntityEdges) ChildrenOrErr() ([]*KnowledgeEntity, error) {
+func (e KnowledgeEntityEdges) RedirectsOrErr() ([]*KnowledgeEntity, error) {
 	if e.loadedTypes[6] {
-		return e.Children, nil
+		return e.Redirects, nil
 	}
-	return nil, &NotLoadedError{edge: "children"}
+	return nil, &NotLoadedError{edge: "redirects"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -144,10 +146,12 @@ func (*KnowledgeEntity) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case knowledgeentity.FieldParentID:
+		case knowledgeentity.FieldMergedIntoID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case knowledgeentity.FieldState, knowledgeentity.FieldStateSources:
 			values[i] = new([]byte)
+		case knowledgeentity.FieldParentIsFallback:
+			values[i] = new(sql.NullBool)
 		case knowledgeentity.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case knowledgeentity.FieldCategory, knowledgeentity.FieldKind:
@@ -239,6 +243,13 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 				_m.ExpiresAt = new(time.Time)
 				*_m.ExpiresAt = value.Time
 			}
+		case knowledgeentity.FieldMergedIntoID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field merged_into_id", values[i])
+			} else if value.Valid {
+				_m.MergedIntoID = new(uuid.UUID)
+				*_m.MergedIntoID = *value.S.(*uuid.UUID)
+			}
 		case knowledgeentity.FieldCategory:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field category", values[i])
@@ -251,12 +262,11 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Kind = value.String
 			}
-		case knowledgeentity.FieldParentID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
+		case knowledgeentity.FieldParentIsFallback:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field parent_is_fallback", values[i])
 			} else if value.Valid {
-				_m.ParentID = new(uuid.UUID)
-				*_m.ParentID = *value.S.(*uuid.UUID)
+				_m.ParentIsFallback = value.Bool
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -296,14 +306,14 @@ func (_m *KnowledgeEntity) QueryTargetRelationships() *KnowledgeRelationshipQuer
 	return NewKnowledgeEntityClient(_m.config).QueryTargetRelationships(_m)
 }
 
-// QueryParent queries the "parent" edge of the KnowledgeEntity entity.
-func (_m *KnowledgeEntity) QueryParent() *KnowledgeEntityQuery {
-	return NewKnowledgeEntityClient(_m.config).QueryParent(_m)
+// QueryMergedInto queries the "merged_into" edge of the KnowledgeEntity entity.
+func (_m *KnowledgeEntity) QueryMergedInto() *KnowledgeEntityQuery {
+	return NewKnowledgeEntityClient(_m.config).QueryMergedInto(_m)
 }
 
-// QueryChildren queries the "children" edge of the KnowledgeEntity entity.
-func (_m *KnowledgeEntity) QueryChildren() *KnowledgeEntityQuery {
-	return NewKnowledgeEntityClient(_m.config).QueryChildren(_m)
+// QueryRedirects queries the "redirects" edge of the KnowledgeEntity entity.
+func (_m *KnowledgeEntity) QueryRedirects() *KnowledgeEntityQuery {
+	return NewKnowledgeEntityClient(_m.config).QueryRedirects(_m)
 }
 
 // Update returns a builder for updating this KnowledgeEntity.
@@ -364,16 +374,19 @@ func (_m *KnowledgeEntity) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
+	if v := _m.MergedIntoID; v != nil {
+		builder.WriteString("merged_into_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("category=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Category))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(_m.Kind)
 	builder.WriteString(", ")
-	if v := _m.ParentID; v != nil {
-		builder.WriteString("parent_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("parent_is_fallback=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ParentIsFallback))
 	builder.WriteByte(')')
 	return builder.String()
 }

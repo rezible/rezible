@@ -29,7 +29,7 @@ func TestDeploymentPresetSuite(t *testing.T) {
 	suite.Run(t, &DeploymentPresetSuite{Suite: test.NewSuite()})
 }
 
-// testReport is the spec's example report.
+// testReport is an example deployment report.
 func testReport() map[string]any {
 	return map[string]any{
 		"id":          "8812345678-1",

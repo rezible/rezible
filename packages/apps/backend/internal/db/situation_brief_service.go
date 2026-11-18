@@ -4,19 +4,16 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/pkg/situations"
 	"log/slog"
 	"slices"
 	"strings"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ke "github.com/rezible/rezible/ent/knowledgeevidence"
-	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	sit "github.com/rezible/rezible/ent/situation"
 	rezai "github.com/rezible/rezible/pkg/ai"
 	"github.com/rezible/rezible/pkg/integrations"
@@ -31,8 +28,7 @@ const briefChangesAfterOpenedStart = time.Millisecond
 type SituationBriefService struct {
 	db           rez.Database
 	clock        rez.Clock
-	graph        rez.KnowledgeGraphQueryService
-	changes      rez.ChangesService
+	changePoints rez.ChangePointService
 	proposals    rez.KnowledgeProposalService
 	integrations rez.InstalledIntegrationGetter
 }
@@ -40,16 +36,14 @@ type SituationBriefService struct {
 func NewSituationBriefService(
 	db rez.Database,
 	clock rez.Clock,
-	graph rez.KnowledgeGraphQueryService,
-	changes rez.ChangesService,
+	changePoints rez.ChangePointService,
 	proposals rez.KnowledgeProposalService,
 	integrations rez.InstalledIntegrationGetter,
 ) (*SituationBriefService, error) {
 	s := &SituationBriefService{
 		db:           db,
 		clock:        clock,
-		graph:        graph,
-		changes:      changes,
+		changePoints: changePoints,
 		proposals:    proposals,
 		integrations: integrations,
 	}
@@ -67,35 +61,35 @@ type briefSituation struct {
 func (s *SituationBriefService) loadSituation(ctx context.Context, situationID uuid.UUID) (*briefSituation, error) {
 	querySituation := s.db.Client(ctx).Situation.Query().
 		Where(sit.ID(situationID)).
-		WithEntities(func(q *ent.SituationEntityQuery) {
-			q.WithKnowledgeEntity()
+		WithObservations(func(q *ent.SituationObservationQuery) {
+			q.WithScopes()
 		})
 	situation, queryErr := querySituation.Only(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("query situation: %w", queryErr)
 	}
 
-	var members []*ent.SituationEntity
-	for _, member := range situation.Edges.Entities {
-		entity := member.Edges.KnowledgeEntity
+	var members []situations.RuntimeEntity
+	for _, member := range situations.RuntimeEntities(situation.Edges.Observations) {
+		entity := member.Entity
 		if entity != nil && knowledgegraph.IsService(entity.Category, entity.Kind) {
 			members = append(members, member)
 		}
 	}
-	slices.SortFunc(members, func(a, b *ent.SituationEntity) int {
+	slices.SortFunc(members, func(a, b situations.RuntimeEntity) int {
 		if a.Matching != b.Matching {
 			if a.Matching {
 				return -1
 			}
 			return 1
 		}
-		nameA, nameB := a.Edges.KnowledgeEntity.State.DisplayName, b.Edges.KnowledgeEntity.State.DisplayName
-		return cmp.Or(strings.Compare(nameA, nameB), strings.Compare(a.KnowledgeEntityID.String(), b.KnowledgeEntityID.String()))
+		nameA, nameB := a.Entity.State.DisplayName, b.Entity.State.DisplayName
+		return cmp.Or(strings.Compare(nameA, nameB), strings.Compare(a.Entity.ID.String(), b.Entity.ID.String()))
 	})
 
 	loaded := &briefSituation{situation: situation, total: len(members)}
 	for _, member := range members[:min(len(members), rez.MaxBriefServices)] {
-		loaded.services = append(loaded.services, member.Edges.KnowledgeEntity)
+		loaded.services = append(loaded.services, member.Entity)
 	}
 	return loaded, nil
 }
@@ -201,7 +195,7 @@ func (s *SituationBriefService) listServiceChanges(ctx context.Context, service 
 		Start:           window.start,
 		End:             window.openedAt,
 	}
-	listedBefore, beforeErr := s.changes.ListServiceChanges(ctx, before)
+	listedBefore, beforeErr := s.changePoints.ListServiceChanges(ctx, before)
 	if beforeErr != nil {
 		return nil, fmt.Errorf("list changes before opening: %w", beforeErr)
 	}
@@ -214,7 +208,7 @@ func (s *SituationBriefService) listServiceChanges(ctx context.Context, service 
 			End:             window.end,
 		}
 		var afterErr error
-		listedAfter, afterErr = s.changes.ListServiceChanges(ctx, after)
+		listedAfter, afterErr = s.changePoints.ListServiceChanges(ctx, after)
 		if afterErr != nil {
 			return nil, fmt.Errorf("list changes after opening: %w", afterErr)
 		}
@@ -236,9 +230,6 @@ func (s *SituationBriefService) listServiceChanges(ctx context.Context, service 
 		serviceChanges.Deployments = append(serviceChanges.Deployments, s.briefDeployment(deployment, false))
 	}
 
-	if evidenceErr := s.setLatestEvidence(ctx, serviceChanges.Deployments); evidenceErr != nil {
-		return nil, evidenceErr
-	}
 	return serviceChanges, nil
 }
 
@@ -250,41 +241,6 @@ func (s *SituationBriefService) briefDeployment(deployment rez.ServiceDeployment
 		briefed.MergedChangesUnlinked = rez.SituationBriefUnlinkedRepositoryNotForge
 	}
 	return briefed
-}
-
-// setLatestEvidence sets each deployment's latest evidence, for a deployment with no link to open.
-func (s *SituationBriefService) setLatestEvidence(ctx context.Context, deployments []rez.SituationBriefDeployment) error {
-	if len(deployments) == 0 {
-		return nil
-	}
-	entityIDs := make([]uuid.UUID, len(deployments))
-	for index, deployment := range deployments {
-		entityIDs[index] = deployment.Deployment.ID
-	}
-	queryEvidence := s.db.Client(ctx).KnowledgeEvidence.Query().
-		Where(ke.HasSubjectAliasWith(ksa.EntityIDIn(entityIDs...))).
-		WithSubjectAlias().
-		Order(ke.ByEffectiveAt(sql.OrderDesc()), ke.ByID(sql.OrderDesc()))
-	evidence, queryErr := queryEvidence.All(ctx)
-	if queryErr != nil {
-		return fmt.Errorf("query deployment evidence: %w", queryErr)
-	}
-	latest := make(map[uuid.UUID]uuid.UUID, len(deployments))
-	for _, item := range evidence {
-		entityID := item.Edges.SubjectAlias.EntityID
-		if entityID == nil {
-			continue
-		}
-		if _, seen := latest[*entityID]; !seen {
-			latest[*entityID] = item.ID
-		}
-	}
-	for index := range deployments {
-		if evidenceID, found := latest[deployments[index].Deployment.ID]; found {
-			deployments[index].LatestEvidenceID = &evidenceID
-		}
-	}
-	return nil
 }
 
 func (s *SituationBriefService) unseen(sources integrations.Sources, loaded *briefSituation) []rez.SituationBriefUnseen {
@@ -329,35 +285,39 @@ func (s *SituationBriefService) LatestDeploymentBefore(ctx context.Context, situ
 
 	var latest *rez.SituationLatestDeployment
 	for _, service := range loaded.services {
-		params := rez.ListRelatedEventsParams{
+		params := rez.ListChangePointsParams{
 			EntityID:      service.ID,
-			Predicate:     knr.PredicateImpacts,
-			Kind:          changesDeploymentEventKind,
+			Roles:         []string{projections.AssertionDeploymentService},
+			Kind:          projections.KindDeployment,
 			From:          window.start,
 			FromInclusive: true,
 			To:            window.openedAt,
 			ToInclusive:   true,
 			Limit:         1,
 		}
-		deployments, listErr := s.graph.ListRelatedEvents(ctx, params)
+		deployments, listErr := s.changePoints.ListChangePoints(ctx, params)
 		if listErr != nil {
 			return nil, fmt.Errorf("list deployments of service %s: %w", service.ID, listErr)
 		}
-		if len(deployments.Events) == 0 {
+		if len(deployments.ChangePoints) == 0 {
 			continue
 		}
-		deployment := deployments.Events[0]
-		if latest != nil && !deployment.StateEffectiveAt.After(latest.DeployedAt) {
+		deployment := deployments.ChangePoints[0]
+		if latest != nil && !deployment.ChangePoint.OccurredAt.After(latest.DeployedAt) {
 			continue
 		}
-		properties := changesEventProperties(deployment.State.Properties)
+		decoded, decodeErr := projections.DecodeDeploymentEvent(deployment.ChangePoint.Edges.LatestEvent)
+		if decodeErr != nil {
+			return nil, fmt.Errorf("decode deployment: %w", decodeErr)
+		}
+		attributes := decoded.Attributes
 		latest = &rez.SituationLatestDeployment{
 			Service:     service,
-			DeployedAt:  *deployment.StateEffectiveAt,
-			Environment: properties.get(projections.DeploymentPropertyEnvironment),
-			Status:      properties.get(projections.DeploymentPropertyStatus),
-			Version:     properties.get(projections.DeploymentPropertyVersion),
-			Sha:         properties.get(projections.DeploymentPropertySha),
+			DeployedAt:  deployment.ChangePoint.OccurredAt,
+			Environment: attributes.Environment.Name,
+			Status:      attributes.Status,
+			Version:     attributes.Version,
+			Sha:         attributes.Sha,
 		}
 	}
 	return latest, nil

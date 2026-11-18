@@ -40,6 +40,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) observe(ctx context.Context, tdb r
 	now := time.Now().UTC()
 	event := s.createEvent(ctx, tdb, "event:"+uuid.NewString(), now)
 	evidence := rez.KnowledgeEvidenceRef{
+		Authority:    schematypes.KnowledgeAuthorityDeclared,
 		Kind:         ke.KindObserved,
 		Assertion:    "entity_observed",
 		EffectiveAt:  now,
@@ -112,6 +113,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestSimilarNameBecomesProposal() {
 
 			// The second event again, and a third provider naming an existing name, add nothing.
 			ingestAgainErr := s.makeService(tdb).IngestEvidence(ctx, secondEvent, rez.KnowledgeEvidenceRef{
+				Authority:   schematypes.KnowledgeAuthorityDeclared,
 				Kind:        ke.KindObserved,
 				Assertion:   "entity_observed",
 				EffectiveAt: time.Now().UTC(),
@@ -249,6 +251,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestIdentityConflictBecomesProposa
 		s.Equal(conflictEvidence.ID, proposals[0].EvidenceID)
 
 		againErr := s.makeService(tdb).IngestEvidence(ctx, conflictEvent, rez.KnowledgeEvidenceRef{
+			Authority:   schematypes.KnowledgeAuthorityDeclared,
 			Kind:        ke.KindObserved,
 			Assertion:   "entity_observed",
 			EffectiveAt: time.Now().UTC(),

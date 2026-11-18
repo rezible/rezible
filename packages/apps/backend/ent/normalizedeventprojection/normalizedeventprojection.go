@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 const (
@@ -22,6 +23,8 @@ const (
 	FieldEventID = "event_id"
 	// FieldCompletedAt holds the string denoting the completed_at field in the database.
 	FieldCompletedAt = "completed_at"
+	// FieldSkippedRefs holds the string denoting the skipped_refs field in the database.
+	FieldSkippedRefs = "skipped_refs"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
@@ -59,6 +62,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldEventID,
 	FieldCompletedAt,
+	FieldSkippedRefs,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -81,6 +85,8 @@ var (
 	Policy ent.Policy
 	// DefaultCompletedAt holds the default value on creation for the "completed_at" field.
 	DefaultCompletedAt func() time.Time
+	// DefaultSkippedRefs holds the default value on creation for the "skipped_refs" field.
+	DefaultSkippedRefs []schematypes.SkippedEvidenceRef
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -146,7 +152,7 @@ func newEventStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EventInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, EventTable, EventColumn),
 	)
 }
 func newProjectionEntitiesStep() *sqlgraph.Step {

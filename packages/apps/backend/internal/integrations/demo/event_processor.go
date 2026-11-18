@@ -261,8 +261,8 @@ func (p *eventProcessor) processCodeRepository() (ent.NormalizedEvents, error) {
 
 func (p *eventProcessor) processCodeChange() (ent.NormalizedEvents, error) {
 	var payload codeChangeObservedPayload
-	if err := json.Unmarshal(p.event.Attributes, &payload); err != nil {
-		return nil, fmt.Errorf("unmarshal code change observed payload: %w", err)
+	if decodeErr := json.Unmarshal(p.event.Attributes, &payload); decodeErr != nil {
+		return nil, fmt.Errorf("unmarshal code change observed payload: %w", decodeErr)
 	}
 	occurredAt := payload.MergedAt
 	if occurredAt.IsZero() {
@@ -281,10 +281,13 @@ func (p *eventProcessor) processCodeChange() (ent.NormalizedEvents, error) {
 		Kind:        "repository",
 		DisplayName: payload.RepositoryRef,
 	}
+	merge := payload.Merge
+	merge.MergedAt = occurredAt
 	attrs := projections.CodeChangeEventAttributes{
 		Repository:       repository,
 		DisplayName:      payload.Title,
 		ImpactedEntities: payload.ImpactedEntities,
+		Merge:            &merge,
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {

@@ -76,7 +76,13 @@ type (
 		Kind        string       `json:"kind"`
 		DisplayName string       `json:"displayName"`
 		KnowledgeGraphSubjectStatus
-		ParentId *uuid.UUID `json:"parentId,omitempty"`
+		// MergedIntoId is set when a merge left the entity as a redirect to the one that survived.
+		MergedIntoId *uuid.UUID `json:"mergedIntoId,omitempty"`
+		ParentId     *uuid.UUID `json:"parentId,omitempty"`
+		// ParentRelationshipId is the contains relationship chosen as the entity's parent. ParentProviders are
+		// the providers claiming it, filled by the entity get operation.
+		ParentRelationshipId *uuid.UUID `json:"parentRelationshipId,omitempty"`
+		ParentProviders      []string   `json:"parentProviders,omitempty"`
 		// Ancestors (outermost first) and OtherParentClaims are filled by the entity get operation.
 		Ancestors         []KnowledgeGraphEntitySummary `json:"ancestors,omitempty"`
 		OtherParentClaims []KnowledgeGraphParentClaim   `json:"otherParentClaims,omitempty"`
@@ -131,8 +137,10 @@ type (
 		TargetEntityId uuid.UUID                    `json:"targetEntityId"`
 		Aliases        []KnowledgeGraphSubjectAlias `json:"aliases"`
 		KnowledgeGraphSubjectStatus
-		CreatedAt time.Time `json:"createdAt"`
-		UpdatedAt time.Time `json:"updatedAt"`
+		// MergedIntoId is set when a merge folded the relationship into the one it names.
+		MergedIntoId *uuid.UUID `json:"mergedIntoId,omitempty"`
+		CreatedAt    time.Time  `json:"createdAt"`
+		UpdatedAt    time.Time  `json:"updatedAt"`
 	}
 
 	KnowledgeGraphSubjectAlias struct {
@@ -160,8 +168,11 @@ type (
 		Stale bool `json:"stale"`
 	}
 
+	// KnowledgeGraphStateSource is the alias that decided a field. For a field absent from the state, it is the
+	// alias whose unset hides it.
 	KnowledgeGraphStateSource struct {
 		AliasId     uuid.UUID `json:"aliasId"`
+		Authority   string    `json:"authority" enum:"observed,declared"`
 		EffectiveAt time.Time `json:"effectiveAt"`
 	}
 
@@ -257,7 +268,7 @@ type (
 
 	KnowledgeGraphPredicateSpec struct {
 		Value            knr.Predicate  `json:"value"`
-		Family           string         `json:"family" enum:"structure,placement,implementation,ownership,membership,support,flow,observation,governance,occurrence"`
+		Family           string         `json:"family" enum:"structure,placement,implementation,ownership,membership,support,flow,observation,governance"`
 		Dependency       string         `json:"dependency" enum:"source_on_target,target_on_source,mutual,none"`
 		RollsUp          bool           `json:"rollsUp"`
 		SameHierarchy    bool           `json:"sameHierarchy"`
@@ -315,7 +326,7 @@ func (knowledgeRelationshipPredicateSchema) Schema(huma.Registry) *huma.Schema {
 	return makeEnumStringSchema(knr.PredicateValues)
 }
 
-func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
+func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity, now time.Time) KnowledgeGraphEntity {
 	attr := KnowledgeGraphEntityAttributes{
 		Category:                    e.Category,
 		Kind:                        e.Kind,
@@ -324,12 +335,20 @@ func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 		Aliases:                     make([]KnowledgeGraphEntityAlias, len(e.Edges.Aliases)),
 		CreatedAt:                   e.CreatedAt,
 		UpdatedAt:                   e.UpdatedAt,
-		KnowledgeGraphSubjectStatus: knowledgeGraphSubjectStatus(e.State, e.StateSources, e.LastObservedAt, e.WithdrawnAt, e.ExpiresAt),
-		ParentId:                    e.ParentID,
+		KnowledgeGraphSubjectStatus: knowledgeGraphSubjectStatus(e.State, e.StateSources, e.LastObservedAt, e.WithdrawnAt, e.ExpiresAt, now),
+		MergedIntoId:                e.MergedIntoID,
+	}
+	if claim := e.ParentClaim(); claim != nil {
+		attr.ParentId = &claim.SourceEntityID
+		attr.ParentRelationshipId = &claim.ID
+		attr.ParentProviders = make([]string, 0, len(claim.Edges.Aliases))
+		for _, alias := range claim.Edges.Aliases {
+			attr.ParentProviders = append(attr.ParentProviders, alias.Provider)
+		}
 	}
 
 	for i, alias := range e.Edges.Aliases {
-		attr.Aliases[i] = KnowledgeGraphEntityAlias{KnowledgeGraphSubjectAlias: KnowledgeGraphSubjectAliasFromEnt(alias)}
+		attr.Aliases[i] = KnowledgeGraphEntityAlias{KnowledgeGraphSubjectAlias: KnowledgeGraphSubjectAliasFromEnt(alias, now)}
 	}
 	for i, linkingAttribute := range e.Edges.LinkingAttributes {
 		attr.LinkingAttributes[i] = KnowledgeGraphLinkingAttribute{
@@ -342,21 +361,23 @@ func KnowledgeGraphEntityFromEnt(e *ent.KnowledgeEntity) KnowledgeGraphEntity {
 }
 
 // KnowledgeGraphEntityWithAliasesFromRez converts an entity with its loaded linking attributes and its aliases.
-func KnowledgeGraphEntityWithAliasesFromRez(e *rez.KnowledgeEntityWithAliases) KnowledgeGraphEntity {
-	entity := KnowledgeGraphEntityFromEnt(e.Entity)
+func KnowledgeGraphEntityWithAliasesFromRez(e *rez.KnowledgeEntityWithAliases, now time.Time) KnowledgeGraphEntity {
+	entity := KnowledgeGraphEntityFromEnt(e.Entity, now)
 	entity.Attributes.Aliases = make([]KnowledgeGraphEntityAlias, 0, len(e.Aliases))
 	for _, alias := range e.Aliases {
-		entity.Attributes.Aliases = append(entity.Attributes.Aliases, KnowledgeGraphEntityAliasFromRez(alias))
+		entity.Attributes.Aliases = append(entity.Attributes.Aliases, KnowledgeGraphEntityAliasFromRez(alias, now))
 	}
-	entity.Attributes.Ancestors = ConvertSlice(e.Ancestors, KnowledgeGraphEntitySummaryFromEnt)
+	entity.Attributes.Ancestors = ConvertSlice(e.Ancestors, func(ancestor *ent.KnowledgeEntity) KnowledgeGraphEntitySummary {
+		return KnowledgeGraphEntitySummaryFromEnt(ancestor, now)
+	})
 	for _, claim := range e.OtherParentClaims {
 		converted := KnowledgeGraphParentClaim{
-			Relationship: KnowledgeGraphRelationshipSummaryFromEnt(claim),
+			Relationship: KnowledgeGraphRelationshipSummaryFromEnt(claim, now),
 			Parent:       KnowledgeGraphEntitySummary{ID: claim.SourceEntityID, OtherParentIds: []uuid.UUID{}},
 			Providers:    make([]string, 0, len(claim.Edges.Aliases)),
 		}
 		if source := claim.Edges.SourceEntity; source != nil {
-			converted.Parent = KnowledgeGraphEntitySummaryFromEnt(source)
+			converted.Parent = KnowledgeGraphEntitySummaryFromEnt(source, now)
 		}
 		for _, alias := range claim.Edges.Aliases {
 			converted.Providers = append(converted.Providers, alias.Provider)
@@ -366,9 +387,11 @@ func KnowledgeGraphEntityWithAliasesFromRez(e *rez.KnowledgeEntityWithAliases) K
 	return entity
 }
 
-func KnowledgeGraphEntitiesPageFromRez(page *rez.KnowledgeGraphEntitiesPage) KnowledgeGraphEntitiesPage {
+func KnowledgeGraphEntitiesPageFromRez(page *rez.KnowledgeGraphEntitiesPage, now time.Time) KnowledgeGraphEntitiesPage {
 	converted := KnowledgeGraphEntitiesPage{
-		Entities:           ConvertSlice(page.Entities, KnowledgeGraphEntitySummaryFromEnt),
+		Entities: ConvertSlice(page.Entities, func(entity *ent.KnowledgeEntity) KnowledgeGraphEntitySummary {
+			return KnowledgeGraphEntitySummaryFromEnt(entity, now)
+		}),
 		EntitySelectionRef: string(page.EntitySelectionRef),
 	}
 	for i := range converted.Entities {
@@ -382,9 +405,9 @@ func KnowledgeGraphEntitiesPageFromRez(page *rez.KnowledgeGraphEntitiesPage) Kno
 	return converted
 }
 
-func KnowledgeGraphEntityAliasFromRez(alias rez.KnowledgeEntityAlias) KnowledgeGraphEntityAlias {
+func KnowledgeGraphEntityAliasFromRez(alias rez.KnowledgeEntityAlias, now time.Time) KnowledgeGraphEntityAlias {
 	converted := KnowledgeGraphEntityAlias{
-		KnowledgeGraphSubjectAlias: KnowledgeGraphSubjectAliasFromEnt(alias.Alias),
+		KnowledgeGraphSubjectAlias: KnowledgeGraphSubjectAliasFromEnt(alias.Alias, now),
 		IntegrationDisplayName:     alias.IntegrationDisplayName,
 		Provider:                   alias.Alias.Provider,
 		Name:                       alias.Name,
@@ -405,19 +428,19 @@ func KnowledgeGraphEntityAliasFromRez(alias rez.KnowledgeEntityAlias) KnowledgeG
 	return converted
 }
 
-func KnowledgeGraphEntitySummaryFromEnt(entity *ent.KnowledgeEntity) KnowledgeGraphEntitySummary {
+func KnowledgeGraphEntitySummaryFromEnt(entity *ent.KnowledgeEntity, now time.Time) KnowledgeGraphEntitySummary {
 	return KnowledgeGraphEntitySummary{
 		ID:             entity.ID,
 		Category:       entity.Category,
 		Kind:           entity.Kind,
 		DisplayName:    entity.State.DisplayName,
-		Stale:          knowledgegraph.IsStale(entity.ExpiresAt, time.Now()),
-		ParentId:       entity.ParentID,
+		Stale:          knowledgegraph.IsStale(entity.ExpiresAt, now),
+		ParentId:       entity.ParentEntityID(),
 		OtherParentIds: []uuid.UUID{},
 	}
 }
 
-func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) KnowledgeGraphRelationship {
+func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship, now time.Time) KnowledgeGraphRelationship {
 	attr := KnowledgeGraphRelationshipAttributes{
 		Predicate:                   rel.Predicate,
 		SourceEntityId:              rel.SourceEntityID,
@@ -425,25 +448,26 @@ func KnowledgeGraphRelationshipFromEnt(rel *ent.KnowledgeRelationship) Knowledge
 		CreatedAt:                   rel.CreatedAt,
 		UpdatedAt:                   rel.UpdatedAt,
 		Aliases:                     make([]KnowledgeGraphSubjectAlias, len(rel.Edges.Aliases)),
-		KnowledgeGraphSubjectStatus: knowledgeGraphSubjectStatus(rel.State, rel.StateSources, rel.LastObservedAt, rel.WithdrawnAt, rel.ExpiresAt),
+		KnowledgeGraphSubjectStatus: knowledgeGraphSubjectStatus(rel.State, rel.StateSources, rel.LastObservedAt, rel.WithdrawnAt, rel.ExpiresAt, now),
+		MergedIntoId:                rel.MergedIntoID,
 	}
 	for i, alias := range rel.Edges.Aliases {
-		attr.Aliases[i] = KnowledgeGraphSubjectAliasFromEnt(alias)
+		attr.Aliases[i] = KnowledgeGraphSubjectAliasFromEnt(alias, now)
 	}
 	return KnowledgeGraphRelationship{Id: rel.ID, Attributes: attr}
 }
 
-func KnowledgeGraphRelationshipSummaryFromEnt(relationship *ent.KnowledgeRelationship) KnowledgeGraphRelationshipSummary {
+func KnowledgeGraphRelationshipSummaryFromEnt(relationship *ent.KnowledgeRelationship, now time.Time) KnowledgeGraphRelationshipSummary {
 	return KnowledgeGraphRelationshipSummary{
 		ID:        relationship.ID,
 		SourceID:  relationship.SourceEntityID,
 		TargetID:  relationship.TargetEntityID,
 		Predicate: relationship.Predicate,
-		Stale:     knowledgegraph.IsStale(relationship.ExpiresAt, time.Now()),
+		Stale:     knowledgegraph.IsStale(relationship.ExpiresAt, now),
 	}
 }
 
-func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) KnowledgeGraphSubjectAlias {
+func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias, now time.Time) KnowledgeGraphSubjectAlias {
 	attrs := KnowledgeGraphSubjectAliasAttributes{
 		Kind: alias.SubjectKind.String(),
 		ResourceRef: ProviderResourceRefFromRez(rez.ProviderResourceRef{
@@ -455,13 +479,15 @@ func KnowledgeGraphSubjectAliasFromEnt(alias *ent.KnowledgeSubjectAlias) Knowled
 			DisplayName: knowledgeGraphStateValue(alias.State.DisplayName),
 			Description: knowledgeGraphStateValue(alias.State.Description),
 			Properties:  make(map[string]KnowledgeGraphStateValue, len(alias.State.Properties)),
-			ReplacedAt:  alias.State.ReplacedAt,
 		},
 		FirstObservedAt: alias.FirstObservedAt,
 		LastObservedAt:  alias.LastObservedAt,
 		WithdrawnAt:     alias.WithdrawnAt,
 		ExpiresAt:       alias.ExpiresAt,
-		Stale:           knowledgegraph.IsStale(alias.ExpiresAt, time.Now()),
+		Stale:           knowledgegraph.IsStale(alias.ExpiresAt, now),
+	}
+	if replaced := alias.State.Replaced; replaced != nil {
+		attrs.State.ReplacedAt = &replaced.EffectiveAt
 	}
 	for key, value := range alias.State.Properties {
 		attrs.State.Properties[key] = *knowledgeGraphStateValue(&value)
@@ -482,12 +508,12 @@ func KnowledgeGraphEvidenceFromEnt(ev *ent.KnowledgeEvidence) *KnowledgeGraphEvi
 	return &KnowledgeGraphEvidence{Id: ev.ID, Attributes: attrs}
 }
 
-func knowledgeGraphSubjectStatus(state schematypes.KnowledgeGraphSubjectState, sources schematypes.KnowledgeStateSources, lastObservedAt, withdrawnAt, expiresAt *time.Time) KnowledgeGraphSubjectStatus {
+func knowledgeGraphSubjectStatus(state schematypes.KnowledgeGraphSubjectState, sources schematypes.KnowledgeStateSources, lastObservedAt, withdrawnAt, expiresAt *time.Time, now time.Time) KnowledgeGraphSubjectStatus {
 	source := func(s *schematypes.KnowledgeStateSource) *KnowledgeGraphStateSource {
 		if s == nil {
 			return nil
 		}
-		return &KnowledgeGraphStateSource{AliasId: s.AliasID, EffectiveAt: s.EffectiveAt}
+		return &KnowledgeGraphStateSource{AliasId: s.AliasID, Authority: string(s.Authority), EffectiveAt: s.EffectiveAt}
 	}
 	status := KnowledgeGraphSubjectStatus{
 		State: KnowledgeGraphSubjectStateFromEnt(state),
@@ -498,7 +524,7 @@ func knowledgeGraphSubjectStatus(state schematypes.KnowledgeGraphSubjectState, s
 		},
 		LastObservedAt: lastObservedAt,
 		WithdrawnAt:    withdrawnAt,
-		Stale:          knowledgegraph.IsStale(expiresAt, time.Now()),
+		Stale:          knowledgegraph.IsStale(expiresAt, now),
 	}
 	for key, s := range sources.Properties {
 		status.StateSources.Properties[key] = *source(&s)
@@ -760,7 +786,7 @@ func KnowledgeProposalPersonFromEnt(user *ent.User) *KnowledgeProposalPerson {
 }
 
 // KnowledgeProposalFromRez converts a proposal with the entities holding its values.
-func KnowledgeProposalFromRez(p *rez.KnowledgeProposalWithValues) KnowledgeProposal {
+func KnowledgeProposalFromRez(p *rez.KnowledgeProposalWithValues, now time.Time) KnowledgeProposal {
 	proposal := p.Proposal
 	attrs := KnowledgeProposalAttributes{
 		Category:  kne.Category(proposal.Category),
@@ -773,8 +799,8 @@ func KnowledgeProposalFromRez(p *rez.KnowledgeProposalWithValues) KnowledgePropo
 		CreatedAt: proposal.CreatedAt,
 	}
 	attrs.Values = []KnowledgeProposalValue{
-		KnowledgeProposalValueFromRez(p.ValueA),
-		KnowledgeProposalValueFromRez(p.ValueB),
+		KnowledgeProposalValueFromRez(p.ValueA, now),
+		KnowledgeProposalValueFromRez(p.ValueB, now),
 	}
 	if evidence := proposal.Edges.Evidence; evidence != nil {
 		attrs.Evidence = KnowledgeProposalEvidence{
@@ -804,7 +830,7 @@ func KnowledgeProposalFromRez(p *rez.KnowledgeProposalWithValues) KnowledgePropo
 }
 
 // KnowledgeProposalValueFromRez converts a proposal's value with the entity holding it, if any.
-func KnowledgeProposalValueFromRez(value rez.KnowledgeProposalValue) KnowledgeProposalValue {
+func KnowledgeProposalValueFromRez(value rez.KnowledgeProposalValue, now time.Time) KnowledgeProposalValue {
 	converted := KnowledgeProposalValue{Value: value.Value}
 	if value.Holder == nil {
 		return converted
@@ -815,7 +841,7 @@ func KnowledgeProposalValueFromRez(value rez.KnowledgeProposalValue) KnowledgePr
 		Aliases:     make([]KnowledgeGraphEntityAlias, 0),
 	}
 	for _, alias := range value.Holder.Aliases {
-		converted.Entity.Aliases = append(converted.Entity.Aliases, KnowledgeGraphEntityAliasFromRez(alias))
+		converted.Entity.Aliases = append(converted.Entity.Aliases, KnowledgeGraphEntityAliasFromRez(alias, now))
 	}
 	return converted
 }

@@ -19,6 +19,8 @@ type SchemaConfig struct {
 	AlertInstance                             string // AlertInstance table.
 	AlertInstanceEvent                        string // AlertInstanceEvent table.
 	AlertMetrics                              string // AlertMetrics table.
+	ChangePoint                               string // ChangePoint table.
+	ChangePointInvolvement                    string // ChangePointInvolvement table.
 	DiscussionComment                         string // DiscussionComment table.
 	DiscussionThread                          string // DiscussionThread table.
 	Document                                  string // Document table.
@@ -75,6 +77,8 @@ type SchemaConfig struct {
 	NormalizedEvent                           string // NormalizedEvent table.
 	NormalizedEventProjection                 string // NormalizedEventProjection table.
 	NormalizedEventProjectionEntity           string // NormalizedEventProjectionEntity table.
+	ObservationScope                          string // ObservationScope table.
+	ObservationScopeEntity                    string // ObservationScopeEntity table.
 	OncallHandoverTemplate                    string // OncallHandoverTemplate table.
 	OncallRoster                              string // OncallRoster table.
 	OncallRosterMetrics                       string // OncallRosterMetrics table.
@@ -93,7 +97,6 @@ type SchemaConfig struct {
 	SequenceCounter                           string // SequenceCounter table.
 	Situation                                 string // Situation table.
 	SituationAction                           string // SituationAction table.
-	SituationEntity                           string // SituationEntity table.
 	SituationJudgment                         string // SituationJudgment table.
 	SituationNotice                           string // SituationNotice table.
 	SituationObservation                      string // SituationObservation table.

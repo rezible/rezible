@@ -23,7 +23,6 @@ import (
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/situation"
@@ -82,26 +81,6 @@ func (_u *IncidentUpdate) SetNillableArchiveTime(v *time.Time) *IncidentUpdate {
 // ClearArchiveTime clears the value of the "archive_time" field.
 func (_u *IncidentUpdate) ClearArchiveTime() *IncidentUpdate {
 	_u.mutation.ClearArchiveTime()
-	return _u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *IncidentUpdate) SetKnowledgeEntityID(v uuid.UUID) *IncidentUpdate {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *IncidentUpdate {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *IncidentUpdate) ClearKnowledgeEntityID() *IncidentUpdate {
-	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -285,11 +264,6 @@ func (_u *IncidentUpdate) SetNillableDeclaredByID(v *uuid.UUID) *IncidentUpdate 
 func (_u *IncidentUpdate) ClearDeclaredByID() *IncidentUpdate {
 	_u.mutation.ClearDeclaredByID()
 	return _u
-}
-
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *IncidentUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentUpdate {
-	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
@@ -479,12 +453,6 @@ func (_u *IncidentUpdate) AddIncidentLinks(v ...*IncidentLink) *IncidentUpdate {
 // Mutation returns the IncidentMutation object of the builder.
 func (_u *IncidentUpdate) Mutation() *IncidentMutation {
 	return _u.mutation
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *IncidentUpdate) ClearKnowledgeEntity() *IncidentUpdate {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
 }
 
 // ClearSeverity clears the "severity" edge to the IncidentSeverity entity.
@@ -806,6 +774,15 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incident.FieldArchiveTime, field.TypeTime)
 	}
+	if _u.mutation.ProviderCleared() {
+		_spec.ClearField(incident.FieldProvider, field.TypeString)
+	}
+	if _u.mutation.ProviderNamespaceCleared() {
+		_spec.ClearField(incident.FieldProviderNamespace, field.TypeString)
+	}
+	if _u.mutation.ProviderResourceRefCleared() {
+		_spec.ClearField(incident.FieldProviderResourceRef, field.TypeString)
+	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
 	}
@@ -838,37 +815,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ResolvedAtCleared() {
 		_spec.ClearField(incident.FieldResolvedAt, field.TypeTime)
-	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incident.KnowledgeEntityTable,
-			Columns: []string{incident.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Incident
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incident.KnowledgeEntityTable,
-			Columns: []string{incident.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Incident
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.SeverityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1538,26 +1484,6 @@ func (_u *IncidentUpdateOne) ClearArchiveTime() *IncidentUpdateOne {
 	return _u
 }
 
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *IncidentUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *IncidentUpdateOne) ClearKnowledgeEntityID() *IncidentUpdateOne {
-	_u.mutation.ClearKnowledgeEntityID()
-	return _u
-}
-
 // SetTitle sets the "title" field.
 func (_u *IncidentUpdateOne) SetTitle(v string) *IncidentUpdateOne {
 	_u.mutation.SetTitle(v)
@@ -1738,11 +1664,6 @@ func (_u *IncidentUpdateOne) SetNillableDeclaredByID(v *uuid.UUID) *IncidentUpda
 func (_u *IncidentUpdateOne) ClearDeclaredByID() *IncidentUpdateOne {
 	_u.mutation.ClearDeclaredByID()
 	return _u
-}
-
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *IncidentUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentUpdateOne {
-	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
@@ -1932,12 +1853,6 @@ func (_u *IncidentUpdateOne) AddIncidentLinks(v ...*IncidentLink) *IncidentUpdat
 // Mutation returns the IncidentMutation object of the builder.
 func (_u *IncidentUpdateOne) Mutation() *IncidentMutation {
 	return _u.mutation
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *IncidentUpdateOne) ClearKnowledgeEntity() *IncidentUpdateOne {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
 }
 
 // ClearSeverity clears the "severity" edge to the IncidentSeverity entity.
@@ -2289,6 +2204,15 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incident.FieldArchiveTime, field.TypeTime)
 	}
+	if _u.mutation.ProviderCleared() {
+		_spec.ClearField(incident.FieldProvider, field.TypeString)
+	}
+	if _u.mutation.ProviderNamespaceCleared() {
+		_spec.ClearField(incident.FieldProviderNamespace, field.TypeString)
+	}
+	if _u.mutation.ProviderResourceRefCleared() {
+		_spec.ClearField(incident.FieldProviderResourceRef, field.TypeString)
+	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
 	}
@@ -2321,37 +2245,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	}
 	if _u.mutation.ResolvedAtCleared() {
 		_spec.ClearField(incident.FieldResolvedAt, field.TypeTime)
-	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incident.KnowledgeEntityTable,
-			Columns: []string{incident.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Incident
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incident.KnowledgeEntityTable,
-			Columns: []string{incident.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Incident
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.SeverityCleared() {
 		edge := &sqlgraph.EdgeSpec{

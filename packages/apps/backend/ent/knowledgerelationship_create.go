@@ -146,6 +146,20 @@ func (_c *KnowledgeRelationshipCreate) SetNillableExpiresAt(v *time.Time) *Knowl
 	return _c
 }
 
+// SetMergedIntoID sets the "merged_into_id" field.
+func (_c *KnowledgeRelationshipCreate) SetMergedIntoID(v uuid.UUID) *KnowledgeRelationshipCreate {
+	_c.mutation.SetMergedIntoID(v)
+	return _c
+}
+
+// SetNillableMergedIntoID sets the "merged_into_id" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableMergedIntoID(v *uuid.UUID) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetMergedIntoID(*v)
+	}
+	return _c
+}
+
 // SetPredicate sets the "predicate" field.
 func (_c *KnowledgeRelationshipCreate) SetPredicate(v knowledgerelationship.Predicate) *KnowledgeRelationshipCreate {
 	_c.mutation.SetPredicate(v)
@@ -161,6 +175,20 @@ func (_c *KnowledgeRelationshipCreate) SetSourceEntityID(v uuid.UUID) *Knowledge
 // SetTargetEntityID sets the "target_entity_id" field.
 func (_c *KnowledgeRelationshipCreate) SetTargetEntityID(v uuid.UUID) *KnowledgeRelationshipCreate {
 	_c.mutation.SetTargetEntityID(v)
+	return _c
+}
+
+// SetIsParent sets the "is_parent" field.
+func (_c *KnowledgeRelationshipCreate) SetIsParent(v bool) *KnowledgeRelationshipCreate {
+	_c.mutation.SetIsParent(v)
+	return _c
+}
+
+// SetNillableIsParent sets the "is_parent" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableIsParent(v *bool) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetIsParent(*v)
+	}
 	return _c
 }
 
@@ -206,6 +234,26 @@ func (_c *KnowledgeRelationshipCreate) AddAliases(v ...*KnowledgeSubjectAlias) *
 		ids[i] = v[i].ID
 	}
 	return _c.AddAliasIDs(ids...)
+}
+
+// SetMergedInto sets the "merged_into" edge to the KnowledgeRelationship entity.
+func (_c *KnowledgeRelationshipCreate) SetMergedInto(v *KnowledgeRelationship) *KnowledgeRelationshipCreate {
+	return _c.SetMergedIntoID(v.ID)
+}
+
+// AddRedirectIDs adds the "redirects" edge to the KnowledgeRelationship entity by IDs.
+func (_c *KnowledgeRelationshipCreate) AddRedirectIDs(ids ...uuid.UUID) *KnowledgeRelationshipCreate {
+	_c.mutation.AddRedirectIDs(ids...)
+	return _c
+}
+
+// AddRedirects adds the "redirects" edges to the KnowledgeRelationship entity.
+func (_c *KnowledgeRelationshipCreate) AddRedirects(v ...*KnowledgeRelationship) *KnowledgeRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddRedirectIDs(ids...)
 }
 
 // Mutation returns the KnowledgeRelationshipMutation object of the builder.
@@ -259,6 +307,10 @@ func (_c *KnowledgeRelationshipCreate) defaults() error {
 		v := knowledgerelationship.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.IsParent(); !ok {
+		v := knowledgerelationship.DefaultIsParent
+		_c.mutation.SetIsParent(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if knowledgerelationship.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized knowledgerelationship.DefaultID (forgotten import ent/runtime?)")
@@ -293,6 +345,9 @@ func (_c *KnowledgeRelationshipCreate) check() error {
 	}
 	if _, ok := _c.mutation.TargetEntityID(); !ok {
 		return &ValidationError{Name: "target_entity_id", err: errors.New(`ent: missing required field "KnowledgeRelationship.target_entity_id"`)}
+	}
+	if _, ok := _c.mutation.IsParent(); !ok {
+		return &ValidationError{Name: "is_parent", err: errors.New(`ent: missing required field "KnowledgeRelationship.is_parent"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeRelationship.tenant"`)}
@@ -376,6 +431,10 @@ func (_c *KnowledgeRelationshipCreate) createSpec() (*KnowledgeRelationship, *sq
 		_spec.SetField(knowledgerelationship.FieldPredicate, field.TypeEnum, value)
 		_node.Predicate = value
 	}
+	if value, ok := _c.mutation.IsParent(); ok {
+		_spec.SetField(knowledgerelationship.FieldIsParent, field.TypeBool, value)
+		_node.IsParent = value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -442,6 +501,41 @@ func (_c *KnowledgeRelationshipCreate) createSpec() (*KnowledgeRelationship, *sq
 			},
 		}
 		edge.Schema = _c.schemaConfig.KnowledgeSubjectAlias
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MergedIntoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   knowledgerelationship.MergedIntoTable,
+			Columns: []string{knowledgerelationship.MergedIntoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.KnowledgeRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.MergedIntoID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.RedirectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   knowledgerelationship.RedirectsTable,
+			Columns: []string{knowledgerelationship.RedirectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.KnowledgeRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -631,6 +725,24 @@ func (u *KnowledgeRelationshipUpsert) ClearExpiresAt() *KnowledgeRelationshipUps
 	return u
 }
 
+// SetMergedIntoID sets the "merged_into_id" field.
+func (u *KnowledgeRelationshipUpsert) SetMergedIntoID(v uuid.UUID) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldMergedIntoID, v)
+	return u
+}
+
+// UpdateMergedIntoID sets the "merged_into_id" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateMergedIntoID() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldMergedIntoID)
+	return u
+}
+
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (u *KnowledgeRelationshipUpsert) ClearMergedIntoID() *KnowledgeRelationshipUpsert {
+	u.SetNull(knowledgerelationship.FieldMergedIntoID)
+	return u
+}
+
 // SetSourceEntityID sets the "source_entity_id" field.
 func (u *KnowledgeRelationshipUpsert) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsert {
 	u.Set(knowledgerelationship.FieldSourceEntityID, v)
@@ -652,6 +764,18 @@ func (u *KnowledgeRelationshipUpsert) SetTargetEntityID(v uuid.UUID) *KnowledgeR
 // UpdateTargetEntityID sets the "target_entity_id" field to the value that was provided on create.
 func (u *KnowledgeRelationshipUpsert) UpdateTargetEntityID() *KnowledgeRelationshipUpsert {
 	u.SetExcluded(knowledgerelationship.FieldTargetEntityID)
+	return u
+}
+
+// SetIsParent sets the "is_parent" field.
+func (u *KnowledgeRelationshipUpsert) SetIsParent(v bool) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldIsParent, v)
+	return u
+}
+
+// UpdateIsParent sets the "is_parent" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateIsParent() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldIsParent)
 	return u
 }
 
@@ -863,6 +987,27 @@ func (u *KnowledgeRelationshipUpsertOne) ClearExpiresAt() *KnowledgeRelationship
 	})
 }
 
+// SetMergedIntoID sets the "merged_into_id" field.
+func (u *KnowledgeRelationshipUpsertOne) SetMergedIntoID(v uuid.UUID) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetMergedIntoID(v)
+	})
+}
+
+// UpdateMergedIntoID sets the "merged_into_id" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateMergedIntoID() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateMergedIntoID()
+	})
+}
+
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (u *KnowledgeRelationshipUpsertOne) ClearMergedIntoID() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearMergedIntoID()
+	})
+}
+
 // SetSourceEntityID sets the "source_entity_id" field.
 func (u *KnowledgeRelationshipUpsertOne) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertOne {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
@@ -888,6 +1033,20 @@ func (u *KnowledgeRelationshipUpsertOne) SetTargetEntityID(v uuid.UUID) *Knowled
 func (u *KnowledgeRelationshipUpsertOne) UpdateTargetEntityID() *KnowledgeRelationshipUpsertOne {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateTargetEntityID()
+	})
+}
+
+// SetIsParent sets the "is_parent" field.
+func (u *KnowledgeRelationshipUpsertOne) SetIsParent(v bool) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetIsParent(v)
+	})
+}
+
+// UpdateIsParent sets the "is_parent" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateIsParent() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateIsParent()
 	})
 }
 
@@ -1266,6 +1425,27 @@ func (u *KnowledgeRelationshipUpsertBulk) ClearExpiresAt() *KnowledgeRelationshi
 	})
 }
 
+// SetMergedIntoID sets the "merged_into_id" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetMergedIntoID(v uuid.UUID) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetMergedIntoID(v)
+	})
+}
+
+// UpdateMergedIntoID sets the "merged_into_id" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateMergedIntoID() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateMergedIntoID()
+	})
+}
+
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (u *KnowledgeRelationshipUpsertBulk) ClearMergedIntoID() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearMergedIntoID()
+	})
+}
+
 // SetSourceEntityID sets the "source_entity_id" field.
 func (u *KnowledgeRelationshipUpsertBulk) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertBulk {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
@@ -1291,6 +1471,20 @@ func (u *KnowledgeRelationshipUpsertBulk) SetTargetEntityID(v uuid.UUID) *Knowle
 func (u *KnowledgeRelationshipUpsertBulk) UpdateTargetEntityID() *KnowledgeRelationshipUpsertBulk {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateTargetEntityID()
+	})
+}
+
+// SetIsParent sets the "is_parent" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetIsParent(v bool) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetIsParent(v)
+	})
+}
+
+// UpdateIsParent sets the "is_parent" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateIsParent() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateIsParent()
 	})
 }
 

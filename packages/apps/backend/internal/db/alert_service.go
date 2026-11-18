@@ -29,20 +29,18 @@ import (
 type AlertService struct {
 	cfg          rez.AlertsConfig
 	db           rez.Database
-	knowledge    rez.KnowledgeGraphIngestionService
 	jobs         rez.JobService
 	observations rez.SituationObservationService
 	clock        rez.Clock
 }
 
-func NewAlertService(cfg rez.AlertsConfig, clock rez.Clock, db rez.Database, js rez.JobService, knowledge rez.KnowledgeGraphIngestionService, observations rez.SituationObservationService) (*AlertService, error) {
+func NewAlertService(cfg rez.AlertsConfig, clock rez.Clock, db rez.Database, js rez.JobService, observations rez.SituationObservationService) (*AlertService, error) {
 	s := &AlertService{
 		cfg:          cfg,
 		clock:        clock,
 		db:           db,
 		jobs:         js,
 		observations: observations,
-		knowledge:    knowledge,
 	}
 
 	return s, nil

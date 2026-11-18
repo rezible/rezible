@@ -2,9 +2,7 @@ package db
 
 import (
 	"context"
-	"crypto/md5"
 	"encoding/json"
-	"fmt"
 	"testing"
 	"time"
 
@@ -23,7 +21,7 @@ import (
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/ent/migrate"
-	sitent "github.com/rezible/rezible/ent/situationentity"
+	osce "github.com/rezible/rezible/ent/observationscopeentity"
 	sae "github.com/rezible/rezible/ent/systemanalysisentity"
 	sar "github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/pkg/errs"
@@ -227,18 +225,27 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestConfirmMergesEntities() {
 		SetTargetKnowledgeRelationshipID(foldedRelationshipID)
 	relationshipThread := createRelationshipThread.SaveX(ctx)
 
-	// A situation holding both services, matching only through the other.
-	createSituation := client.Situation.Create().
-		SetNumber(1).
+	// An observation about both services.
+	createDefinition := client.AlertDefinition.Create().
 		SetTitle("Checkout errors").
-		SetOpenedAt(start)
-	situation := createSituation.SaveX(ctx)
-	for entityID, matching := range map[uuid.UUID]bool{survivorID: false, otherID: true} {
-		addMember := client.SituationEntity.Create().
-			SetSituationID(situation.ID).
-			SetKnowledgeEntityID(entityID).
-			SetMatching(matching)
-		addMember.ExecX(ctx)
+		SetResolutionTimeoutSeconds(0).
+		SetMetadataObservedAt(start).
+		SetMetadataEventRef("checkout-errors")
+	definition := createDefinition.SaveX(ctx)
+	createEpisode := client.AlertEpisode.Create().
+		SetAlertDefinitionID(definition.ID).
+		SetStartedAt(start)
+	episode := createEpisode.SaveX(ctx)
+	createScope := client.ObservationScope.Create().
+		SetAlertEpisodeID(episode.ID).
+		SetRevision(1).
+		SetBroad(false)
+	scope := createScope.SaveX(ctx)
+	for _, entityID := range []uuid.UUID{survivorID, otherID} {
+		addEntity := client.ObservationScopeEntity.Create().
+			SetScopeID(scope.ID).
+			SetKnowledgeEntityID(entityID)
+		addEntity.ExecX(ctx)
 	}
 
 	// A provider read of the other service.
@@ -256,11 +263,11 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestConfirmMergesEntities() {
 		s.Equal(survivorID, services[0].ID)
 		s.Equal("checkout", services[0].State.DisplayName)
 		s.Equal(start.Add(2*time.Minute), services[0].StateEffectiveAt.UTC())
-		s.False(client.KnowledgeEntity.Query().Where(kne.ID(otherID)).ExistX(ctx))
+		s.Equal(&survivorID, client.KnowledgeEntity.GetX(ent.IncludeMerged(ctx), otherID).MergedIntoID, "the other is left as a redirect")
 
 		var survivorAliases []knowledgegraph.SubjectAlias
 		for _, alias := range client.KnowledgeSubjectAlias.Query().Where(ksa.EntityID(survivorID)).AllX(ctx) {
-			survivorAliases = append(survivorAliases, knowledgegraph.SubjectAlias{ID: alias.ID, CreatedAt: alias.CreatedAt, Record: aliasRecord(alias)})
+			survivorAliases = append(survivorAliases, knowledgegraph.SubjectAlias{ID: alias.ID, Authority: alias.Authority, Record: aliasRecord(alias)})
 		}
 		s.Equal(knowledgegraph.MergeSubjectState(survivorAliases).State, services[0].State, "the survivor's state is a fresh merge of its aliases")
 
@@ -291,6 +298,9 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestConfirmMergesEntities() {
 		relationships := queryRelationships.AllX(ctx)
 		s.Require().Len(relationships, 1)
 		s.Equal(keptRelationshipID, relationships[0].ID)
+		folded := client.KnowledgeRelationship.GetX(ent.IncludeMerged(ctx), foldedRelationshipID)
+		s.Equal(&keptRelationshipID, folded.MergedIntoID, "the duplicate is left as a redirect")
+		s.Equal(otherID, folded.TargetEntityID, "with its endpoints as they were")
 
 		queryRelationshipAliases := client.KnowledgeSubjectAlias.Query().
 			Where(ksa.RelationshipID(keptRelationshipID))
@@ -304,12 +314,9 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestConfirmMergesEntities() {
 	})
 
 	s.Run("references to the other service name the survivor", func() {
-		queryMembers := client.SituationEntity.Query().
-			Where(sitent.SituationID(situation.ID))
-		members := queryMembers.AllX(ctx)
-		s.Require().Len(members, 1)
-		s.Equal(survivorID, members[0].KnowledgeEntityID)
-		s.True(members[0].Matching)
+		queryScopeEntities := client.ObservationScopeEntity.Query().
+			Where(osce.ScopeID(scope.ID))
+		s.Equal(survivorID, queryScopeEntities.OnlyX(ctx).KnowledgeEntityID)
 
 		queryAnalysisEntities := client.SystemAnalysisEntity.Query().
 			Where(sae.AnalysisID(analysis.ID))
@@ -421,8 +428,50 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestMergeKeepsARelationshipBetween
 	s.Equal(callsID, graph.relationshipID(ctx, calls), "its alias still names it, so its evidence stays citable")
 }
 
-// TestMergeRecomputesParents merges a container into the container that contains it: the contains between them
-// becomes a self-loop, which is never a parent, and the merged entity's child moves to the survivor.
+// TestMergeFoldsARelationshipIntoASelfLoop merges an entity with a relationship to itself and one from the survivor
+// to it: both become one from the survivor to itself, so the later folds into the earlier, and keeps the survivor
+// to the merged entity as its endpoints.
+func (s *KnowledgeGraphIngestionServiceSuite) TestMergeFoldsARelationshipIntoASelfLoop() {
+	ctx, tdb := s.SetupTestDatabase()
+	client := tdb.Client(ctx)
+	graph := newTestGraph(s.Require(), tdb)
+	start := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	checkoutAPI := graph.entity(kne.CategoryContainer, "service", "provider-a", "service:checkout-api")
+	checkoutAPI.LinkingAttributes = projections.LinkingAttributes{projections.LinkingAttributeServiceName: "checkout-api"}
+	checkout := graph.entity(kne.CategoryContainer, "service", "provider-b", "service:checkout")
+	checkout.LinkingAttributes = projections.LinkingAttributes{projections.LinkingAttributeServiceName: "checkout"}
+	selfLoop := graph.relationship(knr.PredicateCalls, checkout, checkout)
+	fromSurvivor := graph.relationship(knr.PredicateCalls, checkoutAPI, checkout)
+	graph.record(ctx, start, graph.observeEntity(checkoutAPI, "checkout-api"))
+	graph.record(ctx, start.Add(time.Minute),
+		graph.observeEntity(checkout, "checkout"),
+		graph.observeRelationship(selfLoop),
+	)
+	graph.record(ctx, start.Add(2*time.Minute), graph.observeRelationship(fromSurvivor))
+	survivorID := graph.entityID(ctx, checkoutAPI)
+	otherID := graph.entityID(ctx, checkout)
+	selfLoopID := graph.relationshipID(ctx, selfLoop)
+	fromSurvivorID := graph.relationshipID(ctx, fromSurvivor)
+	proposals := s.proposals(ctx, tdb)
+	s.Require().Len(proposals, 1)
+	memberCtx, _ := s.memberContext(ctx, tdb)
+
+	_, confirmErr := s.makeProposalService(tdb).ConfirmProposal(memberCtx, proposals[0].ID)
+
+	s.Require().NoError(confirmErr)
+	kept := client.KnowledgeRelationship.GetX(ctx, selfLoopID)
+	s.Equal(survivorID, kept.SourceEntityID)
+	s.Equal(survivorID, kept.TargetEntityID)
+	s.Nil(kept.MergedIntoID)
+	folded := client.KnowledgeRelationship.GetX(ent.IncludeMerged(ctx), fromSurvivorID)
+	s.Equal(&selfLoopID, folded.MergedIntoID)
+	s.Equal(survivorID, folded.SourceEntityID, "the folded relationship keeps its endpoints")
+	s.Equal(otherID, folded.TargetEntityID, "the folded relationship keeps its endpoints")
+}
+
+// TestMergeRecomputesParents merges a container into the container that contains it, and that also contains the
+// merged entity's child: the parent claim between them becomes a self-loop, which is never a parent, and the
+// child's parent claim folds into the survivor's claim on it.
 func (s *KnowledgeGraphIngestionServiceSuite) TestMergeRecomputesParents() {
 	ctx, tdb := s.SetupTestDatabase()
 	client := tdb.Client(ctx)
@@ -434,14 +483,30 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestMergeRecomputesParents() {
 	checkout.LinkingAttributes = projections.LinkingAttributes{projections.LinkingAttributeServiceName: "checkout"}
 	orders := graph.entity(kne.CategoryComponent, "module", "provider-b", "module:orders")
 	graph.record(ctx, start, graph.observeEntity(checkoutAPI, "checkout-api"))
+	otherClaim := graph.relationship(knr.PredicateContains, checkout, orders)
 	graph.record(ctx, start.Add(time.Minute),
 		graph.observeEntity(checkout, "checkout"),
 		graph.observeEntity(orders, "orders"),
 		graph.observeRelationship(graph.relationship(knr.PredicateContains, checkoutAPI, checkout)),
-		graph.observeRelationship(graph.relationship(knr.PredicateContains, checkout, orders)),
+		graph.observeRelationship(otherClaim),
 	)
+	// The survivor's own claim on the child is created later, so it ranks after the merged entity's.
+	survivorClaim := graph.relationship(knr.PredicateContains, checkoutAPI, orders)
+	graph.record(ctx, start.Add(2*time.Minute), graph.observeRelationship(survivorClaim))
 	survivorID := graph.entityID(ctx, checkoutAPI)
+	otherID := graph.entityID(ctx, checkout)
 	ordersID := graph.entityID(ctx, orders)
+	otherClaimID := graph.relationshipID(ctx, otherClaim)
+	parentClaimOn := func(entityID uuid.UUID) []*ent.KnowledgeRelationship {
+		return client.KnowledgeRelationship.Query().
+			Where(knr.TargetEntityID(entityID), knr.IsParent(true)).
+			AllX(ctx)
+	}
+	s.Require().Len(parentClaimOn(ordersID), 1)
+	s.Require().Equal(otherID, parentClaimOn(ordersID)[0].SourceEntityID, "the merged entity's claim is chosen")
+	s.Require().Len(parentClaimOn(otherID), 1)
+	s.Require().Equal(survivorID, parentClaimOn(otherID)[0].SourceEntityID)
+	assertPlacement(ctx, s.T(), tdb)
 	proposals := s.proposals(ctx, tdb)
 	s.Require().Len(proposals, 1)
 	memberCtx, _ := s.memberContext(ctx, tdb)
@@ -449,8 +514,32 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestMergeRecomputesParents() {
 	_, confirmErr := s.makeProposalService(tdb).ConfirmProposal(memberCtx, proposals[0].ID)
 
 	s.Require().NoError(confirmErr)
-	s.Nil(client.KnowledgeEntity.GetX(ctx, survivorID).ParentID, "the self-loop is not a parent")
-	s.Equal(&survivorID, client.KnowledgeEntity.GetX(ctx, ordersID).ParentID)
+	assertPlacement(ctx, s.T(), tdb)
+	s.Empty(parentClaimOn(survivorID), "the self-loop is not a parent")
+	ordersClaims := parentClaimOn(ordersID)
+	s.Require().Len(ordersClaims, 1)
+	s.Equal(survivorID, ordersClaims[0].SourceEntityID)
+	s.Equal(graph.relationshipID(ctx, survivorClaim), ordersClaims[0].ID, "the folded claim's flag is on the claim it folded into")
+	s.Equal(&ordersClaims[0].ID, client.KnowledgeRelationship.GetX(ent.IncludeMerged(ctx), otherClaimID).MergedIntoID, "the folded claim is left as a redirect")
+	queries, queriesErr := NewKnowledgeGraphQueryService(tdb)
+	s.Require().NoError(queriesErr)
+	otherClaims, otherClaimsErr := queries.ListParentClaims(ctx, []uuid.UUID{ordersID})
+	s.Require().NoError(otherClaimsErr)
+	s.Empty(otherClaims, "the folded claim is not a parent candidate")
+
+	later := start.Add(time.Hour)
+	ref := graph.observeRelationship(graph.relationship(knr.PredicateContains, checkoutAPI, checkout))
+	ref.EffectiveAt = later
+	ingestion := s.makeService(tdb)
+	ingester := NewProviderEventIngester(tdb, nil, &evidenceProjector{ingestion, []rez.KnowledgeEvidenceRef{ref}}, ingestion)
+	event := s.createEvent(ctx, tdb, "self-contains-restated", later)
+	s.Require().NoError(ingester.ProjectNormalizedEvent(ctx, event.ID, false))
+	relationshipID := graph.relationshipID(ctx, *ref.Subject.Relationship)
+	alias := client.KnowledgeSubjectAlias.Query().Where(ksa.RelationshipID(relationshipID)).OnlyX(ctx)
+	s.Require().NotNil(alias.LastObservedAt)
+	s.True(later.Equal(*alias.LastObservedAt))
+	s.Empty(parentClaimOn(survivorID))
+	assertPlacement(ctx, s.T(), tdb)
 }
 
 func (s *KnowledgeGraphIngestionServiceSuite) TestMergeFailsWhenARepointedRowRepeatsAUniqueKey() {
@@ -512,6 +601,55 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestMergeLocksTheEntitiesHoldingTh
 	s.Equal(1, client.KnowledgeEntity.Query().Where(kne.Kind("service")).CountX(ctx))
 	for _, value := range []string{"alpha", "beta", "gamma"} {
 		s.Equal(alphaID, s.entityNamed(ctx, tdb, name, value), value)
+	}
+}
+
+// TestMergeFlattensRedirects merges gamma into beta, then beta into alpha. An alert observes all three, so each
+// merge also folds the merged service's observation into the survivor's. Every redirect names a row that is not
+// merged.
+func (s *KnowledgeGraphIngestionServiceSuite) TestMergeFlattensRedirects() {
+	ctx, tdb := s.SetupTestDatabase()
+	client := tdb.Client(ctx)
+	graph := newTestGraph(s.Require(), tdb)
+	start := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	name := projections.LinkingAttributeServiceName
+	alert := graph.entity(kne.CategorySignal, "alert", "provider-a", "alert:errors")
+	graph.record(ctx, start, graph.observeEntity(alert, "Errors"))
+	var serviceIDs, observesIDs []uuid.UUID
+	for i, value := range []string{"alpha", "beta", "gamma"} {
+		service := graph.entity(kne.CategoryContainer, "service", "provider-"+value, "service:"+value)
+		service.LinkingAttributes = projections.LinkingAttributes{name: value}
+		observes := graph.relationship(knr.PredicateObserves, alert, service)
+		// Each service is created after the one before, so the earlier one survives each merge.
+		graph.record(ctx, start.Add(time.Duration(i+1)*time.Minute),
+			graph.observeEntity(service, value),
+			graph.observeRelationship(observes),
+		)
+		serviceIDs = append(serviceIDs, graph.entityID(ctx, service))
+		observesIDs = append(observesIDs, graph.relationshipID(ctx, observes))
+	}
+	evidenceID := graph.latestEvidenceID(ctx, alert.ProviderResourceRef)
+	ingestion := s.makeService(tdb)
+	merge := func(survivor, other int, valueA, valueB string) {
+		proposal := s.createProposal(ctx, tdb, name, valueA, valueB, evidenceID)
+		params := rez.MergeEntitiesParams{
+			ProposalID: proposal.ID,
+			EntityIDs:  [2]uuid.UUID{serviceIDs[survivor], serviceIDs[other]},
+		}
+		result, mergeErr := ingestion.MergeEntities(ctx, params)
+		s.Require().NoError(mergeErr)
+		s.Require().Equal(serviceIDs[survivor], result.SurvivorID)
+	}
+
+	merge(1, 2, "beta", "gamma")
+	merge(0, 1, "alpha", "beta")
+
+	s.Nil(client.KnowledgeEntity.GetX(ctx, serviceIDs[0]).MergedIntoID)
+	s.Nil(client.KnowledgeRelationship.GetX(ctx, observesIDs[0]).MergedIntoID)
+	withMerged := ent.IncludeMerged(ctx)
+	for i, value := range []string{"beta", "gamma"} {
+		s.Equal(&serviceIDs[0], client.KnowledgeEntity.GetX(withMerged, serviceIDs[i+1]).MergedIntoID, value)
+		s.Equal(&observesIDs[0], client.KnowledgeRelationship.GetX(withMerged, observesIDs[i+1]).MergedIntoID, "observes "+value)
 	}
 }
 
@@ -585,7 +723,7 @@ func (s *KnowledgeGraphIngestionServiceSuite) TestMergeRefusesOtherKinds() {
 
 // TestMergeHandlesEveryEntityReference fails when the generated references and the knowledge graph's own columns
 // do not cover every foreign key to knowledge entities or relationships, which means the generated code is stale.
-// Many of them set null on delete, so a missed column would lose data silently.
+// A missed column would keep naming the merged entity's redirect silently.
 func TestMergeHandlesEveryEntityReference(t *testing.T) {
 	type tableColumn struct{ table, column string }
 
@@ -596,19 +734,18 @@ func TestMergeHandlesEveryEntityReference(t *testing.T) {
 		tableColumn{ksa.Table, ksa.FieldRelationshipID},
 		tableColumn{knr.Table, knr.FieldSourceEntityID},
 		tableColumn{knr.Table, knr.FieldTargetEntityID},
-		tableColumn{kne.Table, kne.FieldParentID},
+		tableColumn{kne.Table, kne.FieldMergedIntoID},
+		tableColumn{knr.Table, knr.FieldMergedIntoID},
 	)
 	for _, reference := range append(ent.KnowledgeEntityReferences, ent.KnowledgeRelationshipReferences...) {
 		handled.Add(tableColumn{reference.Table, reference.Column})
 	}
 	referencing := mapset.NewSet[tableColumn]()
-	constraints := mapset.NewSet[string]()
 	for _, table := range migrate.Tables {
 		for _, foreignKey := range table.ForeignKeys {
 			if foreignKey.RefTable != migrate.KnowledgeEntitiesTable && foreignKey.RefTable != migrate.KnowledgeRelationshipsTable {
 				continue
 			}
-			constraints.Add(postgresConstraintName(foreignKey.Symbol))
 			for _, column := range foreignKey.Columns {
 				referencing.Add(tableColumn{table.Name, column.Name})
 			}
@@ -616,15 +753,4 @@ func TestMergeHandlesEveryEntityReference(t *testing.T) {
 	}
 	require.ElementsMatch(t, referencing.ToSlice(), handled.ToSlice(),
 		"the generated references and the knowledge graph's own columns are every foreign key to knowledge entities or relationships")
-	require.ElementsMatch(t, constraints.ToSlice(), ent.KnowledgeForeignKeyConstraints,
-		"ent.KnowledgeForeignKeyConstraints names every foreign key to knowledge entities or relationships")
-}
-
-// postgresConstraintName is the name Ent's migration gives a constraint in Postgres, which limits identifiers to
-// 63 bytes: a longer name becomes its first 30 bytes and its MD5 hash.
-func postgresConstraintName(symbol string) string {
-	if len(symbol) <= 63 {
-		return symbol
-	}
-	return fmt.Sprintf("%s_%x", symbol[:30], md5.Sum([]byte(symbol)))
 }

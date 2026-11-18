@@ -38,7 +38,8 @@ type deploymentReport struct {
 	Deployment    projections.DeploymentEventAttributes `json:"deployment"`
 }
 
-// deploymentPreset is the `deployment` preset: each delivery is one report of a deployment's progress.
+// deploymentPreset is the `deployment` preset: each delivery is a complete snapshot of a deployment.
+// Later reports replace all earlier fields and involvement, including omitted values.
 type deploymentPreset struct{}
 
 func (deploymentPreset) MapDelivery(integrationID uuid.UUID, body []byte, receivedAt time.Time) (*rez.ProviderEvent, error) {

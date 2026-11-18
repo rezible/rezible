@@ -61,7 +61,7 @@ type briefFixture struct {
 	lookups    *countingChanges
 	briefs     *SituationBriefService
 	// deployments reports deployments and merges through the changes tests' helpers.
-	deployments  *ChangesServiceSuite
+	deployments  *ServiceChangesSuite
 	changesSetup *changesFixture
 }
 
@@ -121,7 +121,7 @@ func (b *briefLogReader) CheckLogsAvailable() error {
 
 // countingChanges records each changes lookup before running it. A lookup of the failing service fails.
 type countingChanges struct {
-	rez.ChangesService
+	rez.ChangePointService
 	lookups []rez.ListServiceChangesParams
 	failing uuid.UUID
 }
@@ -131,7 +131,7 @@ func (c *countingChanges) ListServiceChanges(ctx context.Context, params rez.Lis
 	if params.ServiceEntityID == c.failing {
 		return nil, errors.New("lookup failed")
 	}
-	return c.ChangesService.ListServiceChanges(ctx, params)
+	return c.ChangePointService.ListServiceChanges(ctx, params)
 }
 
 func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture {
@@ -139,11 +139,11 @@ func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture 
 		tdb:         tdb,
 		clock:       test.NewClock(briefOpenedAt.Add(2 * time.Hour)),
 		installed:   &briefInstallations{},
-		deployments: &ChangesServiceSuite{},
+		deployments: &ServiceChangesSuite{},
 	}
 	h.deployments.SetT(s.T())
 	h.changesSetup = h.deployments.newFixture(tdb)
-	h.lookups = &countingChanges{ChangesService: h.changesSetup.changes}
+	h.lookups = &countingChanges{ChangePointService: h.changesSetup.changes}
 
 	jobService := mocks.NewMockJobService(s.T())
 	jobService.EXPECT().
@@ -156,7 +156,7 @@ func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture 
 	s.Require().NoError(knowledgeErr)
 	analyses, analysesErr := NewSystemAnalysisService(tdb, knowledgeQuery)
 	s.Require().NoError(analysesErr)
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationObservationService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, NewSituationObservationService(jobService))
 	s.Require().NoError(alertsErr)
 	agentSessions := &AiAgentSessionService{db: tdb, jobs: jobService}
 	messageQueue := mocks.NewMockMessageQueue(s.T())
@@ -172,7 +172,7 @@ func (s *SituationBriefServiceSuite) newFixture(tdb rez.Database) *briefFixture 
 	proposals, proposalsErr := NewKnowledgeProposalService(tdb, knowledge, knowledgeAliases, nil)
 	s.Require().NoError(proposalsErr)
 
-	briefs, briefsErr := NewSituationBriefService(tdb, h.clock, knowledgeQuery, h.lookups, proposals, h.installed)
+	briefs, briefsErr := NewSituationBriefService(tdb, h.clock, h.lookups, proposals, h.installed)
 	s.Require().NoError(briefsErr)
 
 	h.knowledge = knowledge
@@ -217,6 +217,7 @@ func (s *SituationBriefServiceSuite) openSituation(ctx context.Context, h *brief
 		SetProviderEventRef(uuid.NewString()).
 		SetKind("alert").
 		SetOccurredAt(briefOpenedAt).
+		SetLastOccurredAt(briefOpenedAt).
 		SetReceivedAt(briefOpenedAt).
 		SetAttributes([]byte(`{}`))
 	event, eventErr := createEvent.Save(ctx)
@@ -234,6 +235,7 @@ func (s *SituationBriefServiceSuite) openSituation(ctx context.Context, h *brief
 	observed := func(entity *rez.KnowledgeEntityRef) rez.KnowledgeEvidenceRef {
 		_, name, _ := strings.Cut(entity.ProviderResourceRef.ResourceRef, ":")
 		return rez.KnowledgeEvidenceRef{
+			Authority:    schematypes.KnowledgeAuthorityDeclared,
 			Kind:         ke.KindObserved,
 			Assertion:    "observed",
 			EffectiveAt:  briefOpenedAt,
@@ -265,6 +267,11 @@ func (s *SituationBriefServiceSuite) openSituation(ctx context.Context, h *brief
 		Where(ale.HasInstancesWith(ali.HasEventsWith(aie.EventID(event.ID))))
 	episode, episodeErr := queryEpisode.Only(ctx)
 	s.Require().NoError(episodeErr)
+	// Processing stores the episode's entities before anything reads them; the situation is opened by hand.
+	ref := rez.SituationObservationRef{AlertEpisodeID: episode.ID}
+	observations, loadErr := h.situations.LoadObservations(ctx, []rez.SituationObservationRef{ref}, rez.LoadSituationObservationsOptions{})
+	s.Require().NoError(loadErr)
+	s.Require().NoError(h.situations.storeObservationScope(ctx, observations[ref]))
 
 	params := rez.CreateSituationParams{
 		Title:        "Checkout errors",
@@ -282,7 +289,7 @@ func (s *SituationBriefServiceSuite) closeAt(ctx context.Context, h *briefFixtur
 	s.Require().NoError(closeErr)
 }
 
-func (s *SituationBriefServiceSuite) deploy(ctx context.Context, h *briefFixture, d testDeployment) *ent.KnowledgeEntity {
+func (s *SituationBriefServiceSuite) deploy(ctx context.Context, h *briefFixture, d testDeployment) *ent.ChangePoint {
 	return h.deployments.deploy(ctx, h.tdb, h.changesSetup, d)
 }
 
@@ -297,7 +304,7 @@ func (s *SituationBriefServiceSuite) briefDeploymentIDs(brief *rez.SituationBrie
 	s.Require().Len(brief.Changes.Services, 1)
 	ids := make([]uuid.UUID, 0)
 	for _, deployment := range brief.Changes.Services[0].Deployments {
-		ids = append(ids, deployment.Deployment.ID)
+		ids = append(ids, deployment.Deployment.ChangePoint.ID)
 	}
 	return ids
 }
@@ -326,7 +333,7 @@ func (s *SituationBriefServiceSuite) TestSituationBriefChanges() {
 		s.Require().Len(listed[1].MergedChanges, 1, "merged changes are linked")
 		s.Equal(7, listed[1].MergedChanges[0].Number)
 		s.Empty(listed[1].MergedChangesUnlinked)
-		s.NotNil(listed[1].LatestEvidenceID, "a deployment carries its evidence")
+		s.NotNil(listed[1].Deployment.Involvement, "a deployment carries its involvement")
 	})
 
 	s.Run("many deployments after opening do not push out the one before", func() {
@@ -405,7 +412,7 @@ func (s *SituationBriefServiceSuite) TestSituationBriefChanges() {
 		s.Equal(checkout.ID, loaded.ServiceEntityID)
 		s.Empty(loaded.UnavailableReason)
 		s.Require().Len(loaded.Deployments, 1)
-		s.Equal(deployed.ID, loaded.Deployments[0].Deployment.ID)
+		s.Equal(deployed.ID, loaded.Deployments[0].Deployment.ChangePoint.ID)
 		s.Equal(payments.ID, failed.ServiceEntityID)
 		s.NotEmpty(failed.UnavailableReason)
 		s.Empty(failed.Deployments)
@@ -686,7 +693,7 @@ func (s *SituationBriefServiceSuite) TestReadersAfterServiceMerge() {
 	})
 	_, confirmErr := h.proposals.ConfirmProposal(memberCtx, proposal.ID)
 	s.Require().NoError(confirmErr)
-	survivorID := client.KnowledgeEntity.Query().Where(kne.Kind("service")).OnlyIDX(ctx)
+	survivorID := client.KnowledgeEntity.Query().Where(kne.Kind("service"), kne.MergedIntoIDIsNil()).OnlyIDX(ctx)
 
 	s.Run("the brief reads both situations through the survivor", func() {
 		for _, situation := range []*ent.Situation{survivorSituation, mergedSituation} {
@@ -728,7 +735,7 @@ func (s *SituationBriefServiceSuite) TestReadersAfterServiceMerge() {
 		s.Contains(string(read.Input), otherID.String())
 	})
 
-	s.Run("the agent's tool call still decodes, and reading the old ref is not found", func() {
+	s.Run("the agent's tool call still decodes, and reading the old ref finds its redirect", func() {
 		messagesParams := rez.ListAiAgentMessagesParams{Predicates: []predicate.AgentMessage{agentmessage.AgentSessionID(session.ID)}}
 		messages, messagesErr := (&AiAgentSessionService{db: tdb}).ListAgentMessages(ctx, messagesParams)
 		s.Require().NoError(messagesErr)
@@ -737,7 +744,8 @@ func (s *SituationBriefServiceSuite) TestReadersAfterServiceMerge() {
 
 		queryService, serviceErr := NewKnowledgeGraphQueryService(tdb)
 		s.Require().NoError(serviceErr)
-		_, getErr := queryService.GetEntity(ctx, otherID, rez.KnowledgeEntityExpand{})
-		s.True(ent.IsNotFound(getErr), "a tool reading the old ref gets a not-found result")
+		merged, getErr := queryService.GetEntity(ctx, otherID, rez.KnowledgeEntityExpand{})
+		s.Require().NoError(getErr)
+		s.Equal(&survivorID, merged.MergedIntoID, "a tool reading the old ref learns where it went")
 	})
 }

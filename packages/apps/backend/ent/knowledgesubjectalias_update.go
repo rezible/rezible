@@ -96,6 +96,20 @@ func (_u *KnowledgeSubjectAliasUpdate) ClearMergedByProposalID() *KnowledgeSubje
 	return _u
 }
 
+// SetAuthority sets the "authority" field.
+func (_u *KnowledgeSubjectAliasUpdate) SetAuthority(v schematypes.KnowledgeAuthority) *KnowledgeSubjectAliasUpdate {
+	_u.mutation.SetAuthority(v)
+	return _u
+}
+
+// SetNillableAuthority sets the "authority" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdate) SetNillableAuthority(v *schematypes.KnowledgeAuthority) *KnowledgeSubjectAliasUpdate {
+	if v != nil {
+		_u.SetAuthority(*v)
+	}
+	return _u
+}
+
 // SetState sets the "state" field.
 func (_u *KnowledgeSubjectAliasUpdate) SetState(v schematypes.KnowledgeAliasState) *KnowledgeSubjectAliasUpdate {
 	_u.mutation.SetState(v)
@@ -322,6 +336,9 @@ func (_u *KnowledgeSubjectAliasUpdate) sqlSave(ctx context.Context) (_node int, 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.Authority(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldAuthority, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldState, field.TypeJSON, value)
@@ -575,6 +592,20 @@ func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableMergedByProposalID(v *uuid.
 // ClearMergedByProposalID clears the value of the "merged_by_proposal_id" field.
 func (_u *KnowledgeSubjectAliasUpdateOne) ClearMergedByProposalID() *KnowledgeSubjectAliasUpdateOne {
 	_u.mutation.ClearMergedByProposalID()
+	return _u
+}
+
+// SetAuthority sets the "authority" field.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetAuthority(v schematypes.KnowledgeAuthority) *KnowledgeSubjectAliasUpdateOne {
+	_u.mutation.SetAuthority(v)
+	return _u
+}
+
+// SetNillableAuthority sets the "authority" field if the given value is not nil.
+func (_u *KnowledgeSubjectAliasUpdateOne) SetNillableAuthority(v *schematypes.KnowledgeAuthority) *KnowledgeSubjectAliasUpdateOne {
+	if v != nil {
+		_u.SetAuthority(*v)
+	}
 	return _u
 }
 
@@ -834,6 +865,9 @@ func (_u *KnowledgeSubjectAliasUpdateOne) sqlSave(ctx context.Context) (_node *K
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.Authority(); ok {
+		_spec.SetField(knowledgesubjectalias.FieldAuthority, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(knowledgesubjectalias.FieldState, field.TypeJSON, value)

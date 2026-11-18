@@ -38,6 +38,7 @@ func (s *ProjectionService) handleUserEvent(ctx context.Context, e *projections.
 		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionUserProfileObserved,
 		EffectiveAt: event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityDeclared,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attributes.Name,
 			Description: "",

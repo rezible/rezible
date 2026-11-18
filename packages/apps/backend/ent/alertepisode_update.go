@@ -15,7 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/alertepisode"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/observationscope"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/situationobservation"
@@ -52,26 +52,6 @@ func (_u *AlertEpisodeUpdate) SetNillableCreatedAt(v *time.Time) *AlertEpisodeUp
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AlertEpisodeUpdate) SetUpdatedAt(v time.Time) *AlertEpisodeUpdate {
 	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *AlertEpisodeUpdate) SetKnowledgeEntityID(v uuid.UUID) *AlertEpisodeUpdate {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *AlertEpisodeUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertEpisodeUpdate {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *AlertEpisodeUpdate) ClearKnowledgeEntityID() *AlertEpisodeUpdate {
-	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -123,11 +103,6 @@ func (_u *AlertEpisodeUpdate) SetNillableHighestSeverity(v *schematypes.SignalSe
 	return _u
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertEpisodeUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertEpisodeUpdate {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
 // AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
 func (_u *AlertEpisodeUpdate) AddInstanceIDs(ids ...uuid.UUID) *AlertEpisodeUpdate {
 	_u.mutation.AddInstanceIDs(ids...)
@@ -158,15 +133,28 @@ func (_u *AlertEpisodeUpdate) AddSituationObservations(v ...*SituationObservatio
 	return _u.AddSituationObservationIDs(ids...)
 }
 
+// SetObservationScopeID sets the "observation_scope" edge to the ObservationScope entity by ID.
+func (_u *AlertEpisodeUpdate) SetObservationScopeID(id uuid.UUID) *AlertEpisodeUpdate {
+	_u.mutation.SetObservationScopeID(id)
+	return _u
+}
+
+// SetNillableObservationScopeID sets the "observation_scope" edge to the ObservationScope entity by ID if the given value is not nil.
+func (_u *AlertEpisodeUpdate) SetNillableObservationScopeID(id *uuid.UUID) *AlertEpisodeUpdate {
+	if id != nil {
+		_u = _u.SetObservationScopeID(*id)
+	}
+	return _u
+}
+
+// SetObservationScope sets the "observation_scope" edge to the ObservationScope entity.
+func (_u *AlertEpisodeUpdate) SetObservationScope(v *ObservationScope) *AlertEpisodeUpdate {
+	return _u.SetObservationScopeID(v.ID)
+}
+
 // Mutation returns the AlertEpisodeMutation object of the builder.
 func (_u *AlertEpisodeUpdate) Mutation() *AlertEpisodeMutation {
 	return _u.mutation
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertEpisodeUpdate) ClearKnowledgeEntity() *AlertEpisodeUpdate {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
 }
 
 // ClearInstances clears all "instances" edges to the AlertInstance entity.
@@ -209,6 +197,12 @@ func (_u *AlertEpisodeUpdate) RemoveSituationObservations(v ...*SituationObserva
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSituationObservationIDs(ids...)
+}
+
+// ClearObservationScope clears the "observation_scope" edge to the ObservationScope entity.
+func (_u *AlertEpisodeUpdate) ClearObservationScope() *AlertEpisodeUpdate {
+	_u.mutation.ClearObservationScope()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -308,37 +302,6 @@ func (_u *AlertEpisodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if _u.mutation.IdentityGroupLabelsCleared() {
 		_spec.ClearField(alertepisode.FieldIdentityGroupLabels, field.TypeJSON)
 	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertepisode.KnowledgeEntityTable,
-			Columns: []string{alertepisode.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertepisode.KnowledgeEntityTable,
-			Columns: []string{alertepisode.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -435,6 +398,37 @@ func (_u *AlertEpisodeUpdate) sqlSave(ctx context.Context) (_node int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ObservationScopeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   alertepisode.ObservationScopeTable,
+			Columns: []string{alertepisode.ObservationScopeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(observationscope.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.ObservationScope
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ObservationScopeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   alertepisode.ObservationScopeTable,
+			Columns: []string{alertepisode.ObservationScopeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(observationscope.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.ObservationScope
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.Node.Schema = _u.schemaConfig.AlertEpisode
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -476,26 +470,6 @@ func (_u *AlertEpisodeUpdateOne) SetNillableCreatedAt(v *time.Time) *AlertEpisod
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AlertEpisodeUpdateOne) SetUpdatedAt(v time.Time) *AlertEpisodeUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_u *AlertEpisodeUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *AlertEpisodeUpdateOne {
-	_u.mutation.SetKnowledgeEntityID(v)
-	return _u
-}
-
-// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
-func (_u *AlertEpisodeUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertEpisodeUpdateOne {
-	if v != nil {
-		_u.SetKnowledgeEntityID(*v)
-	}
-	return _u
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (_u *AlertEpisodeUpdateOne) ClearKnowledgeEntityID() *AlertEpisodeUpdateOne {
-	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -547,11 +521,6 @@ func (_u *AlertEpisodeUpdateOne) SetNillableHighestSeverity(v *schematypes.Signa
 	return _u
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertEpisodeUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AlertEpisodeUpdateOne {
-	return _u.SetKnowledgeEntityID(v.ID)
-}
-
 // AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
 func (_u *AlertEpisodeUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *AlertEpisodeUpdateOne {
 	_u.mutation.AddInstanceIDs(ids...)
@@ -582,15 +551,28 @@ func (_u *AlertEpisodeUpdateOne) AddSituationObservations(v ...*SituationObserva
 	return _u.AddSituationObservationIDs(ids...)
 }
 
+// SetObservationScopeID sets the "observation_scope" edge to the ObservationScope entity by ID.
+func (_u *AlertEpisodeUpdateOne) SetObservationScopeID(id uuid.UUID) *AlertEpisodeUpdateOne {
+	_u.mutation.SetObservationScopeID(id)
+	return _u
+}
+
+// SetNillableObservationScopeID sets the "observation_scope" edge to the ObservationScope entity by ID if the given value is not nil.
+func (_u *AlertEpisodeUpdateOne) SetNillableObservationScopeID(id *uuid.UUID) *AlertEpisodeUpdateOne {
+	if id != nil {
+		_u = _u.SetObservationScopeID(*id)
+	}
+	return _u
+}
+
+// SetObservationScope sets the "observation_scope" edge to the ObservationScope entity.
+func (_u *AlertEpisodeUpdateOne) SetObservationScope(v *ObservationScope) *AlertEpisodeUpdateOne {
+	return _u.SetObservationScopeID(v.ID)
+}
+
 // Mutation returns the AlertEpisodeMutation object of the builder.
 func (_u *AlertEpisodeUpdateOne) Mutation() *AlertEpisodeMutation {
 	return _u.mutation
-}
-
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_u *AlertEpisodeUpdateOne) ClearKnowledgeEntity() *AlertEpisodeUpdateOne {
-	_u.mutation.ClearKnowledgeEntity()
-	return _u
 }
 
 // ClearInstances clears all "instances" edges to the AlertInstance entity.
@@ -633,6 +615,12 @@ func (_u *AlertEpisodeUpdateOne) RemoveSituationObservations(v ...*SituationObse
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveSituationObservationIDs(ids...)
+}
+
+// ClearObservationScope clears the "observation_scope" edge to the ObservationScope entity.
+func (_u *AlertEpisodeUpdateOne) ClearObservationScope() *AlertEpisodeUpdateOne {
+	_u.mutation.ClearObservationScope()
+	return _u
 }
 
 // Where appends a list predicates to the AlertEpisodeUpdate builder.
@@ -762,37 +750,6 @@ func (_u *AlertEpisodeUpdateOne) sqlSave(ctx context.Context) (_node *AlertEpiso
 	if _u.mutation.IdentityGroupLabelsCleared() {
 		_spec.ClearField(alertepisode.FieldIdentityGroupLabels, field.TypeJSON)
 	}
-	if _u.mutation.KnowledgeEntityCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertepisode.KnowledgeEntityTable,
-			Columns: []string{alertepisode.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertepisode.KnowledgeEntityTable,
-			Columns: []string{alertepisode.KnowledgeEntityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertEpisode
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -884,6 +841,37 @@ func (_u *AlertEpisodeUpdateOne) sqlSave(ctx context.Context) (_node *AlertEpiso
 			},
 		}
 		edge.Schema = _u.schemaConfig.SituationObservation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ObservationScopeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   alertepisode.ObservationScopeTable,
+			Columns: []string{alertepisode.ObservationScopeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(observationscope.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.ObservationScope
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ObservationScopeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   alertepisode.ObservationScopeTable,
+			Columns: []string{alertepisode.ObservationScopeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(observationscope.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.ObservationScope
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

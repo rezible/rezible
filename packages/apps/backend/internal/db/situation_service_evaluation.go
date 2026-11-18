@@ -3,20 +3,22 @@ package db
 import (
 	"context"
 	"crypto/sha256"
+	"database/sql/driver"
 	"encoding/hex"
 	"fmt"
 	"slices"
 	"strings"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	ale "github.com/rezible/rezible/ent/alertepisode"
 	inc "github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitact "github.com/rezible/rezible/ent/situationaction"
@@ -94,7 +96,7 @@ func (s *SituationService) evaluateLocked(ctx context.Context, id uuid.UUID) (*c
 		return nil, inputErr
 	}
 	if closeableAt := input.CloseableAt(); closeableAt != nil && !now.Before(*closeableAt) {
-		return nil, s.closeLocked(ctx, situation, input.CloseReason(), "", *closeableAt, now)
+		return nil, s.closeLocked(ctx, situation, input.CloseReason(), nil, "", *closeableAt, now)
 	}
 	if refreshErr := s.refreshInvestigation(ctx, situation, members, input); refreshErr != nil {
 		return nil, refreshErr
@@ -312,48 +314,77 @@ func (s *SituationService) recordJudgment(ctx context.Context, situation *ent.Si
 // opened within PastIncidentLookback with an observation of that kind from that source: raised, muted as
 // not noteworthy, and linked to an incident.
 func (s *SituationService) priorOutcomes(ctx context.Context, situationID uuid.UUID, input situations.EvaluationInput) (map[schematypes.SituationObservationKind]map[uuid.UUID]schematypes.SituationPriorOutcomeFacts, error) {
-	type observationSource struct {
-		kind schematypes.SituationObservationKind
-		id   uuid.UUID
-	}
-	sources := mapset.NewSet[observationSource]()
-	for _, member := range input.Members {
-		sources.Add(observationSource{kind: member.Observation.Ref.Kind(), id: member.Observation.SourceID})
-	}
 	outcomes := make(map[schematypes.SituationObservationKind]map[uuid.UUID]schematypes.SituationPriorOutcomeFacts)
-	cutoff := input.Now.Add(-situations.PastIncidentLookback)
-	client := s.db.Client(ctx)
-	// countSituations counts the matching situations with an observation from the source.
-	countSituations := func(source observationSource, matches predicate.Situation) (int, error) {
-		query := client.Situation.Query().
-			Where(
-				sit.IDNEQ(situationID),
-				sit.OpenedAtGTE(cutoff),
-				matches,
-				sit.HasObservationsWith(s.observesSource(source.kind, source.id)),
-			)
-		return query.Count(ctx)
+	alertDefinitionIDs := mapset.NewSet[uuid.UUID]()
+	for _, member := range input.Members {
+		kind := member.Observation.Ref.Kind()
+		switch kind {
+		case schematypes.SituationObservationKindAlertEpisode:
+			alertDefinitionIDs.Add(member.Observation.SourceID)
+		default:
+			panic(fmt.Sprintf("unhandled situation observation kind %q", kind))
+		}
+		if outcomes[kind] == nil {
+			outcomes[kind] = make(map[uuid.UUID]schematypes.SituationPriorOutcomeFacts)
+		}
+		outcomes[kind][member.Observation.SourceID] = schematypes.SituationPriorOutcomeFacts{}
 	}
-	for _, source := range sources.ToSlice() {
-		raised, raisedErr := countSituations(source, sit.RaisedAtNotNil())
-		if raisedErr != nil {
-			return nil, fmt.Errorf("count previously raised situations: %w", raisedErr)
+	if alertDefinitionIDs.Cardinality() == 0 {
+		return outcomes, nil
+	}
+	// Ent's group-by cannot join the observations' alert episodes or filter an aggregate, so the grouping is
+	// written on the selector.
+	countBySource := func(sel *sql.Selector) {
+		// Joining aliases the tables, so their columns are read after the joins.
+		observations := sql.Table(sitobs.Table)
+		episodes := sql.Table(ale.Table)
+		sel.Join(observations).
+			On(sel.C(sit.FieldID), observations.C(sitobs.FieldSituationID)).
+			Join(episodes).
+			On(observations.C(sitobs.FieldAlertEpisodeID), episodes.C(ale.FieldID))
+		source := episodes.C(ale.FieldAlertDefinitionID)
+		sources := make([]driver.Value, 0, alertDefinitionIDs.Cardinality())
+		for _, id := range alertDefinitionIDs.ToSlice() {
+			sources = append(sources, id)
 		}
-		muted, mutedErr := countSituations(source, sit.MuteReasonEQ(sit.MuteReasonNotNoteworthy))
-		if mutedErr != nil {
-			return nil, fmt.Errorf("count previously muted situations: %w", mutedErr)
+		incidentLinks := sql.Table(sit.IncidentsTable)
+		linked := sql.Select().From(incidentLinks)
+		linked.Select(incidentLinks.C(sit.IncidentsPrimaryKey[1])).
+			Where(sql.ColumnsEQ(incidentLinks.C(sit.IncidentsPrimaryKey[1]), sel.C(sit.FieldID)))
+		countWhere := func(condition sql.Querier) sql.Querier {
+			return sql.ExprFunc(func(b *sql.Builder) {
+				b.WriteString(fmt.Sprintf("count(DISTINCT %s) FILTER (WHERE ", sel.C(sit.FieldID))).
+					Join(condition).
+					WriteString(")")
+			})
 		}
-		incidentLinked, incidentErr := countSituations(source, sit.HasIncidents())
-		if incidentErr != nil {
-			return nil, fmt.Errorf("count incident-linked situations: %w", incidentErr)
-		}
-		if outcomes[source.kind] == nil {
-			outcomes[source.kind] = make(map[uuid.UUID]schematypes.SituationPriorOutcomeFacts)
-		}
-		outcomes[source.kind][source.id] = schematypes.SituationPriorOutcomeFacts{
-			Raised:             raised,
-			MutedNotNoteworthy: muted,
-			IncidentLinked:     incidentLinked,
+		sel.Where(sql.InValues(source, sources...)).
+			GroupBy(source).
+			Select(sql.As(source, "source_id")).
+			AppendSelectExprAs(countWhere(sql.NotNull(sel.C(sit.FieldRaisedAt))), "raised").
+			AppendSelectExprAs(countWhere(sql.EQ(sel.C(sit.FieldMuteReason), string(sit.MuteReasonNotNoteworthy))), "muted").
+			AppendSelectExprAs(countWhere(sql.Exists(linked)), "incident_linked")
+	}
+	queryOutcomes := s.db.Client(ctx).Situation.Query().
+		Where(
+			sit.IDNEQ(situationID),
+			sit.OpenedAtGTE(input.Now.Add(-situations.PastIncidentLookback)),
+		).
+		Modify(countBySource)
+	var counts []struct {
+		SourceID       uuid.UUID `json:"source_id"`
+		Raised         int       `json:"raised"`
+		Muted          int       `json:"muted"`
+		IncidentLinked int       `json:"incident_linked"`
+	}
+	if scanErr := queryOutcomes.Scan(ctx, &counts); scanErr != nil {
+		return nil, fmt.Errorf("count prior situation outcomes: %w", scanErr)
+	}
+	for _, count := range counts {
+		outcomes[schematypes.SituationObservationKindAlertEpisode][count.SourceID] = schematypes.SituationPriorOutcomeFacts{
+			Raised:             count.Raised,
+			MutedNotNoteworthy: count.Muted,
+			IncidentLinked:     count.IncidentLinked,
 		}
 	}
 	return outcomes, nil

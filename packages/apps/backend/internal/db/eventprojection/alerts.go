@@ -45,6 +45,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 		Assertion:   knowledgeAssertionAlertDefinitionObserved,
 		StateMode:   ke.StateModeReplace,
 		EffectiveAt: event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityDeclared,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.Title,
 			Description: attrs.Description,
@@ -61,6 +62,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionAlertEntityObserved,
 			EffectiveAt: event.OccurredAt,
+			Authority:   schematypes.KnowledgeAuthorityObserved,
 			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: observed.DisplayName,
 				Description: observed.Description,
@@ -78,6 +80,7 @@ func (s *ProjectionService) handleAlertInstanceEvent(ctx context.Context, e *pro
 			Kind:        evidenceKind,
 			Assertion:   knowledgeAssertionAlertObservesEntity,
 			EffectiveAt: event.OccurredAt,
+			Authority:   schematypes.KnowledgeAuthorityDeclared,
 			Subject:     rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 			SubjectState: schematypes.KnowledgeGraphSubjectState{
 				DisplayName: "Observes " + observed.DisplayName,

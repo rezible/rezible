@@ -19,21 +19,21 @@ test("the infrastructure tree lists what runs on each node by its most specific 
 	const section = (id: string) => sections.find(({ entity }) => entity.id === id)!;
 
 	expect(sections.map(({ entity, depth }) => [entity.id, depth])).toEqual([
-		["db-orders", 0],
-		["env-production", 0],
+		["acct-commerce-prod", 0],
 		["cl-prod-euw1", 1],
 		["ns-commerce-eu", 2],
 		["cl-prod-use1", 1],
 		["ns-commerce", 2],
 		["ns-search", 2],
+		["db-orders", 0],
 	]);
-	expect(section("ns-commerce").breadcrumb).toBe("production › prod-use1");
+	expect(section("ns-commerce").breadcrumb).toBe("commerce-prod › prod-use1");
 	expect(ids(section("ns-commerce").rows)).toEqual([
 		"rt-payment-service",
 		"rt-payment-worker",
 		"rt-checkout",
 	]);
-	expect(section("env-production").rows).toEqual([]);
+	expect(section("acct-commerce-prod").rows).toEqual([]);
 
 	const checkout = section("ns-commerce").rows.find(({ entity }) => entity.id === "rt-checkout")!;
 	expect(checkout.breadcrumb).toBe("Online Commerce › Commerce Core");

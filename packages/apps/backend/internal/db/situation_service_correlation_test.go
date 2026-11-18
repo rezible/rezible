@@ -3,20 +3,21 @@ package db
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	osc "github.com/rezible/rezible/ent/observationscope"
+	osce "github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	sit "github.com/rezible/rezible/ent/situation"
 	sitobs "github.com/rezible/rezible/ent/situationobservation"
-	"github.com/rezible/rezible/pkg/errs"
-	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
@@ -135,20 +136,6 @@ func (s *SituationServiceSuite) TestCorrelationByDependency() {
 	s.Equal(placed[0].ID, placed[1].ID)
 }
 
-func (s *SituationServiceSuite) TestObservationJobRetriesOnlyWhenAMergeDeletedASubject() {
-	_, tdb := s.SetupTestDatabase()
-	h := s.newFixture(tdb)
-	knowledgeFK := &pgconn.PgError{Code: "23503", ConstraintName: ent.KnowledgeForeignKeyConstraints[0]}
-	otherFK := &pgconn.PgError{Code: "23503", ConstraintName: "discussion_threads_users_user"}
-
-	s.True(jobs.IsRetryableError(h.situations.observationJobError(fmt.Errorf("correlate: %w", errs.ErrKnowledgeSubjectMerged))))
-	s.True(jobs.IsRetryableError(h.situations.observationJobError(fmt.Errorf("attach: %w", knowledgeFK))))
-
-	otherErr := h.situations.observationJobError(fmt.Errorf("attach: %w", otherFK))
-	s.False(jobs.IsRetryableError(otherErr))
-	s.ErrorIs(otherErr, otherFK)
-}
-
 func (s *SituationServiceSuite) TestCorrelationEligibility() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
@@ -218,4 +205,87 @@ func (s *SituationServiceSuite) TestProcessingAPlacedObservationRefreshesItsSitu
 	situations, countErr := tdb.Client(ctx).Situation.Query().Count(ctx)
 	s.Require().NoError(countErr)
 	s.Equal(1, situations)
+}
+
+// storedScopeRows returns the entity rows of the episode's stored scope, by row ID.
+func (s *SituationServiceSuite) storedScopeRows(ctx context.Context, tdb rez.Database, episodeID uuid.UUID) map[uuid.UUID]uuid.UUID {
+	queryRows := tdb.Client(ctx).ObservationScopeEntity.Query().
+		Where(osce.HasScopeWith(osc.AlertEpisodeID(episodeID)))
+	rows, queryErr := queryRows.All(ctx)
+	s.Require().NoError(queryErr)
+	byID := make(map[uuid.UUID]uuid.UUID, len(rows))
+	for _, row := range rows {
+		byID[row.ID] = row.KnowledgeEntityID
+	}
+	return byID
+}
+
+func (s *SituationServiceSuite) TestProcessingAnObservationStoresOnlyItsOwnEntities() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	checkout := s.entityRef(kne.CategoryContainer, "checkout")
+	payments := s.entityRef(kne.CategoryContainer, "payments")
+
+	changed := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5, checkout)
+	other := s.alertEpisode(ctx, tdb, h, "checkout-latency", 6, checkout)
+	s.processNotified(ctx, h)
+	placed := s.placed(ctx, tdb, h, changed, other)
+	s.Require().NotNil(placed[0])
+	s.Require().Equal(placed[0].ID, placed[1].ID)
+	otherRows := s.storedScopeRows(ctx, tdb, other)
+	s.Require().NotEmpty(otherRows)
+
+	s.alertEpisode(ctx, tdb, h, "checkout-errors", 5, payments)
+	s.processNotified(ctx, h)
+
+	s.Contains(slices.Collect(maps.Values(s.storedScopeRows(ctx, tdb, changed))), s.entityID(ctx, h, payments))
+	s.Equal(otherRows, s.storedScopeRows(ctx, tdb, other), "the other observation's entities are not rewritten")
+}
+
+func (s *SituationServiceSuite) TestAnOlderRevisionDoesNotReplaceStoredEntities() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	checkout := s.entityRef(kne.CategoryContainer, "checkout")
+
+	for _, newerResolvesNone := range []bool{false, true} {
+		episodeID := s.alertEpisode(ctx, tdb, h, fmt.Sprintf("checkout-errors-%t", newerResolvesNone), 5, checkout)
+		ref := rez.SituationObservationRef{AlertEpisodeID: episodeID}
+		observations, loadErr := h.situations.LoadObservations(ctx, episodeRefs(episodeID), rez.LoadSituationObservationsOptions{})
+		s.Require().NoError(loadErr)
+		newer, older := observations[ref], rez.SituationObservation{Ref: ref}
+		if newerResolvesNone {
+			newer, older = older, newer
+		}
+		newer.Revision, older.Revision = 3, 2
+
+		s.Require().NoError(h.situations.storeObservationScope(ctx, newer))
+		stored := s.storedScopeRows(ctx, tdb, episodeID)
+		s.Require().Equal(newerResolvesNone, len(stored) == 0)
+		s.Require().NoError(h.situations.storeObservationScope(ctx, older))
+
+		s.Equal(stored, s.storedScopeRows(ctx, tdb, episodeID))
+		set, setErr := tdb.Client(ctx).ObservationScope.Query().
+			Where(osc.AlertEpisodeID(episodeID)).
+			Only(ctx)
+		s.Require().NoError(setErr)
+		s.Equal(3, set.Revision)
+	}
+}
+
+func (s *SituationServiceSuite) TestAnEmptyStoredScopeIsComputedAgain() {
+	ctx, tdb := s.SetupTestDatabase()
+	h := s.newFixture(tdb)
+	checkout := s.entityRef(kne.CategoryContainer, "checkout")
+	episodeID := s.alertEpisode(ctx, tdb, h, "checkout-errors", 5, checkout)
+	ref := rez.SituationObservationRef{AlertEpisodeID: episodeID}
+	observations, loadErr := h.situations.LoadObservations(ctx, episodeRefs(episodeID), rez.LoadSituationObservationsOptions{})
+	s.Require().NoError(loadErr)
+	observation := observations[ref]
+
+	unresolved := rez.SituationObservation{Ref: ref, Revision: observation.Revision}
+	s.Require().NoError(h.situations.storeObservationScope(ctx, unresolved))
+	s.Require().Empty(s.storedScopeRows(ctx, tdb, episodeID))
+	s.Require().NoError(h.situations.storeObservationScope(ctx, observation))
+
+	s.Contains(slices.Collect(maps.Values(s.storedScopeRows(ctx, tdb, episodeID))), s.entityID(ctx, h, checkout))
 }

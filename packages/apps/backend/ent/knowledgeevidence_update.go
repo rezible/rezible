@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,26 @@ type KnowledgeEvidenceUpdate struct {
 // Where appends a list predicates to the KnowledgeEvidenceUpdate builder.
 func (_u *KnowledgeEvidenceUpdate) Where(ps ...predicate.KnowledgeEvidence) *KnowledgeEvidenceUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetReobservedAt sets the "reobserved_at" field.
+func (_u *KnowledgeEvidenceUpdate) SetReobservedAt(v time.Time) *KnowledgeEvidenceUpdate {
+	_u.mutation.SetReobservedAt(v)
+	return _u
+}
+
+// SetNillableReobservedAt sets the "reobserved_at" field if the given value is not nil.
+func (_u *KnowledgeEvidenceUpdate) SetNillableReobservedAt(v *time.Time) *KnowledgeEvidenceUpdate {
+	if v != nil {
+		_u.SetReobservedAt(*v)
+	}
+	return _u
+}
+
+// ClearReobservedAt clears the value of the "reobserved_at" field.
+func (_u *KnowledgeEvidenceUpdate) ClearReobservedAt() *KnowledgeEvidenceUpdate {
+	_u.mutation.ClearReobservedAt()
 	return _u
 }
 
@@ -93,6 +114,12 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 			}
 		}
 	}
+	if value, ok := _u.mutation.ReobservedAt(); ok {
+		_spec.SetField(knowledgeevidence.FieldReobservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ReobservedAtCleared() {
+		_spec.ClearField(knowledgeevidence.FieldReobservedAt, field.TypeTime)
+	}
 	if _u.mutation.ExpiresAtCleared() {
 		_spec.ClearField(knowledgeevidence.FieldExpiresAt, field.TypeTime)
 	}
@@ -118,6 +145,26 @@ type KnowledgeEvidenceUpdateOne struct {
 	hooks     []Hook
 	mutation  *KnowledgeEvidenceMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetReobservedAt sets the "reobserved_at" field.
+func (_u *KnowledgeEvidenceUpdateOne) SetReobservedAt(v time.Time) *KnowledgeEvidenceUpdateOne {
+	_u.mutation.SetReobservedAt(v)
+	return _u
+}
+
+// SetNillableReobservedAt sets the "reobserved_at" field if the given value is not nil.
+func (_u *KnowledgeEvidenceUpdateOne) SetNillableReobservedAt(v *time.Time) *KnowledgeEvidenceUpdateOne {
+	if v != nil {
+		_u.SetReobservedAt(*v)
+	}
+	return _u
+}
+
+// ClearReobservedAt clears the value of the "reobserved_at" field.
+func (_u *KnowledgeEvidenceUpdateOne) ClearReobservedAt() *KnowledgeEvidenceUpdateOne {
+	_u.mutation.ClearReobservedAt()
+	return _u
 }
 
 // Mutation returns the KnowledgeEvidenceMutation object of the builder.
@@ -213,6 +260,12 @@ func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.ReobservedAt(); ok {
+		_spec.SetField(knowledgeevidence.FieldReobservedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ReobservedAtCleared() {
+		_spec.ClearField(knowledgeevidence.FieldReobservedAt, field.TypeTime)
 	}
 	if _u.mutation.ExpiresAtCleared() {
 		_spec.ClearField(knowledgeevidence.FieldExpiresAt, field.TypeTime)

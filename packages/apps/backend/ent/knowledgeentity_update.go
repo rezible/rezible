@@ -175,23 +175,37 @@ func (_u *KnowledgeEntityUpdate) ClearExpiresAt() *KnowledgeEntityUpdate {
 	return _u
 }
 
-// SetParentID sets the "parent_id" field.
-func (_u *KnowledgeEntityUpdate) SetParentID(v uuid.UUID) *KnowledgeEntityUpdate {
-	_u.mutation.SetParentID(v)
+// SetMergedIntoID sets the "merged_into_id" field.
+func (_u *KnowledgeEntityUpdate) SetMergedIntoID(v uuid.UUID) *KnowledgeEntityUpdate {
+	_u.mutation.SetMergedIntoID(v)
 	return _u
 }
 
-// SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdate) SetNillableParentID(v *uuid.UUID) *KnowledgeEntityUpdate {
+// SetNillableMergedIntoID sets the "merged_into_id" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdate) SetNillableMergedIntoID(v *uuid.UUID) *KnowledgeEntityUpdate {
 	if v != nil {
-		_u.SetParentID(*v)
+		_u.SetMergedIntoID(*v)
 	}
 	return _u
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (_u *KnowledgeEntityUpdate) ClearParentID() *KnowledgeEntityUpdate {
-	_u.mutation.ClearParentID()
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (_u *KnowledgeEntityUpdate) ClearMergedIntoID() *KnowledgeEntityUpdate {
+	_u.mutation.ClearMergedIntoID()
+	return _u
+}
+
+// SetParentIsFallback sets the "parent_is_fallback" field.
+func (_u *KnowledgeEntityUpdate) SetParentIsFallback(v bool) *KnowledgeEntityUpdate {
+	_u.mutation.SetParentIsFallback(v)
+	return _u
+}
+
+// SetNillableParentIsFallback sets the "parent_is_fallback" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdate) SetNillableParentIsFallback(v *bool) *KnowledgeEntityUpdate {
+	if v != nil {
+		_u.SetParentIsFallback(*v)
+	}
 	return _u
 }
 
@@ -255,24 +269,24 @@ func (_u *KnowledgeEntityUpdate) AddTargetRelationships(v ...*KnowledgeRelations
 	return _u.AddTargetRelationshipIDs(ids...)
 }
 
-// SetParent sets the "parent" edge to the KnowledgeEntity entity.
-func (_u *KnowledgeEntityUpdate) SetParent(v *KnowledgeEntity) *KnowledgeEntityUpdate {
-	return _u.SetParentID(v.ID)
+// SetMergedInto sets the "merged_into" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityUpdate) SetMergedInto(v *KnowledgeEntity) *KnowledgeEntityUpdate {
+	return _u.SetMergedIntoID(v.ID)
 }
 
-// AddChildIDs adds the "children" edge to the KnowledgeEntity entity by IDs.
-func (_u *KnowledgeEntityUpdate) AddChildIDs(ids ...uuid.UUID) *KnowledgeEntityUpdate {
-	_u.mutation.AddChildIDs(ids...)
+// AddRedirectIDs adds the "redirects" edge to the KnowledgeEntity entity by IDs.
+func (_u *KnowledgeEntityUpdate) AddRedirectIDs(ids ...uuid.UUID) *KnowledgeEntityUpdate {
+	_u.mutation.AddRedirectIDs(ids...)
 	return _u
 }
 
-// AddChildren adds the "children" edges to the KnowledgeEntity entity.
-func (_u *KnowledgeEntityUpdate) AddChildren(v ...*KnowledgeEntity) *KnowledgeEntityUpdate {
+// AddRedirects adds the "redirects" edges to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityUpdate) AddRedirects(v ...*KnowledgeEntity) *KnowledgeEntityUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddChildIDs(ids...)
+	return _u.AddRedirectIDs(ids...)
 }
 
 // Mutation returns the KnowledgeEntityMutation object of the builder.
@@ -364,31 +378,31 @@ func (_u *KnowledgeEntityUpdate) RemoveTargetRelationships(v ...*KnowledgeRelati
 	return _u.RemoveTargetRelationshipIDs(ids...)
 }
 
-// ClearParent clears the "parent" edge to the KnowledgeEntity entity.
-func (_u *KnowledgeEntityUpdate) ClearParent() *KnowledgeEntityUpdate {
-	_u.mutation.ClearParent()
+// ClearMergedInto clears the "merged_into" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityUpdate) ClearMergedInto() *KnowledgeEntityUpdate {
+	_u.mutation.ClearMergedInto()
 	return _u
 }
 
-// ClearChildren clears all "children" edges to the KnowledgeEntity entity.
-func (_u *KnowledgeEntityUpdate) ClearChildren() *KnowledgeEntityUpdate {
-	_u.mutation.ClearChildren()
+// ClearRedirects clears all "redirects" edges to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityUpdate) ClearRedirects() *KnowledgeEntityUpdate {
+	_u.mutation.ClearRedirects()
 	return _u
 }
 
-// RemoveChildIDs removes the "children" edge to KnowledgeEntity entities by IDs.
-func (_u *KnowledgeEntityUpdate) RemoveChildIDs(ids ...uuid.UUID) *KnowledgeEntityUpdate {
-	_u.mutation.RemoveChildIDs(ids...)
+// RemoveRedirectIDs removes the "redirects" edge to KnowledgeEntity entities by IDs.
+func (_u *KnowledgeEntityUpdate) RemoveRedirectIDs(ids ...uuid.UUID) *KnowledgeEntityUpdate {
+	_u.mutation.RemoveRedirectIDs(ids...)
 	return _u
 }
 
-// RemoveChildren removes "children" edges to KnowledgeEntity entities.
-func (_u *KnowledgeEntityUpdate) RemoveChildren(v ...*KnowledgeEntity) *KnowledgeEntityUpdate {
+// RemoveRedirects removes "redirects" edges to KnowledgeEntity entities.
+func (_u *KnowledgeEntityUpdate) RemoveRedirects(v ...*KnowledgeEntity) *KnowledgeEntityUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveChildIDs(ids...)
+	return _u.RemoveRedirectIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -500,6 +514,9 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if _u.mutation.ExpiresAtCleared() {
 		_spec.ClearField(knowledgeentity.FieldExpiresAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ParentIsFallback(); ok {
+		_spec.SetField(knowledgeentity.FieldParentIsFallback, field.TypeBool, value)
 	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -693,12 +710,12 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ParentCleared() {
+	if _u.mutation.MergedIntoCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   knowledgeentity.ParentTable,
-			Columns: []string{knowledgeentity.ParentColumn},
+			Table:   knowledgeentity.MergedIntoTable,
+			Columns: []string{knowledgeentity.MergedIntoColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -707,12 +724,12 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 		edge.Schema = _u.schemaConfig.KnowledgeEntity
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MergedIntoIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   knowledgeentity.ParentTable,
-			Columns: []string{knowledgeentity.ParentColumn},
+			Table:   knowledgeentity.MergedIntoTable,
+			Columns: []string{knowledgeentity.MergedIntoColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -724,12 +741,12 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ChildrenCleared() {
+	if _u.mutation.RedirectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   knowledgeentity.ChildrenTable,
-			Columns: []string{knowledgeentity.ChildrenColumn},
+			Table:   knowledgeentity.RedirectsTable,
+			Columns: []string{knowledgeentity.RedirectsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -738,12 +755,12 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 		edge.Schema = _u.schemaConfig.KnowledgeEntity
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !_u.mutation.ChildrenCleared() {
+	if nodes := _u.mutation.RemovedRedirectsIDs(); len(nodes) > 0 && !_u.mutation.RedirectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   knowledgeentity.ChildrenTable,
-			Columns: []string{knowledgeentity.ChildrenColumn},
+			Table:   knowledgeentity.RedirectsTable,
+			Columns: []string{knowledgeentity.RedirectsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -755,12 +772,12 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ChildrenIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RedirectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   knowledgeentity.ChildrenTable,
-			Columns: []string{knowledgeentity.ChildrenColumn},
+			Table:   knowledgeentity.RedirectsTable,
+			Columns: []string{knowledgeentity.RedirectsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -936,23 +953,37 @@ func (_u *KnowledgeEntityUpdateOne) ClearExpiresAt() *KnowledgeEntityUpdateOne {
 	return _u
 }
 
-// SetParentID sets the "parent_id" field.
-func (_u *KnowledgeEntityUpdateOne) SetParentID(v uuid.UUID) *KnowledgeEntityUpdateOne {
-	_u.mutation.SetParentID(v)
+// SetMergedIntoID sets the "merged_into_id" field.
+func (_u *KnowledgeEntityUpdateOne) SetMergedIntoID(v uuid.UUID) *KnowledgeEntityUpdateOne {
+	_u.mutation.SetMergedIntoID(v)
 	return _u
 }
 
-// SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdateOne) SetNillableParentID(v *uuid.UUID) *KnowledgeEntityUpdateOne {
+// SetNillableMergedIntoID sets the "merged_into_id" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdateOne) SetNillableMergedIntoID(v *uuid.UUID) *KnowledgeEntityUpdateOne {
 	if v != nil {
-		_u.SetParentID(*v)
+		_u.SetMergedIntoID(*v)
 	}
 	return _u
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (_u *KnowledgeEntityUpdateOne) ClearParentID() *KnowledgeEntityUpdateOne {
-	_u.mutation.ClearParentID()
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (_u *KnowledgeEntityUpdateOne) ClearMergedIntoID() *KnowledgeEntityUpdateOne {
+	_u.mutation.ClearMergedIntoID()
+	return _u
+}
+
+// SetParentIsFallback sets the "parent_is_fallback" field.
+func (_u *KnowledgeEntityUpdateOne) SetParentIsFallback(v bool) *KnowledgeEntityUpdateOne {
+	_u.mutation.SetParentIsFallback(v)
+	return _u
+}
+
+// SetNillableParentIsFallback sets the "parent_is_fallback" field if the given value is not nil.
+func (_u *KnowledgeEntityUpdateOne) SetNillableParentIsFallback(v *bool) *KnowledgeEntityUpdateOne {
+	if v != nil {
+		_u.SetParentIsFallback(*v)
+	}
 	return _u
 }
 
@@ -1016,24 +1047,24 @@ func (_u *KnowledgeEntityUpdateOne) AddTargetRelationships(v ...*KnowledgeRelati
 	return _u.AddTargetRelationshipIDs(ids...)
 }
 
-// SetParent sets the "parent" edge to the KnowledgeEntity entity.
-func (_u *KnowledgeEntityUpdateOne) SetParent(v *KnowledgeEntity) *KnowledgeEntityUpdateOne {
-	return _u.SetParentID(v.ID)
+// SetMergedInto sets the "merged_into" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityUpdateOne) SetMergedInto(v *KnowledgeEntity) *KnowledgeEntityUpdateOne {
+	return _u.SetMergedIntoID(v.ID)
 }
 
-// AddChildIDs adds the "children" edge to the KnowledgeEntity entity by IDs.
-func (_u *KnowledgeEntityUpdateOne) AddChildIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
-	_u.mutation.AddChildIDs(ids...)
+// AddRedirectIDs adds the "redirects" edge to the KnowledgeEntity entity by IDs.
+func (_u *KnowledgeEntityUpdateOne) AddRedirectIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
+	_u.mutation.AddRedirectIDs(ids...)
 	return _u
 }
 
-// AddChildren adds the "children" edges to the KnowledgeEntity entity.
-func (_u *KnowledgeEntityUpdateOne) AddChildren(v ...*KnowledgeEntity) *KnowledgeEntityUpdateOne {
+// AddRedirects adds the "redirects" edges to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityUpdateOne) AddRedirects(v ...*KnowledgeEntity) *KnowledgeEntityUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddChildIDs(ids...)
+	return _u.AddRedirectIDs(ids...)
 }
 
 // Mutation returns the KnowledgeEntityMutation object of the builder.
@@ -1125,31 +1156,31 @@ func (_u *KnowledgeEntityUpdateOne) RemoveTargetRelationships(v ...*KnowledgeRel
 	return _u.RemoveTargetRelationshipIDs(ids...)
 }
 
-// ClearParent clears the "parent" edge to the KnowledgeEntity entity.
-func (_u *KnowledgeEntityUpdateOne) ClearParent() *KnowledgeEntityUpdateOne {
-	_u.mutation.ClearParent()
+// ClearMergedInto clears the "merged_into" edge to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityUpdateOne) ClearMergedInto() *KnowledgeEntityUpdateOne {
+	_u.mutation.ClearMergedInto()
 	return _u
 }
 
-// ClearChildren clears all "children" edges to the KnowledgeEntity entity.
-func (_u *KnowledgeEntityUpdateOne) ClearChildren() *KnowledgeEntityUpdateOne {
-	_u.mutation.ClearChildren()
+// ClearRedirects clears all "redirects" edges to the KnowledgeEntity entity.
+func (_u *KnowledgeEntityUpdateOne) ClearRedirects() *KnowledgeEntityUpdateOne {
+	_u.mutation.ClearRedirects()
 	return _u
 }
 
-// RemoveChildIDs removes the "children" edge to KnowledgeEntity entities by IDs.
-func (_u *KnowledgeEntityUpdateOne) RemoveChildIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
-	_u.mutation.RemoveChildIDs(ids...)
+// RemoveRedirectIDs removes the "redirects" edge to KnowledgeEntity entities by IDs.
+func (_u *KnowledgeEntityUpdateOne) RemoveRedirectIDs(ids ...uuid.UUID) *KnowledgeEntityUpdateOne {
+	_u.mutation.RemoveRedirectIDs(ids...)
 	return _u
 }
 
-// RemoveChildren removes "children" edges to KnowledgeEntity entities.
-func (_u *KnowledgeEntityUpdateOne) RemoveChildren(v ...*KnowledgeEntity) *KnowledgeEntityUpdateOne {
+// RemoveRedirects removes "redirects" edges to KnowledgeEntity entities.
+func (_u *KnowledgeEntityUpdateOne) RemoveRedirects(v ...*KnowledgeEntity) *KnowledgeEntityUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveChildIDs(ids...)
+	return _u.RemoveRedirectIDs(ids...)
 }
 
 // Where appends a list predicates to the KnowledgeEntityUpdate builder.
@@ -1291,6 +1322,9 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 	}
 	if _u.mutation.ExpiresAtCleared() {
 		_spec.ClearField(knowledgeentity.FieldExpiresAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ParentIsFallback(); ok {
+		_spec.SetField(knowledgeentity.FieldParentIsFallback, field.TypeBool, value)
 	}
 	if _u.mutation.AliasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1484,12 +1518,12 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ParentCleared() {
+	if _u.mutation.MergedIntoCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   knowledgeentity.ParentTable,
-			Columns: []string{knowledgeentity.ParentColumn},
+			Table:   knowledgeentity.MergedIntoTable,
+			Columns: []string{knowledgeentity.MergedIntoColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -1498,12 +1532,12 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 		edge.Schema = _u.schemaConfig.KnowledgeEntity
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MergedIntoIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   knowledgeentity.ParentTable,
-			Columns: []string{knowledgeentity.ParentColumn},
+			Table:   knowledgeentity.MergedIntoTable,
+			Columns: []string{knowledgeentity.MergedIntoColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -1515,12 +1549,12 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ChildrenCleared() {
+	if _u.mutation.RedirectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   knowledgeentity.ChildrenTable,
-			Columns: []string{knowledgeentity.ChildrenColumn},
+			Table:   knowledgeentity.RedirectsTable,
+			Columns: []string{knowledgeentity.RedirectsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -1529,12 +1563,12 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 		edge.Schema = _u.schemaConfig.KnowledgeEntity
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !_u.mutation.ChildrenCleared() {
+	if nodes := _u.mutation.RemovedRedirectsIDs(); len(nodes) > 0 && !_u.mutation.RedirectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   knowledgeentity.ChildrenTable,
-			Columns: []string{knowledgeentity.ChildrenColumn},
+			Table:   knowledgeentity.RedirectsTable,
+			Columns: []string{knowledgeentity.RedirectsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -1546,12 +1580,12 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ChildrenIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RedirectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   knowledgeentity.ChildrenTable,
-			Columns: []string{knowledgeentity.ChildrenColumn},
+			Table:   knowledgeentity.RedirectsTable,
+			Columns: []string{knowledgeentity.RedirectsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),

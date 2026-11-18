@@ -2,7 +2,6 @@ package extensions
 
 import (
 	"cmp"
-	"crypto/md5"
 	"fmt"
 	"slices"
 	"text/template"
@@ -19,11 +18,9 @@ type knowledgeReferences struct {
 	refs *references
 }
 
-// KnowledgeReferences generates ent/knowledge_references.go, which lists every column referring to a knowledge
-// entity or relationship, so an entity merge can re-point them. Generation fails on a foreign key to a knowledge
-// subject that the list does not cover, on a reference shape the merge cannot re-point, and on an
-// annotations.EntityMergeDeletesDuplicates the merge would not use. Use one per generation run: its hook
-// collects the references the template then writes.
+// KnowledgeReferences generates ent/knowledge_references.go: every column referring to a knowledge entity or
+// relationship, for a merge to re-point, and each schema type's fields holding one, for writes to canonicalize.
+// Generation fails on a reference the merge cannot handle. Use one per generation run.
 func KnowledgeReferences() entc.Extension {
 	return &knowledgeReferences{}
 }
@@ -81,7 +78,8 @@ var coreColumns = map[column]bool{
 	{"knowledge_subject_alias", "relationship_id"}:       true,
 	{"knowledge_relationships", "source_entity_id"}:      true,
 	{"knowledge_relationships", "target_entity_id"}:      true,
-	{"knowledge_entities", "parent_id"}:                  true,
+	{"knowledge_entities", "merged_into_id"}:             true,
+	{"knowledge_relationships", "merged_into_id"}:        true,
 }
 
 // reference is a generated reference descriptor.
@@ -96,9 +94,16 @@ type reference struct {
 
 // references is the data of the knowledge_references template.
 type references struct {
-	Entities              []reference
-	Relationships         []reference
-	ForeignKeyConstraints []string
+	Entities      []reference
+	Relationships []reference
+	// Fields are the fields holding every reference, core columns included, by schema type.
+	Fields map[string][]referenceField
+}
+
+// referenceField is a field holding a reference, with whether it names a relationship rather than an entity.
+type referenceField struct {
+	Name         string
+	Relationship bool
 }
 
 // list is a generated list of descriptors.
@@ -153,6 +158,7 @@ func collect(g *gen.Graph, core map[column]bool) (*references, error) {
 	}
 	foundCore := make(map[column]bool, len(core))
 
+	refs := &references{Fields: make(map[string][]referenceField)}
 	edges := make(map[column]referenceEdge)
 	var annotated []referenceEdge
 	for _, n := range g.Nodes {
@@ -167,7 +173,6 @@ func collect(g *gen.Graph, core map[column]bool) (*references, error) {
 		}
 	}
 
-	refs := &references{}
 	generated := make(map[*gen.Edge]bool)
 	for _, table := range tables {
 		for _, foreignKey := range table.ForeignKeys {
@@ -175,17 +180,23 @@ func collect(g *gen.Graph, core map[column]bool) (*references, error) {
 			if subject == "" {
 				continue
 			}
-			refs.ForeignKeyConstraints = append(refs.ForeignKeyConstraints, postgresSymbol(foreignKey.Symbol))
 			if len(foreignKey.Columns) != 1 {
 				return nil, fmt.Errorf("foreign key %s on %s to %s has %d columns; only single-column references are supported",
 					foreignKey.Symbol, table.Name, foreignKey.RefTable.Name, len(foreignKey.Columns))
 			}
 			col := column{table.Name, foreignKey.Columns[0].Name}
+			edge, isEdge := edges[col]
+			if isEdge {
+				f := edge.edge.Field()
+				if f == nil {
+					return nil, fmt.Errorf("%s is held by edge %s, which has no Field(); declare the column as an edge field", col, edge)
+				}
+				refs.Fields[edge.node.Name] = append(refs.Fields[edge.node.Name], referenceField{Name: f.Name, Relationship: subject == "relationship"})
+			}
 			if core[col] {
 				foundCore[col] = true
 				continue
 			}
-			edge, isEdge := edges[col]
 			if !isEdge {
 				return nil, fmt.Errorf("%s has a foreign key to %s that is neither a core column nor an edge of its own table "+
 					"(join tables and edges declared on the knowledge subject are not supported): declare it as an edge.To with Field() on the referring schema",
@@ -224,7 +235,9 @@ func collect(g *gen.Graph, core map[column]bool) (*references, error) {
 	}
 	slices.SortFunc(refs.Entities, byColumn)
 	slices.SortFunc(refs.Relationships, byColumn)
-	slices.Sort(refs.ForeignKeyConstraints)
+	for _, fields := range refs.Fields {
+		slices.SortFunc(fields, func(a, b referenceField) int { return cmp.Compare(a.Name, b.Name) })
+	}
 	return refs, nil
 }
 
@@ -253,8 +266,6 @@ func newReference(table *schema.Table, col column, edge referenceEdge) (*referen
 	switch {
 	case e.IsInverse():
 		return nil, fmt.Errorf("%s is held by the inverse edge %s; declare the reference as an edge.To on its own schema", col, edge)
-	case f == nil:
-		return nil, fmt.Errorf("%s is held by edge %s, which has no Field(); declare the column as an edge field", col, edge)
 	case f.Immutable || e.Immutable:
 		return nil, fmt.Errorf("%s (edge %s) is Immutable(); a merge must update it, so drop Immutable()", col, edge)
 	}
@@ -307,16 +318,6 @@ func newReference(table *schema.Table, col column, edge referenceEdge) (*referen
 		}
 	}
 	return ref, nil
-}
-
-// postgresSymbol is the name Ent's migration gives a constraint in Postgres, which limits identifiers to 63
-// bytes: a longer name becomes its first 30 bytes and its MD5 hash (see symbol in
-// entgo.io/ent/dialect/sql/schema/atlas.go).
-func postgresSymbol(name string) string {
-	if len(name) <= 63 {
-		return name
-	}
-	return fmt.Sprintf("%s_%x", name[:30], md5.Sum([]byte(name)))
 }
 
 // referencesTemplate writes the lists. Every top-level define in an Ent template emits a file, so it has none
@@ -381,11 +382,22 @@ const referencesTemplate = `
 		}
 	{{ end }}
 
-	// KnowledgeForeignKeyConstraints are the names Postgres reports for every foreign key to knowledge entities or
-	// relationships, the knowledge graph's own included.
-	var KnowledgeForeignKeyConstraints = []string{
-		{{- range $name := $refs.ForeignKeyConstraints }}
-			{{ printf "%q" $name }},
+	// KnowledgeReferenceField is a field holding the ID of a knowledge entity or, with Relationship, a knowledge
+	// relationship.
+	type KnowledgeReferenceField struct {
+		Name         string
+		Relationship bool
+	}
+
+	// KnowledgeReferenceFields are the fields holding every column that refers to a knowledge entity or
+	// relationship, the knowledge graph's own included, by schema type.
+	var KnowledgeReferenceFields = map[string][]KnowledgeReferenceField{
+		{{- range $type, $fields := $refs.Fields }}
+			{{ printf "%q" $type }}: {
+				{{- range $f := $fields }}
+					{Name: {{ printf "%q" $f.Name }}{{ if $f.Relationship }}, Relationship: true{{ end }}},
+				{{- end }}
+			},
 		{{- end }}
 	}
 {{ end }}

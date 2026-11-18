@@ -21,7 +21,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
-	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationnotice"
 	"github.com/rezible/rezible/ent/situationobservation"
@@ -41,10 +40,11 @@ type SituationQuery struct {
 	withObservationGroups *SituationObservationGroupQuery
 	withIncidents         *IncidentQuery
 	withObservations      *SituationObservationQuery
-	withEntities          *SituationEntityQuery
 	withActions           *SituationActionQuery
 	withJudgments         *SituationJudgmentQuery
 	withNotices           *SituationNoticeQuery
+	withMergedInto        *SituationQuery
+	withMergedSources     *SituationQuery
 	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -207,31 +207,6 @@ func (_q *SituationQuery) QueryObservations() *SituationObservationQuery {
 	return query
 }
 
-// QueryEntities chains the current query on the "entities" edge.
-func (_q *SituationQuery) QueryEntities() *SituationEntityQuery {
-	query := (&SituationEntityClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(situation.Table, situation.FieldID, selector),
-			sqlgraph.To(situationentity.Table, situationentity.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, situation.EntitiesTable, situation.EntitiesColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SituationEntity
-		step.Edge.Schema = schemaConfig.SituationEntity
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryActions chains the current query on the "actions" edge.
 func (_q *SituationQuery) QueryActions() *SituationActionQuery {
 	query := (&SituationActionClient{config: _q.config}).Query()
@@ -301,6 +276,56 @@ func (_q *SituationQuery) QueryNotices() *SituationNoticeQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.SituationNotice
 		step.Edge.Schema = schemaConfig.SituationNotice
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMergedInto chains the current query on the "merged_into" edge.
+func (_q *SituationQuery) QueryMergedInto() *SituationQuery {
+	query := (&SituationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(situation.Table, situation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, situation.MergedIntoTable, situation.MergedIntoColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.Situation
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMergedSources chains the current query on the "merged_sources" edge.
+func (_q *SituationQuery) QueryMergedSources() *SituationQuery {
+	query := (&SituationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(situation.Table, situation.FieldID, selector),
+			sqlgraph.To(situation.Table, situation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, situation.MergedSourcesTable, situation.MergedSourcesColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Situation
+		step.Edge.Schema = schemaConfig.Situation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -504,10 +529,11 @@ func (_q *SituationQuery) Clone() *SituationQuery {
 		withObservationGroups: _q.withObservationGroups.Clone(),
 		withIncidents:         _q.withIncidents.Clone(),
 		withObservations:      _q.withObservations.Clone(),
-		withEntities:          _q.withEntities.Clone(),
 		withActions:           _q.withActions.Clone(),
 		withJudgments:         _q.withJudgments.Clone(),
 		withNotices:           _q.withNotices.Clone(),
+		withMergedInto:        _q.withMergedInto.Clone(),
+		withMergedSources:     _q.withMergedSources.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -570,17 +596,6 @@ func (_q *SituationQuery) WithObservations(opts ...func(*SituationObservationQue
 	return _q
 }
 
-// WithEntities tells the query-builder to eager-load the nodes that are connected to
-// the "entities" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SituationQuery) WithEntities(opts ...func(*SituationEntityQuery)) *SituationQuery {
-	query := (&SituationEntityClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withEntities = query
-	return _q
-}
-
 // WithActions tells the query-builder to eager-load the nodes that are connected to
 // the "actions" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *SituationQuery) WithActions(opts ...func(*SituationActionQuery)) *SituationQuery {
@@ -611,6 +626,28 @@ func (_q *SituationQuery) WithNotices(opts ...func(*SituationNoticeQuery)) *Situ
 		opt(query)
 	}
 	_q.withNotices = query
+	return _q
+}
+
+// WithMergedInto tells the query-builder to eager-load the nodes that are connected to
+// the "merged_into" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithMergedInto(opts ...func(*SituationQuery)) *SituationQuery {
+	query := (&SituationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withMergedInto = query
+	return _q
+}
+
+// WithMergedSources tells the query-builder to eager-load the nodes that are connected to
+// the "merged_sources" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SituationQuery) WithMergedSources(opts ...func(*SituationQuery)) *SituationQuery {
+	query := (&SituationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withMergedSources = query
 	return _q
 }
 
@@ -698,16 +735,17 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 	var (
 		nodes       = []*Situation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
 			_q.withTenant != nil,
 			_q.withInvestigation != nil,
 			_q.withObservationGroups != nil,
 			_q.withIncidents != nil,
 			_q.withObservations != nil,
-			_q.withEntities != nil,
 			_q.withActions != nil,
 			_q.withJudgments != nil,
 			_q.withNotices != nil,
+			_q.withMergedInto != nil,
+			_q.withMergedSources != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -768,13 +806,6 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 			return nil, err
 		}
 	}
-	if query := _q.withEntities; query != nil {
-		if err := _q.loadEntities(ctx, query, nodes,
-			func(n *Situation) { n.Edges.Entities = []*SituationEntity{} },
-			func(n *Situation, e *SituationEntity) { n.Edges.Entities = append(n.Edges.Entities, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withActions; query != nil {
 		if err := _q.loadActions(ctx, query, nodes,
 			func(n *Situation) { n.Edges.Actions = []*SituationAction{} },
@@ -793,6 +824,19 @@ func (_q *SituationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Si
 		if err := _q.loadNotices(ctx, query, nodes,
 			func(n *Situation) { n.Edges.Notices = []*SituationNotice{} },
 			func(n *Situation, e *SituationNotice) { n.Edges.Notices = append(n.Edges.Notices, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withMergedInto; query != nil {
+		if err := _q.loadMergedInto(ctx, query, nodes, nil,
+			func(n *Situation, e *Situation) { n.Edges.MergedInto = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withMergedSources; query != nil {
+		if err := _q.loadMergedSources(ctx, query, nodes,
+			func(n *Situation) { n.Edges.MergedSources = []*Situation{} },
+			func(n *Situation, e *Situation) { n.Edges.MergedSources = append(n.Edges.MergedSources, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -982,36 +1026,6 @@ func (_q *SituationQuery) loadObservations(ctx context.Context, query *Situation
 	}
 	return nil
 }
-func (_q *SituationQuery) loadEntities(ctx context.Context, query *SituationEntityQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationEntity)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Situation)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(situationentity.FieldSituationID)
-	}
-	query.Where(predicate.SituationEntity(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(situation.EntitiesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.SituationID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "situation_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *SituationQuery) loadActions(ctx context.Context, query *SituationActionQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *SituationAction)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Situation)
@@ -1102,6 +1116,71 @@ func (_q *SituationQuery) loadNotices(ctx context.Context, query *SituationNotic
 	}
 	return nil
 }
+func (_q *SituationQuery) loadMergedInto(ctx context.Context, query *SituationQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *Situation)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Situation)
+	for i := range nodes {
+		if nodes[i].MergedIntoID == nil {
+			continue
+		}
+		fk := *nodes[i].MergedIntoID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(situation.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "merged_into_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *SituationQuery) loadMergedSources(ctx context.Context, query *SituationQuery, nodes []*Situation, init func(*Situation), assign func(*Situation, *Situation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Situation)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(situation.FieldMergedIntoID)
+	}
+	query.Where(predicate.Situation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(situation.MergedSourcesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.MergedIntoID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "merged_into_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "merged_into_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (_q *SituationQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -1138,6 +1217,9 @@ func (_q *SituationQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withInvestigation != nil {
 			_spec.Node.AddColumnOnce(situation.FieldInvestigationID)
+		}
+		if _q.withMergedInto != nil {
+			_spec.Node.AddColumnOnce(situation.FieldMergedIntoID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -45,8 +45,15 @@ type (
 	}
 
 	EventProjectionAttributes struct {
-		CompletedAt time.Time               `json:"completedAt"`
-		Entities    []EventProjectionEntity `json:"entities"`
+		CompletedAt time.Time                   `json:"completedAt"`
+		Entities    []EventProjectionEntity     `json:"entities"`
+		SkippedRefs []EventProjectionSkippedRef `json:"skippedRefs"`
+	}
+
+	EventProjectionSkippedRef struct {
+		Reason      string `json:"reason"`
+		ResourceRef string `json:"resourceRef"`
+		Error       string `json:"error"`
 	}
 
 	EventProjectionEntity struct {
@@ -81,7 +88,12 @@ func EventFromEnt(e *ent.NormalizedEvent) Event {
 func EventProjectionFromEnt(p *ent.NormalizedEventProjection) EventProjection {
 	attr := EventProjectionAttributes{
 		CompletedAt: p.CompletedAt,
+		SkippedRefs: make([]EventProjectionSkippedRef, len(p.SkippedRefs)),
 		Entities:    make([]EventProjectionEntity, len(p.Edges.ProjectionEntities)),
+	}
+
+	for i, skipped := range p.SkippedRefs {
+		attr.SkippedRefs[i] = EventProjectionSkippedRef{Reason: string(skipped.Reason), ResourceRef: skipped.ResourceRef, Error: skipped.Error}
 	}
 
 	for i, e := range p.Edges.ProjectionEntities {

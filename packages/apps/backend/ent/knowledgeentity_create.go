@@ -147,6 +147,20 @@ func (_c *KnowledgeEntityCreate) SetNillableExpiresAt(v *time.Time) *KnowledgeEn
 	return _c
 }
 
+// SetMergedIntoID sets the "merged_into_id" field.
+func (_c *KnowledgeEntityCreate) SetMergedIntoID(v uuid.UUID) *KnowledgeEntityCreate {
+	_c.mutation.SetMergedIntoID(v)
+	return _c
+}
+
+// SetNillableMergedIntoID sets the "merged_into_id" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableMergedIntoID(v *uuid.UUID) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetMergedIntoID(*v)
+	}
+	return _c
+}
+
 // SetCategory sets the "category" field.
 func (_c *KnowledgeEntityCreate) SetCategory(v knowledgeentity.Category) *KnowledgeEntityCreate {
 	_c.mutation.SetCategory(v)
@@ -159,16 +173,16 @@ func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
 	return _c
 }
 
-// SetParentID sets the "parent_id" field.
-func (_c *KnowledgeEntityCreate) SetParentID(v uuid.UUID) *KnowledgeEntityCreate {
-	_c.mutation.SetParentID(v)
+// SetParentIsFallback sets the "parent_is_fallback" field.
+func (_c *KnowledgeEntityCreate) SetParentIsFallback(v bool) *KnowledgeEntityCreate {
+	_c.mutation.SetParentIsFallback(v)
 	return _c
 }
 
-// SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableParentID(v *uuid.UUID) *KnowledgeEntityCreate {
+// SetNillableParentIsFallback sets the "parent_is_fallback" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableParentIsFallback(v *bool) *KnowledgeEntityCreate {
 	if v != nil {
-		_c.SetParentID(*v)
+		_c.SetParentIsFallback(*v)
 	}
 	return _c
 }
@@ -252,24 +266,24 @@ func (_c *KnowledgeEntityCreate) AddTargetRelationships(v ...*KnowledgeRelations
 	return _c.AddTargetRelationshipIDs(ids...)
 }
 
-// SetParent sets the "parent" edge to the KnowledgeEntity entity.
-func (_c *KnowledgeEntityCreate) SetParent(v *KnowledgeEntity) *KnowledgeEntityCreate {
-	return _c.SetParentID(v.ID)
+// SetMergedInto sets the "merged_into" edge to the KnowledgeEntity entity.
+func (_c *KnowledgeEntityCreate) SetMergedInto(v *KnowledgeEntity) *KnowledgeEntityCreate {
+	return _c.SetMergedIntoID(v.ID)
 }
 
-// AddChildIDs adds the "children" edge to the KnowledgeEntity entity by IDs.
-func (_c *KnowledgeEntityCreate) AddChildIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
-	_c.mutation.AddChildIDs(ids...)
+// AddRedirectIDs adds the "redirects" edge to the KnowledgeEntity entity by IDs.
+func (_c *KnowledgeEntityCreate) AddRedirectIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
+	_c.mutation.AddRedirectIDs(ids...)
 	return _c
 }
 
-// AddChildren adds the "children" edges to the KnowledgeEntity entity.
-func (_c *KnowledgeEntityCreate) AddChildren(v ...*KnowledgeEntity) *KnowledgeEntityCreate {
+// AddRedirects adds the "redirects" edges to the KnowledgeEntity entity.
+func (_c *KnowledgeEntityCreate) AddRedirects(v ...*KnowledgeEntity) *KnowledgeEntityCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddChildIDs(ids...)
+	return _c.AddRedirectIDs(ids...)
 }
 
 // Mutation returns the KnowledgeEntityMutation object of the builder.
@@ -323,6 +337,10 @@ func (_c *KnowledgeEntityCreate) defaults() error {
 		v := knowledgeentity.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.ParentIsFallback(); !ok {
+		v := knowledgeentity.DefaultParentIsFallback
+		_c.mutation.SetParentIsFallback(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if knowledgeentity.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized knowledgeentity.DefaultID (forgotten import ent/runtime?)")
@@ -359,6 +377,9 @@ func (_c *KnowledgeEntityCreate) check() error {
 		if err := knowledgeentity.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.ParentIsFallback(); !ok {
+		return &ValidationError{Name: "parent_is_fallback", err: errors.New(`ent: missing required field "KnowledgeEntity.parent_is_fallback"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEntity.tenant"`)}
@@ -439,6 +460,10 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
 		_node.Kind = value
+	}
+	if value, ok := _c.mutation.ParentIsFallback(); ok {
+		_spec.SetField(knowledgeentity.FieldParentIsFallback, field.TypeBool, value)
+		_node.ParentIsFallback = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -526,12 +551,12 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.MergedIntoIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   knowledgeentity.ParentTable,
-			Columns: []string{knowledgeentity.ParentColumn},
+			Table:   knowledgeentity.MergedIntoTable,
+			Columns: []string{knowledgeentity.MergedIntoColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -541,15 +566,15 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.ParentID = &nodes[0]
+		_node.MergedIntoID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ChildrenIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RedirectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   knowledgeentity.ChildrenTable,
-			Columns: []string{knowledgeentity.ChildrenColumn},
+			Table:   knowledgeentity.RedirectsTable,
+			Columns: []string{knowledgeentity.RedirectsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
@@ -745,21 +770,33 @@ func (u *KnowledgeEntityUpsert) ClearExpiresAt() *KnowledgeEntityUpsert {
 	return u
 }
 
-// SetParentID sets the "parent_id" field.
-func (u *KnowledgeEntityUpsert) SetParentID(v uuid.UUID) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldParentID, v)
+// SetMergedIntoID sets the "merged_into_id" field.
+func (u *KnowledgeEntityUpsert) SetMergedIntoID(v uuid.UUID) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldMergedIntoID, v)
 	return u
 }
 
-// UpdateParentID sets the "parent_id" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateParentID() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldParentID)
+// UpdateMergedIntoID sets the "merged_into_id" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateMergedIntoID() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldMergedIntoID)
 	return u
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (u *KnowledgeEntityUpsert) ClearParentID() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldParentID)
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (u *KnowledgeEntityUpsert) ClearMergedIntoID() *KnowledgeEntityUpsert {
+	u.SetNull(knowledgeentity.FieldMergedIntoID)
+	return u
+}
+
+// SetParentIsFallback sets the "parent_is_fallback" field.
+func (u *KnowledgeEntityUpsert) SetParentIsFallback(v bool) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldParentIsFallback, v)
+	return u
+}
+
+// UpdateParentIsFallback sets the "parent_is_fallback" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateParentIsFallback() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldParentIsFallback)
 	return u
 }
 
@@ -974,24 +1011,38 @@ func (u *KnowledgeEntityUpsertOne) ClearExpiresAt() *KnowledgeEntityUpsertOne {
 	})
 }
 
-// SetParentID sets the "parent_id" field.
-func (u *KnowledgeEntityUpsertOne) SetParentID(v uuid.UUID) *KnowledgeEntityUpsertOne {
+// SetMergedIntoID sets the "merged_into_id" field.
+func (u *KnowledgeEntityUpsertOne) SetMergedIntoID(v uuid.UUID) *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetParentID(v)
+		s.SetMergedIntoID(v)
 	})
 }
 
-// UpdateParentID sets the "parent_id" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateParentID() *KnowledgeEntityUpsertOne {
+// UpdateMergedIntoID sets the "merged_into_id" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateMergedIntoID() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateParentID()
+		s.UpdateMergedIntoID()
 	})
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (u *KnowledgeEntityUpsertOne) ClearParentID() *KnowledgeEntityUpsertOne {
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (u *KnowledgeEntityUpsertOne) ClearMergedIntoID() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearParentID()
+		s.ClearMergedIntoID()
+	})
+}
+
+// SetParentIsFallback sets the "parent_is_fallback" field.
+func (u *KnowledgeEntityUpsertOne) SetParentIsFallback(v bool) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetParentIsFallback(v)
+	})
+}
+
+// UpdateParentIsFallback sets the "parent_is_fallback" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateParentIsFallback() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateParentIsFallback()
 	})
 }
 
@@ -1373,24 +1424,38 @@ func (u *KnowledgeEntityUpsertBulk) ClearExpiresAt() *KnowledgeEntityUpsertBulk 
 	})
 }
 
-// SetParentID sets the "parent_id" field.
-func (u *KnowledgeEntityUpsertBulk) SetParentID(v uuid.UUID) *KnowledgeEntityUpsertBulk {
+// SetMergedIntoID sets the "merged_into_id" field.
+func (u *KnowledgeEntityUpsertBulk) SetMergedIntoID(v uuid.UUID) *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetParentID(v)
+		s.SetMergedIntoID(v)
 	})
 }
 
-// UpdateParentID sets the "parent_id" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateParentID() *KnowledgeEntityUpsertBulk {
+// UpdateMergedIntoID sets the "merged_into_id" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateMergedIntoID() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateParentID()
+		s.UpdateMergedIntoID()
 	})
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (u *KnowledgeEntityUpsertBulk) ClearParentID() *KnowledgeEntityUpsertBulk {
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (u *KnowledgeEntityUpsertBulk) ClearMergedIntoID() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.ClearParentID()
+		s.ClearMergedIntoID()
+	})
+}
+
+// SetParentIsFallback sets the "parent_is_fallback" field.
+func (u *KnowledgeEntityUpsertBulk) SetParentIsFallback(v bool) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetParentIsFallback(v)
+	})
+}
+
+// UpdateParentIsFallback sets the "parent_is_fallback" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateParentIsFallback() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateParentIsFallback()
 	})
 }
 

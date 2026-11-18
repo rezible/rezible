@@ -52,6 +52,7 @@ import {
 	investigationRunStatus,
 	investigationUpdateNotice,
 	longRunningStatus,
+	mergedIntoLink,
 } from "$features/situations/lib/status";
 import type { BriefLoad } from "$features/situations/lib/brief";
 import { incidentResponseStatus } from "$features/incidents/lib/status";
@@ -185,6 +186,9 @@ export class SituationController {
 	reference = $derived(this.situation?.attributes.reference);
 	/** The value links to this situation use: its reference once loaded, until then the URL value. */
 	linkRef = $derived(this.reference ?? this.ref);
+	/** The situation this one was merged into, shown as a banner linking to it. */
+	mergedInto = $derived(this.situation ? mergedIntoLink(this.situation.attributes) : undefined);
+	mergedIntoHref = $derived(this.mergedInto ? situationHref(this.mergedInto.ref) : undefined);
 	/** Presentation time for holds and the long-running marker; never used for detection. */
 	now = $state(Date.now());
 

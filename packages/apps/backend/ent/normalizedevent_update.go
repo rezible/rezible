@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -49,6 +50,20 @@ func (_u *NormalizedEventUpdate) SetNillableIntegrationID(v *uuid.UUID) *Normali
 // ClearIntegrationID clears the value of the "integration_id" field.
 func (_u *NormalizedEventUpdate) ClearIntegrationID() *NormalizedEventUpdate {
 	_u.mutation.ClearIntegrationID()
+	return _u
+}
+
+// SetLastOccurredAt sets the "last_occurred_at" field.
+func (_u *NormalizedEventUpdate) SetLastOccurredAt(v time.Time) *NormalizedEventUpdate {
+	_u.mutation.SetLastOccurredAt(v)
+	return _u
+}
+
+// SetNillableLastOccurredAt sets the "last_occurred_at" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableLastOccurredAt(v *time.Time) *NormalizedEventUpdate {
+	if v != nil {
+		_u.SetLastOccurredAt(*v)
+	}
 	return _u
 }
 
@@ -146,6 +161,9 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 			}
 		}
 	}
+	if value, ok := _u.mutation.LastOccurredAt(); ok {
+		_spec.SetField(normalizedevent.FieldLastOccurredAt, field.TypeTime, value)
+	}
 	if _u.mutation.IntegrationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -179,7 +197,7 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if _u.mutation.ProjectionCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   normalizedevent.ProjectionTable,
 			Columns: []string{normalizedevent.ProjectionColumn},
@@ -188,12 +206,12 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.NormalizedEvent
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ProjectionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   normalizedevent.ProjectionTable,
 			Columns: []string{normalizedevent.ProjectionColumn},
@@ -202,7 +220,7 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.NormalizedEvent
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -249,6 +267,20 @@ func (_u *NormalizedEventUpdateOne) SetNillableIntegrationID(v *uuid.UUID) *Norm
 // ClearIntegrationID clears the value of the "integration_id" field.
 func (_u *NormalizedEventUpdateOne) ClearIntegrationID() *NormalizedEventUpdateOne {
 	_u.mutation.ClearIntegrationID()
+	return _u
+}
+
+// SetLastOccurredAt sets the "last_occurred_at" field.
+func (_u *NormalizedEventUpdateOne) SetLastOccurredAt(v time.Time) *NormalizedEventUpdateOne {
+	_u.mutation.SetLastOccurredAt(v)
+	return _u
+}
+
+// SetNillableLastOccurredAt sets the "last_occurred_at" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableLastOccurredAt(v *time.Time) *NormalizedEventUpdateOne {
+	if v != nil {
+		_u.SetLastOccurredAt(*v)
+	}
 	return _u
 }
 
@@ -376,6 +408,9 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 			}
 		}
 	}
+	if value, ok := _u.mutation.LastOccurredAt(); ok {
+		_spec.SetField(normalizedevent.FieldLastOccurredAt, field.TypeTime, value)
+	}
 	if _u.mutation.IntegrationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -409,7 +444,7 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	}
 	if _u.mutation.ProjectionCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   normalizedevent.ProjectionTable,
 			Columns: []string{normalizedevent.ProjectionColumn},
@@ -418,12 +453,12 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.NormalizedEvent
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ProjectionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   normalizedevent.ProjectionTable,
 			Columns: []string{normalizedevent.ProjectionColumn},
@@ -432,7 +467,7 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.NormalizedEvent
+		edge.Schema = _u.schemaConfig.NormalizedEventProjection
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

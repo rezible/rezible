@@ -304,8 +304,12 @@ func (ah *appHarness) IngestNow(ctx context.Context, event rez.ProviderEvent) {
 	ah.suite.Require().NoError(ingesterErr, "resolve provider event ingester")
 	eventIDs, processErr := ingester.ProcessProviderEvent(ctx, event)
 	ah.suite.Require().NoError(processErr, "process provider event %s", event.ProviderEventRef)
-	for _, eventID := range eventIDs {
-		ah.suite.Require().NoError(ingester.ProjectNormalizedEvent(ctx, eventID), "project normalized event %s", eventID)
+	for _, repeat := range eventIDs.Reobservations {
+		ah.suite.Require().NoError(ingester.ReobserveNormalizedEvent(ctx, repeat.EventID, repeat.At))
+	}
+
+	for _, eventID := range eventIDs.NewEventIDs {
+		ah.suite.Require().NoError(ingester.ProjectNormalizedEvent(ctx, eventID, false), "project normalized event %s", eventID)
 	}
 }
 

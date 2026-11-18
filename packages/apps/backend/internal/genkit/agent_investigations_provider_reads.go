@@ -95,28 +95,16 @@ func (i *investigationInvocation) listChanges(ctx context.Context, input rezai.L
 		End:             end,
 		Environment:     input.Environment,
 	}
-	changes, changesErr := i.changes.ListServiceChanges(ctx, params)
+	changes, changesErr := i.changePoints.ListServiceChanges(ctx, params)
 	if changesErr != nil {
 		return nil, fmt.Errorf("list service changes: %w", changesErr)
 	}
 
-	var entities []*ent.KnowledgeEntity
-	for _, deployment := range changes.Deployments {
-		entities = append(entities, deployment.Deployment)
-		for _, change := range deployment.MergedChanges {
-			entities = append(entities, change.Change)
-		}
-	}
-	latestEvidence, evidenceErr := i.latestEvidenceByEntity(ctx, entities)
-	if evidenceErr != nil {
-		return nil, fmt.Errorf("summarize deployment and change evidence: %w", evidenceErr)
-	}
-
 	var lines []string
 	for _, deployment := range changes.Deployments {
-		lines = append(lines, i.renderDeploymentLine(deployment, latestEvidence))
+		lines = append(lines, i.renderDeploymentLine(deployment))
 		for _, change := range deployment.MergedChanges {
-			lines = append(lines, "  "+i.renderMergedChangeLine(change, latestEvidence))
+			lines = append(lines, "  "+i.renderMergedChangeLine(change))
 		}
 		if deployment.MergedChangesCut {
 			lines = append(lines, "  merged changes cut: more were linked than are listed")
@@ -131,9 +119,9 @@ func (i *investigationInvocation) listChanges(ctx context.Context, input rezai.L
 	return &rezai.TextToolResult{Text: limitedAnalysisResultText(strings.Join(lines, "\n"), "")}, nil
 }
 
-func (i *investigationInvocation) renderDeploymentLine(deployment rez.ServiceDeployment, latestEvidence map[uuid.UUID]uuid.UUID) string {
+func (i *investigationInvocation) renderDeploymentLine(deployment rez.ServiceDeployment) string {
 	fields := []string{
-		"deployment " + i.formatRef(deployment.Deployment.ID),
+		"deployment " + i.formatRef(deployment.Deployment.Involvement.EvidenceID),
 		"deployed_at=" + deployment.DeployedAt.UTC().Format(time.RFC3339Nano),
 		"environment=" + deployment.Environment,
 		"status=" + deployment.Status,
@@ -152,66 +140,19 @@ func (i *investigationInvocation) renderDeploymentLine(deployment rez.ServiceDep
 	if deployment.PreviousDeployedAt != nil {
 		fields = append(fields, "previous_deployed_at="+deployment.PreviousDeployedAt.UTC().Format(time.RFC3339Nano))
 	}
-	fields = append(fields, i.renderLatestEvidence(deployment.Deployment.ID, latestEvidence))
 	return strings.Join(fields, " ")
 }
 
-func (i *investigationInvocation) renderMergedChangeLine(change rez.LinkedMergedChange, latestEvidence map[uuid.UUID]uuid.UUID) string {
+func (i *investigationInvocation) renderMergedChangeLine(change rez.LinkedMergedChange) string {
 	fields := []string{
-		"merged_change " + i.formatRef(change.Change.ID),
+		"merged_change " + i.formatRef(change.Change.Involvement.EvidenceID),
 		"number=" + strconv.Itoa(change.Number),
-		fmt.Sprintf("title=%q", limitedAnalysisDescription(change.Change.State.DisplayName)),
+		fmt.Sprintf("title=%q", limitedAnalysisDescription(change.Title)),
 		"author=" + change.Author,
 		"merged_at=" + change.MergedAt.UTC().Format(time.RFC3339Nano),
 		"link=" + string(change.Link),
-		i.renderLatestEvidence(change.Change.ID, latestEvidence),
 	}
 	return strings.Join(fields, " ")
-}
-
-func (i *investigationInvocation) renderLatestEvidence(entityID uuid.UUID, latestEvidence map[uuid.UUID]uuid.UUID) string {
-	evidenceID, found := latestEvidence[entityID]
-	if !found {
-		return "latest_evidence=none"
-	}
-	return "latest_evidence=" + i.formatRef(evidenceID)
-}
-
-// latestEvidenceByEntity returns the latest evidence on each entity's aliases, by entity ID.
-func (i *investigationInvocation) latestEvidenceByEntity(ctx context.Context, entities []*ent.KnowledgeEntity) (map[uuid.UUID]uuid.UUID, error) {
-	latest := make(map[uuid.UUID]uuid.UUID, len(entities))
-	if len(entities) == 0 {
-		return latest, nil
-	}
-	entityIDs := make([]uuid.UUID, len(entities))
-	for index, entity := range entities {
-		entityIDs[index] = entity.ID
-	}
-	// An event entity has an alias per source that reported it, so this is a few per entity.
-	aliasesParams := rez.ListKnowledgeSubjectAliasesParams{
-		ListParams: ent.ListParams{PageSize: 10 * len(entityIDs)},
-		Predicates: []predicate.KnowledgeSubjectAlias{ksa.EntityIDIn(entityIDs...)},
-	}
-	aliases, aliasesErr := i.knowledge.ListSubjectAliases(ctx, aliasesParams)
-	if aliasesErr != nil {
-		return nil, fmt.Errorf("list entity aliases: %w", aliasesErr)
-	}
-	summaries, summarizeErr := i.summarizeAliasEvidence(ctx, aliases.Data)
-	if summarizeErr != nil {
-		return nil, summarizeErr
-	}
-	latestAt := make(map[uuid.UUID]time.Time, len(entities))
-	for _, alias := range aliases.Data {
-		summary, found := summaries[alias.ID]
-		if !found || alias.EntityID == nil {
-			continue
-		}
-		if previous, seen := latestAt[*alias.EntityID]; !seen || summary.LatestAt.After(previous) {
-			latestAt[*alias.EntityID] = summary.LatestAt
-			latest[*alias.EntityID] = summary.LatestID
-		}
-	}
-	return latest, nil
 }
 
 // logRead is a validated log read: the service, the range and the service's identity for the log source.

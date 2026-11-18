@@ -87,8 +87,8 @@ func makeDemoTopologyComponents() []topologyComponentObservedPayload {
 		component("order_events_queue", kne.CategoryContainer, "message_queue", "Order Events Queue", "Durable stream for order lifecycle events.", map[string]any{"tier": "async", "criticality": "high", "engine": "sqs", "region": "us-east-1", "tags": []string{"events", "orders"}}),
 		component("stripe", kne.CategorySystem, "external_system", "Stripe", "External payment processor.", map[string]any{"tier": "external", "criticality": "critical", "tags": []string{"payments", "third-party"}}),
 		component("sendgrid", kne.CategorySystem, "external_system", "SendGrid", "External email delivery provider.", map[string]any{"tier": "external", "criticality": "medium", "tags": []string{"email", "third-party"}}),
-		component("production", kne.CategoryInfrastructure, "environment", "production", "Production environment for every customer-facing workload.", map[string]any{"tier": "platform", "criticality": "critical", "tags": []string{"runtime"}}),
-		component("prod_use1", kne.CategoryInfrastructure, "kubernetes_cluster", "prod-use1", "Shared production Kubernetes cluster in us-east-1.", map[string]any{"tier": "platform", "criticality": "critical", "provider": "kubernetes", "region": "us-east-1", "tags": []string{"runtime", "shared"}}),
+		component("commerce_prod", kne.CategoryInfrastructure, "cloud_account", "commerce-prod", "Cloud account for every customer-facing workload.", map[string]any{"environment": "production", "region": "us-east-1", "tier": "platform", "criticality": "critical", "tags": []string{"runtime"}}),
+		component("prod_use1", kne.CategoryInfrastructure, "kubernetes_cluster", "prod-use1", "Shared Kubernetes cluster in us-east-1.", map[string]any{"tier": "platform", "criticality": "critical", "provider": "kubernetes", "region": "us-east-1", "tags": []string{"runtime", "shared"}}),
 		component("commerce_namespace", kne.CategoryInfrastructure, "kubernetes_namespace", "commerce", "Namespace for the commerce workloads.", nil),
 		component("platform_namespace", kne.CategoryInfrastructure, "kubernetes_namespace", "platform", "Namespace for the shared platform workloads.", nil),
 		component("edge_network", kne.CategoryInfrastructure, "load_balancer", "Edge Network", "Shared ingress and load-balancing layer for public and operator traffic.", map[string]any{"tier": "edge", "criticality": "high", "provider": "cloud", "region": "global", "tags": []string{"network", "shared"}}),
@@ -238,7 +238,7 @@ func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []to
 		contains("checkout_service", "checkout_orchestrator", "payment_adapter"),
 		contains("search_indexer", "catalog_index_job"),
 		// Deployment
-		contains("production", "prod_use1", "edge_network"),
+		contains("commerce_prod", "prod_use1", "edge_network"),
 		contains("prod_use1", "commerce_namespace", "platform_namespace"),
 		runsOn("commerce_namespace",
 			"web_app", "auth_service", "catalog_service", "search_api", "checkout_service", "orders_service",
@@ -246,7 +246,7 @@ func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []to
 		runsOn("platform_namespace",
 			"admin_console", "public_api_gateway", "notifications_service", "search_indexer", "order_fulfillment_worker",
 			"email_dispatch_worker"),
-		runsOn("production",
+		runsOn("commerce_prod",
 			"users_postgres", "catalog_postgres", "orders_postgres", "payments_postgres", "redis_sessions",
 			"redis_search_cache", "elasticsearch_catalog", "s3_invoice_bucket", "order_events_queue"),
 		// Code

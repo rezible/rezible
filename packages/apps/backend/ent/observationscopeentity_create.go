@@ -13,51 +13,45 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/situation"
-	"github.com/rezible/rezible/ent/situationentity"
+	"github.com/rezible/rezible/ent/observationscope"
+	"github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// SituationEntityCreate is the builder for creating a SituationEntity entity.
-type SituationEntityCreate struct {
+// ObservationScopeEntityCreate is the builder for creating a ObservationScopeEntity entity.
+type ObservationScopeEntityCreate struct {
 	config
-	mutation *SituationEntityMutation
+	mutation *ObservationScopeEntityMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (_c *SituationEntityCreate) SetTenantID(v int) *SituationEntityCreate {
+func (_c *ObservationScopeEntityCreate) SetTenantID(v int) *ObservationScopeEntityCreate {
 	_c.mutation.SetTenantID(v)
 	return _c
 }
 
-// SetSituationID sets the "situation_id" field.
-func (_c *SituationEntityCreate) SetSituationID(v uuid.UUID) *SituationEntityCreate {
-	_c.mutation.SetSituationID(v)
+// SetScopeID sets the "scope_id" field.
+func (_c *ObservationScopeEntityCreate) SetScopeID(v uuid.UUID) *ObservationScopeEntityCreate {
+	_c.mutation.SetScopeID(v)
 	return _c
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (_c *SituationEntityCreate) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityCreate {
+func (_c *ObservationScopeEntityCreate) SetKnowledgeEntityID(v uuid.UUID) *ObservationScopeEntityCreate {
 	_c.mutation.SetKnowledgeEntityID(v)
 	return _c
 }
 
-// SetMatching sets the "matching" field.
-func (_c *SituationEntityCreate) SetMatching(v bool) *SituationEntityCreate {
-	_c.mutation.SetMatching(v)
-	return _c
-}
-
 // SetID sets the "id" field.
-func (_c *SituationEntityCreate) SetID(v uuid.UUID) *SituationEntityCreate {
+func (_c *ObservationScopeEntityCreate) SetID(v uuid.UUID) *ObservationScopeEntityCreate {
 	_c.mutation.SetID(v)
 	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (_c *SituationEntityCreate) SetNillableID(v *uuid.UUID) *SituationEntityCreate {
+func (_c *ObservationScopeEntityCreate) SetNillableID(v *uuid.UUID) *ObservationScopeEntityCreate {
 	if v != nil {
 		_c.SetID(*v)
 	}
@@ -65,27 +59,27 @@ func (_c *SituationEntityCreate) SetNillableID(v *uuid.UUID) *SituationEntityCre
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (_c *SituationEntityCreate) SetTenant(v *Tenant) *SituationEntityCreate {
+func (_c *ObservationScopeEntityCreate) SetTenant(v *Tenant) *ObservationScopeEntityCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetSituation sets the "situation" edge to the Situation entity.
-func (_c *SituationEntityCreate) SetSituation(v *Situation) *SituationEntityCreate {
-	return _c.SetSituationID(v.ID)
+// SetScope sets the "scope" edge to the ObservationScope entity.
+func (_c *ObservationScopeEntityCreate) SetScope(v *ObservationScope) *ObservationScopeEntityCreate {
+	return _c.SetScopeID(v.ID)
 }
 
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (_c *SituationEntityCreate) SetKnowledgeEntity(v *KnowledgeEntity) *SituationEntityCreate {
+func (_c *ObservationScopeEntityCreate) SetKnowledgeEntity(v *KnowledgeEntity) *ObservationScopeEntityCreate {
 	return _c.SetKnowledgeEntityID(v.ID)
 }
 
-// Mutation returns the SituationEntityMutation object of the builder.
-func (_c *SituationEntityCreate) Mutation() *SituationEntityMutation {
+// Mutation returns the ObservationScopeEntityMutation object of the builder.
+func (_c *ObservationScopeEntityCreate) Mutation() *ObservationScopeEntityMutation {
 	return _c.mutation
 }
 
-// Save creates the SituationEntity in the database.
-func (_c *SituationEntityCreate) Save(ctx context.Context) (*SituationEntity, error) {
+// Save creates the ObservationScopeEntity in the database.
+func (_c *ObservationScopeEntityCreate) Save(ctx context.Context) (*ObservationScopeEntity, error) {
 	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
@@ -93,7 +87,7 @@ func (_c *SituationEntityCreate) Save(ctx context.Context) (*SituationEntity, er
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *SituationEntityCreate) SaveX(ctx context.Context) *SituationEntity {
+func (_c *ObservationScopeEntityCreate) SaveX(ctx context.Context) *ObservationScopeEntity {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -102,57 +96,54 @@ func (_c *SituationEntityCreate) SaveX(ctx context.Context) *SituationEntity {
 }
 
 // Exec executes the query.
-func (_c *SituationEntityCreate) Exec(ctx context.Context) error {
+func (_c *ObservationScopeEntityCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *SituationEntityCreate) ExecX(ctx context.Context) {
+func (_c *ObservationScopeEntityCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *SituationEntityCreate) defaults() error {
+func (_c *ObservationScopeEntityCreate) defaults() error {
 	if _, ok := _c.mutation.ID(); !ok {
-		if situationentity.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized situationentity.DefaultID (forgotten import ent/runtime?)")
+		if observationscopeentity.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized observationscopeentity.DefaultID (forgotten import ent/runtime?)")
 		}
-		v := situationentity.DefaultID()
+		v := observationscopeentity.DefaultID()
 		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *SituationEntityCreate) check() error {
+func (_c *ObservationScopeEntityCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
-		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SituationEntity.tenant_id"`)}
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "ObservationScopeEntity.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.SituationID(); !ok {
-		return &ValidationError{Name: "situation_id", err: errors.New(`ent: missing required field "SituationEntity.situation_id"`)}
+	if _, ok := _c.mutation.ScopeID(); !ok {
+		return &ValidationError{Name: "scope_id", err: errors.New(`ent: missing required field "ObservationScopeEntity.scope_id"`)}
 	}
 	if _, ok := _c.mutation.KnowledgeEntityID(); !ok {
-		return &ValidationError{Name: "knowledge_entity_id", err: errors.New(`ent: missing required field "SituationEntity.knowledge_entity_id"`)}
-	}
-	if _, ok := _c.mutation.Matching(); !ok {
-		return &ValidationError{Name: "matching", err: errors.New(`ent: missing required field "SituationEntity.matching"`)}
+		return &ValidationError{Name: "knowledge_entity_id", err: errors.New(`ent: missing required field "ObservationScopeEntity.knowledge_entity_id"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
-		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SituationEntity.tenant"`)}
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "ObservationScopeEntity.tenant"`)}
 	}
-	if len(_c.mutation.SituationIDs()) == 0 {
-		return &ValidationError{Name: "situation", err: errors.New(`ent: missing required edge "SituationEntity.situation"`)}
+	if len(_c.mutation.ScopeIDs()) == 0 {
+		return &ValidationError{Name: "scope", err: errors.New(`ent: missing required edge "ObservationScopeEntity.scope"`)}
 	}
 	if len(_c.mutation.KnowledgeEntityIDs()) == 0 {
-		return &ValidationError{Name: "knowledge_entity", err: errors.New(`ent: missing required edge "SituationEntity.knowledge_entity"`)}
+		return &ValidationError{Name: "knowledge_entity", err: errors.New(`ent: missing required edge "ObservationScopeEntity.knowledge_entity"`)}
 	}
 	return nil
 }
 
-func (_c *SituationEntityCreate) sqlSave(ctx context.Context) (*SituationEntity, error) {
+func (_c *ObservationScopeEntityCreate) sqlSave(ctx context.Context) (*ObservationScopeEntity, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -175,69 +166,65 @@ func (_c *SituationEntityCreate) sqlSave(ctx context.Context) (*SituationEntity,
 	return _node, nil
 }
 
-func (_c *SituationEntityCreate) createSpec() (*SituationEntity, *sqlgraph.CreateSpec) {
+func (_c *ObservationScopeEntityCreate) createSpec() (*ObservationScopeEntity, *sqlgraph.CreateSpec) {
 	var (
-		_node = &SituationEntity{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(situationentity.Table, sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID))
+		_node = &ObservationScopeEntity{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(observationscopeentity.Table, sqlgraph.NewFieldSpec(observationscopeentity.FieldID, field.TypeUUID))
 	)
-	_spec.Schema = _c.schemaConfig.SituationEntity
+	_spec.Schema = _c.schemaConfig.ObservationScopeEntity
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.Matching(); ok {
-		_spec.SetField(situationentity.FieldMatching, field.TypeBool, value)
-		_node.Matching = value
-	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   situationentity.TenantTable,
-			Columns: []string{situationentity.TenantColumn},
+			Table:   observationscopeentity.TenantTable,
+			Columns: []string{observationscopeentity.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SituationEntity
+		edge.Schema = _c.schemaConfig.ObservationScopeEntity
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SituationIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ScopeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   situationentity.SituationTable,
-			Columns: []string{situationentity.SituationColumn},
+			Inverse: true,
+			Table:   observationscopeentity.ScopeTable,
+			Columns: []string{observationscopeentity.ScopeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(observationscope.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SituationEntity
+		edge.Schema = _c.schemaConfig.ObservationScopeEntity
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.SituationID = nodes[0]
+		_node.ScopeID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   situationentity.KnowledgeEntityTable,
-			Columns: []string{situationentity.KnowledgeEntityColumn},
+			Table:   observationscopeentity.KnowledgeEntityTable,
+			Columns: []string{observationscopeentity.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SituationEntity
+		edge.Schema = _c.schemaConfig.ObservationScopeEntity
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -250,7 +237,7 @@ func (_c *SituationEntityCreate) createSpec() (*SituationEntity, *sqlgraph.Creat
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.SituationEntity.Create().
+//	client.ObservationScopeEntity.Create().
 //		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
@@ -259,13 +246,13 @@ func (_c *SituationEntityCreate) createSpec() (*SituationEntity, *sqlgraph.Creat
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.SituationEntityUpsert) {
+//		Update(func(u *ent.ObservationScopeEntityUpsert) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *SituationEntityCreate) OnConflict(opts ...sql.ConflictOption) *SituationEntityUpsertOne {
+func (_c *ObservationScopeEntityCreate) OnConflict(opts ...sql.ConflictOption) *ObservationScopeEntityUpsertOne {
 	_c.conflict = opts
-	return &SituationEntityUpsertOne{
+	return &ObservationScopeEntityUpsertOne{
 		create: _c,
 	}
 }
@@ -273,75 +260,63 @@ func (_c *SituationEntityCreate) OnConflict(opts ...sql.ConflictOption) *Situati
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.SituationEntity.Create().
+//	client.ObservationScopeEntity.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *SituationEntityCreate) OnConflictColumns(columns ...string) *SituationEntityUpsertOne {
+func (_c *ObservationScopeEntityCreate) OnConflictColumns(columns ...string) *ObservationScopeEntityUpsertOne {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &SituationEntityUpsertOne{
+	return &ObservationScopeEntityUpsertOne{
 		create: _c,
 	}
 }
 
 type (
-	// SituationEntityUpsertOne is the builder for "upsert"-ing
-	//  one SituationEntity node.
-	SituationEntityUpsertOne struct {
-		create *SituationEntityCreate
+	// ObservationScopeEntityUpsertOne is the builder for "upsert"-ing
+	//  one ObservationScopeEntity node.
+	ObservationScopeEntityUpsertOne struct {
+		create *ObservationScopeEntityCreate
 	}
 
-	// SituationEntityUpsert is the "OnConflict" setter.
-	SituationEntityUpsert struct {
+	// ObservationScopeEntityUpsert is the "OnConflict" setter.
+	ObservationScopeEntityUpsert struct {
 		*sql.UpdateSet
 	}
 )
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *SituationEntityUpsert) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpsert {
-	u.Set(situationentity.FieldKnowledgeEntityID, v)
+func (u *ObservationScopeEntityUpsert) SetKnowledgeEntityID(v uuid.UUID) *ObservationScopeEntityUpsert {
+	u.Set(observationscopeentity.FieldKnowledgeEntityID, v)
 	return u
 }
 
 // UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *SituationEntityUpsert) UpdateKnowledgeEntityID() *SituationEntityUpsert {
-	u.SetExcluded(situationentity.FieldKnowledgeEntityID)
-	return u
-}
-
-// SetMatching sets the "matching" field.
-func (u *SituationEntityUpsert) SetMatching(v bool) *SituationEntityUpsert {
-	u.Set(situationentity.FieldMatching, v)
-	return u
-}
-
-// UpdateMatching sets the "matching" field to the value that was provided on create.
-func (u *SituationEntityUpsert) UpdateMatching() *SituationEntityUpsert {
-	u.SetExcluded(situationentity.FieldMatching)
+func (u *ObservationScopeEntityUpsert) UpdateKnowledgeEntityID() *ObservationScopeEntityUpsert {
+	u.SetExcluded(observationscopeentity.FieldKnowledgeEntityID)
 	return u
 }
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
-//	client.SituationEntity.Create().
+//	client.ObservationScopeEntity.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(situationentity.FieldID)
+//				u.SetIgnore(observationscopeentity.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *SituationEntityUpsertOne) UpdateNewValues() *SituationEntityUpsertOne {
+func (u *ObservationScopeEntityUpsertOne) UpdateNewValues() *ObservationScopeEntityUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
-			s.SetIgnore(situationentity.FieldID)
+			s.SetIgnore(observationscopeentity.FieldID)
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
-			s.SetIgnore(situationentity.FieldTenantID)
+			s.SetIgnore(observationscopeentity.FieldTenantID)
 		}
-		if _, exists := u.create.mutation.SituationID(); exists {
-			s.SetIgnore(situationentity.FieldSituationID)
+		if _, exists := u.create.mutation.ScopeID(); exists {
+			s.SetIgnore(observationscopeentity.FieldScopeID)
 		}
 	}))
 	return u
@@ -350,79 +325,65 @@ func (u *SituationEntityUpsertOne) UpdateNewValues() *SituationEntityUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.SituationEntity.Create().
+//	client.ObservationScopeEntity.Create().
 //	    OnConflict(sql.ResolveWithIgnore()).
 //	    Exec(ctx)
-func (u *SituationEntityUpsertOne) Ignore() *SituationEntityUpsertOne {
+func (u *ObservationScopeEntityUpsertOne) Ignore() *ObservationScopeEntityUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *SituationEntityUpsertOne) DoNothing() *SituationEntityUpsertOne {
+func (u *ObservationScopeEntityUpsertOne) DoNothing() *ObservationScopeEntityUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the SituationEntityCreate.OnConflict
+// Update allows overriding fields `UPDATE` values. See the ObservationScopeEntityCreate.OnConflict
 // documentation for more info.
-func (u *SituationEntityUpsertOne) Update(set func(*SituationEntityUpsert)) *SituationEntityUpsertOne {
+func (u *ObservationScopeEntityUpsertOne) Update(set func(*ObservationScopeEntityUpsert)) *ObservationScopeEntityUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&SituationEntityUpsert{UpdateSet: update})
+		set(&ObservationScopeEntityUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *SituationEntityUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpsertOne {
-	return u.Update(func(s *SituationEntityUpsert) {
+func (u *ObservationScopeEntityUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *ObservationScopeEntityUpsertOne {
+	return u.Update(func(s *ObservationScopeEntityUpsert) {
 		s.SetKnowledgeEntityID(v)
 	})
 }
 
 // UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *SituationEntityUpsertOne) UpdateKnowledgeEntityID() *SituationEntityUpsertOne {
-	return u.Update(func(s *SituationEntityUpsert) {
+func (u *ObservationScopeEntityUpsertOne) UpdateKnowledgeEntityID() *ObservationScopeEntityUpsertOne {
+	return u.Update(func(s *ObservationScopeEntityUpsert) {
 		s.UpdateKnowledgeEntityID()
 	})
 }
 
-// SetMatching sets the "matching" field.
-func (u *SituationEntityUpsertOne) SetMatching(v bool) *SituationEntityUpsertOne {
-	return u.Update(func(s *SituationEntityUpsert) {
-		s.SetMatching(v)
-	})
-}
-
-// UpdateMatching sets the "matching" field to the value that was provided on create.
-func (u *SituationEntityUpsertOne) UpdateMatching() *SituationEntityUpsertOne {
-	return u.Update(func(s *SituationEntityUpsert) {
-		s.UpdateMatching()
-	})
-}
-
 // Exec executes the query.
-func (u *SituationEntityUpsertOne) Exec(ctx context.Context) error {
+func (u *ObservationScopeEntityUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for SituationEntityCreate.OnConflict")
+		return errors.New("ent: missing options for ObservationScopeEntityCreate.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *SituationEntityUpsertOne) ExecX(ctx context.Context) {
+func (u *ObservationScopeEntityUpsertOne) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *SituationEntityUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+func (u *ObservationScopeEntityUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 	if u.create.driver.Dialect() == dialect.MySQL {
 		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
 		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: SituationEntityUpsertOne.ID is not supported by MySQL driver. Use SituationEntityUpsertOne.Exec instead")
+		return id, errors.New("ent: ObservationScopeEntityUpsertOne.ID is not supported by MySQL driver. Use ObservationScopeEntityUpsertOne.Exec instead")
 	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
@@ -432,7 +393,7 @@ func (u *SituationEntityUpsertOne) ID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *SituationEntityUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *ObservationScopeEntityUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -440,28 +401,28 @@ func (u *SituationEntityUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// SituationEntityCreateBulk is the builder for creating many SituationEntity entities in bulk.
-type SituationEntityCreateBulk struct {
+// ObservationScopeEntityCreateBulk is the builder for creating many ObservationScopeEntity entities in bulk.
+type ObservationScopeEntityCreateBulk struct {
 	config
 	err      error
-	builders []*SituationEntityCreate
+	builders []*ObservationScopeEntityCreate
 	conflict []sql.ConflictOption
 }
 
-// Save creates the SituationEntity entities in the database.
-func (_c *SituationEntityCreateBulk) Save(ctx context.Context) ([]*SituationEntity, error) {
+// Save creates the ObservationScopeEntity entities in the database.
+func (_c *ObservationScopeEntityCreateBulk) Save(ctx context.Context) ([]*ObservationScopeEntity, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*SituationEntity, len(_c.builders))
+	nodes := make([]*ObservationScopeEntity, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*SituationEntityMutation)
+				mutation, ok := m.(*ObservationScopeEntityMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -505,7 +466,7 @@ func (_c *SituationEntityCreateBulk) Save(ctx context.Context) ([]*SituationEnti
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *SituationEntityCreateBulk) SaveX(ctx context.Context) []*SituationEntity {
+func (_c *ObservationScopeEntityCreateBulk) SaveX(ctx context.Context) []*ObservationScopeEntity {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -514,13 +475,13 @@ func (_c *SituationEntityCreateBulk) SaveX(ctx context.Context) []*SituationEnti
 }
 
 // Exec executes the query.
-func (_c *SituationEntityCreateBulk) Exec(ctx context.Context) error {
+func (_c *ObservationScopeEntityCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *SituationEntityCreateBulk) ExecX(ctx context.Context) {
+func (_c *ObservationScopeEntityCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
@@ -529,7 +490,7 @@ func (_c *SituationEntityCreateBulk) ExecX(ctx context.Context) {
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.SituationEntity.CreateBulk(builders...).
+//	client.ObservationScopeEntity.CreateBulk(builders...).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -537,13 +498,13 @@ func (_c *SituationEntityCreateBulk) ExecX(ctx context.Context) {
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.SituationEntityUpsert) {
+//		Update(func(u *ent.ObservationScopeEntityUpsert) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *SituationEntityCreateBulk) OnConflict(opts ...sql.ConflictOption) *SituationEntityUpsertBulk {
+func (_c *ObservationScopeEntityCreateBulk) OnConflict(opts ...sql.ConflictOption) *ObservationScopeEntityUpsertBulk {
 	_c.conflict = opts
-	return &SituationEntityUpsertBulk{
+	return &ObservationScopeEntityUpsertBulk{
 		create: _c,
 	}
 }
@@ -551,45 +512,45 @@ func (_c *SituationEntityCreateBulk) OnConflict(opts ...sql.ConflictOption) *Sit
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.SituationEntity.Create().
+//	client.ObservationScopeEntity.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *SituationEntityCreateBulk) OnConflictColumns(columns ...string) *SituationEntityUpsertBulk {
+func (_c *ObservationScopeEntityCreateBulk) OnConflictColumns(columns ...string) *ObservationScopeEntityUpsertBulk {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &SituationEntityUpsertBulk{
+	return &ObservationScopeEntityUpsertBulk{
 		create: _c,
 	}
 }
 
-// SituationEntityUpsertBulk is the builder for "upsert"-ing
-// a bulk of SituationEntity nodes.
-type SituationEntityUpsertBulk struct {
-	create *SituationEntityCreateBulk
+// ObservationScopeEntityUpsertBulk is the builder for "upsert"-ing
+// a bulk of ObservationScopeEntity nodes.
+type ObservationScopeEntityUpsertBulk struct {
+	create *ObservationScopeEntityCreateBulk
 }
 
 // UpdateNewValues updates the mutable fields using the new values that
 // were set on create. Using this option is equivalent to using:
 //
-//	client.SituationEntity.Create().
+//	client.ObservationScopeEntity.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(situationentity.FieldID)
+//				u.SetIgnore(observationscopeentity.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *SituationEntityUpsertBulk) UpdateNewValues() *SituationEntityUpsertBulk {
+func (u *ObservationScopeEntityUpsertBulk) UpdateNewValues() *ObservationScopeEntityUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
-				s.SetIgnore(situationentity.FieldID)
+				s.SetIgnore(observationscopeentity.FieldID)
 			}
 			if _, exists := b.mutation.TenantID(); exists {
-				s.SetIgnore(situationentity.FieldTenantID)
+				s.SetIgnore(observationscopeentity.FieldTenantID)
 			}
-			if _, exists := b.mutation.SituationID(); exists {
-				s.SetIgnore(situationentity.FieldSituationID)
+			if _, exists := b.mutation.ScopeID(); exists {
+				s.SetIgnore(observationscopeentity.FieldScopeID)
 			}
 		}
 	}))
@@ -599,76 +560,62 @@ func (u *SituationEntityUpsertBulk) UpdateNewValues() *SituationEntityUpsertBulk
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.SituationEntity.Create().
+//	client.ObservationScopeEntity.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-func (u *SituationEntityUpsertBulk) Ignore() *SituationEntityUpsertBulk {
+func (u *ObservationScopeEntityUpsertBulk) Ignore() *ObservationScopeEntityUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *SituationEntityUpsertBulk) DoNothing() *SituationEntityUpsertBulk {
+func (u *ObservationScopeEntityUpsertBulk) DoNothing() *ObservationScopeEntityUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the SituationEntityCreateBulk.OnConflict
+// Update allows overriding fields `UPDATE` values. See the ObservationScopeEntityCreateBulk.OnConflict
 // documentation for more info.
-func (u *SituationEntityUpsertBulk) Update(set func(*SituationEntityUpsert)) *SituationEntityUpsertBulk {
+func (u *ObservationScopeEntityUpsertBulk) Update(set func(*ObservationScopeEntityUpsert)) *ObservationScopeEntityUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&SituationEntityUpsert{UpdateSet: update})
+		set(&ObservationScopeEntityUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
 // SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (u *SituationEntityUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *SituationEntityUpsertBulk {
-	return u.Update(func(s *SituationEntityUpsert) {
+func (u *ObservationScopeEntityUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *ObservationScopeEntityUpsertBulk {
+	return u.Update(func(s *ObservationScopeEntityUpsert) {
 		s.SetKnowledgeEntityID(v)
 	})
 }
 
 // UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
-func (u *SituationEntityUpsertBulk) UpdateKnowledgeEntityID() *SituationEntityUpsertBulk {
-	return u.Update(func(s *SituationEntityUpsert) {
+func (u *ObservationScopeEntityUpsertBulk) UpdateKnowledgeEntityID() *ObservationScopeEntityUpsertBulk {
+	return u.Update(func(s *ObservationScopeEntityUpsert) {
 		s.UpdateKnowledgeEntityID()
 	})
 }
 
-// SetMatching sets the "matching" field.
-func (u *SituationEntityUpsertBulk) SetMatching(v bool) *SituationEntityUpsertBulk {
-	return u.Update(func(s *SituationEntityUpsert) {
-		s.SetMatching(v)
-	})
-}
-
-// UpdateMatching sets the "matching" field to the value that was provided on create.
-func (u *SituationEntityUpsertBulk) UpdateMatching() *SituationEntityUpsertBulk {
-	return u.Update(func(s *SituationEntityUpsert) {
-		s.UpdateMatching()
-	})
-}
-
 // Exec executes the query.
-func (u *SituationEntityUpsertBulk) Exec(ctx context.Context) error {
+func (u *ObservationScopeEntityUpsertBulk) Exec(ctx context.Context) error {
 	if u.create.err != nil {
 		return u.create.err
 	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
-			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the SituationEntityCreateBulk instead", i)
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ObservationScopeEntityCreateBulk instead", i)
 		}
 	}
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for SituationEntityCreateBulk.OnConflict")
+		return errors.New("ent: missing options for ObservationScopeEntityCreateBulk.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *SituationEntityUpsertBulk) ExecX(ctx context.Context) {
+func (u *ObservationScopeEntityUpsertBulk) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}

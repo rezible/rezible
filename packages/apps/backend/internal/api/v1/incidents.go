@@ -15,12 +15,13 @@ import (
 
 type incidentsHandler struct {
 	*baseHandler
+	clock      rez.Clock
 	incidents  rez.IncidentDetailsService
 	management rez.IncidentManagementService
 }
 
-func newIncidentsHandler(base *baseHandler, incidents rez.IncidentDetailsService, management rez.IncidentManagementService) *incidentsHandler {
-	return &incidentsHandler{baseHandler: base, incidents: incidents, management: management}
+func newIncidentsHandler(base *baseHandler, clock rez.Clock, incidents rez.IncidentDetailsService, management rez.IncidentManagementService) *incidentsHandler {
+	return &incidentsHandler{baseHandler: base, clock: clock, incidents: incidents, management: management}
 }
 
 func incidentIdPredicate(id oapi.FlexibleId) (predicate.Incident, error) {
@@ -49,7 +50,10 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list incidents", listErr)
 	}
-	resp.Body = oapi.ConvertPaginatedResultBody(incs, oapi.IncidentFromEnt)
+	now := h.clock.Now()
+	resp.Body = oapi.ConvertPaginatedResultBody(incs, func(inc *ent.Incident) oapi.Incident {
+		return oapi.IncidentFromEnt(inc, now)
+	})
 
 	return &resp, nil
 }
@@ -65,7 +69,7 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 	if incErr != nil {
 		return nil, oapi.Error(ctx, "get incident", incErr)
 	}
-	resp.Body.Data = oapi.IncidentFromEnt(inc)
+	resp.Body.Data = oapi.IncidentFromEnt(inc, h.clock.Now())
 
 	return &resp, nil
 }

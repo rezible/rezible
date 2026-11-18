@@ -109,7 +109,7 @@ func (_q *NormalizedEventProjectionQuery) QueryEvent() *NormalizedEventQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(normalizedeventprojection.Table, normalizedeventprojection.FieldID, selector),
 			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojection.EventTable, normalizedeventprojection.EventColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, normalizedeventprojection.EventTable, normalizedeventprojection.EventColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.NormalizedEvent

@@ -18,6 +18,7 @@ const (
 	CheckOutputCount       = "output_count"
 	CheckOutputsCite       = "outputs_cite"
 	CheckCitesEntity       = "cites_entity"
+	CheckCitesChangePoint  = "cites_change_point"
 	CheckProviderReads     = "provider_reads"
 	CheckCitesProviderRead = "cites_provider_read"
 	CheckNextChecks        = "next_checks"
@@ -35,7 +36,8 @@ type CheckSpec struct {
 	Max        *int           `json:"max,omitempty"`
 	EntityKind string         `json:"entity_kind,omitempty"`
 	Name       string         `json:"name,omitempty"`
-	Property   map[string]any `json:"property,omitempty"`
+	EventKind  string         `json:"event_kind,omitempty"`
+	Attribute  map[string]any `json:"attribute,omitempty"`
 	// Service, Tool and Outcome select provider reads: the read service's display name, the tool, and
 	// "succeeded" or "failed".
 	Service string `json:"service,omitempty"`
@@ -48,7 +50,7 @@ var genericCheckKinds = []string{CheckProviderReads}
 
 // investigationCheckKinds read an investigation's outputs.
 var investigationCheckKinds = []string{
-	CheckReportPublished, CheckAnswerPublished, CheckOutputCount, CheckOutputsCite, CheckCitesEntity, CheckCitesProviderRead,
+	CheckReportPublished, CheckAnswerPublished, CheckOutputCount, CheckOutputsCite, CheckCitesEntity, CheckCitesChangePoint, CheckCitesProviderRead,
 	CheckNextChecks,
 }
 
@@ -58,7 +60,8 @@ var checkParameters = map[string][]string{
 	CheckAnswerPublished:   {},
 	CheckOutputCount:       {"output", "min", "max"},
 	CheckOutputsCite:       {},
-	CheckCitesEntity:       {"entity_kind", "name", "property"},
+	CheckCitesEntity:       {"entity_kind", "name"},
+	CheckCitesChangePoint:  {"event_kind", "attribute"},
 	CheckProviderReads:     {"service", "tool", "outcome", "min", "max"},
 	CheckCitesProviderRead: {"service", "tool"},
 	CheckNextChecks:        {"min"},
@@ -76,7 +79,8 @@ func (c CheckSpec) given() []string {
 	add("max", c.Max != nil)
 	add("entity_kind", c.EntityKind != "")
 	add("name", c.Name != "")
-	add("property", len(c.Property) > 0)
+	add("event_kind", c.EventKind != "")
+	add("attribute", len(c.Attribute) > 0)
 	add("service", c.Service != "")
 	add("tool", c.Tool != "")
 	add("outcome", c.Outcome != "")
@@ -126,8 +130,12 @@ func (c CheckSpec) validate() error {
 		if c.EntityKind == "" {
 			return fmt.Errorf("%s: no entity_kind", c.Kind)
 		}
-		if (c.Name == "") == (len(c.Property) == 0) {
-			return fmt.Errorf("%s: give a name or properties, not both", c.Kind)
+		if c.Name == "" {
+			return fmt.Errorf("%s: no name", c.Kind)
+		}
+	case CheckCitesChangePoint:
+		if c.EventKind == "" || len(c.Attribute) == 0 {
+			return fmt.Errorf("%s: event_kind and attribute are required", c.Kind)
 		}
 	}
 	return nil
@@ -154,8 +162,10 @@ func (c CheckSpec) id() string {
 		if c.Name != "" {
 			parts = append(parts, c.Name)
 		}
-		for _, key := range slices.Sorted(maps.Keys(c.Property)) {
-			parts = append(parts, fmt.Sprintf("%s=%v", key, c.Property[key]))
+	case CheckCitesChangePoint:
+		parts = append(parts, c.EventKind)
+		for _, key := range slices.Sorted(maps.Keys(c.Attribute)) {
+			parts = append(parts, fmt.Sprintf("%s=%v", key, c.Attribute[key]))
 		}
 	case CheckProviderReads, CheckCitesProviderRead:
 		for _, value := range []string{c.Service, c.Tool, c.Outcome} {
@@ -200,13 +210,14 @@ type RecordedOutput struct {
 
 // CitedEvidence is the entities cited evidence is about: its subject, or a relationship's two ends.
 type CitedEvidence struct {
-	Entities []RecordedEntity
+	Entities   []RecordedEntity
+	EventKind  string
+	Attributes map[string]any
 }
 
 type RecordedEntity struct {
-	Kind       string
-	Name       string
-	Properties map[string]any
+	Kind string
+	Name string
 }
 
 type RecordedRead struct {
@@ -268,6 +279,22 @@ func (c CheckSpec) Evaluate(checkID string, records Records) Check {
 		})
 		check.Expected = c.entityText()
 		check.Observed = citedEntityNames(investigation.cited())
+	case CheckCitesChangePoint:
+		check.Passed = slices.ContainsFunc(investigation.cited(), func(output RecordedOutput) bool {
+			return slices.ContainsFunc(output.Evidence, func(evidence CitedEvidence) bool {
+				if evidence.EventKind != c.EventKind {
+					return false
+				}
+				for key, value := range c.Attribute {
+					if !reflect.DeepEqual(evidence.Attributes[key], value) {
+						return false
+					}
+				}
+				return true
+			})
+		})
+		check.Expected = fmt.Sprintf("an output citing %s evidence with %v", c.EventKind, c.Attribute)
+		check.Observed = citedEntityNames(investigation.cited())
 	case CheckProviderReads:
 		matching := 0
 		for _, read := range records.Reads {
@@ -316,25 +343,11 @@ func (c CheckSpec) boundsText() string {
 }
 
 func (c CheckSpec) matchesEntity(entity RecordedEntity) bool {
-	if entity.Kind != c.EntityKind {
-		return false
-	}
-	if c.Name != "" {
-		return entity.Name == c.Name
-	}
-	for key, want := range c.Property {
-		if !reflect.DeepEqual(entity.Properties[key], want) {
-			return false
-		}
-	}
-	return true
+	return entity.Kind == c.EntityKind && entity.Name == c.Name
 }
 
 func (c CheckSpec) entityText() string {
-	if c.Name != "" {
-		return fmt.Sprintf("an output citing the %s %q", c.EntityKind, c.Name)
-	}
-	return fmt.Sprintf("an output citing a %s with %v", c.EntityKind, c.Property)
+	return fmt.Sprintf("an output citing the %s %q", c.EntityKind, c.Name)
 }
 
 func (c CheckSpec) matchesRead(read RecordedRead) bool {

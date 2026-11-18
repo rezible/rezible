@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/rezible/rezible/pkg/knowledgegraph"
+	"github.com/rezible/rezible/pkg/situations"
 	"maps"
 	"slices"
 	"strings"
@@ -17,6 +17,8 @@ import (
 
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/pkg/errs"
+	"github.com/rezible/rezible/pkg/knowledgegraph"
+	"github.com/rezible/rezible/pkg/projections"
 
 	"github.com/rezible/rezible/ent"
 	agtm "github.com/rezible/rezible/ent/agentmessage"
@@ -209,9 +211,10 @@ func (i *investigationInvocation) introduceSituation(ctx context.Context, change
 		})
 	}
 
-	entities := make([]*ent.KnowledgeEntity, 0, len(situation.Edges.Entities))
-	for _, member := range situation.Edges.Entities {
-		entities = append(entities, member.Edges.KnowledgeEntity)
+	runtimeEntities := situations.RuntimeEntities(situation.Edges.Observations)
+	entities := make([]*ent.KnowledgeEntity, 0, len(runtimeEntities))
+	for _, member := range runtimeEntities {
+		entities = append(entities, member.Entity)
 	}
 	slices.SortFunc(entities, func(a, b *ent.KnowledgeEntity) int {
 		return cmp.Or(strings.Compare(a.State.DisplayName, b.State.DisplayName), strings.Compare(a.ID.String(), b.ID.String()))
@@ -401,13 +404,11 @@ func (i *investigationInvocation) readEntity(ctx context.Context, input rezai.Re
 	if entityErr != nil {
 		return nil, fmt.Errorf("read entity: %w", entityErr)
 	}
-	// A busy entity relates to many events, which list_entity_evidence covers, so they are only counted.
 	relationshipsParams := rez.ListKnowledgeRelationshipsParams{
-		ListParams:                  page,
-		EntityID:                    entityID,
-		ExcludedNeighbourCategories: []kne.Category{kne.CategoryEvent},
-		NewestEvidenceFirst:         true,
-		Expand:                      rez.KnowledgeRelationshipExpand{Endpoints: true},
+		ListParams:          page,
+		EntityID:            entityID,
+		NewestEvidenceFirst: true,
+		Expand:              rez.KnowledgeRelationshipExpand{Endpoints: true},
 	}
 	relationships, relationshipsErr := i.knowledge.ListRelationships(ctx, relationshipsParams)
 	if relationshipsErr != nil {
@@ -421,18 +422,11 @@ func (i *investigationInvocation) readEntity(ctx context.Context, input rezai.Re
 	if evidenceErr != nil {
 		return nil, fmt.Errorf("summarize entity and relationship evidence: %w", evidenceErr)
 	}
-	eventsParams := rez.ListKnowledgeRelationshipsParams{
-		PageSize:            1,
-		EntityID:            entityID,
-		NeighbourCategories: []kne.Category{kne.CategoryEvent},
-	}
-	events, eventsErr := i.knowledge.ListRelationships(ctx, eventsParams)
-	if eventsErr != nil {
-		return nil, fmt.Errorf("count event relationships: %w", eventsErr)
-	}
-
 	now := i.clock.Now()
 	lines := []string{i.renderEntityLine(entity)}
+	if entity.MergedIntoID != nil {
+		lines = append(lines, "merged_into="+i.formatRef(*entity.MergedIntoID))
+	}
 	if entity.WithdrawnAt != nil {
 		lines = append(lines, "withdrawn="+entity.WithdrawnAt.UTC().Format(time.RFC3339Nano))
 	}
@@ -442,7 +436,7 @@ func (i *investigationInvocation) readEntity(ctx context.Context, input rezai.Re
 	if entity.LastObservedAt != nil {
 		lines = append(lines, "last_observed="+entity.LastObservedAt.UTC().Format(time.RFC3339Nano))
 	}
-	structureLines, structureErr := i.renderStructure(ctx, entity.ID)
+	structureLines, structureErr := i.renderStructure(ctx, entity)
 	if structureErr != nil {
 		return nil, structureErr
 	}
@@ -490,10 +484,49 @@ func (i *investigationInvocation) readEntity(ctx context.Context, input rezai.Re
 		}
 		lines = append(lines, line)
 	}
-	if events.Total > 0 {
-		lines = append(lines, fmt.Sprintf("event_relationships=%d (not listed; use list_entity_evidence)", events.Total))
+	countLine, countErr := i.renderRecentChangesCount(ctx, entity, now)
+	if countErr != nil {
+		return nil, countErr
 	}
+	if countLine != "" {
+		lines = append(lines, countLine)
+	}
+
 	return i.textPageResult(strings.Join(lines, "\n"), page, relationships.Total, len(relationships.Data)), nil
+}
+
+// readEntityChangesLimit is how many recent change points read_entity counts before it shows the count as cut.
+const readEntityChangesLimit = 20
+
+// renderRecentChangesCount counts a service's deployments, or a repository's merges into any branch, in the
+// last seven days up to now, so a future-dated change is not counted. Other entities have no count.
+func (i *investigationInvocation) renderRecentChangesCount(ctx context.Context, entity *ent.KnowledgeEntity, now time.Time) (string, error) {
+	params := rez.ListChangePointsParams{
+		EntityID:      entity.ID,
+		From:          now.Add(-7 * 24 * time.Hour),
+		FromInclusive: true,
+		To:            now,
+		ToInclusive:   true,
+		Limit:         readEntityChangesLimit,
+	}
+	label := ""
+	switch {
+	case knowledgegraph.IsService(entity.Category, entity.Kind):
+		params.Kind, params.Roles, label = projections.KindDeployment, []string{projections.AssertionDeploymentService}, "deployments_7d"
+	case entity.Category == kne.CategoryCode && entity.Kind == knowledgegraph.EntityKindRepository:
+		params.Kind, params.Roles, label = projections.KindCodeChange, []string{projections.AssertionChangeRepository}, "merged_changes_7d"
+	default:
+		return "", nil
+	}
+	points, listErr := i.changePoints.ListChangePoints(ctx, params)
+	if listErr != nil {
+		return "", fmt.Errorf("count %s: %w", label, listErr)
+	}
+	cut := ""
+	if points.Cut {
+		cut = "+"
+	}
+	return fmt.Sprintf("%s=%d%s (use list_changes)", label, len(points.ChangePoints), cut), nil
 }
 
 // addEvidenceSummary adds one alias's evidence to a subject's, which may span several aliases.
@@ -825,9 +858,10 @@ func (i *investigationInvocation) hypothesisToolResult(version *ent.Investigatio
 	}
 }
 
-// renderStructure renders the entity's ancestry, outermost first, and the contains claims not chosen as its
-// parent.
-func (i *investigationInvocation) renderStructure(ctx context.Context, entityID uuid.UUID) ([]string, error) {
+// renderStructure renders the entity's ancestry, outermost first, the contains claim chosen as its parent with the
+// providers claiming it, and the contains claims not chosen. The entity is read with its parent claim.
+func (i *investigationInvocation) renderStructure(ctx context.Context, entity *ent.KnowledgeEntity) ([]string, error) {
+	entityID := entity.ID
 	ids := []uuid.UUID{entityID}
 	ancestors, ancestorsErr := i.knowledge.ListAncestors(ctx, ids)
 	if ancestorsErr != nil {
@@ -844,6 +878,13 @@ func (i *investigationInvocation) renderStructure(ctx context.Context, entityID 
 			names[len(chain)-1-index] = i.renderEntityName(ancestor)
 		}
 		lines = append(lines, "ancestors="+strings.Join(names, " > "))
+	}
+	if claim := entity.ParentClaim(); claim != nil {
+		providers := make([]string, len(claim.Edges.Aliases))
+		for index, alias := range claim.Edges.Aliases {
+			providers[index] = alias.Provider
+		}
+		lines = append(lines, fmt.Sprintf("parent_claim %s providers=%s", i.formatRef(claim.ID), strings.Join(providers, ",")))
 	}
 	for _, claim := range claims[entityID] {
 		providers := make([]string, len(claim.Edges.Aliases))

@@ -67,7 +67,7 @@ func (s *AlertServiceSuite) newFixture(tdb rez.Database) *alertServiceFixture {
 			return &rivertype.JobInsertResult{Job: &rivertype.JobRow{}}, nil
 		}).
 		Maybe()
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationObservationService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, NewSituationObservationService(jobService))
 	s.Require().NoError(alertsErr)
 	h.alerts = alerts
 	return h
@@ -101,12 +101,14 @@ func (s *AlertServiceSuite) record(ctx context.Context, tdb rez.Database, h *ale
 		SetProviderEventRef(cmp.Or(n.ref, uuid.NewString())).
 		SetKind(projections.KindAlertInstance).
 		SetOccurredAt(minute(n.at)).
+		SetLastOccurredAt(minute(n.at)).
 		SetReceivedAt(minute(n.at)).
 		SetAttributes([]byte(`{}`))
 	event, eventErr := createEvent.Save(ctx)
 	s.Require().NoError(eventErr)
 	definitionEntityRef := rez.KnowledgeEntityRef{Category: kne.CategorySignal, Kind: "alert", ProviderResourceRef: definitionRef}
 	definitionEvidence := rez.KnowledgeEvidenceRef{
+		Authority:   schematypes.KnowledgeAuthorityDeclared,
 		Kind:        "observed",
 		Assertion:   "alert_definition_observed",
 		EffectiveAt: event.OccurredAt,

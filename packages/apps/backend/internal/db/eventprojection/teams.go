@@ -11,7 +11,6 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	entschema "github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -40,6 +39,7 @@ func (s *ProjectionService) handleTeamEvent(ctx context.Context, e *projections.
 		Assertion:   knowledgeAssertionTeamObserved,
 		StateMode:   ke.StateModeReplace,
 		EffectiveAt: e.Event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityDeclared,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.Name,
 			Properties: map[string]any{
@@ -76,7 +76,7 @@ func (s *ProjectionService) setTeamFromProjection(ctx context.Context, knowledge
 	client := s.db.Client(ctx)
 	lookupTeam := client.Team.Query().
 		Where(team.Or(team.KnowledgeEntityID(knowledgeEntityId), team.Slug(attrs.Slug)))
-	existing, queryErr := lookupTeam.Only(entschema.IncludeArchived(ctx))
+	existing, queryErr := lookupTeam.Only(ent.IncludeArchived(ctx))
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
 		return uuid.Nil, fmt.Errorf("query team: %w", queryErr)
 	}
@@ -122,6 +122,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 		Kind:        kind,
 		Assertion:   knowledgeAssertionUserProfileObserved,
 		EffectiveAt: event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityObserved,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.User.Name,
 		},
@@ -131,6 +132,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 		Kind:        kind,
 		Assertion:   knowledgeAssertionTeamObserved,
 		EffectiveAt: event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityObserved,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.Team.Name,
 			Properties: map[string]any{
@@ -156,6 +158,7 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 		Kind:        kind,
 		Assertion:   knowledgeAssertionTeamMembershipObserved,
 		EffectiveAt: event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityDeclared,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: "Member of " + attrs.Team.Name,
 			Properties:  map[string]any{"role": attrs.Role},
@@ -168,6 +171,10 @@ func (s *ProjectionService) handleTeamMembershipEvent(ctx context.Context, e *pr
 		subj, ingestErr := s.ingestSubjectEvidence(ctx, event, membershipEvidenceRef, userEvidenceRef, teamEvidenceRef)
 		if ingestErr != nil {
 			return nil, fmt.Errorf("ingest knowledge evidence: %w", ingestErr)
+		} else if subj == nil {
+			// The membership ref was skipped and is recorded on the projection receipt. There is no relationship
+			// to project a membership from.
+			return projected, nil
 		} else if subj.RelationshipID == nil {
 			return nil, fmt.Errorf("nil subject relationship")
 		}
@@ -224,7 +231,7 @@ func (s *ProjectionService) setTeamMembershipFromProjection(ctx context.Context,
 	client := s.db.Client(ctx)
 	lookupExisting := client.TeamMembership.Query().
 		Where(teammembership.TeamID(teamId), teammembership.UserID(userId))
-	existing, queryErr := lookupExisting.Only(entschema.IncludeArchived(ctx))
+	existing, queryErr := lookupExisting.Only(ent.IncludeArchived(ctx))
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
 		return uuid.Nil, fmt.Errorf("query existing: %w", queryErr)
 	}

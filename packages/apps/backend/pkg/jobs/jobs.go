@@ -69,6 +69,13 @@ func (*ProcessProviderEventArgs) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
 
+type ReobserveNormalizedEvent struct {
+	EventId uuid.UUID
+	At      time.Time
+}
+
+func (ReobserveNormalizedEvent) Kind() string { return "reobserve-normalized-event" }
+
 type ProjectNormalizedEvent struct {
 	EventId uuid.UUID
 }
@@ -77,8 +84,13 @@ func (ProjectNormalizedEvent) Kind() string {
 	return "project-normalized-event"
 }
 
+// ProjectNormalizedEventMaxAttempts is the projection job's attempt budget. The projection worker stops retrying
+// missing relationship endpoints before it runs out.
+const ProjectNormalizedEventMaxAttempts = 25
+
 func (ProjectNormalizedEvent) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{
+		MaxAttempts: ProjectNormalizedEventMaxAttempts,
 		UniqueOpts: river.UniqueOpts{
 			ByArgs:  true,
 			ByState: UniqueStateNonCompleted,

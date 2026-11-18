@@ -9,10 +9,6 @@ import (
 	"github.com/rezible/rezible/pkg/errs"
 )
 
-// MaxAncestryDepth bounds ancestry reads and the parent cycle walk, as a guard against cycles that concurrent
-// writes can introduce.
-const MaxAncestryDepth = 16
-
 // Hierarchy is a tree of entities joined by contains. Every category belongs to at most one.
 type Hierarchy string
 
@@ -64,7 +60,6 @@ const (
 	FamilyFlow           Family = "flow"
 	FamilyObservation    Family = "observation"
 	FamilyGovernance     Family = "governance"
-	FamilyOccurrence     Family = "occurrence"
 )
 
 // Dependency says which endpoint of a relationship is affected when the other fails.
@@ -110,7 +105,6 @@ var categorySpecs = []CategorySpec{
 	{kne.CategoryConcern, HierarchyConcern, NoLevel},
 	{kne.CategoryDecision, HierarchyDecision, NoLevel},
 	{kne.CategorySignal, HierarchyMonitoring, NoLevel},
-	{kne.CategoryEvent, HierarchyNone, NoLevel},
 }
 
 func categoriesExcept(excluded ...kne.Category) []kne.Category {
@@ -137,7 +131,7 @@ var predicateSpecs = []PredicateSpec{
 	{Predicate: knr.PredicateBuiltFrom, Family: FamilyImplementation, Dependency: DependencyNone,
 		Sources: runnable, Targets: []kne.Category{kne.CategoryCode}},
 	{Predicate: knr.PredicateOwns, Family: FamilyOwnership, Dependency: DependencyNone,
-		Sources: actor, Targets: categoriesExcept(kne.CategoryActor, kne.CategoryEvent)},
+		Sources: actor, Targets: categoriesExcept(kne.CategoryActor)},
 	{Predicate: knr.PredicateMemberOf, Family: FamilyMembership, Dependency: DependencyNone,
 		Sources: actor, Targets: actor},
 	{Predicate: knr.PredicateParticipatesIn, Family: FamilyMembership, Dependency: DependencyNone,
@@ -159,18 +153,14 @@ var predicateSpecs = []PredicateSpec{
 	{Predicate: knr.PredicateDependsOn, Family: FamilyFlow, Dependency: DependencySourceOnTarget, RollsUp: true,
 		Sources: logicalAndInfra, Targets: logicalAndInfra},
 	{Predicate: knr.PredicateObserves, Family: FamilyObservation, Dependency: DependencyNone,
-		Sources: []kne.Category{kne.CategorySignal}, Targets: categoriesExcept(kne.CategorySignal, kne.CategoryEvent)},
+		Sources: []kne.Category{kne.CategorySignal}, Targets: categoriesExcept(kne.CategorySignal)},
 	{Predicate: knr.PredicateConstrains, Family: FamilyGovernance, Dependency: DependencyNone,
 		Sources: []kne.Category{kne.CategoryConcern, kne.CategoryDecision},
-		Targets: categoriesExcept(kne.CategoryConcern, kne.CategoryDecision, kne.CategoryEvent)},
+		Targets: categoriesExcept(kne.CategoryConcern, kne.CategoryDecision)},
 	{Predicate: knr.PredicateAddresses, Family: FamilyGovernance, Dependency: DependencyNone,
 		Sources: []kne.Category{kne.CategoryDecision}, Targets: []kne.Category{kne.CategoryConcern}},
 	{Predicate: knr.PredicateMitigates, Family: FamilyGovernance, Dependency: DependencyNone,
-		Sources: categoriesExcept(kne.CategoryConcern, kne.CategoryEvent), Targets: []kne.Category{kne.CategoryConcern}},
-	{Predicate: knr.PredicateImpacts, Family: FamilyOccurrence, Dependency: DependencyNone,
-		Sources: []kne.Category{kne.CategoryEvent}, Targets: categoriesExcept(kne.CategoryEvent)},
-	{Predicate: knr.PredicateTouches, Family: FamilyOccurrence, Dependency: DependencyNone,
-		Sources: []kne.Category{kne.CategoryEvent}, Targets: []kne.Category{kne.CategoryCode}},
+		Sources: categoriesExcept(kne.CategoryConcern), Targets: []kne.Category{kne.CategoryConcern}},
 }
 
 // CategorySpecOf returns the category's spec. An unknown category has no hierarchy and no level.

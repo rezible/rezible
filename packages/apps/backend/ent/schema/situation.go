@@ -9,12 +9,19 @@ import (
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 
-	"github.com/rezible/rezible/ent/schema/annotations"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type Situation struct {
 	ent.Schema
+}
+
+func (Situation) Annotations() []entschema.Annotation {
+	return []entschema.Annotation{
+		entsql.Annotation{Checks: map[string]string{
+			"situation_merged_into_exactly_when_merged": "(close_reason IS NOT DISTINCT FROM 'merged') = (merged_into_id IS NOT NULL)",
+		}},
+	}
 }
 
 func (Situation) Mixin() []ent.Mixin {
@@ -55,6 +62,10 @@ func (Situation) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Comment("The investigation of its observations; several situations may share one"),
+		field.UUID("merged_into_id", uuid.UUID{}).
+			Optional().
+			Nillable().
+			Comment("The situation it was merged into, which is not itself merged"),
 	}
 }
 
@@ -69,14 +80,18 @@ func (Situation) Edges() []ent.Edge {
 			Ref("situations"),
 		edge.From("observations", SituationObservation.Type).
 			Ref("situation"),
-		edge.From("entities", SituationEntity.Type).
-			Ref("situation"),
 		edge.From("actions", SituationAction.Type).
 			Ref("situation"),
 		edge.From("judgments", SituationJudgment.Type).
 			Ref("situation"),
 		edge.To("notices", SituationNotice.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
+		// A target with merged sources cannot be deleted: setting them null would break the merge check.
+		edge.To("merged_sources", Situation.Type).
+			Annotations(entsql.OnDelete(entsql.NoAction)).
+			From("merged_into").
+			Unique().
+			Field("merged_into_id"),
 	}
 }
 
@@ -88,6 +103,7 @@ func (Situation) Indexes() []ent.Index {
 		index.Fields("tenant_id", "opened_at"),
 		index.Fields("tenant_id", "closed_at"),
 		index.Fields("tenant_id", "investigation_id"),
+		index.Fields("tenant_id", "merged_into_id"),
 	}
 }
 
@@ -124,8 +140,8 @@ func (SituationObservationGroup) Edges() []ent.Edge {
 	}
 }
 
-// SituationObservation is one piece of evidence a situation is an account of. An alert episode may be
-// observed by several situations, closed ones included, but once by each.
+// SituationObservation links an observation, such as an alert episode, to a situation. An observation can belong to
+// several situations, closed ones included, but to each only once.
 type SituationObservation struct {
 	ent.Schema
 }
@@ -190,52 +206,6 @@ func (SituationObservation) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "situation_id", "alert_episode_id").Unique(),
 		index.Fields("tenant_id", "alert_episode_id"),
-	}
-}
-
-// SituationEntity is one of a situation's runtime entities, recomputed from its observations.
-type SituationEntity struct {
-	ent.Schema
-}
-
-func (SituationEntity) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		IDMixin{},
-		BaseMixin{},
-		TenantMixin{},
-	}
-}
-
-func (SituationEntity) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("situation_id", uuid.UUID{}).Immutable(),
-		field.UUID("knowledge_entity_id", uuid.UUID{}),
-		field.Bool("matching").
-			Comment("Whether an observation that is not broad touches it, so it attracts related observations"),
-	}
-}
-
-func (SituationEntity) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("situation", Situation.Type).
-			Field("situation_id").
-			Required().
-			Unique().
-			Immutable(),
-		// A merge keeps the survivor's membership, matching if either was.
-		edge.To("knowledge_entity", KnowledgeEntity.Type).
-			Field("knowledge_entity_id").
-			Required().
-			Unique().
-			Annotations(annotations.EntityMergeDeletesDuplicateRows()),
-	}
-}
-
-func (SituationEntity) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "situation_id", "knowledge_entity_id").Unique(),
-		index.Fields("tenant_id", "knowledge_entity_id").
-			Annotations(entsql.IndexWhere("matching")),
 	}
 }
 

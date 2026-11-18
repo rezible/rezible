@@ -112,6 +112,11 @@ func OccurredAt(v time.Time) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldOccurredAt, v))
 }
 
+// LastOccurredAt applies equality check predicate on the "last_occurred_at" field. It's identical to LastOccurredAtEQ.
+func LastOccurredAt(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldLastOccurredAt, v))
+}
+
 // ReceivedAt applies equality check predicate on the "received_at" field. It's identical to ReceivedAtEQ.
 func ReceivedAt(v time.Time) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldReceivedAt, v))
@@ -677,6 +682,46 @@ func OccurredAtLTE(v time.Time) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldLTE(FieldOccurredAt, v))
 }
 
+// LastOccurredAtEQ applies the EQ predicate on the "last_occurred_at" field.
+func LastOccurredAtEQ(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldLastOccurredAt, v))
+}
+
+// LastOccurredAtNEQ applies the NEQ predicate on the "last_occurred_at" field.
+func LastOccurredAtNEQ(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldLastOccurredAt, v))
+}
+
+// LastOccurredAtIn applies the In predicate on the "last_occurred_at" field.
+func LastOccurredAtIn(vs ...time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldLastOccurredAt, vs...))
+}
+
+// LastOccurredAtNotIn applies the NotIn predicate on the "last_occurred_at" field.
+func LastOccurredAtNotIn(vs ...time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldLastOccurredAt, vs...))
+}
+
+// LastOccurredAtGT applies the GT predicate on the "last_occurred_at" field.
+func LastOccurredAtGT(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGT(FieldLastOccurredAt, v))
+}
+
+// LastOccurredAtGTE applies the GTE predicate on the "last_occurred_at" field.
+func LastOccurredAtGTE(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGTE(FieldLastOccurredAt, v))
+}
+
+// LastOccurredAtLT applies the LT predicate on the "last_occurred_at" field.
+func LastOccurredAtLT(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLT(FieldLastOccurredAt, v))
+}
+
+// LastOccurredAtLTE applies the LTE predicate on the "last_occurred_at" field.
+func LastOccurredAtLTE(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLTE(FieldLastOccurredAt, v))
+}
+
 // ReceivedAtEQ applies the EQ predicate on the "received_at" field.
 func ReceivedAtEQ(v time.Time) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldReceivedAt, v))
@@ -780,11 +825,11 @@ func HasProjection() predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, ProjectionTable, ProjectionColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, ProjectionTable, ProjectionColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.NormalizedEventProjection
-		step.Edge.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.NormalizedEventProjection
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -795,7 +840,7 @@ func HasProjectionWith(preds ...predicate.NormalizedEventProjection) predicate.N
 		step := newProjectionStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.NormalizedEventProjection
-		step.Edge.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.NormalizedEventProjection
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -66,6 +66,7 @@ type SituationNoticeSender interface {
 
 // SituationNoticeContent is what a notice shows, read when it is synced.
 type SituationNoticeContent struct {
+	// Situation is loaded with the situation it was merged into, if any.
 	Situation *ent.Situation
 	Services  []*ent.KnowledgeEntity
 	// Deployment is the latest deployment before the situation started, or nil to omit it.
@@ -74,6 +75,8 @@ type SituationNoticeContent struct {
 	Report *ent.InvestigationReport
 	// SituationURL links to the situation.
 	SituationURL string
+	// MergedIntoURL links to the situation it was merged into, if any.
+	MergedIntoURL string
 	// IncidentURL links to the newest unresolved incident the situation is part of, if any. Otherwise
 	// DeclareIncidentURL opens the declare dialog for the situation, when declaring is possible.
 	IncidentURL        string

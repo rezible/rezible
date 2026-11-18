@@ -87,6 +87,11 @@ func EffectiveAt(v time.Time) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEffectiveAt, v))
 }
 
+// ReobservedAt applies equality check predicate on the "reobserved_at" field. It's identical to ReobservedAtEQ.
+func ReobservedAt(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldReobservedAt, v))
+}
+
 // ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
 func ExpiresAt(v time.Time) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldExpiresAt, v))
@@ -335,6 +340,56 @@ func StateModeIn(vs ...StateMode) predicate.KnowledgeEvidence {
 // StateModeNotIn applies the NotIn predicate on the "state_mode" field.
 func StateModeNotIn(vs ...StateMode) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldStateMode, vs...))
+}
+
+// ReobservedAtEQ applies the EQ predicate on the "reobserved_at" field.
+func ReobservedAtEQ(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldReobservedAt, v))
+}
+
+// ReobservedAtNEQ applies the NEQ predicate on the "reobserved_at" field.
+func ReobservedAtNEQ(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldReobservedAt, v))
+}
+
+// ReobservedAtIn applies the In predicate on the "reobserved_at" field.
+func ReobservedAtIn(vs ...time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldReobservedAt, vs...))
+}
+
+// ReobservedAtNotIn applies the NotIn predicate on the "reobserved_at" field.
+func ReobservedAtNotIn(vs ...time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldReobservedAt, vs...))
+}
+
+// ReobservedAtGT applies the GT predicate on the "reobserved_at" field.
+func ReobservedAtGT(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldGT(FieldReobservedAt, v))
+}
+
+// ReobservedAtGTE applies the GTE predicate on the "reobserved_at" field.
+func ReobservedAtGTE(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldGTE(FieldReobservedAt, v))
+}
+
+// ReobservedAtLT applies the LT predicate on the "reobserved_at" field.
+func ReobservedAtLT(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldLT(FieldReobservedAt, v))
+}
+
+// ReobservedAtLTE applies the LTE predicate on the "reobserved_at" field.
+func ReobservedAtLTE(v time.Time) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldReobservedAt, v))
+}
+
+// ReobservedAtIsNil applies the IsNil predicate on the "reobserved_at" field.
+func ReobservedAtIsNil() predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIsNull(FieldReobservedAt))
+}
+
+// ReobservedAtNotNil applies the NotNil predicate on the "reobserved_at" field.
+func ReobservedAtNotNil() predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldReobservedAt))
 }
 
 // ExpiresAtEQ applies the EQ predicate on the "expires_at" field.

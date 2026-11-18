@@ -36,6 +36,10 @@ type Tx struct {
 	AlertInstanceEvent *AlertInstanceEventClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
+	// ChangePoint is the client for interacting with the ChangePoint builders.
+	ChangePoint *ChangePointClient
+	// ChangePointInvolvement is the client for interacting with the ChangePointInvolvement builders.
+	ChangePointInvolvement *ChangePointInvolvementClient
 	// DiscussionComment is the client for interacting with the DiscussionComment builders.
 	DiscussionComment *DiscussionCommentClient
 	// DiscussionThread is the client for interacting with the DiscussionThread builders.
@@ -128,6 +132,10 @@ type Tx struct {
 	NormalizedEventProjection *NormalizedEventProjectionClient
 	// NormalizedEventProjectionEntity is the client for interacting with the NormalizedEventProjectionEntity builders.
 	NormalizedEventProjectionEntity *NormalizedEventProjectionEntityClient
+	// ObservationScope is the client for interacting with the ObservationScope builders.
+	ObservationScope *ObservationScopeClient
+	// ObservationScopeEntity is the client for interacting with the ObservationScopeEntity builders.
+	ObservationScopeEntity *ObservationScopeEntityClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -160,8 +168,6 @@ type Tx struct {
 	Situation *SituationClient
 	// SituationAction is the client for interacting with the SituationAction builders.
 	SituationAction *SituationActionClient
-	// SituationEntity is the client for interacting with the SituationEntity builders.
-	SituationEntity *SituationEntityClient
 	// SituationJudgment is the client for interacting with the SituationJudgment builders.
 	SituationJudgment *SituationJudgmentClient
 	// SituationNotice is the client for interacting with the SituationNotice builders.
@@ -345,6 +351,8 @@ func (tx *Tx) init() {
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)
 	tx.AlertInstanceEvent = NewAlertInstanceEventClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
+	tx.ChangePoint = NewChangePointClient(tx.config)
+	tx.ChangePointInvolvement = NewChangePointInvolvementClient(tx.config)
 	tx.DiscussionComment = NewDiscussionCommentClient(tx.config)
 	tx.DiscussionThread = NewDiscussionThreadClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
@@ -391,6 +399,8 @@ func (tx *Tx) init() {
 	tx.NormalizedEvent = NewNormalizedEventClient(tx.config)
 	tx.NormalizedEventProjection = NewNormalizedEventProjectionClient(tx.config)
 	tx.NormalizedEventProjectionEntity = NewNormalizedEventProjectionEntityClient(tx.config)
+	tx.ObservationScope = NewObservationScopeClient(tx.config)
+	tx.ObservationScopeEntity = NewObservationScopeEntityClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
 	tx.OncallRoster = NewOncallRosterClient(tx.config)
 	tx.OncallRosterMetrics = NewOncallRosterMetricsClient(tx.config)
@@ -407,7 +417,6 @@ func (tx *Tx) init() {
 	tx.SequenceCounter = NewSequenceCounterClient(tx.config)
 	tx.Situation = NewSituationClient(tx.config)
 	tx.SituationAction = NewSituationActionClient(tx.config)
-	tx.SituationEntity = NewSituationEntityClient(tx.config)
 	tx.SituationJudgment = NewSituationJudgmentClient(tx.config)
 	tx.SituationNotice = NewSituationNoticeClient(tx.config)
 	tx.SituationObservation = NewSituationObservationClient(tx.config)

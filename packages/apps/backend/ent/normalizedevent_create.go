@@ -109,6 +109,12 @@ func (_c *NormalizedEventCreate) SetOccurredAt(v time.Time) *NormalizedEventCrea
 	return _c
 }
 
+// SetLastOccurredAt sets the "last_occurred_at" field.
+func (_c *NormalizedEventCreate) SetLastOccurredAt(v time.Time) *NormalizedEventCreate {
+	_c.mutation.SetLastOccurredAt(v)
+	return _c
+}
+
 // SetReceivedAt sets the "received_at" field.
 func (_c *NormalizedEventCreate) SetReceivedAt(v time.Time) *NormalizedEventCreate {
 	_c.mutation.SetReceivedAt(v)
@@ -269,6 +275,9 @@ func (_c *NormalizedEventCreate) check() error {
 	if _, ok := _c.mutation.OccurredAt(); !ok {
 		return &ValidationError{Name: "occurred_at", err: errors.New(`ent: missing required field "NormalizedEvent.occurred_at"`)}
 	}
+	if _, ok := _c.mutation.LastOccurredAt(); !ok {
+		return &ValidationError{Name: "last_occurred_at", err: errors.New(`ent: missing required field "NormalizedEvent.last_occurred_at"`)}
+	}
 	if _, ok := _c.mutation.ReceivedAt(); !ok {
 		return &ValidationError{Name: "received_at", err: errors.New(`ent: missing required field "NormalizedEvent.received_at"`)}
 	}
@@ -348,6 +357,10 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_spec.SetField(normalizedevent.FieldOccurredAt, field.TypeTime, value)
 		_node.OccurredAt = value
 	}
+	if value, ok := _c.mutation.LastOccurredAt(); ok {
+		_spec.SetField(normalizedevent.FieldLastOccurredAt, field.TypeTime, value)
+		_node.LastOccurredAt = value
+	}
 	if value, ok := _c.mutation.ReceivedAt(); ok {
 		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
 		_node.ReceivedAt = value
@@ -390,7 +403,7 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 	}
 	if nodes := _c.mutation.ProjectionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   normalizedevent.ProjectionTable,
 			Columns: []string{normalizedevent.ProjectionColumn},
@@ -399,11 +412,10 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(normalizedeventprojection.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.NormalizedEvent
+		edge.Schema = _c.schemaConfig.NormalizedEventProjection
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.normalized_event_projection = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -473,6 +485,18 @@ func (u *NormalizedEventUpsert) UpdateIntegrationID() *NormalizedEventUpsert {
 // ClearIntegrationID clears the value of the "integration_id" field.
 func (u *NormalizedEventUpsert) ClearIntegrationID() *NormalizedEventUpsert {
 	u.SetNull(normalizedevent.FieldIntegrationID)
+	return u
+}
+
+// SetLastOccurredAt sets the "last_occurred_at" field.
+func (u *NormalizedEventUpsert) SetLastOccurredAt(v time.Time) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldLastOccurredAt, v)
+	return u
+}
+
+// UpdateLastOccurredAt sets the "last_occurred_at" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateLastOccurredAt() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldLastOccurredAt)
 	return u
 }
 
@@ -575,6 +599,20 @@ func (u *NormalizedEventUpsertOne) UpdateIntegrationID() *NormalizedEventUpsertO
 func (u *NormalizedEventUpsertOne) ClearIntegrationID() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.ClearIntegrationID()
+	})
+}
+
+// SetLastOccurredAt sets the "last_occurred_at" field.
+func (u *NormalizedEventUpsertOne) SetLastOccurredAt(v time.Time) *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetLastOccurredAt(v)
+	})
+}
+
+// UpdateLastOccurredAt sets the "last_occurred_at" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateLastOccurredAt() *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateLastOccurredAt()
 	})
 }
 
@@ -844,6 +882,20 @@ func (u *NormalizedEventUpsertBulk) UpdateIntegrationID() *NormalizedEventUpsert
 func (u *NormalizedEventUpsertBulk) ClearIntegrationID() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.ClearIntegrationID()
+	})
+}
+
+// SetLastOccurredAt sets the "last_occurred_at" field.
+func (u *NormalizedEventUpsertBulk) SetLastOccurredAt(v time.Time) *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetLastOccurredAt(v)
+	})
+}
+
+// UpdateLastOccurredAt sets the "last_occurred_at" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateLastOccurredAt() *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateLastOccurredAt()
 	})
 }
 

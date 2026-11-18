@@ -86,6 +86,7 @@ func NewSituationService(cfg rez.SituationsConfig, db rez.Database, clock rez.Cl
 
 func (s *SituationService) withSituationMembership(query *ent.SituationQuery) *ent.SituationQuery {
 	return query.
+		WithMergedInto().
 		WithActions(func(q *ent.SituationActionQuery) {
 			q.Where(sitact.ActionEQ(sitact.ActionRaised)).Order(sitact.ByID())
 		}).
@@ -93,10 +94,8 @@ func (s *SituationService) withSituationMembership(query *ent.SituationQuery) *e
 			q.Order(sitog.ByCreatedAt(), sitog.ByID())
 		}).
 		WithObservations(func(q *ent.SituationObservationQuery) {
-			q.Order(sitobs.ByAttachedAt(), sitobs.ByID())
-		}).
-		WithEntities(func(q *ent.SituationEntityQuery) {
-			q.WithKnowledgeEntity()
+			q.Order(sitobs.ByAttachedAt(), sitobs.ByID()).
+				WithScopes()
 		})
 }
 
@@ -166,12 +165,19 @@ func (s *SituationService) GetSituation(ctx context.Context, pred predicate.Situ
 		}).
 		WithNotices(func(q *ent.SituationNoticeQuery) {
 			q.Order(sitnot.ByCreatedAt(), sitnot.ByID())
-		}).
-		WithJudgments(func(q *ent.SituationJudgmentQuery) {
-			// The limit applies across parents, so only one situation is read: Only fails on several.
-			q.Order(sitjudg.ByJudgedAt(sql.OrderDesc()), sitjudg.ByID(sql.OrderDesc())).Limit(1)
 		})
-	return query.Only(ctx)
+	situation, queryErr := query.Only(ctx)
+	if queryErr != nil {
+		return nil, queryErr
+	}
+	latest, latestErr := s.latestJudgment(ctx, situation.ID)
+	if latestErr != nil {
+		return nil, latestErr
+	}
+	if latest != nil {
+		situation.Edges.Judgments = []*ent.SituationJudgment{latest}
+	}
+	return situation, nil
 }
 
 // ListSituationJudgments returns complete stored snapshots, newest first even when times tie.
@@ -234,9 +240,6 @@ func (s *SituationService) CreateSituation(ctx context.Context, params rez.Creat
 			if observeErr := s.createObservations(ctx, created.ID, &createdGroup.ID, group.Observations, "", now); observeErr != nil {
 				return nil, observeErr
 			}
-		}
-		if entitiesErr := s.recomputeSituationEntities(ctx, created.ID); entitiesErr != nil {
-			return nil, entitiesErr
 		}
 		if params.Raise != nil {
 			if raiseErr := s.raiseLocked(ctx, created, *params.Raise, now); raiseErr != nil {

@@ -16,6 +16,8 @@ import (
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinstanceevent"
+	"github.com/rezible/rezible/ent/changepoint"
+	"github.com/rezible/rezible/ent/changepointinvolvement"
 	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
@@ -60,6 +62,8 @@ import (
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
+	"github.com/rezible/rezible/ent/observationscope"
+	"github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -75,7 +79,6 @@ import (
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
-	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationnotice"
 	"github.com/rezible/rezible/ent/situationobservation"
@@ -261,11 +264,6 @@ func (m *AlertDefinitionMutation) CheckTenantReferences(ctx context.Context) err
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
 // that is missing or belongs to another tenant.
 func (m *AlertEpisodeMutation) CheckTenantReferences(ctx context.Context) error {
-	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
 	if ids := m.AlertDefinitionIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, alertdefinition.Label, len(ids), m.Client().AlertDefinition.Query().Where(alertdefinition.IDIn(ids...))); err != nil {
 			return err
@@ -278,6 +276,11 @@ func (m *AlertEpisodeMutation) CheckTenantReferences(ctx context.Context) error 
 	}
 	if ids := m.SituationObservationsIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, situationobservation.Label, len(ids), m.Client().SituationObservation.Query().Where(situationobservation.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.ObservationScopeIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, observationscope.Label, len(ids), m.Client().ObservationScope.Query().Where(observationscope.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -326,6 +329,43 @@ func (m *AlertInstanceEventMutation) CheckTenantReferences(ctx context.Context) 
 	}
 	if ids := m.EventIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, normalizedevent.Label, len(ids), m.Client().NormalizedEvent.Query().Where(normalizedevent.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
+// that is missing or belongs to another tenant.
+func (m *ChangePointMutation) CheckTenantReferences(ctx context.Context) error {
+	if ids := m.LatestEventIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, normalizedevent.Label, len(ids), m.Client().NormalizedEvent.Query().Where(normalizedevent.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.InvolvementIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, changepointinvolvement.Label, len(ids), m.Client().ChangePointInvolvement.Query().Where(changepointinvolvement.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
+// that is missing or belongs to another tenant.
+func (m *ChangePointInvolvementMutation) CheckTenantReferences(ctx context.Context) error {
+	if ids := m.ChangePointIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, changepoint.Label, len(ids), m.Client().ChangePoint.Query().Where(changepoint.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.SubjectAliasIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, knowledgesubjectalias.Label, len(ids), m.Client().KnowledgeSubjectAlias.Query().Where(knowledgesubjectalias.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.EvidenceIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, knowledgeevidence.Label, len(ids), m.Client().KnowledgeEvidence.Query().Where(knowledgeevidence.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -475,11 +515,6 @@ func (m *EventAnnotationMutation) CheckTenantReferences(ctx context.Context) err
 // CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
 // that is missing or belongs to another tenant.
 func (m *IncidentMutation) CheckTenantReferences(ctx context.Context) error {
-	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
 	if ids := m.SeverityIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, incidentseverity.Label, len(ids), m.Client().IncidentSeverity.Query().Where(incidentseverity.IDIn(ids...))); err != nil {
 			return err
@@ -1109,12 +1144,12 @@ func (m *KnowledgeEntityMutation) CheckTenantReferences(ctx context.Context) err
 			return err
 		}
 	}
-	if ids := m.ParentIDs(); len(ids) > 0 {
+	if ids := m.MergedIntoIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
-	if ids := m.ChildrenIDs(); len(ids) > 0 {
+	if ids := m.RedirectsIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
 		}
@@ -1201,6 +1236,16 @@ func (m *KnowledgeRelationshipMutation) CheckTenantReferences(ctx context.Contex
 	}
 	if ids := m.AliasesIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, knowledgesubjectalias.Label, len(ids), m.Client().KnowledgeSubjectAlias.Query().Where(knowledgesubjectalias.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.MergedIntoIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.RedirectsIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, knowledgerelationship.Label, len(ids), m.Client().KnowledgeRelationship.Query().Where(knowledgerelationship.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -1302,6 +1347,38 @@ func (m *NormalizedEventProjectionMutation) CheckTenantReferences(ctx context.Co
 func (m *NormalizedEventProjectionEntityMutation) CheckTenantReferences(ctx context.Context) error {
 	if ids := m.ProjectionIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, normalizedeventprojection.Label, len(ids), m.Client().NormalizedEventProjection.Query().Where(normalizedeventprojection.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
+// that is missing or belongs to another tenant.
+func (m *ObservationScopeMutation) CheckTenantReferences(ctx context.Context) error {
+	if ids := m.AlertEpisodeIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, alertepisode.Label, len(ids), m.Client().AlertEpisode.Query().Where(alertepisode.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.EntitiesIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, observationscopeentity.Label, len(ids), m.Client().ObservationScopeEntity.Query().Where(observationscopeentity.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
+// that is missing or belongs to another tenant.
+func (m *ObservationScopeEntityMutation) CheckTenantReferences(ctx context.Context) error {
+	if ids := m.ScopeIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, observationscope.Label, len(ids), m.Client().ObservationScope.Query().Where(observationscope.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -1590,11 +1667,6 @@ func (m *SituationMutation) CheckTenantReferences(ctx context.Context) error {
 			return err
 		}
 	}
-	if ids := m.EntitiesIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situationentity.Label, len(ids), m.Client().SituationEntity.Query().Where(situationentity.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
 	if ids := m.ActionsIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, situationaction.Label, len(ids), m.Client().SituationAction.Query().Where(situationaction.IDIn(ids...))); err != nil {
 			return err
@@ -1607,6 +1679,16 @@ func (m *SituationMutation) CheckTenantReferences(ctx context.Context) error {
 	}
 	if ids := m.NoticesIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, situationnotice.Label, len(ids), m.Client().SituationNotice.Query().Where(situationnotice.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.MergedIntoIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
+			return err
+		}
+	}
+	if ids := m.MergedSourcesIDs(); len(ids) > 0 {
+		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
 			return err
 		}
 	}
@@ -1623,22 +1705,6 @@ func (m *SituationActionMutation) CheckTenantReferences(ctx context.Context) err
 	}
 	if ids := m.UserIDs(); len(ids) > 0 {
 		if err := checkTenantReference(ctx, user.Label, len(ids), m.Client().User.Query().Where(user.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// CheckTenantReferences returns a not found error if an edge ID set or added by the mutation names a row
-// that is missing or belongs to another tenant.
-func (m *SituationEntityMutation) CheckTenantReferences(ctx context.Context) error {
-	if ids := m.SituationIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, situation.Label, len(ids), m.Client().Situation.Query().Where(situation.IDIn(ids...))); err != nil {
-			return err
-		}
-	}
-	if ids := m.KnowledgeEntityIDs(); len(ids) > 0 {
-		if err := checkTenantReference(ctx, knowledgeentity.Label, len(ids), m.Client().KnowledgeEntity.Query().Where(knowledgeentity.IDIn(ids...))); err != nil {
 			return err
 		}
 	}

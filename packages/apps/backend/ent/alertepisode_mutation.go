@@ -33,8 +33,6 @@ type AlertEpisodeMutation struct {
 	clearedFields                 map[string]struct{}
 	tenant                        *int
 	clearedtenant                 bool
-	knowledge_entity              *uuid.UUID
-	clearedknowledge_entity       bool
 	alert_definition              *uuid.UUID
 	clearedalert_definition       bool
 	instances                     map[uuid.UUID]struct{}
@@ -43,6 +41,8 @@ type AlertEpisodeMutation struct {
 	situation_observations        map[uuid.UUID]struct{}
 	removedsituation_observations map[uuid.UUID]struct{}
 	clearedsituation_observations bool
+	observation_scope             *uuid.UUID
+	clearedobservation_scope      bool
 	done                          bool
 	oldValue                      func(context.Context) (*AlertEpisode, error)
 	predicates                    []predicate.AlertEpisode
@@ -258,55 +258,6 @@ func (m *AlertEpisodeMutation) OldUpdatedAt(ctx context.Context) (v time.Time, e
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *AlertEpisodeMutation) ResetUpdatedAt() {
 	m.updated_at = nil
-}
-
-// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
-func (m *AlertEpisodeMutation) SetKnowledgeEntityID(u uuid.UUID) {
-	m.knowledge_entity = &u
-}
-
-// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
-func (m *AlertEpisodeMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
-	v := m.knowledge_entity
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the AlertEpisode entity.
-// If the AlertEpisode object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertEpisodeMutation) OldKnowledgeEntityID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
-	}
-	return oldValue.KnowledgeEntityID, nil
-}
-
-// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
-func (m *AlertEpisodeMutation) ClearKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	m.clearedFields[alertepisode.FieldKnowledgeEntityID] = struct{}{}
-}
-
-// KnowledgeEntityIDCleared returns if the "knowledge_entity_id" field was cleared in this mutation.
-func (m *AlertEpisodeMutation) KnowledgeEntityIDCleared() bool {
-	_, ok := m.clearedFields[alertepisode.FieldKnowledgeEntityID]
-	return ok
-}
-
-// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
-func (m *AlertEpisodeMutation) ResetKnowledgeEntityID() {
-	m.knowledge_entity = nil
-	delete(m.clearedFields, alertepisode.FieldKnowledgeEntityID)
 }
 
 // SetAlertDefinitionID sets the "alert_definition_id" field.
@@ -558,33 +509,6 @@ func (m *AlertEpisodeMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
-func (m *AlertEpisodeMutation) ClearKnowledgeEntity() {
-	m.clearedknowledge_entity = true
-	m.clearedFields[alertepisode.FieldKnowledgeEntityID] = struct{}{}
-}
-
-// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
-func (m *AlertEpisodeMutation) KnowledgeEntityCleared() bool {
-	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
-}
-
-// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeEntityID instead. It exists only for internal usage by the builders.
-func (m *AlertEpisodeMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
-func (m *AlertEpisodeMutation) ResetKnowledgeEntity() {
-	m.knowledge_entity = nil
-	m.clearedknowledge_entity = false
-}
-
 // ClearAlertDefinition clears the "alert_definition" edge to the AlertDefinition entity.
 func (m *AlertEpisodeMutation) ClearAlertDefinition() {
 	m.clearedalert_definition = true
@@ -720,6 +644,45 @@ func (m *AlertEpisodeMutation) ResetSituationObservations() {
 	m.removedsituation_observations = nil
 }
 
+// SetObservationScopeID sets the "observation_scope" edge to the ObservationScope entity by id.
+func (m *AlertEpisodeMutation) SetObservationScopeID(id uuid.UUID) {
+	m.observation_scope = &id
+}
+
+// ClearObservationScope clears the "observation_scope" edge to the ObservationScope entity.
+func (m *AlertEpisodeMutation) ClearObservationScope() {
+	m.clearedobservation_scope = true
+}
+
+// ObservationScopeCleared reports if the "observation_scope" edge to the ObservationScope entity was cleared.
+func (m *AlertEpisodeMutation) ObservationScopeCleared() bool {
+	return m.clearedobservation_scope
+}
+
+// ObservationScopeID returns the "observation_scope" edge ID in the mutation.
+func (m *AlertEpisodeMutation) ObservationScopeID() (id uuid.UUID, exists bool) {
+	if m.observation_scope != nil {
+		return *m.observation_scope, true
+	}
+	return
+}
+
+// ObservationScopeIDs returns the "observation_scope" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ObservationScopeID instead. It exists only for internal usage by the builders.
+func (m *AlertEpisodeMutation) ObservationScopeIDs() (ids []uuid.UUID) {
+	if id := m.observation_scope; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetObservationScope resets all changes to the "observation_scope" edge.
+func (m *AlertEpisodeMutation) ResetObservationScope() {
+	m.observation_scope = nil
+	m.clearedobservation_scope = false
+}
+
 // Where appends a list predicates to the AlertEpisodeMutation builder.
 func (m *AlertEpisodeMutation) Where(ps ...predicate.AlertEpisode) {
 	m.predicates = append(m.predicates, ps...)
@@ -754,7 +717,7 @@ func (m *AlertEpisodeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AlertEpisodeMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, alertepisode.FieldTenantID)
 	}
@@ -763,9 +726,6 @@ func (m *AlertEpisodeMutation) Fields() []string {
 	}
 	if m.updated_at != nil {
 		fields = append(fields, alertepisode.FieldUpdatedAt)
-	}
-	if m.knowledge_entity != nil {
-		fields = append(fields, alertepisode.FieldKnowledgeEntityID)
 	}
 	if m.alert_definition != nil {
 		fields = append(fields, alertepisode.FieldAlertDefinitionID)
@@ -796,8 +756,6 @@ func (m *AlertEpisodeMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case alertepisode.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case alertepisode.FieldKnowledgeEntityID:
-		return m.KnowledgeEntityID()
 	case alertepisode.FieldAlertDefinitionID:
 		return m.AlertDefinitionID()
 	case alertepisode.FieldStartedAt:
@@ -823,8 +781,6 @@ func (m *AlertEpisodeMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldCreatedAt(ctx)
 	case alertepisode.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case alertepisode.FieldKnowledgeEntityID:
-		return m.OldKnowledgeEntityID(ctx)
 	case alertepisode.FieldAlertDefinitionID:
 		return m.OldAlertDefinitionID(ctx)
 	case alertepisode.FieldStartedAt:
@@ -864,13 +820,6 @@ func (m *AlertEpisodeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
-		return nil
-	case alertepisode.FieldKnowledgeEntityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKnowledgeEntityID(v)
 		return nil
 	case alertepisode.FieldAlertDefinitionID:
 		v, ok := value.(uuid.UUID)
@@ -940,9 +889,6 @@ func (m *AlertEpisodeMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AlertEpisodeMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(alertepisode.FieldKnowledgeEntityID) {
-		fields = append(fields, alertepisode.FieldKnowledgeEntityID)
-	}
 	if m.FieldCleared(alertepisode.FieldClosedAt) {
 		fields = append(fields, alertepisode.FieldClosedAt)
 	}
@@ -963,9 +909,6 @@ func (m *AlertEpisodeMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AlertEpisodeMutation) ClearField(name string) error {
 	switch name {
-	case alertepisode.FieldKnowledgeEntityID:
-		m.ClearKnowledgeEntityID()
-		return nil
 	case alertepisode.FieldClosedAt:
 		m.ClearClosedAt()
 		return nil
@@ -988,9 +931,6 @@ func (m *AlertEpisodeMutation) ResetField(name string) error {
 		return nil
 	case alertepisode.FieldUpdatedAt:
 		m.ResetUpdatedAt()
-		return nil
-	case alertepisode.FieldKnowledgeEntityID:
-		m.ResetKnowledgeEntityID()
 		return nil
 	case alertepisode.FieldAlertDefinitionID:
 		m.ResetAlertDefinitionID()
@@ -1017,9 +957,6 @@ func (m *AlertEpisodeMutation) AddedEdges() []string {
 	if m.tenant != nil {
 		edges = append(edges, alertepisode.EdgeTenant)
 	}
-	if m.knowledge_entity != nil {
-		edges = append(edges, alertepisode.EdgeKnowledgeEntity)
-	}
 	if m.alert_definition != nil {
 		edges = append(edges, alertepisode.EdgeAlertDefinition)
 	}
@@ -1028,6 +965,9 @@ func (m *AlertEpisodeMutation) AddedEdges() []string {
 	}
 	if m.situation_observations != nil {
 		edges = append(edges, alertepisode.EdgeSituationObservations)
+	}
+	if m.observation_scope != nil {
+		edges = append(edges, alertepisode.EdgeObservationScope)
 	}
 	return edges
 }
@@ -1038,10 +978,6 @@ func (m *AlertEpisodeMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case alertepisode.EdgeTenant:
 		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case alertepisode.EdgeKnowledgeEntity:
-		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
 		}
 	case alertepisode.EdgeAlertDefinition:
@@ -1060,6 +996,10 @@ func (m *AlertEpisodeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case alertepisode.EdgeObservationScope:
+		if id := m.observation_scope; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
@@ -1102,9 +1042,6 @@ func (m *AlertEpisodeMutation) ClearedEdges() []string {
 	if m.clearedtenant {
 		edges = append(edges, alertepisode.EdgeTenant)
 	}
-	if m.clearedknowledge_entity {
-		edges = append(edges, alertepisode.EdgeKnowledgeEntity)
-	}
 	if m.clearedalert_definition {
 		edges = append(edges, alertepisode.EdgeAlertDefinition)
 	}
@@ -1113,6 +1050,9 @@ func (m *AlertEpisodeMutation) ClearedEdges() []string {
 	}
 	if m.clearedsituation_observations {
 		edges = append(edges, alertepisode.EdgeSituationObservations)
+	}
+	if m.clearedobservation_scope {
+		edges = append(edges, alertepisode.EdgeObservationScope)
 	}
 	return edges
 }
@@ -1123,14 +1063,14 @@ func (m *AlertEpisodeMutation) EdgeCleared(name string) bool {
 	switch name {
 	case alertepisode.EdgeTenant:
 		return m.clearedtenant
-	case alertepisode.EdgeKnowledgeEntity:
-		return m.clearedknowledge_entity
 	case alertepisode.EdgeAlertDefinition:
 		return m.clearedalert_definition
 	case alertepisode.EdgeInstances:
 		return m.clearedinstances
 	case alertepisode.EdgeSituationObservations:
 		return m.clearedsituation_observations
+	case alertepisode.EdgeObservationScope:
+		return m.clearedobservation_scope
 	}
 	return false
 }
@@ -1142,11 +1082,11 @@ func (m *AlertEpisodeMutation) ClearEdge(name string) error {
 	case alertepisode.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case alertepisode.EdgeKnowledgeEntity:
-		m.ClearKnowledgeEntity()
-		return nil
 	case alertepisode.EdgeAlertDefinition:
 		m.ClearAlertDefinition()
+		return nil
+	case alertepisode.EdgeObservationScope:
+		m.ClearObservationScope()
 		return nil
 	}
 	return fmt.Errorf("unknown AlertEpisode unique edge %s", name)
@@ -1159,9 +1099,6 @@ func (m *AlertEpisodeMutation) ResetEdge(name string) error {
 	case alertepisode.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case alertepisode.EdgeKnowledgeEntity:
-		m.ResetKnowledgeEntity()
-		return nil
 	case alertepisode.EdgeAlertDefinition:
 		m.ResetAlertDefinition()
 		return nil
@@ -1170,6 +1107,9 @@ func (m *AlertEpisodeMutation) ResetEdge(name string) error {
 		return nil
 	case alertepisode.EdgeSituationObservations:
 		m.ResetSituationObservations()
+		return nil
+	case alertepisode.EdgeObservationScope:
+		m.ResetObservationScope()
 		return nil
 	}
 	return fmt.Errorf("unknown AlertEpisode edge %s", name)

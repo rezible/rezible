@@ -57,8 +57,6 @@ type (
 		AcquireTxLocks(context.Context, string, ...string) error
 		IsTransientError(error) bool
 		IsConstraintError(error) (string, bool)
-		// IsForeignKeyError reports whether an error violates one of the named foreign key constraints.
-		IsForeignKeyError(error, ...string) bool
 		Shutdown() error
 	}
 )
@@ -155,6 +153,10 @@ type (
 		EffectiveAt  time.Time
 		Subject      KnowledgeSubjectRef
 		SubjectState KnowledgeSubjectState
+		// Authority is required: declared when the source is a system of record for the subject, observed when
+		// it mentions the subject while reporting something else. The subject's alias takes the highest
+		// authority of its evidence.
+		Authority schematypes.KnowledgeAuthority
 		// StateMode is merge (the default) or replace: a full snapshot that unsets the properties it omits.
 		StateMode ke.StateMode
 		// ValidFor, when set, is how long the observation holds unless observed again. Only periodic snapshot
@@ -215,10 +217,6 @@ type (
 		Predicates []predicate.KnowledgeRelationship
 		// EntityID lists the entity's relationships in either direction.
 		EntityID uuid.UUID
-		// NeighbourCategories and ExcludedNeighbourCategories filter on the category of the other endpoint
-		// of the entity's relationships. They need EntityID.
-		NeighbourCategories         []kne.Category
-		ExcludedNeighbourCategories []kne.Category
 		// NewestEvidenceFirst orders by the effective time of each relationship's latest evidence, then ID,
 		// instead of by ID.
 		NewestEvidenceFirst bool
@@ -323,19 +321,15 @@ type (
 		SelectGraphEntities(context.Context, SelectKnowledgeGraphEntitiesParams) (*KnowledgeGraphEntitiesPage, error)
 		ExpandGraphRelationships(context.Context, ExpandKnowledgeGraphRelationshipsParams) (*KnowledgeGraphRelationshipsPage, error)
 
-		// ListAncestors returns each entity's ancestors along parent_id, nearest first, at most
-		// knowledgegraph.MaxAncestryDepth of them, stopping at a withdrawn ancestor. Entities with no parent are
-		// omitted.
+		// ListAncestors returns each entity's ancestors along its parent claims, nearest first, stopping at a
+		// withdrawn ancestor or before a cycle in the parent claims. Entities with no parent are omitted.
 		ListAncestors(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeEntity, error)
 		// ListParentClaims returns, for each entity, the current contains relationships targeting it other than
-		// the one from its parent, with their aliases. Entities with none are omitted.
+		// the one chosen as its parent, best ranked first, with their live aliases. Entities with none are omitted.
 		ListParentClaims(ctx context.Context, entityIDs []uuid.UUID) (map[uuid.UUID][]*ent.KnowledgeRelationship, error)
 		// ResolveRepresentatives returns, for each entity, its nearest ancestor-or-self in one of the categories,
 		// climbing at most maxDepth steps. Withdrawn entities, and those represented by nothing, are omitted.
 		ResolveRepresentatives(ctx context.Context, entityIDs []uuid.UUID, categories []kne.Category, maxDepth int) (map[uuid.UUID]uuid.UUID, error)
-
-		// ListRelatedEvents lists event entities of one kind that relate to an entity, newest first.
-		ListRelatedEvents(context.Context, ListRelatedEventsParams) (*RelatedEvents, error)
 	}
 
 	// KnowledgeEntityAliasService reads entities' aliases with what people need to review them.
@@ -348,28 +342,64 @@ type (
 		GetEntityWithAliases(context.Context, uuid.UUID, KnowledgeEntityExpand) (*KnowledgeEntityWithAliases, error)
 	}
 
-	ListRelatedEventsParams struct {
-		// EntityID is the related entity; the events are relationship sources.
-		EntityID uuid.UUID
-		// Predicate relates the events to the entity, for example impacts or touches.
-		Predicate knr.Predicate
-		// Kind is the event entities' kind, for example deployment.
-		Kind string
-		// From and To bound state_effective_at. A zero time leaves that side unbounded.
-		From, To                   time.Time
-		FromInclusive, ToInclusive bool
-		// PropertyEquals are state properties that must equal these values, compared as text.
-		PropertyEquals map[string]string
-		// PropertyAbsent are state properties that must be absent. An absent property never matches
-		// PropertyEquals.
-		PropertyAbsent []string
-		Limit          int
+	// AttributePath is a path into a change point's event attributes, one segment per JSON key, separated by
+	// "/". Paths are the constants pkg/projections defines next to the event attribute structs.
+	AttributePath string
+
+	// ChangePointAttribute compares the change point's attribute at Path with Value as text.
+	ChangePointAttribute struct {
+		Path  AttributePath
+		Value string
 	}
 
-	RelatedEvents struct {
-		Events []*ent.KnowledgeEntity
-		// Cut is set when more events matched than Limit.
+	ListChangePointsParams struct {
+		// Kind is the normalized event kind, for example projections.KindDeployment. Required.
+		Kind string
+		// EntityID selects change points with involvement on one of the entity's aliases. Required. A merged
+		// entity's ID is resolved to the survivor first.
+		EntityID uuid.UUID
+		// Roles, when set, keeps only involvement with one of these roles, which must be roles of Kind. When
+		// empty, every role of Kind counts (projections.InvolvementAssertions(Kind)).
+		Roles []string
+		// From and To bound the change point time. A zero time leaves that side unbounded.
+		From, To                   time.Time
+		FromInclusive, ToInclusive bool
+		// AttributeEquals compares the change point's attribute at the path with the value as text.
+		// AttributeAbsent requires the path to be missing or JSON null.
+		AttributeEquals []ChangePointAttribute
+		AttributeAbsent []AttributePath
+		// Limit is 1 to 100.
+		Limit int
+	}
+
+	ChangePoint struct {
+		// ChangePoint is the row, with its latest event loaded.
+		ChangePoint *ent.ChangePoint
+		// Involvement is the change point's involvement on the queried entity, matching Roles, lowest evidence
+		// ID first. Its evidence is what to cite.
+		Involvement *ent.ChangePointInvolvement
+		// Involved is every involvement row of the change point, each with its alias.
+		Involved []*ent.ChangePointInvolvement
+	}
+
+	ChangePoints struct {
+		// ChangePoints are ordered by change point time descending, then change point ID.
+		ChangePoints []ChangePoint
+		// Cut is set when more matched than Limit.
 		Cut bool
+	}
+
+	// ChangePointService owns change points: provider-reported changes at a point in time, each a ChangePoint
+	// row over its latest normalized event, with that event's involvement.
+	ChangePointService interface {
+		// RecordChangePoint makes the event the change point's latest if it sorts after the current one
+		// (projections.ChangePointEventAfter), and replaces the change point's involvement with the event's. The
+		// event's involvement evidence must already be ingested.
+		RecordChangePoint(ctx context.Context, event *ent.NormalizedEvent, occurredAt time.Time) error
+		// ListChangePoints lists change points of one kind involving the entity, newest first.
+		ListChangePoints(context.Context, ListChangePointsParams) (*ChangePoints, error)
+		// ListServiceChanges lists a service's deployments in a window with the merged changes linked to each.
+		ListServiceChanges(ctx context.Context, params ListServiceChangesParams) (*ServiceChanges, error)
 	}
 
 	ListProposalsParams struct {
@@ -602,9 +632,18 @@ type (
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSourceCursors) ProviderEventSyncResult
 	}
 
+	NormalizedEventReobservation struct {
+		EventID uuid.UUID
+		At      time.Time
+	}
+	NormalizedEventIngestResult struct {
+		NewEventIDs    []uuid.UUID
+		Reobservations []NormalizedEventReobservation
+	}
 	ProviderEventIngester interface {
-		ProcessProviderEvent(context.Context, ProviderEvent) ([]uuid.UUID, error)
-		ProjectNormalizedEvent(ctx context.Context, eventID uuid.UUID) error
+		ProcessProviderEvent(context.Context, ProviderEvent) (*NormalizedEventIngestResult, error)
+		ReobserveNormalizedEvent(context.Context, uuid.UUID, time.Time) error
+		ProjectNormalizedEvent(ctx context.Context, eventID uuid.UUID, retryMissingEndpoints bool) error
 	}
 )
 
@@ -1118,8 +1157,8 @@ type (
 
 	// ServiceDeployment is a deployment with the merged changes linked to it.
 	ServiceDeployment struct {
-		// Deployment is the deployment's event entity.
-		Deployment  *ent.KnowledgeEntity
+		// Deployment holds the change point and the service's involvement, whose evidence to cite.
+		Deployment  ChangePoint
 		DeployedAt  time.Time
 		Environment string
 		Status      string
@@ -1143,8 +1182,9 @@ type (
 
 	// LinkedMergedChange is a merged change linked to a deployment.
 	LinkedMergedChange struct {
-		// Change is the code change's event entity; its display name is the change's title.
-		Change         *ent.KnowledgeEntity
+		// Change holds the change point and the repository's involvement, whose evidence to cite.
+		Change         ChangePoint
+		Title          string
 		MergedAt       time.Time
 		MergeCommitSha string
 		BaseRef        string
@@ -1158,11 +1198,6 @@ type (
 
 	// MergedChangeLink is how a merged change was linked to a deployment.
 	MergedChangeLink string
-
-	ChangesService interface {
-		// ListServiceChanges lists a service's deployments in a window with the merged changes linked to each.
-		ListServiceChanges(ctx context.Context, params ListServiceChangesParams) (*ServiceChanges, error)
-	}
 )
 
 const (
@@ -1224,8 +1259,6 @@ type (
 	SituationBriefDeployment struct {
 		ServiceDeployment
 		AfterOpened bool
-		// LatestEvidenceID is the deployment's latest knowledge evidence, if any.
-		LatestEvidenceID *uuid.UUID
 		// MergedChangesUnlinked says why merged changes cannot be linked; empty when they can.
 		MergedChangesUnlinked SituationBriefUnlinkedReason
 	}
@@ -1655,14 +1688,15 @@ type (
 		TagIDs         *[]uuid.UUID
 	}
 
-	// RecordObservedIncidentParams describe an incident observed from a provider, identified by its knowledge entity.
+	// RecordObservedIncidentParams describe an incident observed from a provider, identified within the tenant
+	// by its provider resource reference.
 	RecordObservedIncidentParams struct {
-		KnowledgeEntityID uuid.UUID
-		Title             string
-		Summary           string
-		SeverityID        uuid.UUID
-		TypeID            uuid.UUID
-		OpenedAt          time.Time
+		ProviderResourceRef ProviderResourceRef
+		Title               string
+		Summary             string
+		SeverityID          uuid.UUID
+		TypeID              uuid.UUID
+		OpenedAt            time.Time
 	}
 
 	// IncidentDetailsService reads incidents and writes what does not depend on incident management being on.

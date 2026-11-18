@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"maps"
 	"slices"
@@ -14,6 +15,7 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -48,6 +50,9 @@ func (s *KnowledgeGraphIngestionService) IngestEvidence(ctx context.Context, eve
 	entityRefs := make([]rez.KnowledgeEvidenceRef, 0, len(refs))
 	relationshipRefs := make([]rez.KnowledgeEvidenceRef, 0, len(refs))
 	for _, ref := range refs {
+		if !ref.Authority.IsValid() {
+			return fmt.Errorf("%w: evidence must state its authority", errs.ErrInvalidInput)
+		}
 		subj := ref.Subject
 		switch {
 		case subj.Entity != nil && subj.Relationship == nil:
@@ -63,13 +68,14 @@ func (s *KnowledgeGraphIngestionService) IngestEvidence(ctx context.Context, eve
 		if lockErr := s.db.AcquireTxLocks(ctx, knowledgeEntityIdentityLockNamespace, ik.keys...); lockErr != nil {
 			return fmt.Errorf("lock knowledge entity identities: %w", lockErr)
 		}
-		if entsErr := s.ingestEvidenceRefs(ctx, event.ID, entityRefs); entsErr != nil {
+		refresh := newSubjectRefresh()
+		if entsErr := s.ingestEvidenceRefs(ctx, event, entityRefs, refresh); entsErr != nil {
 			return fmt.Errorf("entities: %w", entsErr)
 		}
-		if relsErr := s.ingestEvidenceRefs(ctx, event.ID, relationshipRefs); relsErr != nil {
+		if relsErr := s.ingestEvidenceRefs(ctx, event, relationshipRefs, refresh); relsErr != nil {
 			return fmt.Errorf("relationships: %w", relsErr)
 		}
-		return nil
+		return s.flush(ctx, refresh)
 	})
 }
 
@@ -80,6 +86,7 @@ func (s *KnowledgeGraphIngestionService) ResolveInternalSubject(ctx context.Cont
 			return nil, fmt.Errorf("entity: %w", entityErr)
 		}
 	} else if ref.Relationship != nil {
+		ik.addAlias(ref.Relationship.ProviderResourceRef)
 		if sourceErr := ik.addEntity(ref.Relationship.Source); sourceErr != nil {
 			return nil, fmt.Errorf("relationship source entity: %w", sourceErr)
 		}
@@ -96,8 +103,8 @@ func (s *KnowledgeGraphIngestionService) ResolveInternalSubject(ctx context.Cont
 		}
 
 		// Internal subjects carry no evidence, so any proposals resolution finds have nothing to cite and are
-		// not written.
-		resolvedAlias, resolveErr := s.resolveSubjectAliasFromRef(ctx, ref, true)
+		// not written. Rezible is the system of record for its internal subjects.
+		resolvedAlias, resolveErr := s.resolveSubjectAliasFromRef(ctx, ref, schematypes.KnowledgeAuthorityDeclared, true)
 		if resolveErr != nil {
 			return nil, fmt.Errorf("resolve alias: %w", resolveErr)
 		}
@@ -134,7 +141,9 @@ var knowledgeSubjectAliasUniqueColumns = sql.ConflictColumns(
 	ksa.FieldProviderResourceRef,
 )
 
-func (s *KnowledgeGraphIngestionService) ensureAlias(ctx context.Context, ref rez.ProviderResourceRef, subjectKind ksa.SubjectKind, entityID, relationshipID uuid.UUID) (*ent.KnowledgeSubjectAlias, error) {
+// ensureAlias returns the alias for the resource ref, creating it with the authority when it is new. An existing
+// alias's authority is raised by the evidence applied to it (applyToAlias).
+func (s *KnowledgeGraphIngestionService) ensureAlias(ctx context.Context, ref rez.ProviderResourceRef, authority schematypes.KnowledgeAuthority, subjectKind ksa.SubjectKind, entityID, relationshipID uuid.UUID) (*ent.KnowledgeSubjectAlias, error) {
 	query := s.makeAliasQuery(ctx, ref)
 	alias, queryErr := query.Only(ctx)
 	if alias != nil {
@@ -152,7 +161,8 @@ func (s *KnowledgeGraphIngestionService) ensureAlias(ctx context.Context, ref re
 		SetProvider(ref.Provider).
 		SetProviderNamespace(ref.ProviderNamespace).
 		SetProviderResourceRef(ref.ResourceRef).
-		SetSubjectKind(subjectKind)
+		SetSubjectKind(subjectKind).
+		SetAuthority(authority)
 	if entityID != uuid.Nil {
 		create.SetEntityID(entityID)
 	} else {
@@ -175,9 +185,11 @@ func (s *KnowledgeGraphIngestionService) lookupExistingEntityAlias(ctx context.C
 	if refErr := ref.ProviderResourceRef.Validate(); refErr != nil {
 		return nil, fmt.Errorf("resource ref: %w", refErr)
 	}
+	// The entity is loaded after the alias, so a merge that committed in between leaves it a redirect, which
+	// lockResolvedEntity follows.
 	queryAlias := s.makeAliasQuery(ctx, ref.ProviderResourceRef).
 		WithEntity()
-	alias, queryErr := queryAlias.Only(ctx)
+	alias, queryErr := queryAlias.Only(ent.IncludeMerged(ctx))
 	if ent.IsNotFound(queryErr) {
 		return nil, nil
 	}
@@ -197,7 +209,9 @@ func (s *KnowledgeGraphIngestionService) lookupExistingEntityAlias(ctx context.C
 	return &resolvedSubjectAlias{aliasId: alias.ID, subjectId: entity.ID}, nil
 }
 
-// queryLinkingAttributes loads the stored linking attributes holding any of the values, with their entities.
+// queryLinkingAttributes loads the stored linking attributes holding any of the values, with their entities. The
+// entities are loaded after the attributes, so one may be a redirect a merge left in between, which
+// lockResolvedEntity follows.
 func (s *KnowledgeGraphIngestionService) queryLinkingAttributes(ctx context.Context, values map[string]string) ([]*ent.KnowledgeEntityLinkingAttribute, error) {
 	if len(values) == 0 {
 		return nil, nil
@@ -209,7 +223,7 @@ func (s *KnowledgeGraphIngestionService) queryLinkingAttributes(ctx context.Cont
 	lookupAttrsQuery := s.db.Client(ctx).KnowledgeEntityLinkingAttribute.Query().
 		Where(kela.Or(preds...)).
 		WithEntity()
-	linkingAttributes, queryErr := lookupAttrsQuery.All(ctx)
+	linkingAttributes, queryErr := lookupAttrsQuery.All(ent.IncludeMerged(ctx))
 	if queryErr != nil {
 		return nil, fmt.Errorf("query entity linking attributes: %w", queryErr)
 	}
@@ -278,7 +292,7 @@ func getKnowledgeEntityLinkingValues(ref rez.KnowledgeEntityRef) (map[string]str
 	return values, nil
 }
 
-func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Context, ref rez.KnowledgeEntityRef) (*resolvedSubjectAlias, error) {
+func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Context, ref rez.KnowledgeEntityRef, authority schematypes.KnowledgeAuthority) (*resolvedSubjectAlias, error) {
 	linkingValues, valuesErr := getKnowledgeEntityLinkingValues(ref)
 	if valuesErr != nil {
 		return nil, valuesErr
@@ -288,16 +302,21 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 	if lookupAliasErr != nil {
 		return nil, fmt.Errorf("lookup existing alias: %w", lookupAliasErr)
 	}
-	existingValues, valuesQueryErr := s.queryLinkingAttributes(ctx, linkingValues)
-	if valuesQueryErr != nil {
-		return nil, valuesQueryErr
-	}
 
 	var resolvedAlias *resolvedSubjectAlias
+	var existingValues []*ent.KnowledgeEntityLinkingAttribute
+	var valuesQueryErr error
 	if existingAlias != nil {
 		resolvedAlias = existingAlias
-		if lockErr := s.lockResolvedEntity(ctx, resolvedAlias.subjectId); lockErr != nil {
+		entityID, lockErr := s.lockResolvedEntity(ctx, resolvedAlias.subjectId)
+		if lockErr != nil {
 			return nil, lockErr
+		}
+		resolvedAlias.subjectId = entityID
+		// Read after the lock, so a merge that committed while it waited has moved them.
+		existingValues, valuesQueryErr = s.queryLinkingAttributes(ctx, linkingValues)
+		if valuesQueryErr != nil {
+			return nil, valuesQueryErr
 		}
 		unconflicted, conflictErr := s.proposeIdentityConflicts(ctx, ref, resolvedAlias, linkingValues, existingValues)
 		if conflictErr != nil {
@@ -305,7 +324,12 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 		}
 		linkingValues = unconflicted
 	} else {
+		existingValues, valuesQueryErr = s.queryLinkingAttributes(ctx, linkingValues)
+		if valuesQueryErr != nil {
+			return nil, valuesQueryErr
+		}
 		entity, linkedErr := s.linkedEntity(existingValues)
+		var entityID uuid.UUID
 		if linkedErr != nil {
 			return nil, linkedErr
 		} else if entity != nil {
@@ -313,8 +337,17 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 				return nil, fmt.Errorf("%w: linking attribute identifies %q/%q, evidence expects %q/%q",
 					errs.ErrConflict, entity.Category, entity.Kind, ref.Category, ref.Kind)
 			}
-			if lockErr := s.lockResolvedEntity(ctx, entity.ID); lockErr != nil {
+			lockedID, lockErr := s.lockResolvedEntity(ctx, entity.ID)
+			if lockErr != nil {
 				return nil, lockErr
+			}
+			entityID = lockedID
+			if entityID != entity.ID {
+				// A merge that committed while the lock waited moved the attributes read before it.
+				existingValues, valuesQueryErr = s.queryLinkingAttributes(ctx, linkingValues)
+				if valuesQueryErr != nil {
+					return nil, valuesQueryErr
+				}
 			}
 		} else {
 			createEntity := s.db.Client(ctx).KnowledgeEntity.Create().
@@ -324,13 +357,13 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 			if createErr != nil {
 				return nil, fmt.Errorf("create entity: %w", createErr)
 			}
-			entity = created
+			entityID = created.ID
 		}
-		alias, aliasErr := s.ensureAlias(ctx, ref.ProviderResourceRef, ksa.SubjectKindEntity, entity.ID, uuid.Nil)
+		alias, aliasErr := s.ensureAlias(ctx, ref.ProviderResourceRef, authority, ksa.SubjectKindEntity, entityID, uuid.Nil)
 		if aliasErr != nil {
 			return nil, fmt.Errorf("ensure entity alias: %w", aliasErr)
 		}
-		resolvedAlias = &resolvedSubjectAlias{aliasId: alias.ID, subjectId: entity.ID}
+		resolvedAlias = &resolvedSubjectAlias{aliasId: alias.ID, subjectId: entityID}
 	}
 
 	insertedValues, linkingErr := s.ensureEntityLinkingAttributes(ctx, resolvedAlias.subjectId, linkingValues, existingValues)
@@ -347,26 +380,15 @@ func (s *KnowledgeGraphIngestionService) resolveEntityFromRef(ctx context.Contex
 	return resolvedAlias, nil
 }
 
-// lockResolvedEntity key-share locks an existing entity's row before anything is written for it. A projection
-// can resolve an existing alias and write only evidence, which references the alias and not the entity, so no
-// foreign key protects the entity it resolved. A merge (MergeEntities) locks both its entities FOR UPDATE, in ID
-// order, and deletes the one merged away: with this lock, the merge waits for in-flight projections of the
-// entity, and a projection that resolved an entity the merge has since deleted finds no row and returns
-// errs.ErrKnowledgeSubjectMerged, so its job runs again on the merged graph. FOR KEY SHARE rather than FOR SHARE,
-// so projections of one entity still run side by side: they also update its state, which another projection's
-// FOR SHARE would block. A projection naming both of a merge's entities locks them one at a time, in its own
-// order; Postgres aborts one side of such a cycle as a deadlock, and its job or request retries.
-func (s *KnowledgeGraphIngestionService) lockResolvedEntity(ctx context.Context, entityID uuid.UUID) error {
-	lockEntity := s.db.Client(ctx).KnowledgeEntity.Query().
-		Where(kne.ID(entityID)).
-		ForShare(ent.KeyShareLock)
-	if _, lockErr := lockEntity.OnlyID(ctx); lockErr != nil {
-		if ent.IsNotFound(lockErr) {
-			return fmt.Errorf("%w: knowledge entity %s", errs.ErrKnowledgeSubjectMerged, entityID)
-		}
-		return fmt.Errorf("lock entity: %w", lockErr)
+// lockResolvedEntity key-share locks an existing entity's row before anything is written for it, and returns the
+// entity to write for, following any redirect a merge left. Evidence references the alias, not the entity, so this
+// lock rather than a foreign key keeps the entity from being merged away until the projection commits.
+func (s *KnowledgeGraphIngestionService) lockResolvedEntity(ctx context.Context, entityID uuid.UUID) (uuid.UUID, error) {
+	resolvedID, lockErr := ent.ResolveKnowledgeEntityID(ctx, s.db.Client(ctx), entityID)
+	if lockErr != nil {
+		return uuid.Nil, fmt.Errorf("lock entity: %w", lockErr)
 	}
-	return nil
+	return resolvedID, nil
 }
 
 func (s *KnowledgeGraphIngestionService) lookupExistingRelationshipAlias(ctx context.Context, ref rez.KnowledgeRelationshipRef, sourceId, targetId uuid.UUID) (*resolvedSubjectAlias, error) {
@@ -380,14 +402,14 @@ func (s *KnowledgeGraphIngestionService) lookupExistingRelationshipAlias(ctx con
 		return nil, fmt.Errorf("query relationship alias: %w", queryErr)
 	}
 	if alias.SubjectKind != ksa.SubjectKindRelationship {
-		return nil, fmt.Errorf("%w: resource already identifies an entity", errs.ErrConflict)
+		return nil, &invalidRelationshipRefError{schematypes.SkippedEvidenceReasonTopologyMismatch, fmt.Errorf("%w: resource already identifies an entity", errs.ErrConflict)}
 	}
 	rel, relationshipErr := alias.Edges.RelationshipOrErr()
 	if relationshipErr != nil {
 		return nil, fmt.Errorf("load aliased relationship: %w", relationshipErr)
 	}
 	if rel.Predicate != ref.Predicate || rel.SourceEntityID != sourceId || rel.TargetEntityID != targetId {
-		return nil, fmt.Errorf("%w: relationship alias identifies different topology", errs.ErrConflict)
+		return nil, &invalidRelationshipRefError{schematypes.SkippedEvidenceReasonTopologyMismatch, fmt.Errorf("%w: relationship alias identifies different topology", errs.ErrConflict)}
 	}
 	return &resolvedSubjectAlias{aliasId: alias.ID, subjectId: rel.ID}, nil
 }
@@ -399,22 +421,31 @@ var knowledgeRelationshipUniqueColumns = sql.ConflictColumns(
 	knr.FieldTargetEntityID,
 )
 
-var errNoExistingEndpointEntityAlias = fmt.Errorf("endpoint entity does not exist")
+type invalidRelationshipRefError struct {
+	reason schematypes.SkippedEvidenceReason
+	cause  error
+}
 
-func (s *KnowledgeGraphIngestionService) resolveRelationshipFromRef(ctx context.Context, ref rez.KnowledgeRelationshipRef, source, target *resolvedSubjectAlias) (*resolvedSubjectAlias, error) {
+func (e *invalidRelationshipRefError) Error() string { return e.cause.Error() }
+func (e *invalidRelationshipRefError) Unwrap() error { return e.cause }
+
+var errNoExistingEndpointEntityAlias = &invalidRelationshipRefError{schematypes.SkippedEvidenceReasonMissingEndpoint, fmt.Errorf("endpoint entity does not exist")}
+
+func (s *KnowledgeGraphIngestionService) resolveRelationshipFromRef(ctx context.Context, ref rez.KnowledgeRelationshipRef, authority schematypes.KnowledgeAuthority, source, target *resolvedSubjectAlias) (*resolvedSubjectAlias, error) {
 	// Endpoint resolution rejects an alias whose entity differs from the ref's category, so the ref's
 	// categories are the resolved endpoints' categories.
 	if validErr := knowledgegraph.ValidateRelationship(ref.Predicate, ref.Source.Category, ref.Target.Category); validErr != nil {
-		return nil, validErr
-	}
-	if ref.Predicate == knr.PredicateContains && source.subjectId == target.subjectId {
-		return nil, fmt.Errorf("%w: an entity cannot contain itself", errs.ErrInvalidInput)
+		return nil, &invalidRelationshipRefError{schematypes.SkippedEvidenceReasonPredicateCategories, validErr}
 	}
 	existing, lookupExistingErr := s.lookupExistingRelationshipAlias(ctx, ref, source.subjectId, target.subjectId)
 	if lookupExistingErr != nil {
 		return nil, fmt.Errorf("lookup existing alias: %w", lookupExistingErr)
 	} else if existing != nil {
 		return existing, nil
+	}
+
+	if ref.Predicate == knr.PredicateContains && source.subjectId == target.subjectId {
+		return nil, &invalidRelationshipRefError{schematypes.SkippedEvidenceReasonSelfContains, fmt.Errorf("%w: an entity cannot contain itself", errs.ErrInvalidInput)}
 	}
 
 	create := s.db.Client(ctx).KnowledgeRelationship.Create().
@@ -428,7 +459,7 @@ func (s *KnowledgeGraphIngestionService) resolveRelationshipFromRef(ctx context.
 		return nil, fmt.Errorf("create relationship: %w", upsertErr)
 	}
 
-	alias, aliasErr := s.ensureAlias(ctx, ref.ProviderResourceRef, ksa.SubjectKindRelationship, uuid.Nil, relationshipID)
+	alias, aliasErr := s.ensureAlias(ctx, ref.ProviderResourceRef, authority, ksa.SubjectKindRelationship, uuid.Nil, relationshipID)
 	if aliasErr != nil {
 		return nil, aliasErr
 	}
@@ -437,9 +468,10 @@ func (s *KnowledgeGraphIngestionService) resolveRelationshipFromRef(ctx context.
 
 var knowledgeEvidenceUniqueColumns = sql.ConflictColumns(ke.FieldTenantID, ke.FieldEventID, ke.FieldSubjectAliasID)
 
-func (s *KnowledgeGraphIngestionService) resolveSubjectAliasFromRef(ctx context.Context, ref rez.KnowledgeSubjectRef, resolveRelEndpoints bool) (*resolvedSubjectAlias, error) {
+// resolveSubjectAliasFromRef resolves the subject's alias, creating any alias it needs with the authority.
+func (s *KnowledgeGraphIngestionService) resolveSubjectAliasFromRef(ctx context.Context, ref rez.KnowledgeSubjectRef, authority schematypes.KnowledgeAuthority, resolveRelEndpoints bool) (*resolvedSubjectAlias, error) {
 	if ref.Entity != nil {
-		return s.resolveEntityFromRef(ctx, *ref.Entity)
+		return s.resolveEntityFromRef(ctx, *ref.Entity, authority)
 	}
 
 	if refErr := ref.Relationship.ProviderResourceRef.Validate(); refErr != nil {
@@ -450,35 +482,47 @@ func (s *KnowledgeGraphIngestionService) resolveSubjectAliasFromRef(ctx context.
 	var target *resolvedSubjectAlias
 	var endpointErr error
 	if resolveRelEndpoints {
-		source, endpointErr = s.resolveEntityFromRef(ctx, ref.Relationship.Source)
+		source, endpointErr = s.resolveEntityFromRef(ctx, ref.Relationship.Source, authority)
 		if endpointErr != nil {
 			return nil, fmt.Errorf("source: %w", errNoExistingEndpointEntityAlias)
 		}
-		target, endpointErr = s.resolveEntityFromRef(ctx, ref.Relationship.Target)
+		target, endpointErr = s.resolveEntityFromRef(ctx, ref.Relationship.Target, authority)
 		if endpointErr != nil {
 			return nil, fmt.Errorf("target: %w", errNoExistingEndpointEntityAlias)
 		}
 	} else {
 		source, endpointErr = s.lookupExistingEntityAlias(ctx, ref.Relationship.Source)
-		if endpointErr != nil || source == nil {
+		if endpointErr != nil {
+			return nil, fmt.Errorf("source: %w", endpointErr)
+		}
+		if source == nil {
 			return nil, fmt.Errorf("source: %w", errNoExistingEndpointEntityAlias)
 		}
 		target, endpointErr = s.lookupExistingEntityAlias(ctx, ref.Relationship.Target)
-		if endpointErr != nil || target == nil {
+		if endpointErr != nil {
+			return nil, fmt.Errorf("target: %w", endpointErr)
+		}
+		if target == nil {
 			return nil, fmt.Errorf("target: %w", errNoExistingEndpointEntityAlias)
 		}
-		if lockErr := s.lockResolvedEntity(ctx, source.subjectId); lockErr != nil {
+		sourceID, lockErr := s.lockResolvedEntity(ctx, source.subjectId)
+		if lockErr != nil {
 			return nil, fmt.Errorf("source: %w", lockErr)
 		}
-		if lockErr := s.lockResolvedEntity(ctx, target.subjectId); lockErr != nil {
+		source.subjectId = sourceID
+		targetID, lockErr := s.lockResolvedEntity(ctx, target.subjectId)
+		if lockErr != nil {
 			return nil, fmt.Errorf("target: %w", lockErr)
 		}
+		target.subjectId = targetID
 	}
 
-	return s.resolveRelationshipFromRef(ctx, *ref.Relationship, source, target)
+	return s.resolveRelationshipFromRef(ctx, *ref.Relationship, authority, source, target)
 }
 
-func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context, eventID uuid.UUID, refs []rez.KnowledgeEvidenceRef) error {
+// ingestEvidenceRefs writes the refs' evidence and touches their subjects in refresh, for the caller to flush.
+func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context, event *ent.NormalizedEvent, refs []rez.KnowledgeEvidenceRef, refresh *subjectRefresh) error {
+	eventID := event.ID
 	if len(refs) == 0 {
 		return nil
 	}
@@ -486,8 +530,17 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 	aliasIDs := make([]uuid.UUID, len(refs))
 	proposing := make([]*resolvedSubjectAlias, 0)
 	for i, ref := range refs {
-		resolved, aliasErr := s.resolveSubjectAliasFromRef(ctx, ref.Subject, false)
+		resolved, aliasErr := s.resolveSubjectAliasFromRef(ctx, ref.Subject, ref.Authority, false)
 		if aliasErr != nil {
+			// Only the projection runner installs diagnostics; internal writes must reject invalid refs.
+			diagnostics := projectionDiagnosticsFrom(ctx)
+			var invalid *invalidRelationshipRefError
+			if ref.Subject.Relationship != nil && diagnostics != nil && errors.As(aliasErr, &invalid) {
+				if recordErr := diagnostics.record(ref, invalid.reason, aliasErr); recordErr != nil {
+					return recordErr
+				}
+				continue
+			}
 			return fmt.Errorf("resolve subject alias: %w", aliasErr)
 		}
 		resolvedRefs[i], aliasIDs[i] = resolved, resolved.aliasId
@@ -509,16 +562,49 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 		recorded.Add(evidence.SubjectAliasID)
 	}
 
+	// An alias takes the highest authority among the event's refs to it, whichever of them is applied as evidence,
+	// so the ref order within the event does not matter.
+	authorities := make(map[uuid.UUID]schematypes.KnowledgeAuthority, len(refs))
+	for i, ref := range refs {
+		if resolved := resolvedRefs[i]; resolved != nil && ref.Authority.Compare(authorities[resolved.aliasId]) > 0 {
+			authorities[resolved.aliasId] = ref.Authority
+		}
+	}
+	touch := func(ref rez.KnowledgeEvidenceRef, resolved *resolvedSubjectAlias, reranked bool) {
+		switch {
+		case ref.Subject.Entity != nil:
+			refresh.entities.Add(resolved.subjectId)
+		case reranked:
+			refresh.rerank(resolved.subjectId)
+		default:
+			refresh.relationships.Add(resolved.subjectId)
+		}
+	}
+
 	evClient := s.db.Client(ctx).KnowledgeEvidence
 	builders := make([]*ent.KnowledgeEvidenceCreate, 0, len(refs))
-	entityIDs := mapset.NewSet[uuid.UUID]()
-	relationshipIDs := mapset.NewSet[uuid.UUID]()
 	for i, ref := range refs {
 		resolved := resolvedRefs[i]
-		if !recorded.Add(resolved.aliasId) {
+		if resolved == nil {
+			continue
+		}
+		authority, pending := authorities[resolved.aliasId]
+		if !pending {
+			continue
+		}
+		delete(authorities, resolved.aliasId)
+		if recorded.Contains(resolved.aliasId) {
+			raised, reranked, raiseErr := s.raiseAliasAuthority(ctx, resolved.aliasId, authority)
+			if raiseErr != nil {
+				return fmt.Errorf("raise alias authority: %w", raiseErr)
+			}
+			if raised {
+				touch(ref, resolved, reranked)
+			}
 			continue
 		}
 		evidence := knowledgegraph.AliasEvidence{
+			EventID:     eventID,
 			Kind:        ref.Kind,
 			StateMode:   ref.StateMode,
 			EffectiveAt: ref.EffectiveAt,
@@ -530,14 +616,11 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 		if ref.ValidFor > 0 {
 			evidence.ExpiresAt = new(ref.EffectiveAt.Add(ref.ValidFor))
 		}
-		if applyErr := s.applyToAlias(ctx, resolved.aliasId, evidence); applyErr != nil {
+		reranked, applyErr := s.applyToAlias(ctx, resolved.aliasId, evidence, authority)
+		if applyErr != nil {
 			return fmt.Errorf("apply evidence to alias: %w", applyErr)
 		}
-		if ref.Subject.Entity != nil {
-			entityIDs.Add(resolved.subjectId)
-		} else {
-			relationshipIDs.Add(resolved.subjectId)
-		}
+		touch(ref, resolved, reranked)
 		builders = append(builders, evClient.Create().
 			SetEventID(eventID).
 			SetSubjectAliasID(resolved.aliasId).
@@ -556,24 +639,17 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 			return fmt.Errorf("create knowledge evidence: %w", createErr)
 		}
 	}
-	for _, entityID := range sortedUUIDs(entityIDs) {
-		if mergeErr := s.mergeEntityState(ctx, entityID); mergeErr != nil {
-			return fmt.Errorf("merge entity state: %w", mergeErr)
+	if event.LastOccurredAt.After(event.OccurredAt) {
+		// Resolution already holds these aliases' identity and entity locks. Catch up only this batch,
+		// without taking new identity locks after ingestion's sorted acquisition.
+		rows, queryErr := s.repeatableEvidenceQuery(ctx, eventID).
+			Where(ke.SubjectAliasIDIn(aliasIDs...)).
+			All(ctx)
+		if queryErr != nil {
+			return fmt.Errorf("load ingested repeatable evidence: %w", queryErr)
 		}
-	}
-	children := mapset.NewSet[uuid.UUID]()
-	for _, relationshipID := range sortedUUIDs(relationshipIDs) {
-		relationship, mergeErr := s.mergeRelationshipState(ctx, relationshipID)
-		if mergeErr != nil {
-			return fmt.Errorf("merge relationship state: %w", mergeErr)
-		}
-		if relationship.Predicate == knr.PredicateContains {
-			children.Add(relationship.TargetEntityID)
-		}
-	}
-	for _, childID := range sortedUUIDs(children) {
-		if parentErr := s.recomputeParent(ctx, childID); parentErr != nil {
-			return fmt.Errorf("recompute parent: %w", parentErr)
+		if repeatErr := s.applyReobservation(ctx, rows, event.LastOccurredAt, refresh); repeatErr != nil {
+			return repeatErr
 		}
 	}
 	if proposalsErr := s.createProposals(ctx, eventID, proposing); proposalsErr != nil {
@@ -582,26 +658,55 @@ func (s *KnowledgeGraphIngestionService) ingestEvidenceRefs(ctx context.Context,
 	return nil
 }
 
-// applyToAlias applies one evidence row to its alias's state and observation times. The identity locks taken
-// by the ingesting transaction cover the alias's resource ref, so no other ingestion updates the alias meanwhile.
-func (s *KnowledgeGraphIngestionService) applyToAlias(ctx context.Context, aliasID uuid.UUID, evidence knowledgegraph.AliasEvidence) error {
+// applyToAlias applies one evidence row to its alias's state and observation times, and raises the alias to the
+// evidence's authority when that is higher; a lower authority leaves it unchanged. It reports whether the change
+// reorders a relationship alias's claim (aliasRanksClaim). The identity locks taken by the ingesting transaction
+// cover the alias's resource ref, so no other ingestion updates the alias meanwhile.
+func (s *KnowledgeGraphIngestionService) applyToAlias(ctx context.Context, aliasID uuid.UUID, evidence knowledgegraph.AliasEvidence, authority schematypes.KnowledgeAuthority) (bool, error) {
 	client := s.db.Client(ctx)
 	alias, queryErr := client.KnowledgeSubjectAlias.Get(ctx, aliasID)
 	if queryErr != nil {
-		return fmt.Errorf("load alias: %w", queryErr)
+		return false, fmt.Errorf("load alias: %w", queryErr)
 	}
-	record := knowledgegraph.ApplyEvidence(aliasRecord(alias), evidence)
+	before := aliasRecord(alias)
+	record := knowledgegraph.ApplyEvidence(before, evidence)
 	updateAlias := client.KnowledgeSubjectAlias.UpdateOneID(aliasID).
 		SetState(record.State)
+	raised := authority.Compare(alias.Authority) > 0
+	if raised {
+		updateAlias.SetAuthority(authority)
+	}
 	if mutationErr := setTimeFields(updateAlias.Mutation(), map[string]*time.Time{
 		ksa.FieldFirstObservedAt: record.FirstObservedAt,
 		ksa.FieldLastObservedAt:  record.LastObservedAt,
 		ksa.FieldWithdrawnAt:     record.WithdrawnAt,
 		ksa.FieldExpiresAt:       record.ExpiresAt,
 	}); mutationErr != nil {
-		return mutationErr
+		return false, mutationErr
 	}
-	return updateAlias.Exec(ctx)
+	if updateErr := updateAlias.Exec(ctx); updateErr != nil {
+		return false, updateErr
+	}
+	return aliasRanksClaim(before, record, raised), nil
+}
+
+// raiseAliasAuthority raises an alias whose evidence for the event is already recorded, a replay or a second call
+// for the event, to the authority when that is higher. It reports whether it raised the alias, and whether that
+// reorders the alias's claim (aliasRanksClaim).
+func (s *KnowledgeGraphIngestionService) raiseAliasAuthority(ctx context.Context, aliasID uuid.UUID, authority schematypes.KnowledgeAuthority) (bool, bool, error) {
+	client := s.db.Client(ctx)
+	alias, queryErr := client.KnowledgeSubjectAlias.Get(ctx, aliasID)
+	if queryErr != nil {
+		return false, false, fmt.Errorf("load alias: %w", queryErr)
+	}
+	if authority.Compare(alias.Authority) <= 0 {
+		return false, false, nil
+	}
+	if updateErr := client.KnowledgeSubjectAlias.UpdateOneID(aliasID).SetAuthority(authority).Exec(ctx); updateErr != nil {
+		return false, false, updateErr
+	}
+	record := aliasRecord(alias)
+	return true, aliasRanksClaim(record, record, true), nil
 }
 
 func aliasRecord(alias *ent.KnowledgeSubjectAlias) knowledgegraph.AliasRecord {
@@ -623,152 +728,9 @@ func (s *KnowledgeGraphIngestionService) subjectAliases(ctx context.Context, pre
 	}
 	subjectAliases := make([]knowledgegraph.SubjectAlias, len(aliases))
 	for i, alias := range aliases {
-		subjectAliases[i] = knowledgegraph.SubjectAlias{ID: alias.ID, CreatedAt: alias.CreatedAt, Record: aliasRecord(alias)}
+		subjectAliases[i] = knowledgegraph.SubjectAlias{ID: alias.ID, Authority: alias.Authority, Record: aliasRecord(alias)}
 	}
 	return subjectAliases, nil
-}
-
-// mergeEntityState re-merges the entity's state from all of its aliases. The identity locks do not serialize
-// projections of one entity under two names, which a merge leaves, so the read-modify-write locks the row
-// FOR NO KEY UPDATE; that does not conflict with the FOR KEY SHARE lock of lockResolvedEntity.
-func (s *KnowledgeGraphIngestionService) mergeEntityState(ctx context.Context, entityID uuid.UUID) error {
-	client := s.db.Client(ctx)
-	lockEntity := client.KnowledgeEntity.Query().
-		Where(kne.ID(entityID)).
-		ForUpdate(ent.KeyUpdateLock)
-	entity, lockErr := lockEntity.Only(ctx)
-	if lockErr != nil {
-		return fmt.Errorf("lock entity: %w", lockErr)
-	}
-	aliases, aliasesErr := s.subjectAliases(ctx, ksa.EntityID(entityID))
-	if aliasesErr != nil {
-		return aliasesErr
-	}
-	merged := knowledgegraph.MergeSubjectState(aliases)
-	update := client.KnowledgeEntity.UpdateOneID(entityID)
-	if mutationErr := setSubjectState(update.Mutation(), merged); mutationErr != nil {
-		return mutationErr
-	}
-	if updateErr := update.Exec(ctx); updateErr != nil {
-		return updateErr
-	}
-	// Becoming withdrawn or current again changes which contains relationships are candidates, for the entity's
-	// own parent and for the entities it contains.
-	if (entity.WithdrawnAt == nil) != (merged.WithdrawnAt == nil) {
-		return s.recomputeParentsAround(ctx, entityID)
-	}
-	return nil
-}
-
-// recomputeParentsAround recomputes the parent of the entity and of every entity it contains.
-func (s *KnowledgeGraphIngestionService) recomputeParentsAround(ctx context.Context, entityID uuid.UUID) error {
-	queryChildren := s.db.Client(ctx).KnowledgeRelationship.Query().
-		Where(knr.PredicateEQ(knr.PredicateContains), knr.SourceEntityID(entityID))
-	contains, childrenErr := queryChildren.All(ctx)
-	if childrenErr != nil {
-		return fmt.Errorf("query contained entities: %w", childrenErr)
-	}
-	ids := mapset.NewSet(entityID)
-	for _, relationship := range contains {
-		ids.Add(relationship.TargetEntityID)
-	}
-	for _, id := range sortedUUIDs(ids) {
-		if parentErr := s.recomputeParent(ctx, id); parentErr != nil {
-			return parentErr
-		}
-	}
-	return nil
-}
-
-// recomputeParent chooses the entity's parent from the current contains relationships targeting it: the first
-// claim Rezible saw (earliest created, then lowest ID) whose source is not the entity and does not have the
-// entity among its ancestors. With no candidate the parent is cleared. Staleness does not affect the choice.
-//
-// The child is locked before the claims are read. Two ingestions can add claims on one child under different
-// aliases, which the identity locks do not serialize; the later one then waits here and reads the earlier one's
-// committed claim (READ COMMITTED), so the last write sees every claim. Callers lock children in ID order; a cycle with another
-// transaction's locks aborts one side as a deadlock, and its job or request retries.
-func (s *KnowledgeGraphIngestionService) recomputeParent(ctx context.Context, childID uuid.UUID) error {
-	client := s.db.Client(ctx)
-	lockChild := client.KnowledgeEntity.Query().
-		Where(kne.ID(childID)).
-		ForUpdate(ent.KeyUpdateLock)
-	if _, lockErr := lockChild.OnlyID(ctx); lockErr != nil {
-		return fmt.Errorf("lock entity: %w", lockErr)
-	}
-	queryClaims := client.KnowledgeRelationship.Query().
-		Where(
-			knr.PredicateEQ(knr.PredicateContains),
-			knr.TargetEntityID(childID),
-			knr.SourceEntityIDNEQ(childID),
-			currentKnowledgeRelationship(),
-		).
-		Order(knr.ByCreatedAt(), knr.ByID())
-	claims, claimsErr := queryClaims.All(ctx)
-	if claimsErr != nil {
-		return fmt.Errorf("query parent claims: %w", claimsErr)
-	}
-	var parentID *uuid.UUID
-	for _, claim := range claims {
-		cycles, walkErr := s.hasAncestor(ctx, claim.SourceEntityID, childID)
-		if walkErr != nil {
-			return walkErr
-		}
-		if !cycles {
-			parentID = &claim.SourceEntityID
-			break
-		}
-	}
-	update := client.KnowledgeEntity.UpdateOneID(childID)
-	if parentID == nil {
-		update.ClearParentID()
-	} else {
-		update.SetParentID(*parentID)
-	}
-	return update.Exec(ctx)
-}
-
-// hasAncestor reports whether ancestorID is the entity or one of its ancestors, walking parent_id at most
-// MaxAncestryDepth steps.
-func (s *KnowledgeGraphIngestionService) hasAncestor(ctx context.Context, entityID, ancestorID uuid.UUID) (bool, error) {
-	current := &entityID
-	visited := mapset.NewSet[uuid.UUID]()
-	for range knowledgegraph.MaxAncestryDepth {
-		if current == nil || !visited.Add(*current) {
-			return false, nil
-		}
-		if *current == ancestorID {
-			return true, nil
-		}
-		entity, queryErr := s.db.Client(ctx).KnowledgeEntity.Get(ctx, *current)
-		if queryErr != nil {
-			return false, fmt.Errorf("walk ancestors: %w", queryErr)
-		}
-		current = entity.ParentID
-	}
-	return false, nil
-}
-
-// mergeRelationshipState re-merges the relationship's state from all of its aliases, locking the row as
-// mergeEntityState does, for the same reason.
-func (s *KnowledgeGraphIngestionService) mergeRelationshipState(ctx context.Context, relationshipID uuid.UUID) (*ent.KnowledgeRelationship, error) {
-	client := s.db.Client(ctx)
-	lockRelationship := client.KnowledgeRelationship.Query().
-		Where(knr.ID(relationshipID)).
-		ForUpdate(ent.KeyUpdateLock)
-	relationship, lockErr := lockRelationship.Only(ctx)
-	if lockErr != nil {
-		return nil, fmt.Errorf("lock relationship: %w", lockErr)
-	}
-	aliases, aliasesErr := s.subjectAliases(ctx, ksa.RelationshipID(relationshipID))
-	if aliasesErr != nil {
-		return nil, aliasesErr
-	}
-	update := client.KnowledgeRelationship.UpdateOneID(relationshipID)
-	if mutationErr := setSubjectState(update.Mutation(), knowledgegraph.MergeSubjectState(aliases)); mutationErr != nil {
-		return nil, mutationErr
-	}
-	return relationship, update.Exec(ctx)
 }
 
 // fieldMutation is the part of a generated mutation that sets fields by name. Entities and relationships share
@@ -828,13 +790,16 @@ func (k *knowledgeEntityIdentityLockKeys) makeKey(parts ...string) string {
 	return string(encoded)
 }
 
+func (k *knowledgeEntityIdentityLockKeys) addAlias(ref rez.ProviderResourceRef) {
+	k.keys = append(k.keys, k.makeKey("alias", ref.Provider, ref.ProviderNamespace, ref.ResourceRef))
+}
+
 func (k *knowledgeEntityIdentityLockKeys) addEntity(ref rez.KnowledgeEntityRef) error {
 	values, valuesErr := getKnowledgeEntityLinkingValues(ref)
 	if valuesErr != nil {
 		return valuesErr
 	}
-	rr := ref.ProviderResourceRef
-	k.keys = append(k.keys, k.makeKey("alias", rr.Provider, rr.ProviderNamespace, rr.ResourceRef))
+	k.addAlias(ref.ProviderResourceRef)
 	for attribute, value := range values {
 		k.keys = append(k.keys, k.makeKey("attribute", attribute, value))
 		// Two events naming similar services, such as `checkout` and `checkout-api`, would each miss the other's
@@ -858,12 +823,116 @@ func (k *knowledgeEntityIdentityLockKeys) collectSubjects(refs []rez.KnowledgeEv
 				return fmt.Errorf("entity: %w", entityErr)
 			}
 		case subj.Relationship != nil && subj.Entity == nil:
+			k.addAlias(subj.Relationship.ProviderResourceRef)
 			if sourceErr := k.addEntity(subj.Relationship.Source); sourceErr != nil {
 				return fmt.Errorf("relationship source entity: %w", sourceErr)
 			}
 			if targetErr := k.addEntity(subj.Relationship.Target); targetErr != nil {
 				return fmt.Errorf("relationship target entity: %w", targetErr)
 			}
+		}
+	}
+	return nil
+}
+
+func (s *KnowledgeGraphIngestionService) repeatableEvidenceQuery(ctx context.Context, eventID uuid.UUID) *ent.KnowledgeEvidenceQuery {
+	return s.db.Client(ctx).KnowledgeEvidence.Query().
+		Where(ke.EventID(eventID), ke.KindEQ(ke.KindObserved), ke.ExpiresAtNotNil()).
+		WithSubjectAlias(func(q *ent.KnowledgeSubjectAliasQuery) { q.WithRelationship() })
+}
+
+// reobserveEvidence runs under the event's projection lock, before any identity locks in the transaction.
+func (s *KnowledgeGraphIngestionService) reobserveEvidence(ctx context.Context, eventID uuid.UUID, at time.Time) error {
+	query := s.repeatableEvidenceQuery(ctx, eventID)
+	rows, queryErr := query.All(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("load repeatable evidence: %w", queryErr)
+	}
+	if len(rows) == 0 {
+		return nil
+	}
+	ik := &knowledgeEntityIdentityLockKeys{}
+	lockEntityIDs := mapset.NewSet[uuid.UUID]()
+	for _, row := range rows {
+		alias := row.Edges.SubjectAlias
+		ik.addAlias(rez.ProviderResourceRef{Provider: alias.Provider,
+			ProviderNamespace: alias.ProviderNamespace, ResourceRef: alias.ProviderResourceRef})
+		if alias.EntityID != nil {
+			lockEntityIDs.Add(*alias.EntityID)
+		} else {
+			relationship := alias.Edges.Relationship
+			if relationship == nil {
+				return errs.ErrKnowledgeSubjectMerged
+			}
+			lockEntityIDs.Add(relationship.SourceEntityID)
+			lockEntityIDs.Add(relationship.TargetEntityID)
+		}
+	}
+	// Alias keys use ingestion's derivation, including relationship aliases. Take the complete set once,
+	// after the projection lock and before entity locks, so concurrent ingestion cannot overwrite repeats.
+	if lockErr := s.db.AcquireTxLocks(ctx, knowledgeEntityIdentityLockNamespace, ik.keys...); lockErr != nil {
+		return lockErr
+	}
+	// As in projection, key-share locks prevent merges from moving these aliases or endpoints. A merge that
+	// committed since the first read left a redirect, which lockResolvedEntity follows to the survivor.
+	lockedEntityIDs := mapset.NewSet[uuid.UUID]()
+	for _, entityID := range sortedUUIDs(lockEntityIDs) {
+		lockedID, lockErr := s.lockResolvedEntity(ctx, entityID)
+		if lockErr != nil {
+			return lockErr
+		}
+		lockedEntityIDs.Add(lockedID)
+	}
+	// Reload after identity locks: a later repeat or a merge may have changed the rows while waiting.
+	rows, queryErr = query.All(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("reload repeatable evidence: %w", queryErr)
+	}
+	for _, row := range rows {
+		alias := row.Edges.SubjectAlias
+		if alias.EntityID != nil {
+			if !lockedEntityIDs.Contains(*alias.EntityID) {
+				return errs.ErrKnowledgeSubjectMerged
+			}
+		} else if relationship := alias.Edges.Relationship; relationship == nil ||
+			!lockedEntityIDs.Contains(relationship.SourceEntityID) || !lockedEntityIDs.Contains(relationship.TargetEntityID) {
+			return errs.ErrKnowledgeSubjectMerged
+		}
+	}
+	refresh := newSubjectRefresh()
+	if repeatErr := s.applyReobservation(ctx, rows, at, refresh); repeatErr != nil {
+		return repeatErr
+	}
+	return s.flush(ctx, refresh)
+}
+
+// applyReobservation touches its subjects in refresh, for the caller to flush.
+func (s *KnowledgeGraphIngestionService) applyReobservation(ctx context.Context, rows []*ent.KnowledgeEvidence, at time.Time, refresh *subjectRefresh) error {
+	client := s.db.Client(ctx)
+	for _, row := range rows {
+		alias := row.Edges.SubjectAlias
+		if row.ReobservedAt != nil && !row.ReobservedAt.Before(at) {
+			continue
+		}
+		updateEvidence := client.KnowledgeEvidence.UpdateOneID(row.ID).
+			SetReobservedAt(at)
+		if updateErr := updateEvidence.Exec(ctx); updateErr != nil {
+			return updateErr
+		}
+		original := knowledgegraph.AliasEvidence{EventID: row.EventID, EffectiveAt: row.EffectiveAt, ExpiresAt: row.ExpiresAt}
+		repeat := knowledgegraph.AliasEvidence{Kind: ke.KindObserved, EffectiveAt: at, ReobservationOf: &original}
+		// A repeat restates the original evidence, so it carries no authority of its own.
+		reranked, applyErr := s.applyToAlias(ctx, row.SubjectAliasID, repeat, alias.Authority)
+		if applyErr != nil {
+			return applyErr
+		}
+		switch {
+		case alias.EntityID != nil:
+			refresh.entities.Add(*alias.EntityID)
+		case reranked:
+			refresh.rerank(*alias.RelationshipID)
+		default:
+			refresh.relationships.Add(*alias.RelationshipID)
 		}
 	}
 	return nil

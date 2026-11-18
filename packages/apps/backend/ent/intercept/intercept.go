@@ -20,6 +20,8 @@ import (
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinstanceevent"
 	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/changepoint"
+	"github.com/rezible/rezible/ent/changepointinvolvement"
 	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
@@ -66,6 +68,8 @@ import (
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
+	"github.com/rezible/rezible/ent/observationscope"
+	"github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -83,7 +87,6 @@ import (
 	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
-	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationnotice"
 	"github.com/rezible/rezible/ent/situationobservation"
@@ -484,6 +487,60 @@ func (f TraverseAlertMetrics) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AlertMetricsQuery", q)
+}
+
+// The ChangePointFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ChangePointFunc func(context.Context, *ent.ChangePointQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ChangePointFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ChangePointQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ChangePointQuery", q)
+}
+
+// The TraverseChangePoint type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseChangePoint func(context.Context, *ent.ChangePointQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseChangePoint) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseChangePoint) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ChangePointQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ChangePointQuery", q)
+}
+
+// The ChangePointInvolvementFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ChangePointInvolvementFunc func(context.Context, *ent.ChangePointInvolvementQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ChangePointInvolvementFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ChangePointInvolvementQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ChangePointInvolvementQuery", q)
+}
+
+// The TraverseChangePointInvolvement type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseChangePointInvolvement func(context.Context, *ent.ChangePointInvolvementQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseChangePointInvolvement) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseChangePointInvolvement) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ChangePointInvolvementQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ChangePointInvolvementQuery", q)
 }
 
 // The DiscussionCommentFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1728,6 +1785,60 @@ func (f TraverseNormalizedEventProjectionEntity) Traverse(ctx context.Context, q
 	return fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventProjectionEntityQuery", q)
 }
 
+// The ObservationScopeFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ObservationScopeFunc func(context.Context, *ent.ObservationScopeQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ObservationScopeFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ObservationScopeQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ObservationScopeQuery", q)
+}
+
+// The TraverseObservationScope type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseObservationScope func(context.Context, *ent.ObservationScopeQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseObservationScope) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseObservationScope) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ObservationScopeQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ObservationScopeQuery", q)
+}
+
+// The ObservationScopeEntityFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ObservationScopeEntityFunc func(context.Context, *ent.ObservationScopeEntityQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ObservationScopeEntityFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ObservationScopeEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ObservationScopeEntityQuery", q)
+}
+
+// The TraverseObservationScopeEntity type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseObservationScopeEntity func(context.Context, *ent.ObservationScopeEntityQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseObservationScopeEntity) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseObservationScopeEntity) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ObservationScopeEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ObservationScopeEntityQuery", q)
+}
+
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary function as a Querier.
 type OncallHandoverTemplateFunc func(context.Context, *ent.OncallHandoverTemplateQuery) (ent.Value, error)
 
@@ -2158,33 +2269,6 @@ func (f TraverseSituationAction) Traverse(ctx context.Context, q ent.Query) erro
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.SituationActionQuery", q)
-}
-
-// The SituationEntityFunc type is an adapter to allow the use of ordinary function as a Querier.
-type SituationEntityFunc func(context.Context, *ent.SituationEntityQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f SituationEntityFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.SituationEntityQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SituationEntityQuery", q)
-}
-
-// The TraverseSituationEntity type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseSituationEntity func(context.Context, *ent.SituationEntityQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseSituationEntity) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseSituationEntity) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SituationEntityQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.SituationEntityQuery", q)
 }
 
 // The SituationJudgmentFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2754,6 +2838,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AlertInstanceEventQuery, predicate.AlertInstanceEvent, alertinstanceevent.OrderOption]{typ: ent.TypeAlertInstanceEvent, tq: q}, nil
 	case *ent.AlertMetricsQuery:
 		return &query[*ent.AlertMetricsQuery, predicate.AlertMetrics, alertmetrics.OrderOption]{typ: ent.TypeAlertMetrics, tq: q}, nil
+	case *ent.ChangePointQuery:
+		return &query[*ent.ChangePointQuery, predicate.ChangePoint, changepoint.OrderOption]{typ: ent.TypeChangePoint, tq: q}, nil
+	case *ent.ChangePointInvolvementQuery:
+		return &query[*ent.ChangePointInvolvementQuery, predicate.ChangePointInvolvement, changepointinvolvement.OrderOption]{typ: ent.TypeChangePointInvolvement, tq: q}, nil
 	case *ent.DiscussionCommentQuery:
 		return &query[*ent.DiscussionCommentQuery, predicate.DiscussionComment, discussioncomment.OrderOption]{typ: ent.TypeDiscussionComment, tq: q}, nil
 	case *ent.DiscussionThreadQuery:
@@ -2846,6 +2934,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.NormalizedEventProjectionQuery, predicate.NormalizedEventProjection, normalizedeventprojection.OrderOption]{typ: ent.TypeNormalizedEventProjection, tq: q}, nil
 	case *ent.NormalizedEventProjectionEntityQuery:
 		return &query[*ent.NormalizedEventProjectionEntityQuery, predicate.NormalizedEventProjectionEntity, normalizedeventprojectionentity.OrderOption]{typ: ent.TypeNormalizedEventProjectionEntity, tq: q}, nil
+	case *ent.ObservationScopeQuery:
+		return &query[*ent.ObservationScopeQuery, predicate.ObservationScope, observationscope.OrderOption]{typ: ent.TypeObservationScope, tq: q}, nil
+	case *ent.ObservationScopeEntityQuery:
+		return &query[*ent.ObservationScopeEntityQuery, predicate.ObservationScopeEntity, observationscopeentity.OrderOption]{typ: ent.TypeObservationScopeEntity, tq: q}, nil
 	case *ent.OncallHandoverTemplateQuery:
 		return &query[*ent.OncallHandoverTemplateQuery, predicate.OncallHandoverTemplate, oncallhandovertemplate.OrderOption]{typ: ent.TypeOncallHandoverTemplate, tq: q}, nil
 	case *ent.OncallRosterQuery:
@@ -2878,8 +2970,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.SituationQuery, predicate.Situation, situation.OrderOption]{typ: ent.TypeSituation, tq: q}, nil
 	case *ent.SituationActionQuery:
 		return &query[*ent.SituationActionQuery, predicate.SituationAction, situationaction.OrderOption]{typ: ent.TypeSituationAction, tq: q}, nil
-	case *ent.SituationEntityQuery:
-		return &query[*ent.SituationEntityQuery, predicate.SituationEntity, situationentity.OrderOption]{typ: ent.TypeSituationEntity, tq: q}, nil
 	case *ent.SituationJudgmentQuery:
 		return &query[*ent.SituationJudgmentQuery, predicate.SituationJudgment, situationjudgment.OrderOption]{typ: ent.TypeSituationJudgment, tq: q}, nil
 	case *ent.SituationNoticeQuery:

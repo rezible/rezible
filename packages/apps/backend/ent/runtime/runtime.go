@@ -20,6 +20,8 @@ import (
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertinstanceevent"
 	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/changepoint"
+	"github.com/rezible/rezible/ent/changepointinvolvement"
 	"github.com/rezible/rezible/ent/discussioncomment"
 	"github.com/rezible/rezible/ent/discussionthread"
 	"github.com/rezible/rezible/ent/document"
@@ -66,6 +68,8 @@ import (
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
+	"github.com/rezible/rezible/ent/observationscope"
+	"github.com/rezible/rezible/ent/observationscopeentity"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -80,10 +84,10 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/review"
 	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/sequencecounter"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
-	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationnotice"
 	"github.com/rezible/rezible/ent/situationobservation"
@@ -494,6 +498,72 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	changepointMixin := schema.ChangePoint{}.Mixin()
+	changepoint.Policy = privacy.NewPolicies(changepointMixin[1], changepointMixin[2], schema.ChangePoint{})
+	changepoint.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := changepoint.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	changepointMixinFields0 := changepointMixin[0].Fields()
+	_ = changepointMixinFields0
+	changepointMixinFields3 := changepointMixin[3].Fields()
+	_ = changepointMixinFields3
+	changepointMixinFields4 := changepointMixin[4].Fields()
+	_ = changepointMixinFields4
+	changepointFields := schema.ChangePoint{}.Fields()
+	_ = changepointFields
+	// changepointDescCreatedAt is the schema descriptor for created_at field.
+	changepointDescCreatedAt := changepointMixinFields3[0].Descriptor()
+	// changepoint.DefaultCreatedAt holds the default value on creation for the created_at field.
+	changepoint.DefaultCreatedAt = changepointDescCreatedAt.Default.(func() time.Time)
+	// changepointDescUpdatedAt is the schema descriptor for updated_at field.
+	changepointDescUpdatedAt := changepointMixinFields3[1].Descriptor()
+	// changepoint.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	changepoint.DefaultUpdatedAt = changepointDescUpdatedAt.Default.(func() time.Time)
+	// changepoint.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	changepoint.UpdateDefaultUpdatedAt = changepointDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// changepointDescProvider is the schema descriptor for provider field.
+	changepointDescProvider := changepointMixinFields4[0].Descriptor()
+	// changepoint.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	changepoint.ProviderValidator = changepointDescProvider.Validators[0].(func(string) error)
+	// changepointDescProviderResourceRef is the schema descriptor for provider_resource_ref field.
+	changepointDescProviderResourceRef := changepointMixinFields4[2].Descriptor()
+	// changepoint.ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
+	changepoint.ProviderResourceRefValidator = changepointDescProviderResourceRef.Validators[0].(func(string) error)
+	// changepointDescKind is the schema descriptor for kind field.
+	changepointDescKind := changepointFields[0].Descriptor()
+	// changepoint.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	changepoint.KindValidator = changepointDescKind.Validators[0].(func(string) error)
+	// changepointDescID is the schema descriptor for id field.
+	changepointDescID := changepointMixinFields0[0].Descriptor()
+	// changepoint.DefaultID holds the default value on creation for the id field.
+	changepoint.DefaultID = changepointDescID.Default.(func() uuid.UUID)
+	changepointinvolvementMixin := schema.ChangePointInvolvement{}.Mixin()
+	changepointinvolvement.Policy = privacy.NewPolicies(changepointinvolvementMixin[1], changepointinvolvementMixin[2], schema.ChangePointInvolvement{})
+	changepointinvolvement.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := changepointinvolvement.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	changepointinvolvementMixinFields0 := changepointinvolvementMixin[0].Fields()
+	_ = changepointinvolvementMixinFields0
+	changepointinvolvementFields := schema.ChangePointInvolvement{}.Fields()
+	_ = changepointinvolvementFields
+	// changepointinvolvementDescRole is the schema descriptor for role field.
+	changepointinvolvementDescRole := changepointinvolvementFields[1].Descriptor()
+	// changepointinvolvement.RoleValidator is a validator for the "role" field. It is called by the builders before save.
+	changepointinvolvement.RoleValidator = changepointinvolvementDescRole.Validators[0].(func(string) error)
+	// changepointinvolvementDescID is the schema descriptor for id field.
+	changepointinvolvementDescID := changepointinvolvementMixinFields0[0].Descriptor()
+	// changepointinvolvement.DefaultID holds the default value on creation for the id field.
+	changepointinvolvement.DefaultID = changepointinvolvementDescID.Default.(func() uuid.UUID)
 	discussioncommentMixin := schema.DiscussionComment{}.Mixin()
 	discussioncomment.Policy = privacy.NewPolicies(discussioncommentMixin[1], discussioncommentMixin[2], schema.DiscussionComment{})
 	discussioncomment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -659,6 +729,8 @@ func init() {
 	_ = incidentMixinFields0
 	incidentMixinFields3 := incidentMixin[3].Fields()
 	_ = incidentMixinFields3
+	incidentMixinFields5 := incidentMixin[5].Fields()
+	_ = incidentMixinFields5
 	incidentFields := schema.Incident{}.Fields()
 	_ = incidentFields
 	// incidentDescCreatedAt is the schema descriptor for created_at field.
@@ -671,6 +743,14 @@ func init() {
 	incident.DefaultUpdatedAt = incidentDescUpdatedAt.Default.(func() time.Time)
 	// incident.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	incident.UpdateDefaultUpdatedAt = incidentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// incidentDescProvider is the schema descriptor for provider field.
+	incidentDescProvider := incidentMixinFields5[0].Descriptor()
+	// incident.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	incident.ProviderValidator = incidentDescProvider.Validators[0].(func(string) error)
+	// incidentDescProviderResourceRef is the schema descriptor for provider_resource_ref field.
+	incidentDescProviderResourceRef := incidentMixinFields5[2].Descriptor()
+	// incident.ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
+	incident.ProviderResourceRefValidator = incidentDescProviderResourceRef.Validators[0].(func(string) error)
 	// incidentDescNumber is the schema descriptor for number field.
 	incidentDescNumber := incidentFields[0].Descriptor()
 	// incident.NumberValidator is a validator for the "number" field. It is called by the builders before save.
@@ -1479,6 +1559,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	knowledgeentityMixinInters5 := knowledgeentityMixin[5].Interceptors()
+	knowledgeentity.Interceptors[0] = knowledgeentityMixinInters5[0]
 	knowledgeentityMixinFields0 := knowledgeentityMixin[0].Fields()
 	_ = knowledgeentityMixinFields0
 	knowledgeentityMixinFields3 := knowledgeentityMixin[3].Fields()
@@ -1499,6 +1581,10 @@ func init() {
 	knowledgeentityDescKind := knowledgeentityFields[1].Descriptor()
 	// knowledgeentity.KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	knowledgeentity.KindValidator = knowledgeentityDescKind.Validators[0].(func(string) error)
+	// knowledgeentityDescParentIsFallback is the schema descriptor for parent_is_fallback field.
+	knowledgeentityDescParentIsFallback := knowledgeentityFields[2].Descriptor()
+	// knowledgeentity.DefaultParentIsFallback holds the default value on creation for the parent_is_fallback field.
+	knowledgeentity.DefaultParentIsFallback = knowledgeentityDescParentIsFallback.Default.(bool)
 	// knowledgeentityDescID is the schema descriptor for id field.
 	knowledgeentityDescID := knowledgeentityMixinFields0[0].Descriptor()
 	// knowledgeentity.DefaultID holds the default value on creation for the id field.
@@ -1651,6 +1737,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	knowledgerelationshipMixinInters5 := knowledgerelationshipMixin[5].Interceptors()
+	knowledgerelationship.Interceptors[0] = knowledgerelationshipMixinInters5[0]
 	knowledgerelationshipMixinFields0 := knowledgerelationshipMixin[0].Fields()
 	_ = knowledgerelationshipMixinFields0
 	knowledgerelationshipMixinFields3 := knowledgerelationshipMixin[3].Fields()
@@ -1667,6 +1755,10 @@ func init() {
 	knowledgerelationship.DefaultUpdatedAt = knowledgerelationshipDescUpdatedAt.Default.(func() time.Time)
 	// knowledgerelationship.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	knowledgerelationship.UpdateDefaultUpdatedAt = knowledgerelationshipDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// knowledgerelationshipDescIsParent is the schema descriptor for is_parent field.
+	knowledgerelationshipDescIsParent := knowledgerelationshipFields[3].Descriptor()
+	// knowledgerelationship.DefaultIsParent holds the default value on creation for the is_parent field.
+	knowledgerelationship.DefaultIsParent = knowledgerelationshipDescIsParent.Default.(bool)
 	// knowledgerelationshipDescID is the schema descriptor for id field.
 	knowledgerelationshipDescID := knowledgerelationshipMixinFields0[0].Descriptor()
 	// knowledgerelationship.DefaultID holds the default value on creation for the id field.
@@ -1818,6 +1910,10 @@ func init() {
 	normalizedeventprojectionDescCompletedAt := normalizedeventprojectionFields[1].Descriptor()
 	// normalizedeventprojection.DefaultCompletedAt holds the default value on creation for the completed_at field.
 	normalizedeventprojection.DefaultCompletedAt = normalizedeventprojectionDescCompletedAt.Default.(func() time.Time)
+	// normalizedeventprojectionDescSkippedRefs is the schema descriptor for skipped_refs field.
+	normalizedeventprojectionDescSkippedRefs := normalizedeventprojectionFields[2].Descriptor()
+	// normalizedeventprojection.DefaultSkippedRefs holds the default value on creation for the skipped_refs field.
+	normalizedeventprojection.DefaultSkippedRefs = normalizedeventprojectionDescSkippedRefs.Default.([]schematypes.SkippedEvidenceRef)
 	// normalizedeventprojectionDescID is the schema descriptor for id field.
 	normalizedeventprojectionDescID := normalizedeventprojectionMixinFields0[0].Descriptor()
 	// normalizedeventprojection.DefaultID holds the default value on creation for the id field.
@@ -1840,6 +1936,46 @@ func init() {
 	normalizedeventprojectionentityDescID := normalizedeventprojectionentityMixinFields0[0].Descriptor()
 	// normalizedeventprojectionentity.DefaultID holds the default value on creation for the id field.
 	normalizedeventprojectionentity.DefaultID = normalizedeventprojectionentityDescID.Default.(func() uuid.UUID)
+	observationscopeMixin := schema.ObservationScope{}.Mixin()
+	observationscope.Policy = privacy.NewPolicies(observationscopeMixin[1], observationscopeMixin[2], schema.ObservationScope{})
+	observationscope.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := observationscope.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	observationscopeMixinFields0 := observationscopeMixin[0].Fields()
+	_ = observationscopeMixinFields0
+	observationscopeFields := schema.ObservationScope{}.Fields()
+	_ = observationscopeFields
+	// observationscopeDescRevision is the schema descriptor for revision field.
+	observationscopeDescRevision := observationscopeFields[1].Descriptor()
+	// observationscope.RevisionValidator is a validator for the "revision" field. It is called by the builders before save.
+	observationscope.RevisionValidator = observationscopeDescRevision.Validators[0].(func(int) error)
+	// observationscopeDescID is the schema descriptor for id field.
+	observationscopeDescID := observationscopeMixinFields0[0].Descriptor()
+	// observationscope.DefaultID holds the default value on creation for the id field.
+	observationscope.DefaultID = observationscopeDescID.Default.(func() uuid.UUID)
+	observationscopeentityMixin := schema.ObservationScopeEntity{}.Mixin()
+	observationscopeentity.Policy = privacy.NewPolicies(observationscopeentityMixin[1], observationscopeentityMixin[2], schema.ObservationScopeEntity{})
+	observationscopeentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := observationscopeentity.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	observationscopeentityMixinFields0 := observationscopeentityMixin[0].Fields()
+	_ = observationscopeentityMixinFields0
+	observationscopeentityFields := schema.ObservationScopeEntity{}.Fields()
+	_ = observationscopeentityFields
+	// observationscopeentityDescID is the schema descriptor for id field.
+	observationscopeentityDescID := observationscopeentityMixinFields0[0].Descriptor()
+	// observationscopeentity.DefaultID holds the default value on creation for the id field.
+	observationscopeentity.DefaultID = observationscopeentityDescID.Default.(func() uuid.UUID)
 	oncallhandovertemplateMixin := schema.OncallHandoverTemplate{}.Mixin()
 	oncallhandovertemplate.Policy = privacy.NewPolicies(oncallhandovertemplateMixin[1], oncallhandovertemplateMixin[2], schema.OncallHandoverTemplate{})
 	oncallhandovertemplate.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -2202,24 +2338,6 @@ func init() {
 	situationactionDescID := situationactionMixinFields0[0].Descriptor()
 	// situationaction.DefaultID holds the default value on creation for the id field.
 	situationaction.DefaultID = situationactionDescID.Default.(func() uuid.UUID)
-	situationentityMixin := schema.SituationEntity{}.Mixin()
-	situationentity.Policy = privacy.NewPolicies(situationentityMixin[1], situationentityMixin[2], schema.SituationEntity{})
-	situationentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := situationentity.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	situationentityMixinFields0 := situationentityMixin[0].Fields()
-	_ = situationentityMixinFields0
-	situationentityFields := schema.SituationEntity{}.Fields()
-	_ = situationentityFields
-	// situationentityDescID is the schema descriptor for id field.
-	situationentityDescID := situationentityMixinFields0[0].Descriptor()
-	// situationentity.DefaultID holds the default value on creation for the id field.
-	situationentity.DefaultID = situationentityDescID.Default.(func() uuid.UUID)
 	situationjudgmentMixin := schema.SituationJudgment{}.Mixin()
 	situationjudgment.Policy = privacy.NewPolicies(situationjudgmentMixin[1], situationjudgmentMixin[2], schema.SituationJudgment{})
 	situationjudgment.Hooks[0] = func(next ent.Mutator) ent.Mutator {

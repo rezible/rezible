@@ -26,7 +26,7 @@ type investigationDependencies struct {
 	outputs        rez.InvestigationOutputService
 	knowledge      rez.KnowledgeGraphQueryService
 	situations     rez.SituationService
-	changes        rez.ChangesService
+	changePoints   rez.ChangePointService
 	integrations   rez.InstalledIntegrationGetter
 	providerReads  rez.AgentProviderReadService
 	proposals      rez.KnowledgeProposalService
@@ -39,7 +39,7 @@ func NewInvestigationAgent(
 	outputs rez.InvestigationOutputService,
 	knowledge rez.KnowledgeGraphQueryService,
 	situations rez.SituationService,
-	changes rez.ChangesService,
+	changePoints rez.ChangePointService,
 	integrations rez.InstalledIntegrationGetter,
 	providerReads rez.AgentProviderReadService,
 	proposals rez.KnowledgeProposalService,
@@ -51,7 +51,7 @@ func NewInvestigationAgent(
 		outputs:        outputs,
 		knowledge:      knowledge,
 		situations:     situations,
-		changes:        changes,
+		changePoints:   changePoints,
 		integrations:   integrations,
 		providerReads:  providerReads,
 		proposals:      proposals,

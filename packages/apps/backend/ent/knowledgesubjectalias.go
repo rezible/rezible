@@ -42,6 +42,8 @@ type KnowledgeSubjectAlias struct {
 	MergedByProposalID *uuid.UUID `json:"merged_by_proposal_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// The highest authority of the alias's evidence; it only rises. Ranks the alias's fields and parent claims.
+	Authority schematypes.KnowledgeAuthority `json:"authority,omitempty"`
 	// What this alias's evidence says, field by field, with each field's effective time.
 	State schematypes.KnowledgeAliasState `json:"state,omitempty"`
 	// FirstObservedAt holds the value of the "first_observed_at" field.
@@ -137,6 +139,8 @@ func (*KnowledgeSubjectAlias) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case knowledgesubjectalias.FieldState:
 			values[i] = new([]byte)
+		case knowledgesubjectalias.FieldAuthority:
+			values[i] = new(schematypes.KnowledgeAuthority)
 		case knowledgesubjectalias.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case knowledgesubjectalias.FieldProvider, knowledgesubjectalias.FieldProviderNamespace, knowledgesubjectalias.FieldProviderResourceRef, knowledgesubjectalias.FieldSubjectKind:
@@ -222,6 +226,12 @@ func (_m *KnowledgeSubjectAlias) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
+			}
+		case knowledgesubjectalias.FieldAuthority:
+			if value, ok := values[i].(*schematypes.KnowledgeAuthority); !ok {
+				return fmt.Errorf("unexpected type %T for field authority", values[i])
+			} else if value != nil {
+				_m.Authority = *value
 			}
 		case knowledgesubjectalias.FieldState:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -352,6 +362,9 @@ func (_m *KnowledgeSubjectAlias) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("authority=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Authority))
 	builder.WriteString(", ")
 	builder.WriteString("state=")
 	builder.WriteString(fmt.Sprintf("%v", _m.State))

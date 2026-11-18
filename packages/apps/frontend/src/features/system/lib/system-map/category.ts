@@ -17,8 +17,6 @@ export enum MapCategory {
 	Concern = "concern",
 	/** A recorded design or operational choice that can annotate related subjects. */
 	Decision = "decision",
-	/** An occurrence, such as an incident or deployment, that can provide annotation context. */
-	Event = "event",
 	/** An observation or notification, such as an alert, that can provide annotation context. */
 	Signal = "signal",
 	/** A workflow kept as related context while its architectural classification is unresolved. */
@@ -44,7 +42,6 @@ const categoryLabels: Readonly<Record<MapCategory, string>> = {
 	[MapCategory.Actor]: "Actor",
 	[MapCategory.Concern]: "Concern",
 	[MapCategory.Decision]: "Decision",
-	[MapCategory.Event]: "Event",
 	[MapCategory.Signal]: "Signal",
 	[MapCategory.Process]: "Workflow",
 	[MapCategory.Unknown]: "Unsupported category",

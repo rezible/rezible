@@ -35,6 +35,7 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 		Kind:        projectionEvidenceKind(event),
 		Assertion:   knowledgeAssertionSystemComponentExists,
 		EffectiveAt: event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityDeclared,
 		StateMode:   ke.StateModeReplace,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.DisplayName,
@@ -44,6 +45,8 @@ func (s *ProjectionService) handleSystemComponentEvent(ctx context.Context, e *p
 		Subject: rez.KnowledgeSubjectRef{Entity: &componentEntityRef},
 	}
 	if attrs.Listing {
+		// A listing only enumerates what exists; the subject's system of record lies elsewhere.
+		evidence.Authority = schematypes.KnowledgeAuthorityObserved
 		evidence.StateMode = ke.StateModeMerge
 		evidence.SubjectState = schematypes.KnowledgeGraphSubjectState{DisplayName: attrs.DisplayName}
 		evidence.ValidFor = attrs.ValidFor
@@ -66,6 +69,7 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionSystemEndpointObserved,
 		EffectiveAt: event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityObserved,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.Source.DisplayName,
 			Description: attrs.Source.Description,
@@ -77,6 +81,7 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionSystemEndpointObserved,
 		EffectiveAt: event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityObserved,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: attrs.Target.DisplayName,
 			Description: attrs.Target.Description,
@@ -100,6 +105,7 @@ func (s *ProjectionService) handleSystemRelationshipEvent(ctx context.Context, e
 		Kind:        evidenceKind,
 		Assertion:   knowledgeAssertionSystemRelationshipExists,
 		EffectiveAt: event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityDeclared,
 		StateMode:   ke.StateModeReplace,
 		Subject:     rez.KnowledgeSubjectRef{Relationship: &relationshipRef},
 		SubjectState: schematypes.KnowledgeGraphSubjectState{

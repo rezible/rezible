@@ -165,7 +165,7 @@ func SystemAnalysisFromEnt(analysis *ent.SystemAnalysis) SystemAnalysis {
 	return SystemAnalysis{Id: analysis.ID, Attributes: attrs}
 }
 
-func SystemAnalysisNodeFromEnt(node *ent.SystemAnalysisEntity) (*SystemAnalysisNode, error) {
+func SystemAnalysisNodeFromEnt(node *ent.SystemAnalysisEntity, now time.Time) (*SystemAnalysisNode, error) {
 	ke, keErr := node.Edges.KnowledgeEntityOrErr()
 	if keErr != nil {
 		return nil, keErr
@@ -174,7 +174,7 @@ func SystemAnalysisNodeFromEnt(node *ent.SystemAnalysisEntity) (*SystemAnalysisN
 		Hidden:              node.Hidden,
 		LabelOverride:       node.LabelOverride,
 		DescriptionOverride: node.DescriptionOverride,
-		KnowledgeEntity:     KnowledgeGraphEntityFromEnt(ke),
+		KnowledgeEntity:     KnowledgeGraphEntityFromEnt(ke, now),
 	}
 	if node.PosX != nil && node.PosY != nil {
 		attrs.Position = SystemAnalysisNodeDiagramPosition{
@@ -185,13 +185,13 @@ func SystemAnalysisNodeFromEnt(node *ent.SystemAnalysisEntity) (*SystemAnalysisN
 	return &SystemAnalysisNode{Id: node.ID, Attributes: attrs}, nil
 }
 
-func SystemAnalysisEdgeFromEnt(rel *ent.SystemAnalysisRelationship) (*SystemAnalysisEdge, error) {
+func SystemAnalysisEdgeFromEnt(rel *ent.SystemAnalysisRelationship, now time.Time) (*SystemAnalysisEdge, error) {
 	kr, krErr := rel.Edges.KnowledgeRelationshipOrErr()
 	if krErr != nil {
 		return nil, krErr
 	}
 	attrs := SystemAnalysisEdgeAttributes{
-		KnowledgeRelationship: KnowledgeGraphRelationshipFromEnt(kr),
+		KnowledgeRelationship: KnowledgeGraphRelationshipFromEnt(kr, now),
 		Hidden:                rel.Hidden,
 		LabelOverride:         rel.LabelOverride,
 		DescriptionOverride:   rel.DescriptionOverride,

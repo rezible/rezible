@@ -13,6 +13,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/pkg/projections"
 )
@@ -129,7 +130,7 @@ func (s *ProjectionServiceSuite) newDeploymentPipeline(tdb rez.Database, service
 	processors := map[string]rez.ProviderEventProcessor{
 		"webhook": deploymentFixtureProcessor{},
 	}
-	return &deploymentPipeline{suite: s, ingester: db.NewProviderEventIngester(tdb, processors, service)}
+	return &deploymentPipeline{suite: s, ingester: db.NewProviderEventIngester(tdb, processors, service, s.ingestionService(tdb))}
 }
 
 // persist processes a report's provider event and returns the normalized event it stored, or nil when the
@@ -147,15 +148,15 @@ func (p *deploymentPipeline) persist(ctx context.Context, report deploymentRepor
 	}
 	eventIDs, processErr := p.ingester.ProcessProviderEvent(ctx, event)
 	p.suite.Require().NoError(processErr)
-	if len(eventIDs) == 0 {
+	if len(eventIDs.NewEventIDs) == 0 {
 		return nil
 	}
-	p.suite.Require().Len(eventIDs, 1)
-	return &eventIDs[0]
+	p.suite.Require().Len(eventIDs.NewEventIDs, 1)
+	return &eventIDs.NewEventIDs[0]
 }
 
 func (p *deploymentPipeline) project(ctx context.Context, eventID uuid.UUID) {
-	p.suite.Require().NoError(p.ingester.ProjectNormalizedEvent(ctx, eventID))
+	p.suite.Require().NoError(p.ingester.ProjectNormalizedEvent(ctx, eventID, false))
 }
 
 // receiveDeploymentReports persists and projects reports one at a time, in the order given.
@@ -169,10 +170,31 @@ func (s *ProjectionServiceSuite) receiveDeploymentReports(ctx context.Context, t
 	}
 }
 
-func (s *ProjectionServiceSuite) onlyDeployment(ctx context.Context, tdb rez.Database) *ent.KnowledgeEntity {
-	deployments := s.entitiesOfKind(ctx, tdb, kne.CategoryEvent, knowledgeEntityKindDeployment)
-	s.Require().Len(deployments, 1)
-	return deployments[0]
+func (s *ProjectionServiceSuite) onlyDeployment(ctx context.Context, tdb rez.Database) *ent.ChangePoint {
+	point, queryErr := tdb.Client(ctx).ChangePoint.Query().WithLatestEvent().Only(ctx)
+	s.Require().NoError(queryErr)
+	return point
+}
+
+func (s *ProjectionServiceSuite) deploymentAttributes(point *ent.ChangePoint) projections.DeploymentEventAttributes {
+	decoded, decodeErr := projections.DecodeDeploymentEvent(point.Edges.LatestEvent)
+	s.Require().NoError(decodeErr)
+	return decoded.Attributes
+}
+
+func (s *ProjectionServiceSuite) assertInvolvement(ctx context.Context, tdb rez.Database, role string, entityID uuid.UUID, count int) {
+	query := tdb.Client(ctx).KnowledgeEvidence.Query().
+		Where(ke.Assertion(role), ke.HasSubjectAliasWith(ksa.EntityID(entityID)))
+	evidence, queryErr := query.All(ctx)
+	s.Require().NoError(queryErr)
+	s.Require().Len(evidence, count)
+	for _, item := range evidence {
+		s.Equal(ke.KindObserved, item.Kind)
+		s.Equal(ke.StateModeMerge, item.StateMode)
+		s.Nil(item.ExpiresAt)
+		s.Empty(item.SubjectState.Description)
+		s.Empty(item.SubjectState.Properties)
+	}
 }
 
 func (s *ProjectionServiceSuite) TestDeploymentStateIsTheFinishedReportInEitherProcessingOrder() {
@@ -202,26 +224,13 @@ func (s *ProjectionServiceSuite) TestDeploymentStateIsTheFinishedReportInEitherP
 			s.receiveDeploymentReports(ctx, tdb, service, order...)
 
 			deployment := s.onlyDeployment(ctx, tdb)
-			s.Equal("checkout-api to production", deployment.State.DisplayName)
-			// Reports merge: the url only the started report sent is kept, and the newer report's values win.
-			expectedProperties := map[string]any{
-				"url":         "https://ci.test/runs/1",
-				"environment": "production",
-				"status":      "succeeded",
-				"external_id": "run-1",
-				"repository":  "acme/checkout",
-				"sha":         "4f1c0d9e8b7a6f5e4d3c2b1a09f8e7d6c5b4a392",
-				"version":     "v1.42.0",
-				"started_at":  "2026-10-07T14:01:10Z",
-				"finished_at": "2026-10-07T14:03:52Z",
-			}
-			s.Equal(expectedProperties, deployment.State.Properties)
-			s.Require().NotNil(deployment.StateEffectiveAt)
-			s.True(deploymentFinishedAt.Equal(*deployment.StateEffectiveAt), "a finished deployment's time is finished_at")
+			s.Equal(succeeded.attrs, s.deploymentAttributes(deployment))
+			s.True(deploymentFinishedAt.Equal(deployment.OccurredAt))
+			s.Empty(s.deploymentAttributes(deployment).URL, "fields omitted by the latest snapshot are absent")
 
 			// Graph evidence is kept for every report.
 			queryReportEvidence := tdb.Client(ctx).KnowledgeEvidence.Query().
-				Where(ke.Assertion(knowledgeAssertionDeploymentObserved))
+				Where(ke.Assertion(projections.AssertionDeploymentService))
 			reportEvidence, countErr := queryReportEvidence.Count(ctx)
 			s.Require().NoError(countErr)
 			s.Equal(2, reportEvidence)
@@ -279,9 +288,8 @@ func (s *ProjectionServiceSuite) TestLaterFinishedReportWinsInEitherProcessingOr
 			s.receiveDeploymentReports(ctx, tdb, service, tc.reports...)
 
 			deployment := s.onlyDeployment(ctx, tdb)
-			s.Equal(tc.expected, deployment.State.Properties["status"])
-			s.Require().NotNil(deployment.StateEffectiveAt)
-			s.True(later.Equal(*deployment.StateEffectiveAt))
+			s.Equal(tc.expected, s.deploymentAttributes(deployment).Status)
+			s.True(later.Equal(deployment.OccurredAt))
 		})
 	}
 }
@@ -307,9 +315,9 @@ func (s *ProjectionServiceSuite) TestReportsAtTheSameTimeGoToTheLastProcessed() 
 
 			s.receiveDeploymentReports(ctx, tdb, service, tc.order...)
 
-			properties := s.onlyDeployment(ctx, tdb).State.Properties
-			s.Equal(tc.expectedStatus, properties["status"])
-			s.Equal(tc.expectedVersion, properties["version"])
+			attributes := s.deploymentAttributes(s.onlyDeployment(ctx, tdb))
+			s.Equal(tc.expectedStatus, attributes.Status)
+			s.Equal(tc.expectedVersion, attributes.Version)
 		})
 	}
 }
@@ -334,35 +342,30 @@ func (s *ProjectionServiceSuite) TestRedeliveredReportAddsNothing() {
 
 	s.Nil(redeliveredID, "the pipeline drops the redelivered report")
 	after := s.onlyDeployment(ctx, tdb)
-	s.Equal(before.State, after.State)
+	s.Equal(before.LatestEventID, after.LatestEventID)
+	s.Equal("v1.42.0", s.deploymentAttributes(after).Version)
 	evidenceAfter, afterErr := tdb.Client(ctx).KnowledgeEvidence.Query().Count(ctx)
 	s.Require().NoError(afterErr)
 	s.Equal(evidenceBefore, evidenceAfter)
 }
 
-func (s *ProjectionServiceSuite) TestDeploymentImpactsItsServiceAndTouchesItsRepository() {
-	ctx, tdb := s.SetupTestDatabase()
-	service := s.projectionService(tdb)
-
-	succeeded := finishedReport(projections.DeploymentStatusSucceeded, deploymentFinishedAt).
-		withRepository("acme/checkout")
-	s.receiveDeploymentReports(ctx, tdb, service, succeeded)
-
-	deployment := s.onlyDeployment(ctx, tdb)
-	services := s.entitiesOfKind(ctx, tdb, kne.CategoryContainer, "service")
-	repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgegraph.EntityKindRepository)
-	s.Require().Len(services, 1)
-	s.Require().Len(repositories, 1)
-
-	impacts := s.relationshipsOf(ctx, tdb, knr.PredicateImpacts)
-	s.Require().Len(impacts, 1)
-	s.Equal(deployment.ID, impacts[0].SourceEntityID)
-	s.Equal(services[0].ID, impacts[0].TargetEntityID)
-
-	touches := s.relationshipsOf(ctx, tdb, knr.PredicateTouches)
-	s.Require().Len(touches, 1)
-	s.Equal(deployment.ID, touches[0].SourceEntityID)
-	s.Equal(repositories[0].ID, touches[0].TargetEntityID)
+func (s *ProjectionServiceSuite) TestDeploymentProjection() {
+	for _, status := range []string{projections.DeploymentStatusStarted, projections.DeploymentStatusSucceeded, projections.DeploymentStatusFailed} {
+		s.Run(status, func() {
+			ctx, tdb := s.SetupTestDatabase()
+			service := s.projectionService(tdb)
+			report := finishedReport(status, deploymentFinishedAt).withRepository("acme/checkout")
+			s.receiveDeploymentReports(ctx, tdb, service, report)
+			point := s.onlyDeployment(ctx, tdb)
+			s.Equal(status, s.deploymentAttributes(point).Status)
+			services := s.entitiesOfKind(ctx, tdb, kne.CategoryContainer, "service")
+			repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgegraph.EntityKindRepository)
+			s.Require().Len(services, 1)
+			s.Require().Len(repositories, 1)
+			s.assertInvolvement(ctx, tdb, projections.AssertionDeploymentService, services[0].ID, 1)
+			s.assertInvolvement(ctx, tdb, projections.AssertionDeploymentRepository, repositories[0].ID, 1)
+		})
+	}
 }
 
 func (s *ProjectionServiceSuite) TestDeploymentAndAlertObserveOneService() {
@@ -395,9 +398,7 @@ func (s *ProjectionServiceSuite) assertDeploymentAndAlertShareService(ctx contex
 	observes := s.relationshipsOf(ctx, tdb, knr.PredicateObserves)
 	s.Require().Len(observes, 1)
 	s.Equal(services[0].ID, observes[0].TargetEntityID)
-	impacts := s.relationshipsOf(ctx, tdb, knr.PredicateImpacts)
-	s.Require().Len(impacts, 1)
-	s.Equal(services[0].ID, impacts[0].TargetEntityID)
+	s.assertInvolvement(ctx, tdb, projections.AssertionDeploymentService, services[0].ID, 1)
 }
 
 func (s *ProjectionServiceSuite) TestDeploymentAndGithubResolveToOneRepository() {
@@ -429,9 +430,6 @@ func (s *ProjectionServiceSuite) TestDeploymentAndGithubResolveToOneRepository()
 func (s *ProjectionServiceSuite) assertDeploymentAndGithubShareRepository(ctx context.Context, tdb rez.Database) {
 	repositories := s.entitiesOfKind(ctx, tdb, kne.CategoryCode, knowledgegraph.EntityKindRepository)
 	s.Require().Len(repositories, 1)
-	touches := s.relationshipsOf(ctx, tdb, knr.PredicateTouches)
-	s.Require().Len(touches, 2, "the GitHub change and the deployment touch the repository")
-	for _, relationship := range touches {
-		s.Equal(repositories[0].ID, relationship.TargetEntityID)
-	}
+	s.assertInvolvement(ctx, tdb, projections.AssertionDeploymentRepository, repositories[0].ID, 1)
+	s.assertInvolvement(ctx, tdb, projections.AssertionChangeRepository, repositories[0].ID, 1)
 }

@@ -32,8 +32,8 @@ type noticeContent integrations.SituationNoticeContent
 func (c *noticeContent) stageText() string {
 	situation := c.Situation
 	if situation.ClosedAt != nil {
-		if situation.CloseReason != nil && *situation.CloseReason == sit.CloseReasonMerged {
-			return "Merged into another situation"
+		if target := situation.Edges.MergedInto; target != nil {
+			return fmt.Sprintf("Merged into <%s|%s>", c.MergedIntoURL, target.Reference())
 		}
 		return "Closed: " + c.closeReasonText()
 	}

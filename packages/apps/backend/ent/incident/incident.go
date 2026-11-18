@@ -25,8 +25,12 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldArchiveTime holds the string denoting the archive_time field in the database.
 	FieldArchiveTime = "archive_time"
-	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
-	FieldKnowledgeEntityID = "knowledge_entity_id"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
+	// FieldProviderNamespace holds the string denoting the provider_namespace field in the database.
+	FieldProviderNamespace = "provider_namespace"
+	// FieldProviderResourceRef holds the string denoting the provider_resource_ref field in the database.
+	FieldProviderResourceRef = "provider_resource_ref"
 	// FieldNumber holds the string denoting the number field in the database.
 	FieldNumber = "number"
 	// FieldTitle holds the string denoting the title field in the database.
@@ -51,8 +55,6 @@ const (
 	FieldDeclaredByID = "declared_by_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
-	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgeSeverity holds the string denoting the severity edge name in mutations.
 	EdgeSeverity = "severity"
 	// EdgeType holds the string denoting the type edge name in mutations.
@@ -90,13 +92,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
-	KnowledgeEntityTable = "incidents"
-	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
-	KnowledgeEntityInverseTable = "knowledge_entities"
-	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
-	KnowledgeEntityColumn = "knowledge_entity_id"
 	// SeverityTable is the table that holds the severity relation/edge.
 	SeverityTable = "incidents"
 	// SeverityInverseTable is the table name for the IncidentSeverity entity.
@@ -193,7 +188,9 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldArchiveTime,
-	FieldKnowledgeEntityID,
+	FieldProvider,
+	FieldProviderNamespace,
+	FieldProviderResourceRef,
 	FieldNumber,
 	FieldTitle,
 	FieldSeverityID,
@@ -247,6 +244,10 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	ProviderValidator func(string) error
+	// ProviderResourceRefValidator is a validator for the "provider_resource_ref" field. It is called by the builders before save.
+	ProviderResourceRefValidator func(string) error
 	// NumberValidator is a validator for the "number" field. It is called by the builders before save.
 	NumberValidator func(int) error
 	// DefaultOpenedAt holds the default value on creation for the "opened_at" field.
@@ -310,9 +311,19 @@ func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldArchiveTime, opts...).ToFunc()
 }
 
-// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
-func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
+// ByProvider orders the results by the provider field.
+func ByProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProvider, opts...).ToFunc()
+}
+
+// ByProviderNamespace orders the results by the provider_namespace field.
+func ByProviderNamespace(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderNamespace, opts...).ToFunc()
+}
+
+// ByProviderResourceRef orders the results by the provider_resource_ref field.
+func ByProviderResourceRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderResourceRef, opts...).ToFunc()
 }
 
 // ByNumber orders the results by the number field.
@@ -374,13 +385,6 @@ func ByDeclaredByID(opts ...sql.OrderTermOption) OrderOption {
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByKnowledgeEntityField orders the results by knowledge_entity field.
-func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -556,13 +560,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newKnowledgeEntityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
 func newSeverityStep() *sqlgraph.Step {

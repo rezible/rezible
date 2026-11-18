@@ -14,8 +14,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	cp "github.com/rezible/rezible/ent/changepoint"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
-	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ksa "github.com/rezible/rezible/ent/knowledgesubjectalias"
 	"github.com/rezible/rezible/internal/db/eventprojection"
 	"github.com/rezible/rezible/pkg/errs"
@@ -24,12 +24,12 @@ import (
 	"github.com/rezible/rezible/test/mocks"
 )
 
-type ChangesServiceSuite struct {
+type ServiceChangesSuite struct {
 	test.Suite
 }
 
 func TestServiceChanges(t *testing.T) {
-	suite.Run(t, &ChangesServiceSuite{Suite: test.NewSuite()})
+	suite.Run(t, &ServiceChangesSuite{Suite: test.NewSuite()})
 }
 
 var changesTestStart = time.Date(2026, 10, 7, 12, 0, 0, 0, time.UTC)
@@ -41,10 +41,10 @@ func changesAt(minutes int) time.Time {
 
 type changesFixture struct {
 	projection *eventprojection.ProjectionService
-	changes    *ChangesService
+	changes    *ChangePointService
 }
 
-func (s *ChangesServiceSuite) newFixture(tdb rez.Database) *changesFixture {
+func (s *ServiceChangesSuite) newFixture(tdb rez.Database) *changesFixture {
 	knowledge, knowledgeErr := NewKnowledgeGraphIngestionService(tdb)
 	s.Require().NoError(knowledgeErr)
 
@@ -57,20 +57,19 @@ func (s *ChangesServiceSuite) newFixture(tdb rez.Database) *changesFixture {
 		Return(&rivertype.JobInsertResult{Job: &rivertype.JobRow{}}, nil).
 		Maybe()
 	clock := test.NewClock(changesTestStart)
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, knowledge, NewSituationObservationService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, clock, tdb, jobService, NewSituationObservationService(jobService))
 	s.Require().NoError(alertsErr)
 
-	projection, projectionErr := eventprojection.NewProjectionService(tdb, knowledge, knowledgeQuery, nil, nil, alerts)
+	changePoints, changePointsErr := NewChangePointService(tdb)
+	s.Require().NoError(changePointsErr)
+	projection, projectionErr := eventprojection.NewProjectionService(tdb, knowledge, knowledgeQuery, nil, nil, alerts, changePoints)
 	s.Require().NoError(projectionErr)
 
-	changes, changesErr := NewChangesService(tdb, knowledgeQuery)
-	s.Require().NoError(changesErr)
-
-	return &changesFixture{projection: projection, changes: changes}
+	return &changesFixture{projection: projection, changes: changePoints}
 }
 
 // project records a normalized event and projects it, as the provider event pipeline does.
-func (s *ChangesServiceSuite) project(ctx context.Context, tdb rez.Database, h *changesFixture, event *ent.NormalizedEvent) {
+func (s *ServiceChangesSuite) project(ctx context.Context, tdb rez.Database, h *changesFixture, event *ent.NormalizedEvent) {
 	createEvent := tdb.Client(ctx).NormalizedEvent.Create().
 		SetProvider(event.Provider).
 		SetProviderNamespace(event.ProviderNamespace).
@@ -79,6 +78,7 @@ func (s *ChangesServiceSuite) project(ctx context.Context, tdb rez.Database, h *
 		SetProviderEventRef(uuid.NewString()).
 		SetKind(event.Kind).
 		SetOccurredAt(event.OccurredAt).
+		SetLastOccurredAt(event.OccurredAt).
 		SetReceivedAt(event.OccurredAt).
 		SetAttributes(event.Attributes)
 	saved, saveErr := createEvent.Save(ctx)
@@ -101,8 +101,8 @@ type testDeployment struct {
 	at          time.Time
 }
 
-// deploy reports the deployment and returns its entity.
-func (s *ChangesServiceSuite) deploy(ctx context.Context, tdb rez.Database, h *changesFixture, d testDeployment) *ent.KnowledgeEntity {
+// deploy reports the deployment and returns its change point.
+func (s *ServiceChangesSuite) deploy(ctx context.Context, tdb rez.Database, h *changesFixture, d testDeployment) *ent.ChangePoint {
 	serviceName := projections.NormalizeServiceName(d.service)
 	environmentName := projections.NormalizeServiceName(d.environment)
 	attrs := projections.DeploymentEventAttributes{
@@ -156,15 +156,8 @@ func (s *ChangesServiceSuite) deploy(ctx context.Context, tdb rez.Database, h *c
 	event.Attributes = s.encode(attrs)
 
 	s.project(ctx, tdb, h, event)
-
-	queryAlias := tdb.Client(ctx).KnowledgeSubjectAlias.Query().
-		Where(
-			ksa.Provider("webhook"),
-			ksa.ProviderResourceRef(event.ProviderResourceRef),
-		)
-	alias, aliasErr := queryAlias.Only(ctx)
-	s.Require().NoError(aliasErr)
-	deployment, getErr := tdb.Client(ctx).KnowledgeEntity.Get(ctx, *alias.EntityID)
+	query := tdb.Client(ctx).ChangePoint.Query().Where(cp.ProviderResourceRef(event.ProviderResourceRef))
+	deployment, getErr := query.Only(ctx)
 	s.Require().NoError(getErr)
 	return deployment
 }
@@ -191,7 +184,7 @@ type testMerge struct {
 	mergedAt   time.Time
 }
 
-func (s *ChangesServiceSuite) merge(ctx context.Context, tdb rez.Database, h *changesFixture, m testMerge) {
+func (s *ServiceChangesSuite) merge(ctx context.Context, tdb rez.Database, h *changesFixture, m testMerge) {
 	baseRef := m.baseRef
 	if baseRef == "" {
 		baseRef = "main"
@@ -239,14 +232,14 @@ func (s *ChangesServiceSuite) merge(ctx context.Context, tdb rez.Database, h *ch
 	s.project(ctx, tdb, h, event)
 }
 
-func (s *ChangesServiceSuite) encode(attrs any) []byte {
+func (s *ServiceChangesSuite) encode(attrs any) []byte {
 	encoded, encodeErr := projections.EncodeAttributes(attrs)
 	s.Require().NoError(encodeErr)
 	return encoded
 }
 
 // serviceEntityID is the entity the webhook installation's observation of a service resolves to.
-func (s *ChangesServiceSuite) serviceEntityID(ctx context.Context, tdb rez.Database, service string) uuid.UUID {
+func (s *ServiceChangesSuite) serviceEntityID(ctx context.Context, tdb rez.Database, service string) uuid.UUID {
 	queryAlias := tdb.Client(ctx).KnowledgeSubjectAlias.Query().
 		Where(
 			ksa.Provider("webhook"),
@@ -257,7 +250,7 @@ func (s *ChangesServiceSuite) serviceEntityID(ctx context.Context, tdb rez.Datab
 	return *alias.EntityID
 }
 
-func (s *ChangesServiceSuite) list(ctx context.Context, h *changesFixture, params rez.ListServiceChangesParams) *rez.ServiceChanges {
+func (s *ServiceChangesSuite) list(ctx context.Context, h *changesFixture, params rez.ListServiceChangesParams) *rez.ServiceChanges {
 	changes, listErr := h.changes.ListServiceChanges(ctx, params)
 	s.Require().NoError(listErr)
 	return changes
@@ -266,7 +259,7 @@ func (s *ChangesServiceSuite) list(ctx context.Context, h *changesFixture, param
 func deploymentIDs(changes *rez.ServiceChanges) []uuid.UUID {
 	ids := make([]uuid.UUID, 0, len(changes.Deployments))
 	for _, listed := range changes.Deployments {
-		ids = append(ids, listed.Deployment.ID)
+		ids = append(ids, listed.Deployment.ChangePoint.ID)
 	}
 	return ids
 }
@@ -280,7 +273,7 @@ func linkedNumbers(listed rez.ServiceDeployment) []string {
 	return linked
 }
 
-func (s *ChangesServiceSuite) TestWindowServiceAndEnvironment() {
+func (s *ServiceChangesSuite) TestWindowServiceAndEnvironment() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
@@ -311,9 +304,17 @@ func (s *ChangesServiceSuite) TestWindowServiceAndEnvironment() {
 	params.Environment = "Production"
 	productionOnly := s.list(ctx, h, params)
 	s.Equal([]uuid.UUID{atEnd.ID, production.ID, atStart.ID}, deploymentIDs(productionOnly))
+
+	createMerged := tdb.Client(ctx).KnowledgeEntity.Create().
+		SetCategory(kne.CategoryContainer).
+		SetKind("service").
+		SetMergedIntoID(params.ServiceEntityID)
+	params.ServiceEntityID = createMerged.SaveX(ctx).ID
+	byMerged := s.list(ctx, h, params)
+	s.Equal(deploymentIDs(productionOnly), deploymentIDs(byMerged), "a service merged into checkout lists checkout's changes")
 }
 
-func (s *ChangesServiceSuite) TestTiesOrderStably() {
+func (s *ServiceChangesSuite) TestTiesOrderStably() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
@@ -334,7 +335,7 @@ func (s *ChangesServiceSuite) TestTiesOrderStably() {
 	}
 }
 
-func (s *ChangesServiceSuite) TestMergeCommitLink() {
+func (s *ServiceChangesSuite) TestMergeCommitLink() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	mergeCommit := "4f1c0d9e8b7a6f5e4d3c2b1a09f8e7d6c5b4a392"
@@ -376,14 +377,14 @@ func (s *ChangesServiceSuite) TestMergeCommitLink() {
 	s.Equal(expected, linkedNumbers(listed), "the merge commit match is listed once, first, and only the deployment's repository is matched")
 
 	match := listed.MergedChanges[0]
-	s.Equal("Change 7", match.Change.State.DisplayName)
+	s.Equal("Change 7", match.Title)
 	s.True(changesAt(-10).Equal(match.MergedAt))
 	s.Equal(mergeCommit, match.MergeCommitSha)
 	s.Equal("main", match.BaseRef)
 	s.True(match.IntoDefaultBranch)
 }
 
-func (s *ChangesServiceSuite) TestMergedSincePreviousDeployment() {
+func (s *ServiceChangesSuite) TestMergedSincePreviousDeployment() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
@@ -432,7 +433,7 @@ func (s *ChangesServiceSuite) TestMergedSincePreviousDeployment() {
 	s.False(listed.MergedChangesCut)
 }
 
-func (s *ChangesServiceSuite) TestMergedInLookback() {
+func (s *ServiceChangesSuite) TestMergedInLookback() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	lookback := 7 * 24 * time.Hour
@@ -459,7 +460,7 @@ func (s *ChangesServiceSuite) TestMergedInLookback() {
 	s.Equal(expected, linkedNumbers(listed))
 }
 
-func (s *ChangesServiceSuite) TestDeploymentsWithoutMergedChanges() {
+func (s *ServiceChangesSuite) TestDeploymentsWithoutMergedChanges() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
@@ -491,7 +492,7 @@ func (s *ChangesServiceSuite) TestDeploymentsWithoutMergedChanges() {
 	s.Empty(withoutRepositoryListed.MergedChanges)
 }
 
-func (s *ChangesServiceSuite) TestPreviousDeploymentWithoutRepository() {
+func (s *ServiceChangesSuite) TestPreviousDeploymentWithoutRepository() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
@@ -517,7 +518,7 @@ func (s *ChangesServiceSuite) TestPreviousDeploymentWithoutRepository() {
 	s.True(changesAt(0).Equal(*listed.PreviousDeployedAt), "the previous deployment also names no repository")
 }
 
-func (s *ChangesServiceSuite) TestDeploymentWhoseRepositoryChangedBetweenReports() {
+func (s *ServiceChangesSuite) TestDeploymentWhoseRepositoryChangedBetweenReports() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
@@ -526,16 +527,7 @@ func (s *ChangesServiceSuite) TestDeploymentWhoseRepositoryChangedBetweenReports
 	started.status = projections.DeploymentStatusStarted
 	started.repository = "acme/checkout-old"
 	s.deploy(ctx, tdb, h, started)
-	deployment := s.deploy(ctx, tdb, h, checkoutDeployment("run-1", changesAt(1)))
-
-	queryTouches := tdb.Client(ctx).KnowledgeRelationship.Query().
-		Where(
-			knr.SourceEntityID(deployment.ID),
-			knr.PredicateEQ(knr.PredicateTouches),
-		)
-	touches, touchesErr := queryTouches.Count(ctx)
-	s.Require().NoError(touchesErr)
-	s.Require().Equal(2, touches, "the deployment touches both reported repositories")
+	s.deploy(ctx, tdb, h, checkoutDeployment("run-1", changesAt(1)))
 
 	params := rez.ListServiceChangesParams{
 		ServiceEntityID: s.serviceEntityID(ctx, tdb, "checkout-api"),
@@ -550,7 +542,7 @@ func (s *ChangesServiceSuite) TestDeploymentWhoseRepositoryChangedBetweenReports
 	s.Equal([]string{"#1 merged_in_lookback"}, linkedNumbers(listed))
 }
 
-func (s *ChangesServiceSuite) TestInvalidRequests() {
+func (s *ServiceChangesSuite) TestInvalidRequests() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	s.deploy(ctx, tdb, h, checkoutDeployment("run-1", changesAt(0)))
@@ -608,7 +600,7 @@ func (s *ChangesServiceSuite) TestInvalidRequests() {
 	}
 }
 
-func (s *ChangesServiceSuite) TestDeploymentLimit() {
+func (s *ServiceChangesSuite) TestDeploymentLimit() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
@@ -634,7 +626,7 @@ func (s *ChangesServiceSuite) TestDeploymentLimit() {
 	s.Len(changes.Limits, 1)
 }
 
-func (s *ChangesServiceSuite) TestMergedChangeLimitKeepsMergeCommitMatches() {
+func (s *ServiceChangesSuite) TestMergedChangeLimitKeepsMergeCommitMatches() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	mergeCommit := "4f1c0d9e8b7a6f5e4d3c2b1a09f8e7d6c5b4a392"
@@ -671,7 +663,7 @@ func (s *ChangesServiceSuite) TestMergedChangeLimitKeepsMergeCommitMatches() {
 	s.Equal("#19 merged_in_lookback", linked[19])
 }
 
-func (s *ChangesServiceSuite) TestMergedChangeLimitCountsAMatchInTheRangeOnce() {
+func (s *ServiceChangesSuite) TestMergedChangeLimitCountsAMatchInTheRangeOnce() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 	mergeCommit := "4f1c0d9e8b7a6f5e4d3c2b1a09f8e7d6c5b4a392"
@@ -709,7 +701,7 @@ func (s *ChangesServiceSuite) TestMergedChangeLimitCountsAMatchInTheRangeOnce() 
 	s.True(overTheLimit.Deployments[0].MergedChangesCut, "the match and 20 other merges are 21 changes")
 }
 
-func (s *ChangesServiceSuite) TestMergedChangeTiesOrderByEntityID() {
+func (s *ServiceChangesSuite) TestMergedChangeTiesOrderByChangePointID() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 
@@ -718,9 +710,9 @@ func (s *ChangesServiceSuite) TestMergedChangeTiesOrderByEntityID() {
 	}
 	s.deploy(ctx, tdb, h, checkoutDeployment("run-1", changesAt(0)))
 
-	queryChanges := tdb.Client(ctx).KnowledgeEntity.Query().
-		Where(kne.Kind("code_change")).
-		Order(kne.ByID())
+	queryChanges := tdb.Client(ctx).ChangePoint.Query().
+		Where(cp.Kind(projections.KindCodeChange)).
+		Order(cp.ByID())
 	changeIDs, idsErr := queryChanges.IDs(ctx)
 	s.Require().NoError(idsErr)
 	s.Require().Len(changeIDs, 22)
@@ -737,12 +729,12 @@ func (s *ChangesServiceSuite) TestMergedChangeTiesOrderByEntityID() {
 	s.True(listed.MergedChangesCut)
 	linkedIDs := make([]uuid.UUID, 0, len(listed.MergedChanges))
 	for _, change := range listed.MergedChanges {
-		linkedIDs = append(linkedIDs, change.Change.ID)
+		linkedIDs = append(linkedIDs, change.Change.ChangePoint.ID)
 	}
-	s.Equal(changeIDs[:20], linkedIDs, "merges at the same time are ordered by entity ID, and the last are cut")
+	s.Equal(changeIDs[:20], linkedIDs, "merges at the same time are ordered by change point ID, and the last are cut")
 }
 
-func (s *ChangesServiceSuite) TestReportedDeploymentSharesAlertedService() {
+func (s *ServiceChangesSuite) TestReportedDeploymentSharesAlertedService() {
 	ctx, tdb := s.SetupTestDatabase()
 	h := s.newFixture(tdb)
 

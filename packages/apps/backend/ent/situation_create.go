@@ -17,7 +17,6 @@ import (
 	"github.com/rezible/rezible/ent/investigation"
 	"github.com/rezible/rezible/ent/situation"
 	"github.com/rezible/rezible/ent/situationaction"
-	"github.com/rezible/rezible/ent/situationentity"
 	"github.com/rezible/rezible/ent/situationjudgment"
 	"github.com/rezible/rezible/ent/situationnotice"
 	"github.com/rezible/rezible/ent/situationobservation"
@@ -197,6 +196,20 @@ func (_c *SituationCreate) SetNillableInvestigationID(v *uuid.UUID) *SituationCr
 	return _c
 }
 
+// SetMergedIntoID sets the "merged_into_id" field.
+func (_c *SituationCreate) SetMergedIntoID(v uuid.UUID) *SituationCreate {
+	_c.mutation.SetMergedIntoID(v)
+	return _c
+}
+
+// SetNillableMergedIntoID sets the "merged_into_id" field if the given value is not nil.
+func (_c *SituationCreate) SetNillableMergedIntoID(v *uuid.UUID) *SituationCreate {
+	if v != nil {
+		_c.SetMergedIntoID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *SituationCreate) SetID(v uuid.UUID) *SituationCreate {
 	_c.mutation.SetID(v)
@@ -266,21 +279,6 @@ func (_c *SituationCreate) AddObservations(v ...*SituationObservation) *Situatio
 	return _c.AddObservationIDs(ids...)
 }
 
-// AddEntityIDs adds the "entities" edge to the SituationEntity entity by IDs.
-func (_c *SituationCreate) AddEntityIDs(ids ...uuid.UUID) *SituationCreate {
-	_c.mutation.AddEntityIDs(ids...)
-	return _c
-}
-
-// AddEntities adds the "entities" edges to the SituationEntity entity.
-func (_c *SituationCreate) AddEntities(v ...*SituationEntity) *SituationCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddEntityIDs(ids...)
-}
-
 // AddActionIDs adds the "actions" edge to the SituationAction entity by IDs.
 func (_c *SituationCreate) AddActionIDs(ids ...uuid.UUID) *SituationCreate {
 	_c.mutation.AddActionIDs(ids...)
@@ -324,6 +322,26 @@ func (_c *SituationCreate) AddNotices(v ...*SituationNotice) *SituationCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddNoticeIDs(ids...)
+}
+
+// SetMergedInto sets the "merged_into" edge to the Situation entity.
+func (_c *SituationCreate) SetMergedInto(v *Situation) *SituationCreate {
+	return _c.SetMergedIntoID(v.ID)
+}
+
+// AddMergedSourceIDs adds the "merged_sources" edge to the Situation entity by IDs.
+func (_c *SituationCreate) AddMergedSourceIDs(ids ...uuid.UUID) *SituationCreate {
+	_c.mutation.AddMergedSourceIDs(ids...)
+	return _c
+}
+
+// AddMergedSources adds the "merged_sources" edges to the Situation entity.
+func (_c *SituationCreate) AddMergedSources(v ...*Situation) *SituationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddMergedSourceIDs(ids...)
 }
 
 // Mutation returns the SituationMutation object of the builder.
@@ -602,23 +620,6 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.EntitiesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   situation.EntitiesTable,
-			Columns: []string{situation.EntitiesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(situationentity.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.SituationEntity
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.ActionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -665,6 +666,41 @@ func (_c *SituationCreate) createSpec() (*Situation, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.SituationNotice
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MergedIntoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   situation.MergedIntoTable,
+			Columns: []string{situation.MergedIntoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Situation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.MergedIntoID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MergedSourcesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   situation.MergedSourcesTable,
+			Columns: []string{situation.MergedSourcesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(situation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Situation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -911,6 +947,24 @@ func (u *SituationUpsert) UpdateInvestigationID() *SituationUpsert {
 // ClearInvestigationID clears the value of the "investigation_id" field.
 func (u *SituationUpsert) ClearInvestigationID() *SituationUpsert {
 	u.SetNull(situation.FieldInvestigationID)
+	return u
+}
+
+// SetMergedIntoID sets the "merged_into_id" field.
+func (u *SituationUpsert) SetMergedIntoID(v uuid.UUID) *SituationUpsert {
+	u.Set(situation.FieldMergedIntoID, v)
+	return u
+}
+
+// UpdateMergedIntoID sets the "merged_into_id" field to the value that was provided on create.
+func (u *SituationUpsert) UpdateMergedIntoID() *SituationUpsert {
+	u.SetExcluded(situation.FieldMergedIntoID)
+	return u
+}
+
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (u *SituationUpsert) ClearMergedIntoID() *SituationUpsert {
+	u.SetNull(situation.FieldMergedIntoID)
 	return u
 }
 
@@ -1189,6 +1243,27 @@ func (u *SituationUpsertOne) UpdateInvestigationID() *SituationUpsertOne {
 func (u *SituationUpsertOne) ClearInvestigationID() *SituationUpsertOne {
 	return u.Update(func(s *SituationUpsert) {
 		s.ClearInvestigationID()
+	})
+}
+
+// SetMergedIntoID sets the "merged_into_id" field.
+func (u *SituationUpsertOne) SetMergedIntoID(v uuid.UUID) *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetMergedIntoID(v)
+	})
+}
+
+// UpdateMergedIntoID sets the "merged_into_id" field to the value that was provided on create.
+func (u *SituationUpsertOne) UpdateMergedIntoID() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateMergedIntoID()
+	})
+}
+
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (u *SituationUpsertOne) ClearMergedIntoID() *SituationUpsertOne {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearMergedIntoID()
 	})
 }
 
@@ -1634,6 +1709,27 @@ func (u *SituationUpsertBulk) UpdateInvestigationID() *SituationUpsertBulk {
 func (u *SituationUpsertBulk) ClearInvestigationID() *SituationUpsertBulk {
 	return u.Update(func(s *SituationUpsert) {
 		s.ClearInvestigationID()
+	})
+}
+
+// SetMergedIntoID sets the "merged_into_id" field.
+func (u *SituationUpsertBulk) SetMergedIntoID(v uuid.UUID) *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.SetMergedIntoID(v)
+	})
+}
+
+// UpdateMergedIntoID sets the "merged_into_id" field to the value that was provided on create.
+func (u *SituationUpsertBulk) UpdateMergedIntoID() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.UpdateMergedIntoID()
+	})
+}
+
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (u *SituationUpsertBulk) ClearMergedIntoID() *SituationUpsertBulk {
+	return u.Update(func(s *SituationUpsert) {
+		s.ClearMergedIntoID()
 	})
 }
 

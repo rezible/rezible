@@ -107,6 +107,8 @@ type codeChangeObservedPayload struct {
 	Title            string                          `json:"title"`
 	MergedAt         time.Time                       `json:"merged_at"`
 	ImpactedEntities []projections.EntityObservation `json:"impacted_entities,omitempty"`
+	// Merge is the merge's details; its time is MergedAt.
+	Merge projections.CodeChangeMerge `json:"merge"`
 }
 
 func (p codeChangeObservedPayload) resourceRef() string {
@@ -136,6 +138,13 @@ var demoCodeChangeEvents = []codeChangeObservedPayload{
 		ImpactedEntities: []projections.EntityObservation{
 			relatedComponent("search_api", kne.CategoryContainer, "service", "Search API"),
 			relatedComponent("elasticsearch_catalog", kne.CategoryContainer, "search_cluster", "Elasticsearch Catalog"),
+		},
+		Merge: projections.CodeChangeMerge{
+			MergeCommitSha:    "1842aabbccddeeff00112233445566778899aabb",
+			BaseRef:           "main",
+			IntoDefaultBranch: true,
+			Number:            1842,
+			URL:               "https://github.example/rezible-commerce/search-api/pull/1842",
 		},
 	},
 }

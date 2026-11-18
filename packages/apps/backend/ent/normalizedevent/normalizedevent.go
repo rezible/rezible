@@ -38,6 +38,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldOccurredAt holds the string denoting the occurred_at field in the database.
 	FieldOccurredAt = "occurred_at"
+	// FieldLastOccurredAt holds the string denoting the last_occurred_at field in the database.
+	FieldLastOccurredAt = "last_occurred_at"
 	// FieldReceivedAt holds the string denoting the received_at field in the database.
 	FieldReceivedAt = "received_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -63,12 +65,12 @@ const (
 	// IntegrationColumn is the table column denoting the integration relation/edge.
 	IntegrationColumn = "integration_id"
 	// ProjectionTable is the table that holds the projection relation/edge.
-	ProjectionTable = "normalized_events"
+	ProjectionTable = "normalized_event_projections"
 	// ProjectionInverseTable is the table name for the NormalizedEventProjection entity.
 	// It exists in this package in order to avoid circular dependency with the "normalizedeventprojection" package.
 	ProjectionInverseTable = "normalized_event_projections"
 	// ProjectionColumn is the table column denoting the projection relation/edge.
-	ProjectionColumn = "normalized_event_projection"
+	ProjectionColumn = "event_id"
 )
 
 // Columns holds all SQL columns for normalizedevent fields.
@@ -85,24 +87,14 @@ var Columns = []string{
 	FieldAttributes,
 	FieldCreatedAt,
 	FieldOccurredAt,
+	FieldLastOccurredAt,
 	FieldReceivedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "normalized_events"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"normalized_event_projection",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -191,6 +183,11 @@ func ByOccurredAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOccurredAt, opts...).ToFunc()
 }
 
+// ByLastOccurredAt orders the results by the last_occurred_at field.
+func ByLastOccurredAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastOccurredAt, opts...).ToFunc()
+}
+
 // ByReceivedAt orders the results by the received_at field.
 func ByReceivedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReceivedAt, opts...).ToFunc()
@@ -234,6 +231,6 @@ func newProjectionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProjectionInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ProjectionTable, ProjectionColumn),
+		sqlgraph.Edge(sqlgraph.O2O, false, ProjectionTable, ProjectionColumn),
 	)
 }

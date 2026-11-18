@@ -136,23 +136,23 @@ func (s *ProjectionsSuite) TestDerivedRelationshipRefUsesCompleteDirectionalIden
 	source := rez.ProviderResourceRef{Provider: "github", ProviderNamespace: "org-1", ResourceRef: "change-1"}
 	target := rez.ProviderResourceRef{Provider: "github", ProviderNamespace: "org-1", ResourceRef: "repo-1"}
 
-	base := DerivedRelationshipRef(knr.PredicateTouches, source, target)
+	base := DerivedRelationshipRef(knr.PredicateBuiltFrom, source, target)
 	s.Equal("rezible", base.Provider)
 	s.Empty(base.ProviderNamespace)
 	s.Contains(base.ResourceRef, "relationship:v1:")
-	s.Equal(base, DerivedRelationshipRef(knr.PredicateTouches, source, target))
+	s.Equal(base, DerivedRelationshipRef(knr.PredicateBuiltFrom, source, target))
 
 	differentNamespace := target
 	differentNamespace.ProviderNamespace = "org-2"
-	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateTouches, source, differentNamespace))
+	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateBuiltFrom, source, differentNamespace))
 	differentProvider := target
 	differentProvider.Provider = "gitlab"
-	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateTouches, source, differentProvider))
+	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateBuiltFrom, source, differentProvider))
 	differentResource := target
 	differentResource.ResourceRef = "repo-2"
-	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateTouches, source, differentResource))
-	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateImpacts, source, target))
-	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateTouches, target, source))
+	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateBuiltFrom, source, differentResource))
+	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateCalls, source, target))
+	s.NotEqual(base, DerivedRelationshipRef(knr.PredicateBuiltFrom, target, source))
 }
 
 func (s *ProjectionsSuite) TestRepositoryLinkingAttributes() {

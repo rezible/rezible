@@ -8,13 +8,13 @@ import (
 	"slices"
 	"time"
 
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/samber/do/v2"
 
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
-	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/rezible/rezible/pkg/jobs"
 	"github.com/rezible/rezible/pkg/messages"
@@ -48,40 +48,6 @@ func NewApplication(profiles ...Package) *Application {
 	return &Application{i: i, profiles: profiles}
 }
 
-func (a *Application) Init(ctx context.Context, withTelemetry bool) (context.Context, error) {
-	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
-
-	applicationPackages(ctx)(a.i)
-	for _, profile := range a.profiles {
-		profile(a.i)
-	}
-
-	if withTelemetry {
-		if telErr := a.initTelemetry(ctx); telErr != nil {
-			return nil, fmt.Errorf("telemetry: %w", telErr)
-		}
-	}
-
-	return ctx, nil
-}
-
-// initTelemetry installs the logger and the OpenTelemetry providers before any service is built, so every service logs and traces through them.
-func (a *Application) initTelemetry(ctx context.Context) error {
-	cfg, cfgErr := a.invoke[rez.Config]()
-	if cfgErr != nil {
-		return cfgErr
-	}
-	telemetry, telemetryErr := opentelemetry.NewOpenTelemetryService(ctx, cfg)
-	if telemetryErr != nil {
-		return fmt.Errorf("telemetry: %w", telemetryErr)
-	}
-	if initErr := telemetry.Init(); initErr != nil {
-		return fmt.Errorf("init telemetry: %w", initErr)
-	}
-	a.telemetry = telemetry
-	return nil
-}
-
 func (a *Application) invoke[T any]() (T, error) {
 	t, invErr := do.Invoke[T](a.i)
 	if invErr != nil {
@@ -102,11 +68,37 @@ func (a *Application) With[T any](fn func(T) error) error {
 	return fn(t)
 }
 
-func (a *Application) RunLifecycle(ctx context.Context, svcs ...rez.LifecycleService) error {
-	if prepareErr := a.prepare(); prepareErr != nil {
-		return fmt.Errorf("prepare: %w", prepareErr)
+func (a *Application) Init(ctx context.Context, withTelemetry bool) (context.Context, error) {
+	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
+
+	applicationPackages(ctx)(a.i)
+	for _, profile := range a.profiles {
+		profile(a.i)
 	}
-	return a.runLifecycleServices(ctx, append(a.invokeBaseLifecycleServices(), svcs...))
+
+	if withTelemetry {
+		if telErr := a.initTelemetry(ctx); telErr != nil {
+			return nil, fmt.Errorf("telemetry: %w", telErr)
+		}
+	}
+
+	return ctx, nil
+}
+
+func (a *Application) initTelemetry(ctx context.Context) error {
+	cfg, cfgErr := a.invoke[rez.Config]()
+	if cfgErr != nil {
+		return cfgErr
+	}
+	ts, telErr := opentelemetry.NewOpenTelemetryService(ctx, cfg)
+	if telErr != nil {
+		return fmt.Errorf("telemetry: %w", telErr)
+	}
+	if initErr := ts.Init(); initErr != nil {
+		return fmt.Errorf("init telemetry: %w", initErr)
+	}
+	a.telemetry = ts
+	return nil
 }
 
 func (a *Application) Shutdown(ctx context.Context) error {
@@ -120,13 +112,31 @@ func (a *Application) Shutdown(ctx context.Context) error {
 			shutdownErr = errors.Join(shutdownErr, sErr)
 		}
 	}
-	// Telemetry stops last, so it flushes what the services recorded while stopping.
-	if a.telemetry != nil {
-		if telemetryErr := a.telemetry.Shutdown(cancelCtx); telemetryErr != nil {
-			shutdownErr = errors.Join(shutdownErr, fmt.Errorf("shutdown telemetry: %w", telemetryErr))
-		}
-	}
+	a.shutdownTelemetry(cancelCtx)
 	return shutdownErr
+}
+
+func (a *Application) shutdownTelemetry(ctx context.Context) {
+	// Telemetry stops last, so it flushes what the services recorded while stopping.
+	// Its export is best effort: a collector that is down must not fail work that already succeeded.
+	if a.telemetry == nil {
+		return
+	}
+	telemetryCtx, cancelTelemetry := context.WithTimeout(ctx, telemetryShutdownTimeout)
+	defer cancelTelemetry()
+	if telemetryErr := a.telemetry.Shutdown(telemetryCtx); telemetryErr != nil {
+		slog.WarnContext(ctx, "telemetry not flushed at shutdown", "error", telemetryErr.Error())
+	}
+}
+
+// telemetryShutdownTimeout bounds the final telemetry flush, so an unreachable collector delays exit briefly.
+const telemetryShutdownTimeout = 5 * time.Second
+
+func (a *Application) RunLifecycle(ctx context.Context, svcs ...rez.LifecycleService) error {
+	if prepareErr := a.prepare(); prepareErr != nil {
+		return fmt.Errorf("prepare: %w", prepareErr)
+	}
+	return a.runLifecycleServices(ctx, append(a.invokeBaseLifecycleServices(), svcs...))
 }
 
 func (a *Application) invokeBaseLifecycleServices() []rez.LifecycleService {
@@ -202,13 +212,9 @@ func (a *Application) startServices(ctx context.Context, services []rez.Lifecycl
 	startupCtx, cancelStartupCtx := context.WithTimeout(ctx, 30*time.Second)
 	defer cancelStartupCtx()
 
-	runService := func(svcCtx context.Context, svc rez.LifecycleService, chStarted chan error, chReady chan struct{}) {
-		chStarted <- svc.Run(svcCtx, chReady)
-	}
-
-	waitForServiceReady := func(rs *appService, chReady chan struct{}) (bool, error) {
+	waitForServiceReady := func(s *appService, chReady chan struct{}) (bool, error) {
 		select {
-		case serviceErr := <-rs.chStarted:
+		case serviceErr := <-s.chStarted:
 			if serviceErr != nil {
 				return false, fmt.Errorf("stopped before ready: %w", serviceErr)
 			}
@@ -227,23 +233,23 @@ func (a *Application) startServices(ctx context.Context, services []rez.Lifecycl
 	}
 
 	for _, svc := range services {
-		svcName := a.getServiceName(svc)
-		serviceCtx, cancelServiceFn := context.WithCancel(ctx)
+		svcCtx, cancelServiceFn := context.WithCancel(ctx)
 		chStarted := make(chan error, 1)
-		chReady := make(chan struct{})
 
-		rs := &appService{
+		s := &appService{
 			service:          svc,
 			cancelServiceCtx: cancelServiceFn,
 			chStarted:        chStarted,
 		}
-		a.services = append(a.services, *rs)
+		a.services = append(a.services, *s)
 
-		go runService(serviceCtx, svc, chStarted, chReady)
+		chReady := make(chan struct{})
+		go a.startService(svcCtx, svc, chStarted, chReady)
 
+		svcName := a.getServiceName(svc)
 		slog.Info("starting service", "service", svcName)
 
-		ready, startupErr := waitForServiceReady(rs, chReady)
+		ready, startupErr := waitForServiceReady(s, chReady)
 		if !ready {
 			if startupErr != nil {
 				startupErr = fmt.Errorf("start %s: %w", svcName, startupErr)
@@ -252,6 +258,10 @@ func (a *Application) startServices(ctx context.Context, services []rez.Lifecycl
 		}
 	}
 	return nil
+}
+
+func (a *Application) startService(ctx context.Context, svc rez.LifecycleService, started chan error, ready chan struct{}) {
+	started <- svc.Run(ctx, ready)
 }
 
 func (a *Application) waitForServices(ctx context.Context) error {

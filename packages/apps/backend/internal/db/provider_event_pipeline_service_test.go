@@ -48,7 +48,7 @@ func (s *ProviderEventPipelineServiceSuite) newPipelineService(tdb rez.Database,
 	return &ProviderEventPipelineService{
 		db:       tdb,
 		jobs:     jobSvc,
-		ingester: NewProviderEventIngester(tdb, processors, proj),
+		ingester: NewProviderEventIngester(tdb, processors, proj, &KnowledgeGraphIngestionService{db: tdb}),
 	}
 }
 
@@ -84,6 +84,7 @@ func (s *ProviderEventPipelineServiceSuite) createPipelineNormalizedEvent(ctx co
 		SetProviderResourceRef("subject-1").
 		SetKind("pipeline_test").
 		SetOccurredAt(ev.ReceivedAt.Add(-time.Minute)).
+		SetLastOccurredAt(ev.ReceivedAt.Add(-time.Minute)).
 		SetReceivedAt(ev.ReceivedAt).
 		SetAttributes([]byte(`{"summary": "processed subject-1"}`))
 	normalized, normalizedErr := createNormalized.Save(ctx)
@@ -147,7 +148,7 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 	s.Equal(`{"summary": "processed subject-1"}`, string(normalized.Attributes))
 	s.Equal(normalized.ID, capturedProjectArgs.EventId)
 
-	s.Require().NoError(svc.HandleEventProjectionJob(ctx, capturedProjectArgs))
+	s.Require().NoError(svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: capturedProjectArgs}))
 
 	s.Require().NotZero(projector.calls)
 
@@ -163,21 +164,22 @@ func (s *ProviderEventPipelineServiceSuite) TestIngesterProcessesAndProjectsDire
 
 	projector := &countingEventProjectionService{}
 	processors := map[string]rez.ProviderEventProcessor{pipelineTestProvider: pipelineTestProcessor{}}
-	ingester := NewProviderEventIngester(tdb, processors, projector)
+	ingester := NewProviderEventIngester(tdb, processors, projector, &KnowledgeGraphIngestionService{db: tdb})
 	ev := s.makeTestEvent()
 
 	ids, processErr := ingester.ProcessProviderEvent(ctx, ev)
 	s.Require().NoError(processErr)
-	s.Require().Len(ids, 1)
+	s.Require().Len(ids.NewEventIDs, 1)
 
-	s.Require().NoError(ingester.ProjectNormalizedEvent(ctx, ids[0]))
+	s.Require().NoError(ingester.ProjectNormalizedEvent(ctx, ids.NewEventIDs[0], false))
 	s.Equal(1, projector.calls)
-	_, projErr := s.getProjection(ctx, tdb, ids[0])
+	_, projErr := s.getProjection(ctx, tdb, ids.NewEventIDs[0])
 	s.Require().NoError(projErr)
 
 	duplicateIDs, duplicateErr := ingester.ProcessProviderEvent(ctx, ev)
 	s.Require().NoError(duplicateErr)
-	s.Empty(duplicateIDs)
+	s.Empty(duplicateIDs.NewEventIDs)
+	s.Empty(duplicateIDs.Reobservations)
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestSyncEventsEnqueuesEventPointers() {
@@ -300,7 +302,7 @@ func (s *ProviderEventPipelineServiceSuite) TestNormalizedEventIdentityIncludesN
 	processors := map[string]rez.ProviderEventProcessor{
 		pipelineTestProvider: multiResourcePipelineProcessor{},
 	}
-	svc.ingester = NewProviderEventIngester(tdb, processors, nil)
+	svc.ingester = NewProviderEventIngester(tdb, processors, nil, &KnowledgeGraphIngestionService{db: tdb})
 	event := s.makeTestEvent()
 	event.ProviderEventRef = "same-delivery"
 
@@ -375,9 +377,9 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionSkipsEventWithReceipt(
 
 	s.createProjectionResult(ctx, tdb, ev.ID)
 
-	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{
+	s.Require().NoError(svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: jobs.ProjectNormalizedEvent{
 		EventId: ev.ID,
-	}))
+	}}))
 	s.Equal(0, projector.calls)
 }
 
@@ -391,9 +393,9 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjec
 	svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), projector)
 	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
-	projectionErr := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{
+	projectionErr := svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: jobs.ProjectNormalizedEvent{
 		EventId: ev.ID,
-	})
+	}})
 	s.Require().Error(projectionErr)
 	var cancelErr *river.JobCancelError
 	s.Require().ErrorAs(projectionErr, &cancelErr)
@@ -413,9 +415,9 @@ func (s *ProviderEventPipelineServiceSuite) TestRetryableProjectionFailureReturn
 	svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), &retryablePipelineProjector{})
 	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
-	projectionErr := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{
+	projectionErr := svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: jobs.ProjectNormalizedEvent{
 		EventId: ev.ID,
-	})
+	}})
 	s.Require().Error(projectionErr)
 	s.True(jobs.IsRetryableError(projectionErr))
 
@@ -436,9 +438,9 @@ func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailu
 	}
 	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
-	projectionErr := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{
+	projectionErr := svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: jobs.ProjectNormalizedEvent{
 		EventId: ev.ID,
-	})
+	}})
 	s.Require().Error(projectionErr)
 	s.True(jobs.IsRetryableError(projectionErr))
 
@@ -446,21 +448,28 @@ func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailu
 	s.True(ent.IsNotFound(projErr))
 }
 
-func (s *ProviderEventPipelineServiceSuite) TestProjectionRetriesWhenAMergeDeletedASubject() {
+func (s *ProviderEventPipelineServiceSuite) TestEventWorkersClassifyFailures() {
 	ctx, tdb := s.SetupTestDatabase()
+	transientErr := errors.New("database deadlock")
 	cases := map[string]struct {
 		projectionErr error
 		retryable     bool
 	}{
-		"found merged at its lock": {
+		"transient database failure":   {projectionErr: transientErr, retryable: true},
+		"explicitly retryable failure": {projectionErr: jobs.MarkRetryableError(errors.New("not ready")), retryable: true},
+		"found merged on its re-read": {
 			projectionErr: fmt.Errorf("resolve entity: %w", errs.ErrKnowledgeSubjectMerged),
 			retryable:     true,
 		},
-		"refused by a knowledge foreign key": {
-			projectionErr: fmt.Errorf("create evidence: %w", &pgconn.PgError{Code: "23503", ConstraintName: ent.KnowledgeForeignKeyConstraints[0]}),
+		"lost a race to create a row": {
+			projectionErr: fmt.Errorf("create incident: %w", &pgconn.PgError{Code: "23505", ConstraintName: "incident_tenant_id_provider_provider_namespace_provider_resource_ref"}),
 			retryable:     true,
 		},
-		"refused by another foreign key": {
+		"stopped before finishing": {
+			projectionErr: fmt.Errorf("query event: %w", context.Canceled),
+			retryable:     true,
+		},
+		"refused by a foreign key": {
 			projectionErr: fmt.Errorf("create annotation: %w", &pgconn.PgError{Code: "23503", ConstraintName: "discussion_threads_users_user"}),
 		},
 	}
@@ -468,21 +477,35 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionRetriesWhenAMergeDelet
 		s.Run(name, func() {
 			projector := &transientDatabasePipelineProjector{projectionErr: tc.projectionErr}
 			svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), projector)
+			svc.db = transientDatabase{Database: tdb, transientErr: transientErr}
 			ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
-			projectionErr := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{
+			projectionErr := svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: jobs.ProjectNormalizedEvent{
 				EventId: ev.ID,
-			})
+			}})
 
-			s.Require().Error(projectionErr)
-			if tc.retryable {
-				s.True(jobs.IsRetryableError(projectionErr))
-				return
+			svc.ingester = &failingReobservationIngester{ProviderEventIngester: svc.ingester, failure: tc.projectionErr}
+			repeatErr := svc.HandleEventReobservationJob(ctx, jobs.ReobserveNormalizedEvent{EventId: ev.ID, At: ev.OccurredAt})
+			for _, jobErr := range []error{projectionErr, repeatErr} {
+				s.Require().Error(jobErr)
+				if tc.retryable {
+					s.True(jobs.IsRetryableError(jobErr))
+				} else {
+					var cancelErr *river.JobCancelError
+					s.ErrorAs(jobErr, &cancelErr)
+				}
 			}
-			var cancelErr *river.JobCancelError
-			s.ErrorAs(projectionErr, &cancelErr)
 		})
 	}
+}
+
+type failingReobservationIngester struct {
+	rez.ProviderEventIngester
+	failure error
+}
+
+func (i *failingReobservationIngester) ReobserveNormalizedEvent(context.Context, uuid.UUID, time.Time) error {
+	return i.failure
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicCancelsJobWithoutReceipt() {
@@ -492,9 +515,9 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicCancelsJobWithout
 	})
 	ev := s.createPipelineNormalizedEvent(ctx, tdb)
 
-	projectionErr := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{
+	projectionErr := svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: jobs.ProjectNormalizedEvent{
 		EventId: ev.ID,
-	})
+	}})
 	s.Require().Error(projectionErr)
 	var cancelErr *river.JobCancelError
 	s.Require().ErrorAs(projectionErr, &cancelErr)
@@ -520,7 +543,7 @@ func (s *ProviderEventPipelineServiceSuite) TestConcurrentProjectionRunsHandlerO
 	results := make(chan error, 2)
 
 	go func() {
-		results <- svc.HandleEventProjectionJob(ctx, args)
+		results <- svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: args})
 	}()
 	select {
 	case <-projector.started:
@@ -528,7 +551,7 @@ func (s *ProviderEventPipelineServiceSuite) TestConcurrentProjectionRunsHandlerO
 		s.FailNow("projector did not start", ctx.Err().Error())
 	}
 	go func() {
-		results <- svc.HandleEventProjectionJob(ctx, args)
+		results <- svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: args})
 	}()
 	close(projector.release)
 
@@ -734,7 +757,7 @@ func (s *ProviderEventPipelineServiceSuite) TestSyncedListingIsIngestedOnce() {
 	svc := &ProviderEventPipelineService{
 		db:       tdb,
 		jobs:     jobSvc,
-		ingester: NewProviderEventIngester(tdb, processors, nil),
+		ingester: NewProviderEventIngester(tdb, processors, nil, &KnowledgeGraphIngestionService{db: tdb}),
 	}
 
 	// Each sync lists the same values; only when it was received differs.

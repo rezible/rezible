@@ -294,7 +294,8 @@ func (s *SituationNoticeService) capReached(ctx context.Context, tx *ent.Client,
 // notice, when its lookup fails.
 func (s *SituationNoticeService) readContent(ctx context.Context, situationID uuid.UUID) (*integrations.SituationNoticeContent, error) {
 	querySituation := s.db.Client(ctx).Situation.Query().
-		Where(sit.ID(situationID))
+		Where(sit.ID(situationID)).
+		WithMergedInto()
 	situation, getErr := querySituation.Only(ctx)
 	if getErr != nil {
 		return nil, fmt.Errorf("get situation: %w", getErr)
@@ -306,6 +307,13 @@ func (s *SituationNoticeService) readContent(ctx context.Context, situationID uu
 		return nil, fmt.Errorf("situation url: %w", urlErr)
 	}
 	content.SituationURL = situationURL.String()
+	if target := situation.Edges.MergedInto; target != nil {
+		targetURL, targetURLErr := s.cfg.App.GetFrontendUrl("situations", target.Reference())
+		if targetURLErr != nil {
+			return nil, fmt.Errorf("merge target url: %w", targetURLErr)
+		}
+		content.MergedIntoURL = targetURL.String()
+	}
 
 	if incidentErr := s.readIncidentLinks(ctx, content); incidentErr != nil {
 		return nil, incidentErr

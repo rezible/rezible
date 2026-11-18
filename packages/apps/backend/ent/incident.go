@@ -13,7 +13,6 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
-	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -32,8 +31,12 @@ type Incident struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime *time.Time `json:"archive_time,omitempty"`
-	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
-	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
+	// Provider holds the value of the "provider" field.
+	Provider *string `json:"provider,omitempty"`
+	// ProviderNamespace holds the value of the "provider_namespace" field.
+	ProviderNamespace *string `json:"provider_namespace,omitempty"`
+	// ProviderResourceRef holds the value of the "provider_resource_ref" field.
+	ProviderResourceRef *string `json:"provider_resource_ref,omitempty"`
 	// Number holds the value of the "number" field.
 	Number int `json:"number,omitempty"`
 	// Title holds the value of the "title" field.
@@ -66,8 +69,6 @@ type Incident struct {
 type IncidentEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// KnowledgeEntity holds the value of the knowledge_entity edge.
-	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// Severity holds the value of the severity edge.
 	Severity *IncidentSeverity `json:"severity,omitempty"`
 	// Type holds the value of the type edge.
@@ -98,7 +99,7 @@ type IncidentEdges struct {
 	IncidentLinks []*IncidentLink `json:"incident_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [16]bool
+	loadedTypes [15]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -112,23 +113,12 @@ func (e IncidentEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e IncidentEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
-	if e.KnowledgeEntity != nil {
-		return e.KnowledgeEntity, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: knowledgeentity.Label}
-	}
-	return nil, &NotLoadedError{edge: "knowledge_entity"}
-}
-
 // SeverityOrErr returns the Severity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e IncidentEdges) SeverityOrErr() (*IncidentSeverity, error) {
 	if e.Severity != nil {
 		return e.Severity, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incidentseverity.Label}
 	}
 	return nil, &NotLoadedError{edge: "severity"}
@@ -139,7 +129,7 @@ func (e IncidentEdges) SeverityOrErr() (*IncidentSeverity, error) {
 func (e IncidentEdges) TypeOrErr() (*IncidentType, error) {
 	if e.Type != nil {
 		return e.Type, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: incidenttype.Label}
 	}
 	return nil, &NotLoadedError{edge: "type"}
@@ -150,7 +140,7 @@ func (e IncidentEdges) TypeOrErr() (*IncidentType, error) {
 func (e IncidentEdges) DeclaredByOrErr() (*User, error) {
 	if e.DeclaredBy != nil {
 		return e.DeclaredBy, nil
-	} else if e.loadedTypes[4] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "declared_by"}
@@ -159,7 +149,7 @@ func (e IncidentEdges) DeclaredByOrErr() (*User, error) {
 // MilestonesOrErr returns the Milestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.Milestones, nil
 	}
 	return nil, &NotLoadedError{edge: "milestones"}
@@ -170,7 +160,7 @@ func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
 func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 	if e.Retrospective != nil {
 		return e.Retrospective, nil
-	} else if e.loadedTypes[6] {
+	} else if e.loadedTypes[5] {
 		return nil, &NotFoundError{label: retrospective.Label}
 	}
 	return nil, &NotLoadedError{edge: "retrospective"}
@@ -179,7 +169,7 @@ func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 // RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[6] {
 		return e.RoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "role_assignments"}
@@ -188,7 +178,7 @@ func (e IncidentEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error)
 // LinkedIncidentsOrErr returns the LinkedIncidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[7] {
 		return e.LinkedIncidents, nil
 	}
 	return nil, &NotLoadedError{edge: "linked_incidents"}
@@ -197,7 +187,7 @@ func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
 // SituationsOrErr returns the Situations value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) SituationsOrErr() ([]*Situation, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[8] {
 		return e.Situations, nil
 	}
 	return nil, &NotLoadedError{edge: "situations"}
@@ -206,7 +196,7 @@ func (e IncidentEdges) SituationsOrErr() ([]*Situation, error) {
 // FieldSelectionsOrErr returns the FieldSelections value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[9] {
 		return e.FieldSelections, nil
 	}
 	return nil, &NotLoadedError{edge: "field_selections"}
@@ -215,7 +205,7 @@ func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
 // TagAssignmentsOrErr returns the TagAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[10] {
 		return e.TagAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "tag_assignments"}
@@ -224,7 +214,7 @@ func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
 // ImpactsOrErr returns the Impacts value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) ImpactsOrErr() ([]*IncidentImpact, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[11] {
 		return e.Impacts, nil
 	}
 	return nil, &NotLoadedError{edge: "impacts"}
@@ -233,7 +223,7 @@ func (e IncidentEdges) ImpactsOrErr() ([]*IncidentImpact, error) {
 // DebriefsOrErr returns the Debriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[12] {
 		return e.Debriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "debriefs"}
@@ -242,7 +232,7 @@ func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
 // VideoConferencesOrErr returns the VideoConferences value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) VideoConferencesOrErr() ([]*VideoConference, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[13] {
 		return e.VideoConferences, nil
 	}
 	return nil, &NotLoadedError{edge: "video_conferences"}
@@ -251,7 +241,7 @@ func (e IncidentEdges) VideoConferencesOrErr() ([]*VideoConference, error) {
 // IncidentLinksOrErr returns the IncidentLinks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) IncidentLinksOrErr() ([]*IncidentLink, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[14] {
 		return e.IncidentLinks, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_links"}
@@ -262,11 +252,11 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incident.FieldKnowledgeEntityID, incident.FieldSeverityID, incident.FieldTypeID, incident.FieldDeclaredByID:
+		case incident.FieldSeverityID, incident.FieldTypeID, incident.FieldDeclaredByID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case incident.FieldTenantID, incident.FieldNumber:
 			values[i] = new(sql.NullInt64)
-		case incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID, incident.FieldChatDetailsMessageID, incident.FieldResponseState:
+		case incident.FieldProvider, incident.FieldProviderNamespace, incident.FieldProviderResourceRef, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID, incident.FieldChatDetailsMessageID, incident.FieldResponseState:
 			values[i] = new(sql.NullString)
 		case incident.FieldCreatedAt, incident.FieldUpdatedAt, incident.FieldArchiveTime, incident.FieldOpenedAt, incident.FieldResolvedAt:
 			values[i] = new(sql.NullTime)
@@ -318,12 +308,26 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				_m.ArchiveTime = new(time.Time)
 				*_m.ArchiveTime = value.Time
 			}
-		case incident.FieldKnowledgeEntityID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
+		case incident.FieldProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
-				_m.KnowledgeEntityID = new(uuid.UUID)
-				*_m.KnowledgeEntityID = *value.S.(*uuid.UUID)
+				_m.Provider = new(string)
+				*_m.Provider = value.String
+			}
+		case incident.FieldProviderNamespace:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_namespace", values[i])
+			} else if value.Valid {
+				_m.ProviderNamespace = new(string)
+				*_m.ProviderNamespace = value.String
+			}
+		case incident.FieldProviderResourceRef:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_resource_ref", values[i])
+			} else if value.Valid {
+				_m.ProviderResourceRef = new(string)
+				*_m.ProviderResourceRef = value.String
 			}
 		case incident.FieldNumber:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -411,11 +415,6 @@ func (_m *Incident) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the Incident entity.
 func (_m *Incident) QueryTenant() *TenantQuery {
 	return NewIncidentClient(_m.config).QueryTenant(_m)
-}
-
-// QueryKnowledgeEntity queries the "knowledge_entity" edge of the Incident entity.
-func (_m *Incident) QueryKnowledgeEntity() *KnowledgeEntityQuery {
-	return NewIncidentClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
 // QuerySeverity queries the "severity" edge of the Incident entity.
@@ -525,9 +524,19 @@ func (_m *Incident) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := _m.KnowledgeEntityID; v != nil {
-		builder.WriteString("knowledge_entity_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
+	if v := _m.Provider; v != nil {
+		builder.WriteString("provider=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.ProviderNamespace; v != nil {
+		builder.WriteString("provider_namespace=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.ProviderResourceRef; v != nil {
+		builder.WriteString("provider_resource_ref=")
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("number=")

@@ -1,16 +1,23 @@
 package schema
 
 import (
+	"context"
+	"strconv"
+	"strings"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/dialect/sql"
 	entschema "entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"entgo.io/ent/schema/mixin"
 	"github.com/google/uuid"
+
+	gen "github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/intercept"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
@@ -20,14 +27,13 @@ var (
 		"system",          // A coherent software or business system, including external ones; e.g. subsystem, external_system.
 		"container",       // An independently deployable or runnable unit; e.g. service, worker, database, cache, message_queue, web_app, gateway.
 		"component",       // A part inside a container; e.g. module, handler, scheduled_job.
-		"infrastructure",  // Where things run or are deployed; e.g. environment, cloud_account, region, kubernetes_cluster, kubernetes_namespace, load_balancer.
+		"infrastructure",  // Where things run or are deployed; e.g. cloud_account, region, kubernetes_cluster, kubernetes_namespace, load_balancer. An environment is not an entity: it is an `environment` property of the infrastructure that belongs to it.
 		"code",            // A source artifact; e.g. repository, package, source_file.
 		"actor",           // A person or a group of people; e.g. user, team, department, customer_segment, vendor.
 		"process",         // A business or operational workflow, or one of its steps; e.g. business_process, operational_process, step.
 		"concern",         // A force on the system: risk, hazard, requirement, regulation, target; e.g. system_hazard, risk, regulation, policy, slo.
 		"decision",        // A chosen design or operating trade-off; e.g. adr, mitigation_choice.
 		"signal",          // A definition that watches something; e.g. alert, synthetic_check, dashboard.
-		"event",           // A time-bound occurrence; e.g. deployment, code_change, incident.
 	}
 
 	// Each predicate's family, dependency, roll-up and allowed endpoints live in pkg/knowledgegraph/model.go.
@@ -50,8 +56,6 @@ var (
 		"constrains",      // A rule or choice limits it; e.g. "Checkout p99 under 800 ms" constrains checkout.
 		"addresses",       // The decision responds to the concern; e.g. ADR-12 addresses Duplicate payment capture.
 		"mitigates",       // The source reduces the risk; e.g. payments_service mitigates Duplicate payment capture.
-		"impacts",         // The occurrence affected it; e.g. deploy impacts checkout.
-		"touches",         // The change modified it; e.g. code change touches checkout-service.
 	}
 )
 
@@ -66,6 +70,7 @@ func (KnowledgeEntity) Mixin() []ent.Mixin {
 		TenantMixin{},
 		TimestampsMixin{},
 		KnowledgeSubjectStateMixin{},
+		MergeRedirectMixin{},
 	}
 }
 
@@ -78,10 +83,9 @@ func (KnowledgeEntity) Fields() []ent.Field {
 		field.String("kind").NotEmpty().
 			Comment("Canonical domain type within the entity category.").
 			Immutable(),
-		field.UUID("parent_id", uuid.UUID{}).
-			Optional().
-			Nillable().
-			Comment("Source of the one current contains relationship chosen as the entity's parent; every reader of the tree uses it. Kept current on every write that can change the choice."),
+		field.Bool("parent_is_fallback").
+			Default(false).
+			Comment("Set when a better-ranked current contains claim was skipped because it would close a cycle, so placement runs again when another parent changes. Only placement writes it."),
 	}
 }
 
@@ -95,11 +99,12 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 			Ref("source_entity"),
 		edge.From("target_relationships", KnowledgeRelationship.Type).
 			Ref("target_entity"),
-		edge.To("children", KnowledgeEntity.Type).
-			From("parent").
+		// A survivor with redirects cannot be deleted: setting them null would make the merged rows current.
+		edge.To("redirects", KnowledgeEntity.Type).
+			Annotations(entsql.OnDelete(entsql.NoAction)).
+			From("merged_into").
 			Unique().
-			Field("parent_id").
-			Annotations(entsql.OnDelete(entsql.SetNull)),
+			Field("merged_into_id"),
 	}
 }
 
@@ -108,7 +113,9 @@ func (KnowledgeEntity) Indexes() []ent.Index {
 		index.Fields("tenant_id", "category", "kind"),
 		index.Fields("tenant_id", "kind", "state_effective_at"),
 		index.Fields("tenant_id", "withdrawn_at"),
-		index.Fields("tenant_id", "parent_id"),
+		index.Fields("tenant_id").
+			StorageKey("knowledgeentity_tenant_id_parent_is_fallback").
+			Annotations(entsql.IndexWhere("parent_is_fallback")),
 	}
 }
 
@@ -152,6 +159,15 @@ type KnowledgeRelationship struct {
 	ent.Schema
 }
 
+func (KnowledgeRelationship) Annotations() []entschema.Annotation {
+	return []entschema.Annotation{
+		entsql.Annotation{Checks: map[string]string{
+			"knowledge_relationship_parent_is_contains":  "NOT is_parent OR (predicate = 'contains' AND source_entity_id <> target_entity_id)",
+			"knowledge_relationship_redirect_not_parent": "NOT (is_parent AND merged_into_id IS NOT NULL)",
+		}},
+	}
+}
+
 func (KnowledgeRelationship) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		IDMixin{},
@@ -159,6 +175,7 @@ func (KnowledgeRelationship) Mixin() []ent.Mixin {
 		TenantMixin{},
 		TimestampsMixin{},
 		KnowledgeSubjectStateMixin{},
+		MergeRedirectMixin{},
 	}
 }
 
@@ -172,6 +189,9 @@ func (KnowledgeRelationship) Fields() []ent.Field {
 			Comment("Changed only when a confirmed match merges two entities."),
 		field.UUID("target_entity_id", uuid.UUID{}).
 			Comment("Changed only when a confirmed match merges two entities."),
+		field.Bool("is_parent").
+			Default(false).
+			Comment("Set on the one current contains relationship chosen as the target's parent; every reader of the tree uses it. Only placement, and a merge clearing it before endpoints move, write it."),
 	}
 }
 
@@ -187,6 +207,12 @@ func (KnowledgeRelationship) Edges() []ent.Edge {
 			Field("target_entity_id"),
 		edge.From("aliases", KnowledgeSubjectAlias.Type).
 			Ref("relationship"),
+		// A survivor with redirects cannot be deleted: setting them null would make the merged rows current.
+		edge.To("redirects", KnowledgeRelationship.Type).
+			Annotations(entsql.OnDelete(entsql.NoAction)).
+			From("merged_into").
+			Unique().
+			Field("merged_into_id"),
 	}
 }
 
@@ -195,6 +221,10 @@ func (KnowledgeRelationship) Indexes() []ent.Index {
 		index.Fields("tenant_id", "predicate", "source_entity_id", "target_entity_id").Unique(),
 		index.Fields("tenant_id", "source_entity_id"),
 		index.Fields("tenant_id", "target_entity_id"),
+		index.Fields("tenant_id", "target_entity_id").
+			Unique().
+			StorageKey("knowledgerelationship_tenant_id_target_entity_id_is_parent").
+			Annotations(entsql.IndexWhere("is_parent")),
 		index.Fields("tenant_id", "predicate"),
 		index.Fields("tenant_id", "withdrawn_at"),
 	}
@@ -208,6 +238,7 @@ func (KnowledgeSubjectAlias) Annotations() []entschema.Annotation {
 	return []entschema.Annotation{
 		entsql.Annotation{Checks: map[string]string{
 			"knowledge_subject_alias_exactly_one_subject": "(subject_kind = 'entity' AND entity_id IS NOT NULL AND relationship_id IS NULL) OR (subject_kind = 'relationship' AND relationship_id IS NOT NULL AND entity_id IS NULL)",
+			"knowledge_subject_alias_authority_defined":   knowledgeAuthorityDefined(),
 		}},
 	}
 }
@@ -239,6 +270,12 @@ func (KnowledgeSubjectAlias) Fields() []ent.Field {
 			Nillable().
 			Comment("The confirmed proposal whose merge moved the alias to its current subject."),
 		field.Time("created_at").Default(time.Now).Immutable(),
+		// Stored as its rank, so SQL orders and compares authorities in authority order; the numeric order is
+		// significant.
+		field.String("authority").
+			GoType(schematypes.KnowledgeAuthorityObserved).
+			SchemaType(postgresSchemaType("smallint")).
+			Comment("The highest authority of the alias's evidence; it only rises. Ranks the alias's fields and parent claims."),
 
 		field.JSON("state", schematypes.KnowledgeAliasState{}).
 			Optional().
@@ -281,6 +318,16 @@ func (KnowledgeSubjectAlias) Edges() []ent.Edge {
 	}
 }
 
+// knowledgeAuthorityDefined is the check that the authority column holds a defined rank.
+func knowledgeAuthorityDefined() string {
+	ranks := schematypes.KnowledgeAuthorityRanks()
+	values := make([]string, len(ranks))
+	for i, rank := range ranks {
+		values[i] = strconv.Itoa(int(rank))
+	}
+	return "authority IN (" + strings.Join(values, ", ") + ")"
+}
+
 type KnowledgeEvidence struct {
 	ent.Schema
 }
@@ -319,6 +366,8 @@ func (KnowledgeEvidence) Fields() []ent.Field {
 			Values("merge", "replace").
 			Default("merge").
 			Comment("merge sets the fields stated; replace is a full snapshot that also unsets the properties it omits."),
+		field.Time("reobserved_at").Optional().Nillable().
+			Comment("Latest provider statement time repeating this time-bounded observation."),
 		field.Time("expires_at").Optional().Nillable().Immutable().
 			Comment("Effective time plus the producer's validity: the observation holds until then unless observed again."),
 	}
@@ -340,6 +389,48 @@ func (KnowledgeEvidence) Indexes() []ent.Index {
 		index.Fields("tenant_id", "event_id", "subject_alias_id").Unique(),
 		index.Fields("tenant_id", "subject_alias_id", "effective_at"),
 		index.Fields("tenant_id", "event_id"),
+	}
+}
+
+// MergeRedirectMixin is a knowledge subject that a merge can leave as a redirect to its survivor. Queries, eager
+// loads included, leave redirects out unless the context comes from gen.IncludeMerged; edge predicates
+// (Has...With) still match them. Each schema declares its own redirects edge.
+type MergeRedirectMixin struct {
+	mixin.Schema
+}
+
+func (MergeRedirectMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("merged_into_id", uuid.UUID{}).
+			Optional().
+			Nillable().
+			Comment("Set when a merge leaves the row as a redirect to the one that survived it, which is not itself merged."),
+	}
+}
+
+func (MergeRedirectMixin) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "merged_into_id"),
+	}
+}
+
+func (MergeRedirectMixin) Annotations() []entschema.Annotation {
+	// A check name only has to be unique within its table, so the mixin's name needs no table prefix.
+	return []entschema.Annotation{
+		entsql.Annotation{Checks: map[string]string{
+			"not_merged_into_itself": "merged_into_id <> id",
+		}},
+	}
+}
+
+func (MergeRedirectMixin) Interceptors() []ent.Interceptor {
+	return []ent.Interceptor{
+		intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {
+			if !gen.MergedIncluded(ctx) {
+				q.WhereP(sql.FieldIsNull("merged_into_id"))
+			}
+			return nil
+		}),
 	}
 }
 

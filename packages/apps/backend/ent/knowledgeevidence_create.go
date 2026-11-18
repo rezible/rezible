@@ -98,6 +98,20 @@ func (_c *KnowledgeEvidenceCreate) SetNillableStateMode(v *knowledgeevidence.Sta
 	return _c
 }
 
+// SetReobservedAt sets the "reobserved_at" field.
+func (_c *KnowledgeEvidenceCreate) SetReobservedAt(v time.Time) *KnowledgeEvidenceCreate {
+	_c.mutation.SetReobservedAt(v)
+	return _c
+}
+
+// SetNillableReobservedAt sets the "reobserved_at" field if the given value is not nil.
+func (_c *KnowledgeEvidenceCreate) SetNillableReobservedAt(v *time.Time) *KnowledgeEvidenceCreate {
+	if v != nil {
+		_c.SetReobservedAt(*v)
+	}
+	return _c
+}
+
 // SetExpiresAt sets the "expires_at" field.
 func (_c *KnowledgeEvidenceCreate) SetExpiresAt(v time.Time) *KnowledgeEvidenceCreate {
 	_c.mutation.SetExpiresAt(v)
@@ -313,6 +327,10 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 		_spec.SetField(knowledgeevidence.FieldStateMode, field.TypeEnum, value)
 		_node.StateMode = value
 	}
+	if value, ok := _c.mutation.ReobservedAt(); ok {
+		_spec.SetField(knowledgeevidence.FieldReobservedAt, field.TypeTime, value)
+		_node.ReobservedAt = &value
+	}
 	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(knowledgeevidence.FieldExpiresAt, field.TypeTime, value)
 		_node.ExpiresAt = &value
@@ -423,6 +441,24 @@ type (
 	}
 )
 
+// SetReobservedAt sets the "reobserved_at" field.
+func (u *KnowledgeEvidenceUpsert) SetReobservedAt(v time.Time) *KnowledgeEvidenceUpsert {
+	u.Set(knowledgeevidence.FieldReobservedAt, v)
+	return u
+}
+
+// UpdateReobservedAt sets the "reobserved_at" field to the value that was provided on create.
+func (u *KnowledgeEvidenceUpsert) UpdateReobservedAt() *KnowledgeEvidenceUpsert {
+	u.SetExcluded(knowledgeevidence.FieldReobservedAt)
+	return u
+}
+
+// ClearReobservedAt clears the value of the "reobserved_at" field.
+func (u *KnowledgeEvidenceUpsert) ClearReobservedAt() *KnowledgeEvidenceUpsert {
+	u.SetNull(knowledgeevidence.FieldReobservedAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -499,6 +535,27 @@ func (u *KnowledgeEvidenceUpsertOne) Update(set func(*KnowledgeEvidenceUpsert)) 
 		set(&KnowledgeEvidenceUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetReobservedAt sets the "reobserved_at" field.
+func (u *KnowledgeEvidenceUpsertOne) SetReobservedAt(v time.Time) *KnowledgeEvidenceUpsertOne {
+	return u.Update(func(s *KnowledgeEvidenceUpsert) {
+		s.SetReobservedAt(v)
+	})
+}
+
+// UpdateReobservedAt sets the "reobserved_at" field to the value that was provided on create.
+func (u *KnowledgeEvidenceUpsertOne) UpdateReobservedAt() *KnowledgeEvidenceUpsertOne {
+	return u.Update(func(s *KnowledgeEvidenceUpsert) {
+		s.UpdateReobservedAt()
+	})
+}
+
+// ClearReobservedAt clears the value of the "reobserved_at" field.
+func (u *KnowledgeEvidenceUpsertOne) ClearReobservedAt() *KnowledgeEvidenceUpsertOne {
+	return u.Update(func(s *KnowledgeEvidenceUpsert) {
+		s.ClearReobservedAt()
+	})
 }
 
 // Exec executes the query.
@@ -744,6 +801,27 @@ func (u *KnowledgeEvidenceUpsertBulk) Update(set func(*KnowledgeEvidenceUpsert))
 		set(&KnowledgeEvidenceUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetReobservedAt sets the "reobserved_at" field.
+func (u *KnowledgeEvidenceUpsertBulk) SetReobservedAt(v time.Time) *KnowledgeEvidenceUpsertBulk {
+	return u.Update(func(s *KnowledgeEvidenceUpsert) {
+		s.SetReobservedAt(v)
+	})
+}
+
+// UpdateReobservedAt sets the "reobserved_at" field to the value that was provided on create.
+func (u *KnowledgeEvidenceUpsertBulk) UpdateReobservedAt() *KnowledgeEvidenceUpsertBulk {
+	return u.Update(func(s *KnowledgeEvidenceUpsert) {
+		s.UpdateReobservedAt()
+	})
+}
+
+// ClearReobservedAt clears the value of the "reobserved_at" field.
+func (u *KnowledgeEvidenceUpsertBulk) ClearReobservedAt() *KnowledgeEvidenceUpsertBulk {
+	return u.Update(func(s *KnowledgeEvidenceUpsert) {
+		s.ClearReobservedAt()
+	})
 }
 
 // Exec executes the query.

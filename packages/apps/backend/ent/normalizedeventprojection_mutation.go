@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/normalizedeventprojection"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // NormalizedEventProjectionMutation represents an operation that mutates the NormalizedEventProjection nodes in the graph.
@@ -23,6 +24,8 @@ type NormalizedEventProjectionMutation struct {
 	typ                        string
 	id                         *uuid.UUID
 	completed_at               *time.Time
+	skipped_refs               *[]schematypes.SkippedEvidenceRef
+	appendskipped_refs         []schematypes.SkippedEvidenceRef
 	clearedFields              map[string]struct{}
 	tenant                     *int
 	clearedtenant              bool
@@ -248,6 +251,57 @@ func (m *NormalizedEventProjectionMutation) ResetCompletedAt() {
 	m.completed_at = nil
 }
 
+// SetSkippedRefs sets the "skipped_refs" field.
+func (m *NormalizedEventProjectionMutation) SetSkippedRefs(ser []schematypes.SkippedEvidenceRef) {
+	m.skipped_refs = &ser
+	m.appendskipped_refs = nil
+}
+
+// SkippedRefs returns the value of the "skipped_refs" field in the mutation.
+func (m *NormalizedEventProjectionMutation) SkippedRefs() (r []schematypes.SkippedEvidenceRef, exists bool) {
+	v := m.skipped_refs
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSkippedRefs returns the old "skipped_refs" field's value of the NormalizedEventProjection entity.
+// If the NormalizedEventProjection object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NormalizedEventProjectionMutation) OldSkippedRefs(ctx context.Context) (v []schematypes.SkippedEvidenceRef, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSkippedRefs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSkippedRefs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSkippedRefs: %w", err)
+	}
+	return oldValue.SkippedRefs, nil
+}
+
+// AppendSkippedRefs adds ser to the "skipped_refs" field.
+func (m *NormalizedEventProjectionMutation) AppendSkippedRefs(ser []schematypes.SkippedEvidenceRef) {
+	m.appendskipped_refs = append(m.appendskipped_refs, ser...)
+}
+
+// AppendedSkippedRefs returns the list of values that were appended to the "skipped_refs" field in this mutation.
+func (m *NormalizedEventProjectionMutation) AppendedSkippedRefs() ([]schematypes.SkippedEvidenceRef, bool) {
+	if len(m.appendskipped_refs) == 0 {
+		return nil, false
+	}
+	return m.appendskipped_refs, true
+}
+
+// ResetSkippedRefs resets all changes to the "skipped_refs" field.
+func (m *NormalizedEventProjectionMutation) ResetSkippedRefs() {
+	m.skipped_refs = nil
+	m.appendskipped_refs = nil
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *NormalizedEventProjectionMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -390,7 +444,7 @@ func (m *NormalizedEventProjectionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NormalizedEventProjectionMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.tenant != nil {
 		fields = append(fields, normalizedeventprojection.FieldTenantID)
 	}
@@ -399,6 +453,9 @@ func (m *NormalizedEventProjectionMutation) Fields() []string {
 	}
 	if m.completed_at != nil {
 		fields = append(fields, normalizedeventprojection.FieldCompletedAt)
+	}
+	if m.skipped_refs != nil {
+		fields = append(fields, normalizedeventprojection.FieldSkippedRefs)
 	}
 	return fields
 }
@@ -414,6 +471,8 @@ func (m *NormalizedEventProjectionMutation) Field(name string) (ent.Value, bool)
 		return m.EventID()
 	case normalizedeventprojection.FieldCompletedAt:
 		return m.CompletedAt()
+	case normalizedeventprojection.FieldSkippedRefs:
+		return m.SkippedRefs()
 	}
 	return nil, false
 }
@@ -429,6 +488,8 @@ func (m *NormalizedEventProjectionMutation) OldField(ctx context.Context, name s
 		return m.OldEventID(ctx)
 	case normalizedeventprojection.FieldCompletedAt:
 		return m.OldCompletedAt(ctx)
+	case normalizedeventprojection.FieldSkippedRefs:
+		return m.OldSkippedRefs(ctx)
 	}
 	return nil, fmt.Errorf("unknown NormalizedEventProjection field %s", name)
 }
@@ -458,6 +519,13 @@ func (m *NormalizedEventProjectionMutation) SetField(name string, value ent.Valu
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCompletedAt(v)
+		return nil
+	case normalizedeventprojection.FieldSkippedRefs:
+		v, ok := value.([]schematypes.SkippedEvidenceRef)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSkippedRefs(v)
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEventProjection field %s", name)
@@ -519,6 +587,9 @@ func (m *NormalizedEventProjectionMutation) ResetField(name string) error {
 		return nil
 	case normalizedeventprojection.FieldCompletedAt:
 		m.ResetCompletedAt()
+		return nil
+	case normalizedeventprojection.FieldSkippedRefs:
+		m.ResetSkippedRefs()
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEventProjection field %s", name)

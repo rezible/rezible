@@ -151,10 +151,6 @@ func TestCollectListsReferences(t *testing.T) {
 		DeleteDuplicates: true,
 		UniqueWith:       []string{"analysis_id"},
 	}, refs.Entities[0])
-	require.Equal(t, []string{
-		"links_knowledge_relationships_knowledge_relationship",
-		"subjects_knowledge_entities_knowledge_entity",
-	}, refs.ForeignKeyConstraints)
 
 	plain, plainErr := collectSchemas(t, KnowledgeEntity{}, KnowledgeRelationship{}, Link{}, Analysis{}, Subject{unique: true})
 	require.NoError(t, plainErr)

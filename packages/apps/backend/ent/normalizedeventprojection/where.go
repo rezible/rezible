@@ -186,7 +186,7 @@ func HasEvent() predicate.NormalizedEventProjection {
 	return predicate.NormalizedEventProjection(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, EventTable, EventColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.NormalizedEvent

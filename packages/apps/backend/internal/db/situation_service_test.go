@@ -89,7 +89,7 @@ func (s *SituationServiceSuite) newFixture(tdb rez.Database) *situationServiceFi
 	s.Require().NoError(analysisServiceErr)
 
 	h.knowledge = knowledge
-	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, knowledge, NewSituationObservationService(jobService))
+	alerts, alertsErr := NewAlertService(rez.DefaultConfig().Alerts, h.clock, tdb, jobService, NewSituationObservationService(jobService))
 	s.Require().NoError(alertsErr)
 	messageQueue := mocks.NewMockMessageQueue(s.T())
 	messageQueue.EXPECT().
@@ -123,6 +123,7 @@ func (s *SituationServiceSuite) testEvent(ctx context.Context, tdb rez.Database,
 		SetProviderEventRef(uuid.NewString()).
 		SetKind("alert").
 		SetOccurredAt(at).
+		SetLastOccurredAt(at).
 		SetReceivedAt(at).
 		SetAttributes([]byte(`{}`))
 	event, eventErr := createEvent.Save(ctx)
@@ -131,7 +132,7 @@ func (s *SituationServiceSuite) testEvent(ctx context.Context, tdb rez.Database,
 }
 
 func (s *SituationServiceSuite) observed(at time.Time, subject rez.KnowledgeSubjectRef) rez.KnowledgeEvidenceRef {
-	return rez.KnowledgeEvidenceRef{Kind: knev.KindObserved, Assertion: "observed", EffectiveAt: at, Subject: subject}
+	return rez.KnowledgeEvidenceRef{Authority: schematypes.KnowledgeAuthorityDeclared, Kind: knev.KindObserved, Assertion: "observed", EffectiveAt: at, Subject: subject}
 }
 
 // ingestRelationship records the relationship from source to target.
@@ -193,6 +194,15 @@ func (s *SituationServiceSuite) alertEpisodeWithSeverity(ctx context.Context, td
 	return episode.ID
 }
 
+// storeEntities stores the episodes' entities, as processing does first, for tests that attach them by hand.
+func (s *SituationServiceSuite) storeEntities(ctx context.Context, h *situationServiceFixture, episodeIDs ...uuid.UUID) {
+	observations, loadErr := h.situations.LoadObservations(ctx, episodeRefs(episodeIDs...), rez.LoadSituationObservationsOptions{})
+	s.Require().NoError(loadErr)
+	for _, observation := range observations {
+		s.Require().NoError(h.situations.storeObservationScope(ctx, observation))
+	}
+}
+
 // episodeRefs references the alert episodes.
 func episodeRefs(ids ...uuid.UUID) []rez.SituationObservationRef {
 	refs := make([]rez.SituationObservationRef, len(ids))
@@ -206,6 +216,7 @@ func episodeRefs(ids ...uuid.UUID) []rez.SituationObservationRef {
 func (s *SituationServiceSuite) create(ctx context.Context, h *situationServiceFixture, groups map[string][]uuid.UUID) *ent.Situation {
 	params := rez.CreateSituationParams{Title: "Checkout degradation"}
 	for title, episodeIDs := range groups {
+		s.storeEntities(ctx, h, episodeIDs...)
 		group := rez.SituationObservationGroupParams{Title: title, Observations: episodeRefs(episodeIDs...)}
 		params.ObservationGroups = append(params.ObservationGroups, group)
 	}
@@ -216,8 +227,8 @@ func (s *SituationServiceSuite) create(ctx context.Context, h *situationServiceF
 
 func (s *SituationServiceSuite) entities(situation *ent.Situation) map[uuid.UUID]bool {
 	matching := make(map[uuid.UUID]bool)
-	for _, entity := range situation.Edges.Entities {
-		matching[entity.KnowledgeEntityID] = entity.Matching
+	for _, entity := range situations.RuntimeEntities(situation.Edges.Observations) {
+		matching[entity.Entity.ID] = entity.Matching
 	}
 	return matching
 }
@@ -321,12 +332,27 @@ func (s *SituationServiceSuite) TestMerge() {
 	closed, getErr := h.situations.GetSituation(ctx, sit.ID(source.ID))
 	s.Require().NoError(getErr)
 	s.Equal(sit.CloseReasonMerged, *closed.CloseReason)
-	s.Empty(closed.Edges.Entities)
+	s.Equal(target.ID, closed.Edges.MergedInto.ID, "the source names its target")
+	s.Empty(situations.RuntimeEntities(closed.Edges.Observations))
 	s.Empty(closed.Edges.Observations)
 	s.Equal(sitact.ActionMerged, closed.Edges.Actions[len(closed.Edges.Actions)-1].Action)
 
 	_, closedErr := h.situations.MergeSituations(ctx, params)
 	s.ErrorIs(closedErr, errs.ErrConflict)
+
+	s.Run("merging the target again moves its sources onto the new target", func() {
+		later := s.alertEpisode(ctx, tdb, h, "checkout-saturation", 2, checkout)
+		next := s.create(ctx, h, map[string][]uuid.UUID{"Checkout": {later}})
+		onwardParams := rez.MergeSituationsParams{SourceID: target.ID, TargetID: next.ID}
+		h.situationUpdates = nil
+		_, onwardErr := h.situations.MergeSituations(ctx, onwardParams)
+		s.Require().NoError(onwardErr)
+		s.Contains(h.situationUpdates, rez.EventOnSituationUpdated{SituationID: source.ID}, "the redirected situation's notices refresh")
+
+		earliest, earliestErr := h.situations.GetSituation(ctx, sit.ID(source.ID))
+		s.Require().NoError(earliestErr)
+		s.Equal(next.ID, *earliest.MergedIntoID)
+	})
 }
 
 func (s *SituationServiceSuite) TestLifecycleVerbs() {

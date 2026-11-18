@@ -33,6 +33,7 @@ type KnowledgeEntityMutation struct {
 	expires_at                  *time.Time
 	category                    *knowledgeentity.Category
 	kind                        *string
+	parent_is_fallback          *bool
 	clearedFields               map[string]struct{}
 	tenant                      *int
 	clearedtenant               bool
@@ -48,11 +49,11 @@ type KnowledgeEntityMutation struct {
 	target_relationships        map[uuid.UUID]struct{}
 	removedtarget_relationships map[uuid.UUID]struct{}
 	clearedtarget_relationships bool
-	parent                      *uuid.UUID
-	clearedparent               bool
-	children                    map[uuid.UUID]struct{}
-	removedchildren             map[uuid.UUID]struct{}
-	clearedchildren             bool
+	merged_into                 *uuid.UUID
+	clearedmerged_into          bool
+	redirects                   map[uuid.UUID]struct{}
+	removedredirects            map[uuid.UUID]struct{}
+	clearedredirects            bool
 	done                        bool
 	oldValue                    func(context.Context) (*KnowledgeEntity, error)
 	predicates                  []predicate.KnowledgeEntity
@@ -564,6 +565,55 @@ func (m *KnowledgeEntityMutation) ResetExpiresAt() {
 	delete(m.clearedFields, knowledgeentity.FieldExpiresAt)
 }
 
+// SetMergedIntoID sets the "merged_into_id" field.
+func (m *KnowledgeEntityMutation) SetMergedIntoID(u uuid.UUID) {
+	m.merged_into = &u
+}
+
+// MergedIntoID returns the value of the "merged_into_id" field in the mutation.
+func (m *KnowledgeEntityMutation) MergedIntoID() (r uuid.UUID, exists bool) {
+	v := m.merged_into
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMergedIntoID returns the old "merged_into_id" field's value of the KnowledgeEntity entity.
+// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityMutation) OldMergedIntoID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMergedIntoID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMergedIntoID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMergedIntoID: %w", err)
+	}
+	return oldValue.MergedIntoID, nil
+}
+
+// ClearMergedIntoID clears the value of the "merged_into_id" field.
+func (m *KnowledgeEntityMutation) ClearMergedIntoID() {
+	m.merged_into = nil
+	m.clearedFields[knowledgeentity.FieldMergedIntoID] = struct{}{}
+}
+
+// MergedIntoIDCleared returns if the "merged_into_id" field was cleared in this mutation.
+func (m *KnowledgeEntityMutation) MergedIntoIDCleared() bool {
+	_, ok := m.clearedFields[knowledgeentity.FieldMergedIntoID]
+	return ok
+}
+
+// ResetMergedIntoID resets all changes to the "merged_into_id" field.
+func (m *KnowledgeEntityMutation) ResetMergedIntoID() {
+	m.merged_into = nil
+	delete(m.clearedFields, knowledgeentity.FieldMergedIntoID)
+}
+
 // SetCategory sets the "category" field.
 func (m *KnowledgeEntityMutation) SetCategory(k knowledgeentity.Category) {
 	m.category = &k
@@ -636,53 +686,40 @@ func (m *KnowledgeEntityMutation) ResetKind() {
 	m.kind = nil
 }
 
-// SetParentID sets the "parent_id" field.
-func (m *KnowledgeEntityMutation) SetParentID(u uuid.UUID) {
-	m.parent = &u
+// SetParentIsFallback sets the "parent_is_fallback" field.
+func (m *KnowledgeEntityMutation) SetParentIsFallback(b bool) {
+	m.parent_is_fallback = &b
 }
 
-// ParentID returns the value of the "parent_id" field in the mutation.
-func (m *KnowledgeEntityMutation) ParentID() (r uuid.UUID, exists bool) {
-	v := m.parent
+// ParentIsFallback returns the value of the "parent_is_fallback" field in the mutation.
+func (m *KnowledgeEntityMutation) ParentIsFallback() (r bool, exists bool) {
+	v := m.parent_is_fallback
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldParentID returns the old "parent_id" field's value of the KnowledgeEntity entity.
+// OldParentIsFallback returns the old "parent_is_fallback" field's value of the KnowledgeEntity entity.
 // If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldParentID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *KnowledgeEntityMutation) OldParentIsFallback(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldParentID is only allowed on UpdateOne operations")
+		return v, errors.New("OldParentIsFallback is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldParentID requires an ID field in the mutation")
+		return v, errors.New("OldParentIsFallback requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldParentID: %w", err)
+		return v, fmt.Errorf("querying old value for OldParentIsFallback: %w", err)
 	}
-	return oldValue.ParentID, nil
+	return oldValue.ParentIsFallback, nil
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (m *KnowledgeEntityMutation) ClearParentID() {
-	m.parent = nil
-	m.clearedFields[knowledgeentity.FieldParentID] = struct{}{}
-}
-
-// ParentIDCleared returns if the "parent_id" field was cleared in this mutation.
-func (m *KnowledgeEntityMutation) ParentIDCleared() bool {
-	_, ok := m.clearedFields[knowledgeentity.FieldParentID]
-	return ok
-}
-
-// ResetParentID resets all changes to the "parent_id" field.
-func (m *KnowledgeEntityMutation) ResetParentID() {
-	m.parent = nil
-	delete(m.clearedFields, knowledgeentity.FieldParentID)
+// ResetParentIsFallback resets all changes to the "parent_is_fallback" field.
+func (m *KnowledgeEntityMutation) ResetParentIsFallback() {
+	m.parent_is_fallback = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -928,85 +965,85 @@ func (m *KnowledgeEntityMutation) ResetTargetRelationships() {
 	m.removedtarget_relationships = nil
 }
 
-// ClearParent clears the "parent" edge to the KnowledgeEntity entity.
-func (m *KnowledgeEntityMutation) ClearParent() {
-	m.clearedparent = true
-	m.clearedFields[knowledgeentity.FieldParentID] = struct{}{}
+// ClearMergedInto clears the "merged_into" edge to the KnowledgeEntity entity.
+func (m *KnowledgeEntityMutation) ClearMergedInto() {
+	m.clearedmerged_into = true
+	m.clearedFields[knowledgeentity.FieldMergedIntoID] = struct{}{}
 }
 
-// ParentCleared reports if the "parent" edge to the KnowledgeEntity entity was cleared.
-func (m *KnowledgeEntityMutation) ParentCleared() bool {
-	return m.ParentIDCleared() || m.clearedparent
+// MergedIntoCleared reports if the "merged_into" edge to the KnowledgeEntity entity was cleared.
+func (m *KnowledgeEntityMutation) MergedIntoCleared() bool {
+	return m.MergedIntoIDCleared() || m.clearedmerged_into
 }
 
-// ParentIDs returns the "parent" edge IDs in the mutation.
+// MergedIntoIDs returns the "merged_into" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ParentID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeEntityMutation) ParentIDs() (ids []uuid.UUID) {
-	if id := m.parent; id != nil {
+// MergedIntoID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEntityMutation) MergedIntoIDs() (ids []uuid.UUID) {
+	if id := m.merged_into; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetParent resets all changes to the "parent" edge.
-func (m *KnowledgeEntityMutation) ResetParent() {
-	m.parent = nil
-	m.clearedparent = false
+// ResetMergedInto resets all changes to the "merged_into" edge.
+func (m *KnowledgeEntityMutation) ResetMergedInto() {
+	m.merged_into = nil
+	m.clearedmerged_into = false
 }
 
-// AddChildIDs adds the "children" edge to the KnowledgeEntity entity by ids.
-func (m *KnowledgeEntityMutation) AddChildIDs(ids ...uuid.UUID) {
-	if m.children == nil {
-		m.children = make(map[uuid.UUID]struct{})
+// AddRedirectIDs adds the "redirects" edge to the KnowledgeEntity entity by ids.
+func (m *KnowledgeEntityMutation) AddRedirectIDs(ids ...uuid.UUID) {
+	if m.redirects == nil {
+		m.redirects = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.children[ids[i]] = struct{}{}
+		m.redirects[ids[i]] = struct{}{}
 	}
 }
 
-// ClearChildren clears the "children" edge to the KnowledgeEntity entity.
-func (m *KnowledgeEntityMutation) ClearChildren() {
-	m.clearedchildren = true
+// ClearRedirects clears the "redirects" edge to the KnowledgeEntity entity.
+func (m *KnowledgeEntityMutation) ClearRedirects() {
+	m.clearedredirects = true
 }
 
-// ChildrenCleared reports if the "children" edge to the KnowledgeEntity entity was cleared.
-func (m *KnowledgeEntityMutation) ChildrenCleared() bool {
-	return m.clearedchildren
+// RedirectsCleared reports if the "redirects" edge to the KnowledgeEntity entity was cleared.
+func (m *KnowledgeEntityMutation) RedirectsCleared() bool {
+	return m.clearedredirects
 }
 
-// RemoveChildIDs removes the "children" edge to the KnowledgeEntity entity by IDs.
-func (m *KnowledgeEntityMutation) RemoveChildIDs(ids ...uuid.UUID) {
-	if m.removedchildren == nil {
-		m.removedchildren = make(map[uuid.UUID]struct{})
+// RemoveRedirectIDs removes the "redirects" edge to the KnowledgeEntity entity by IDs.
+func (m *KnowledgeEntityMutation) RemoveRedirectIDs(ids ...uuid.UUID) {
+	if m.removedredirects == nil {
+		m.removedredirects = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.children, ids[i])
-		m.removedchildren[ids[i]] = struct{}{}
+		delete(m.redirects, ids[i])
+		m.removedredirects[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedChildren returns the removed IDs of the "children" edge to the KnowledgeEntity entity.
-func (m *KnowledgeEntityMutation) RemovedChildrenIDs() (ids []uuid.UUID) {
-	for id := range m.removedchildren {
+// RemovedRedirects returns the removed IDs of the "redirects" edge to the KnowledgeEntity entity.
+func (m *KnowledgeEntityMutation) RemovedRedirectsIDs() (ids []uuid.UUID) {
+	for id := range m.removedredirects {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ChildrenIDs returns the "children" edge IDs in the mutation.
-func (m *KnowledgeEntityMutation) ChildrenIDs() (ids []uuid.UUID) {
-	for id := range m.children {
+// RedirectsIDs returns the "redirects" edge IDs in the mutation.
+func (m *KnowledgeEntityMutation) RedirectsIDs() (ids []uuid.UUID) {
+	for id := range m.redirects {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetChildren resets all changes to the "children" edge.
-func (m *KnowledgeEntityMutation) ResetChildren() {
-	m.children = nil
-	m.clearedchildren = false
-	m.removedchildren = nil
+// ResetRedirects resets all changes to the "redirects" edge.
+func (m *KnowledgeEntityMutation) ResetRedirects() {
+	m.redirects = nil
+	m.clearedredirects = false
+	m.removedredirects = nil
 }
 
 // Where appends a list predicates to the KnowledgeEntityMutation builder.
@@ -1043,7 +1080,7 @@ func (m *KnowledgeEntityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeEntityMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.tenant != nil {
 		fields = append(fields, knowledgeentity.FieldTenantID)
 	}
@@ -1071,14 +1108,17 @@ func (m *KnowledgeEntityMutation) Fields() []string {
 	if m.expires_at != nil {
 		fields = append(fields, knowledgeentity.FieldExpiresAt)
 	}
+	if m.merged_into != nil {
+		fields = append(fields, knowledgeentity.FieldMergedIntoID)
+	}
 	if m.category != nil {
 		fields = append(fields, knowledgeentity.FieldCategory)
 	}
 	if m.kind != nil {
 		fields = append(fields, knowledgeentity.FieldKind)
 	}
-	if m.parent != nil {
-		fields = append(fields, knowledgeentity.FieldParentID)
+	if m.parent_is_fallback != nil {
+		fields = append(fields, knowledgeentity.FieldParentIsFallback)
 	}
 	return fields
 }
@@ -1106,12 +1146,14 @@ func (m *KnowledgeEntityMutation) Field(name string) (ent.Value, bool) {
 		return m.WithdrawnAt()
 	case knowledgeentity.FieldExpiresAt:
 		return m.ExpiresAt()
+	case knowledgeentity.FieldMergedIntoID:
+		return m.MergedIntoID()
 	case knowledgeentity.FieldCategory:
 		return m.Category()
 	case knowledgeentity.FieldKind:
 		return m.Kind()
-	case knowledgeentity.FieldParentID:
-		return m.ParentID()
+	case knowledgeentity.FieldParentIsFallback:
+		return m.ParentIsFallback()
 	}
 	return nil, false
 }
@@ -1139,12 +1181,14 @@ func (m *KnowledgeEntityMutation) OldField(ctx context.Context, name string) (en
 		return m.OldWithdrawnAt(ctx)
 	case knowledgeentity.FieldExpiresAt:
 		return m.OldExpiresAt(ctx)
+	case knowledgeentity.FieldMergedIntoID:
+		return m.OldMergedIntoID(ctx)
 	case knowledgeentity.FieldCategory:
 		return m.OldCategory(ctx)
 	case knowledgeentity.FieldKind:
 		return m.OldKind(ctx)
-	case knowledgeentity.FieldParentID:
-		return m.OldParentID(ctx)
+	case knowledgeentity.FieldParentIsFallback:
+		return m.OldParentIsFallback(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeEntity field %s", name)
 }
@@ -1217,6 +1261,13 @@ func (m *KnowledgeEntityMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetExpiresAt(v)
 		return nil
+	case knowledgeentity.FieldMergedIntoID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMergedIntoID(v)
+		return nil
 	case knowledgeentity.FieldCategory:
 		v, ok := value.(knowledgeentity.Category)
 		if !ok {
@@ -1231,12 +1282,12 @@ func (m *KnowledgeEntityMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetKind(v)
 		return nil
-	case knowledgeentity.FieldParentID:
-		v, ok := value.(uuid.UUID)
+	case knowledgeentity.FieldParentIsFallback:
+		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetParentID(v)
+		m.SetParentIsFallback(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity field %s", name)
@@ -1289,8 +1340,8 @@ func (m *KnowledgeEntityMutation) ClearedFields() []string {
 	if m.FieldCleared(knowledgeentity.FieldExpiresAt) {
 		fields = append(fields, knowledgeentity.FieldExpiresAt)
 	}
-	if m.FieldCleared(knowledgeentity.FieldParentID) {
-		fields = append(fields, knowledgeentity.FieldParentID)
+	if m.FieldCleared(knowledgeentity.FieldMergedIntoID) {
+		fields = append(fields, knowledgeentity.FieldMergedIntoID)
 	}
 	return fields
 }
@@ -1324,8 +1375,8 @@ func (m *KnowledgeEntityMutation) ClearField(name string) error {
 	case knowledgeentity.FieldExpiresAt:
 		m.ClearExpiresAt()
 		return nil
-	case knowledgeentity.FieldParentID:
-		m.ClearParentID()
+	case knowledgeentity.FieldMergedIntoID:
+		m.ClearMergedIntoID()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity nullable field %s", name)
@@ -1362,14 +1413,17 @@ func (m *KnowledgeEntityMutation) ResetField(name string) error {
 	case knowledgeentity.FieldExpiresAt:
 		m.ResetExpiresAt()
 		return nil
+	case knowledgeentity.FieldMergedIntoID:
+		m.ResetMergedIntoID()
+		return nil
 	case knowledgeentity.FieldCategory:
 		m.ResetCategory()
 		return nil
 	case knowledgeentity.FieldKind:
 		m.ResetKind()
 		return nil
-	case knowledgeentity.FieldParentID:
-		m.ResetParentID()
+	case knowledgeentity.FieldParentIsFallback:
+		m.ResetParentIsFallback()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity field %s", name)
@@ -1393,11 +1447,11 @@ func (m *KnowledgeEntityMutation) AddedEdges() []string {
 	if m.target_relationships != nil {
 		edges = append(edges, knowledgeentity.EdgeTargetRelationships)
 	}
-	if m.parent != nil {
-		edges = append(edges, knowledgeentity.EdgeParent)
+	if m.merged_into != nil {
+		edges = append(edges, knowledgeentity.EdgeMergedInto)
 	}
-	if m.children != nil {
-		edges = append(edges, knowledgeentity.EdgeChildren)
+	if m.redirects != nil {
+		edges = append(edges, knowledgeentity.EdgeRedirects)
 	}
 	return edges
 }
@@ -1434,13 +1488,13 @@ func (m *KnowledgeEntityMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case knowledgeentity.EdgeParent:
-		if id := m.parent; id != nil {
+	case knowledgeentity.EdgeMergedInto:
+		if id := m.merged_into; id != nil {
 			return []ent.Value{*id}
 		}
-	case knowledgeentity.EdgeChildren:
-		ids := make([]ent.Value, 0, len(m.children))
-		for id := range m.children {
+	case knowledgeentity.EdgeRedirects:
+		ids := make([]ent.Value, 0, len(m.redirects))
+		for id := range m.redirects {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1463,8 +1517,8 @@ func (m *KnowledgeEntityMutation) RemovedEdges() []string {
 	if m.removedtarget_relationships != nil {
 		edges = append(edges, knowledgeentity.EdgeTargetRelationships)
 	}
-	if m.removedchildren != nil {
-		edges = append(edges, knowledgeentity.EdgeChildren)
+	if m.removedredirects != nil {
+		edges = append(edges, knowledgeentity.EdgeRedirects)
 	}
 	return edges
 }
@@ -1497,9 +1551,9 @@ func (m *KnowledgeEntityMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case knowledgeentity.EdgeChildren:
-		ids := make([]ent.Value, 0, len(m.removedchildren))
-		for id := range m.removedchildren {
+	case knowledgeentity.EdgeRedirects:
+		ids := make([]ent.Value, 0, len(m.removedredirects))
+		for id := range m.removedredirects {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1525,11 +1579,11 @@ func (m *KnowledgeEntityMutation) ClearedEdges() []string {
 	if m.clearedtarget_relationships {
 		edges = append(edges, knowledgeentity.EdgeTargetRelationships)
 	}
-	if m.clearedparent {
-		edges = append(edges, knowledgeentity.EdgeParent)
+	if m.clearedmerged_into {
+		edges = append(edges, knowledgeentity.EdgeMergedInto)
 	}
-	if m.clearedchildren {
-		edges = append(edges, knowledgeentity.EdgeChildren)
+	if m.clearedredirects {
+		edges = append(edges, knowledgeentity.EdgeRedirects)
 	}
 	return edges
 }
@@ -1548,10 +1602,10 @@ func (m *KnowledgeEntityMutation) EdgeCleared(name string) bool {
 		return m.clearedsource_relationships
 	case knowledgeentity.EdgeTargetRelationships:
 		return m.clearedtarget_relationships
-	case knowledgeentity.EdgeParent:
-		return m.clearedparent
-	case knowledgeentity.EdgeChildren:
-		return m.clearedchildren
+	case knowledgeentity.EdgeMergedInto:
+		return m.clearedmerged_into
+	case knowledgeentity.EdgeRedirects:
+		return m.clearedredirects
 	}
 	return false
 }
@@ -1563,8 +1617,8 @@ func (m *KnowledgeEntityMutation) ClearEdge(name string) error {
 	case knowledgeentity.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case knowledgeentity.EdgeParent:
-		m.ClearParent()
+	case knowledgeentity.EdgeMergedInto:
+		m.ClearMergedInto()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity unique edge %s", name)
@@ -1589,11 +1643,11 @@ func (m *KnowledgeEntityMutation) ResetEdge(name string) error {
 	case knowledgeentity.EdgeTargetRelationships:
 		m.ResetTargetRelationships()
 		return nil
-	case knowledgeentity.EdgeParent:
-		m.ResetParent()
+	case knowledgeentity.EdgeMergedInto:
+		m.ResetMergedInto()
 		return nil
-	case knowledgeentity.EdgeChildren:
-		m.ResetChildren()
+	case knowledgeentity.EdgeRedirects:
+		m.ResetRedirects()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity edge %s", name)

@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent/schema"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 
 	"github.com/rezible/rezible/ent"
@@ -36,7 +35,7 @@ func (h *incidentMetadataHandler) GetIncidentMetadata(ctx context.Context, reque
 	var resp oapi.GetIncidentMetadataResponse
 
 	if request.IncludeArchived {
-		ctx = schema.IncludeArchived(ctx)
+		ctx = ent.IncludeArchived(ctx)
 	}
 
 	md, mdErr := h.incidents.GetIncidentMetadata(ctx)
@@ -226,7 +225,7 @@ func (h *incidentMetadataHandler) ListIncidentRoles(ctx context.Context, request
 	query := h.db.Client(ctx).IncidentRole.Query()
 
 	if true {
-		ctx = schema.IncludeArchived(ctx)
+		ctx = ent.IncludeArchived(ctx)
 	}
 
 	res, queryErr := query.All(ctx)
@@ -263,7 +262,7 @@ func (h *incidentMetadataHandler) CreateIncidentRole(ctx context.Context, reques
 func (h *incidentMetadataHandler) GetIncidentRole(ctx context.Context, request *oapi.GetIncidentRoleRequest) (*oapi.GetIncidentRoleResponse, error) {
 	var resp oapi.GetIncidentRoleResponse
 
-	ctx = schema.IncludeArchived(ctx)
+	ctx = ent.IncludeArchived(ctx)
 	role, queryErr := h.db.Client(ctx).IncidentRole.Get(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to get incident role", queryErr)
@@ -405,7 +404,7 @@ func (h *incidentMetadataHandler) ListIncidentFields(ctx context.Context, reques
 
 	query := h.db.Client(ctx).IncidentField.Query()
 	if request.IncludeArchived {
-		ctx = schema.IncludeArchived(ctx)
+		ctx = ent.IncludeArchived(ctx)
 	}
 
 	query = query.WithOptions(func(q *ent.IncidentFieldOptionQuery) {
@@ -470,7 +469,7 @@ func (h *incidentMetadataHandler) CreateIncidentField(ctx context.Context, reque
 func (h *incidentMetadataHandler) GetIncidentField(ctx context.Context, request *oapi.GetIncidentFieldRequest) (*oapi.GetIncidentFieldResponse, error) {
 	var resp oapi.GetIncidentFieldResponse
 
-	ctx = schema.IncludeArchived(ctx)
+	ctx = ent.IncludeArchived(ctx)
 	field, queryErr := h.db.Client(ctx).IncidentField.Query().
 		Where(incf.ID(request.Id)).
 		WithOptions().
@@ -508,7 +507,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(ctx context.Context
 	}
 
 	if curType != reqType {
-		//ctx = schema.IncludeArchived(ctx)
+		//ctx = ent.IncludeArchived(ctx)
 		deleteOthers := h.db.Client(ctx).IncidentFieldOption.Delete().
 			Where(incfo.And(
 				incfo.IncidentFieldID(fieldId),

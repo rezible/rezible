@@ -20,7 +20,6 @@ import (
 	ale "github.com/rezible/rezible/ent/alertepisode"
 	ali "github.com/rezible/rezible/ent/alertinstance"
 	aie "github.com/rezible/rezible/ent/alertinstanceevent"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	nev "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/jobs"
@@ -315,25 +314,8 @@ func (s *AlertService) overlappingAlertEpisode(ctx context.Context, definition *
 }
 
 func (s *AlertService) createAlertEpisode(ctx context.Context, definition *ent.AlertDefinition, startedAt time.Time) (*ent.AlertEpisode, error) {
-	episodeID := ale.DefaultID()
-	episodeSubjectRef := rez.KnowledgeSubjectRef{
-		Entity: &rez.KnowledgeEntityRef{
-			Category:            kne.CategoryEvent,
-			Kind:                "alert_episode",
-			ProviderResourceRef: projections.InternalEntityResourceRef(episodeID),
-		},
-	}
-	alias, aliasErr := s.knowledge.ResolveInternalSubject(ctx, episodeSubjectRef)
-	if aliasErr != nil {
-		return nil, fmt.Errorf("create alert episode knowledge entity: %w", aliasErr)
-	}
-	if alias.EntityID == nil {
-		return nil, fmt.Errorf("alert episode knowledge alias %s has no entity", alias.ID)
-	}
 	createEpisode := s.db.Client(ctx).AlertEpisode.Create().
-		SetID(episodeID).
 		SetAlertDefinitionID(definition.ID).
-		SetKnowledgeEntityID(*alias.EntityID).
 		SetStartedAt(startedAt)
 	if len(definition.IdentityGroupLabels) > 0 {
 		createEpisode.SetIdentityGroupLabels(definition.IdentityGroupLabels)

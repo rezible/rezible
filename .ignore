@@ -8,4 +8,5 @@
 !/packages/apps/backend/ent/utils.go
 !/packages/apps/backend/ent/utils_locking.go
 !/packages/apps/backend/ent/utils_tenant_references.go
+!/packages/apps/backend/ent/utils_knowledge_references.go
 !/packages/apps/backend/ent/utils_entities.go

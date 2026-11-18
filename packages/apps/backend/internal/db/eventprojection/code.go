@@ -8,17 +8,12 @@ import (
 	rez "github.com/rezible/rezible"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	ke "github.com/rezible/rezible/ent/knowledgeevidence"
-	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (
 	knowledgeAssertionCodeRepositoryObserved = "code_repository_exists"
-	knowledgeAssertionCodeChangeObserved     = "code_change_observed"
-	knowledgeAssertionCodeChangeRepository   = "code_change_touched_repository"
-	knowledgeAssertionCodeEntityObserved     = "code_change_related_entity_observed"
-	knowledgeAssertionCodeChangeImpact       = "code_change_related_entity"
 )
 
 func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *projections.CodeForgeEvent) ([]rez.ProjectedEntityRef, error) {
@@ -42,6 +37,7 @@ func (s *ProjectionService) handleCodeForgeEvent(ctx context.Context, event *pro
 		Assertion:   knowledgeAssertionCodeRepositoryObserved,
 		StateMode:   ke.StateModeReplace,
 		EffectiveAt: event.Event.OccurredAt,
+		Authority:   schematypes.KnowledgeAuthorityDeclared,
 		SubjectState: schematypes.KnowledgeGraphSubjectState{
 			DisplayName: event.Attributes.DisplayName,
 			Properties:  properties,
@@ -59,95 +55,33 @@ func (s *ProjectionService) handleCodeChangeEvent(ctx context.Context, event *pr
 	attributes := event.Attributes
 	evidenceKind := projectionEvidenceKind(event.Event)
 
-	changeResourceRef := rez.ProviderResourceRef{
-		Provider:          event.Event.Provider,
-		ProviderNamespace: event.Event.ProviderNamespace,
-		ResourceRef:       event.Event.ProviderResourceRef,
+	repositoryRef := attributes.Repository.KnowledgeEntityRef()
+	evidence := []rez.KnowledgeEvidenceRef{{
+		Kind:         evidenceKind,
+		Assertion:    projections.AssertionChangeRepository,
+		EffectiveAt:  event.Event.OccurredAt,
+		Authority:    schematypes.KnowledgeAuthorityObserved,
+		SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: attributes.Repository.DisplayName},
+		Subject:      rez.KnowledgeSubjectRef{Entity: &repositoryRef},
+	}}
+	for _, related := range projections.SortEntityObservations(attributes.ImpactedEntities) {
+		relatedRef := related.KnowledgeEntityRef()
+		evidence = append(evidence, rez.KnowledgeEvidenceRef{
+			Kind:         evidenceKind,
+			Assertion:    projections.AssertionChangeImpacted,
+			EffectiveAt:  event.Event.OccurredAt,
+			Authority:    schematypes.KnowledgeAuthorityObserved,
+			SubjectState: schematypes.KnowledgeGraphSubjectState{DisplayName: related.DisplayName},
+			Subject:      rez.KnowledgeSubjectRef{Entity: &relatedRef},
+		})
 	}
-	changeRef := rez.KnowledgeEntityRef{
-		Category:            kne.CategoryEvent,
-		Kind:                knowledgeEntityKindCodeChange,
-		ProviderResourceRef: changeResourceRef,
-	}
-	codeChangeEvidence := rez.KnowledgeEvidenceRef{
-		Kind:        evidenceKind,
-		Assertion:   knowledgeAssertionCodeChangeObserved,
-		EffectiveAt: event.Event.OccurredAt,
-		SubjectState: schematypes.KnowledgeGraphSubjectState{
-			DisplayName: attributes.DisplayName,
-		},
-		Subject: rez.KnowledgeSubjectRef{Entity: &changeRef},
+	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence...); ingestErr != nil {
+		return nil, fmt.Errorf("ingest code change involvement: %w", ingestErr)
 	}
 	if attributes.Merge != nil {
-		// The change is an event at its merge time.
-		codeChangeEvidence.EffectiveAt = attributes.Merge.MergedAt
-		codeChangeEvidence.SubjectState.Properties = attributes.Merge.StateProperties()
-	}
-
-	repositoryRef := attributes.Repository.KnowledgeEntityRef()
-	repoEntityEvidence := rez.KnowledgeEvidenceRef{
-		Kind:        evidenceKind,
-		Assertion:   knowledgeAssertionCodeRepositoryObserved,
-		EffectiveAt: event.Event.OccurredAt,
-		SubjectState: schematypes.KnowledgeGraphSubjectState{
-			DisplayName: attributes.Repository.DisplayName,
-			Description: attributes.Repository.Description,
-			Properties:  attributes.Repository.Properties,
-		},
-		Subject: rez.KnowledgeSubjectRef{Entity: &repositoryRef},
-	}
-
-	changeRepositoryResourceRef := projections.DerivedRelationshipRef(knr.PredicateTouches, changeResourceRef, attributes.Repository.Ref)
-	changeRepositoryRelationship := rez.KnowledgeRelationshipRef{
-		Predicate:           knr.PredicateTouches,
-		ProviderResourceRef: changeRepositoryResourceRef,
-		Source:              changeRef,
-		Target:              repositoryRef,
-	}
-	codeChangeRepoEvidence := rez.KnowledgeEvidenceRef{
-		Kind:        evidenceKind,
-		Assertion:   knowledgeAssertionCodeChangeRepository,
-		EffectiveAt: event.Event.OccurredAt,
-		Subject:     rez.KnowledgeSubjectRef{Relationship: &changeRepositoryRelationship},
-	}
-
-	evidence := []rez.KnowledgeEvidenceRef{codeChangeEvidence, repoEntityEvidence, codeChangeRepoEvidence}
-
-	for _, related := range projections.SortEntityObservations(attributes.ImpactedEntities) {
-		relatedEntityRef := related.KnowledgeEntityRef()
-		relatedEntityEvidence := rez.KnowledgeEvidenceRef{
-			Kind:        evidenceKind,
-			Assertion:   knowledgeAssertionCodeEntityObserved,
-			EffectiveAt: event.Event.OccurredAt,
-			SubjectState: schematypes.KnowledgeGraphSubjectState{
-				DisplayName: related.DisplayName,
-				Description: related.Description,
-				Properties:  related.Properties,
-			},
-			Subject: rez.KnowledgeSubjectRef{Entity: &relatedEntityRef},
+		if recordErr := s.changePoints.RecordChangePoint(ctx, event.Event, attributes.Merge.MergedAt); recordErr != nil {
+			return nil, fmt.Errorf("record merged change: %w", recordErr)
 		}
-		impactResourceRef := projections.DerivedRelationshipRef(knr.PredicateImpacts, changeResourceRef, related.Ref)
-		impactRelationship := rez.KnowledgeRelationshipRef{
-			Predicate:           knr.PredicateImpacts,
-			ProviderResourceRef: impactResourceRef,
-			Source:              changeRef,
-			Target:              relatedEntityRef,
-		}
-		impactEvidence := rez.KnowledgeEvidenceRef{
-			Kind:        evidenceKind,
-			Assertion:   knowledgeAssertionCodeChangeImpact,
-			EffectiveAt: event.Event.OccurredAt,
-			SubjectState: schematypes.KnowledgeGraphSubjectState{
-				DisplayName: related.DisplayName,
-				Properties:  map[string]any{"entity_kind": related.Kind},
-			},
-			Subject: rez.KnowledgeSubjectRef{Relationship: &impactRelationship},
-		}
-		evidence = append(evidence, relatedEntityEvidence, impactEvidence)
-	}
-
-	if ingestErr := s.knowledge.IngestEvidence(ctx, event.Event, evidence...); ingestErr != nil {
-		return nil, fmt.Errorf("ingest code change evidence: %w", ingestErr)
 	}
 	return nil, nil
 }

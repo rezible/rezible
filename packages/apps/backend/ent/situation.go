@@ -48,6 +48,8 @@ type Situation struct {
 	CloseReason *situation.CloseReason `json:"close_reason,omitempty"`
 	// The investigation of its observations; several situations may share one
 	InvestigationID *uuid.UUID `json:"investigation_id,omitempty"`
+	// The situation it was merged into, which is not itself merged
+	MergedIntoID *uuid.UUID `json:"merged_into_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SituationQuery when eager-loading is set.
 	Edges        SituationEdges `json:"edges"`
@@ -66,17 +68,19 @@ type SituationEdges struct {
 	Incidents []*Incident `json:"incidents,omitempty"`
 	// Observations holds the value of the observations edge.
 	Observations []*SituationObservation `json:"observations,omitempty"`
-	// Entities holds the value of the entities edge.
-	Entities []*SituationEntity `json:"entities,omitempty"`
 	// Actions holds the value of the actions edge.
 	Actions []*SituationAction `json:"actions,omitempty"`
 	// Judgments holds the value of the judgments edge.
 	Judgments []*SituationJudgment `json:"judgments,omitempty"`
 	// Notices holds the value of the notices edge.
 	Notices []*SituationNotice `json:"notices,omitempty"`
+	// MergedInto holds the value of the merged_into edge.
+	MergedInto *Situation `json:"merged_into,omitempty"`
+	// MergedSources holds the value of the merged_sources edge.
+	MergedSources []*Situation `json:"merged_sources,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [10]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -128,19 +132,10 @@ func (e SituationEdges) ObservationsOrErr() ([]*SituationObservation, error) {
 	return nil, &NotLoadedError{edge: "observations"}
 }
 
-// EntitiesOrErr returns the Entities value or an error if the edge
-// was not loaded in eager-loading.
-func (e SituationEdges) EntitiesOrErr() ([]*SituationEntity, error) {
-	if e.loadedTypes[5] {
-		return e.Entities, nil
-	}
-	return nil, &NotLoadedError{edge: "entities"}
-}
-
 // ActionsOrErr returns the Actions value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) ActionsOrErr() ([]*SituationAction, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.Actions, nil
 	}
 	return nil, &NotLoadedError{edge: "actions"}
@@ -149,7 +144,7 @@ func (e SituationEdges) ActionsOrErr() ([]*SituationAction, error) {
 // JudgmentsOrErr returns the Judgments value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) JudgmentsOrErr() ([]*SituationJudgment, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[6] {
 		return e.Judgments, nil
 	}
 	return nil, &NotLoadedError{edge: "judgments"}
@@ -158,10 +153,30 @@ func (e SituationEdges) JudgmentsOrErr() ([]*SituationJudgment, error) {
 // NoticesOrErr returns the Notices value or an error if the edge
 // was not loaded in eager-loading.
 func (e SituationEdges) NoticesOrErr() ([]*SituationNotice, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[7] {
 		return e.Notices, nil
 	}
 	return nil, &NotLoadedError{edge: "notices"}
+}
+
+// MergedIntoOrErr returns the MergedInto value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SituationEdges) MergedIntoOrErr() (*Situation, error) {
+	if e.MergedInto != nil {
+		return e.MergedInto, nil
+	} else if e.loadedTypes[8] {
+		return nil, &NotFoundError{label: situation.Label}
+	}
+	return nil, &NotLoadedError{edge: "merged_into"}
+}
+
+// MergedSourcesOrErr returns the MergedSources value or an error if the edge
+// was not loaded in eager-loading.
+func (e SituationEdges) MergedSourcesOrErr() ([]*Situation, error) {
+	if e.loadedTypes[9] {
+		return e.MergedSources, nil
+	}
+	return nil, &NotLoadedError{edge: "merged_sources"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -169,7 +184,7 @@ func (*Situation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case situation.FieldInvestigationID:
+		case situation.FieldInvestigationID, situation.FieldMergedIntoID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case situation.FieldTenantID, situation.FieldNumber:
 			values[i] = new(sql.NullInt64)
@@ -291,6 +306,13 @@ func (_m *Situation) assignValues(columns []string, values []any) error {
 				_m.InvestigationID = new(uuid.UUID)
 				*_m.InvestigationID = *value.S.(*uuid.UUID)
 			}
+		case situation.FieldMergedIntoID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field merged_into_id", values[i])
+			} else if value.Valid {
+				_m.MergedIntoID = new(uuid.UUID)
+				*_m.MergedIntoID = *value.S.(*uuid.UUID)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -329,11 +351,6 @@ func (_m *Situation) QueryObservations() *SituationObservationQuery {
 	return NewSituationClient(_m.config).QueryObservations(_m)
 }
 
-// QueryEntities queries the "entities" edge of the Situation entity.
-func (_m *Situation) QueryEntities() *SituationEntityQuery {
-	return NewSituationClient(_m.config).QueryEntities(_m)
-}
-
 // QueryActions queries the "actions" edge of the Situation entity.
 func (_m *Situation) QueryActions() *SituationActionQuery {
 	return NewSituationClient(_m.config).QueryActions(_m)
@@ -347,6 +364,16 @@ func (_m *Situation) QueryJudgments() *SituationJudgmentQuery {
 // QueryNotices queries the "notices" edge of the Situation entity.
 func (_m *Situation) QueryNotices() *SituationNoticeQuery {
 	return NewSituationClient(_m.config).QueryNotices(_m)
+}
+
+// QueryMergedInto queries the "merged_into" edge of the Situation entity.
+func (_m *Situation) QueryMergedInto() *SituationQuery {
+	return NewSituationClient(_m.config).QueryMergedInto(_m)
+}
+
+// QueryMergedSources queries the "merged_sources" edge of the Situation entity.
+func (_m *Situation) QueryMergedSources() *SituationQuery {
+	return NewSituationClient(_m.config).QueryMergedSources(_m)
 }
 
 // Update returns a builder for updating this Situation.
@@ -425,6 +452,11 @@ func (_m *Situation) String() string {
 	builder.WriteString(", ")
 	if v := _m.InvestigationID; v != nil {
 		builder.WriteString("investigation_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.MergedIntoID; v != nil {
+		builder.WriteString("merged_into_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')

@@ -32,6 +32,7 @@ const deployment = (
 	sha: "4f1c0d9e8b7a6f5e4d3c",
 	version: "",
 	url: "",
+	latestEvidenceId: `${id}-evidence`,
 	repositoryName: "acme/checkout",
 	mergedChangesUnlinked: "",
 	mergedChanges: [],
@@ -213,7 +214,7 @@ test("changesState: deployments link to their source, else their evidence, and s
 	expect(before.link).toEqual({ kind: "evidence", evidenceId: "evidence" });
 	expect(before.mergedChanges[0].detail).toBe("#42 by alice");
 	expect(before.unlinkedReason).toBeUndefined();
-	expect(unlinked.link).toBeUndefined();
+	expect(unlinked.link).toEqual({ kind: "evidence", evidenceId: "unlinked-evidence" });
 	expect(unlinked.unlinkedReason).toBeDefined();
 	expect(payments.deployments).toEqual([]);
 });
