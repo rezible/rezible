@@ -162,6 +162,10 @@ func (ii *InstalledIntegration) ListChatChannels(ctx context.Context, params int
 
 var _ integrations.DirectMessageSender = (*InstalledIntegration)(nil)
 
+func (ii *InstalledIntegration) DirectMessageDescription() string {
+	return "a Slack direct message"
+}
+
 func (ii *InstalledIntegration) SendDirectMessage(ctx context.Context, recipient *ent.User, message *integrations.DirectMessage) error {
 	if recipient.ChatID == "" {
 		return integrations.ErrNoRecipient

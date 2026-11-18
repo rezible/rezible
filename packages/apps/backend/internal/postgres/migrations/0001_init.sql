@@ -136,6 +136,8 @@ CREATE INDEX "incident_tenant_id" ON "incidents" ("tenant_id");
 CREATE UNIQUE INDEX "incidents_number_key" ON "incidents" ("tenant_id", "number");
 -- create index "incident_tenant_id_provider_pr_e4fb4601770b428f6b576f6aa22e5155" to table: "incidents"
 CREATE UNIQUE INDEX "incident_tenant_id_provider_pr_e4fb4601770b428f6b576f6aa22e5155" ON "incidents" ("tenant_id", "provider", "provider_namespace", "provider_resource_ref") WHERE provider IS NOT NULL;
+-- create index "incident_tenant_id_chat_channel_id" to table: "incidents"
+CREATE UNIQUE INDEX "incident_tenant_id_chat_channel_id" ON "incidents" ("tenant_id", "chat_channel_id") WHERE chat_channel_id IS NOT NULL;
 -- create "incident_debriefs" table
 CREATE TABLE "incident_debriefs" ("id" uuid NOT NULL, "required" boolean NOT NULL, "started" boolean NOT NULL, "incident_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "incidentdebrief_tenant_id" to table: "incident_debriefs"
@@ -409,7 +411,7 @@ CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying N
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
 -- create "normalized_events" table
-CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_namespace" character varying NOT NULL, "provider_resource_ref" character varying NOT NULL, "kind" character varying NOT NULL, "provider_event_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "last_occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_namespace" character varying NOT NULL, "provider_resource_ref" character varying NOT NULL, "kind" character varying NOT NULL, "provider_event_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "last_occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "failed_at" timestamptz NULL, "failure_reason" character varying NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "normalizedevent_tenant_id" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
 -- create index "normalizedevent_tenant_id_prov_90f96a3ac3cd6b50b4760368ebb3367b" to table: "normalized_events"

@@ -22,6 +22,7 @@
 			.join(" / ")
 	);
 	const projected = $derived(Boolean(attrs.projection));
+	const failure = $derived(attrs.failure);
 
 	function formatDateTime(value: string | undefined) {
 		if (!value) return "No timestamp";
@@ -57,6 +58,9 @@
 				{#if projected}
 					<Badge variant="outline">Projected</Badge>
 				{/if}
+				{#if failure}
+					<Badge variant="destructive">Failed</Badge>
+				{/if}
 			</span>
 
 			<span class="grid min-w-0 gap-1">
@@ -84,6 +88,13 @@
 					<span class="ml-2 break-all">{event.id}</span>
 				</div>
 			</div>
+
+			{#if failure}
+				<div class="mb-3 rounded-md border border-destructive/40 p-3 text-sm">
+					<div class="font-medium text-destructive">Failed {formatDateTime(failure.failedAt)}</div>
+					<div class="mt-1 text-muted-foreground">{failure.reason}</div>
+				</div>
+			{/if}
 
 			<EventProjectionDetails projection={attrs.projection} />
 

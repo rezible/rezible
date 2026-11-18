@@ -3,10 +3,12 @@ package slackincidents
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -46,10 +48,14 @@ var testInstallationConfig = fmt.Sprintf(`{"AccessToken": "xoxb-test", "BotUserI
 type fakeSlack struct {
 	mu       sync.Mutex
 	channels []string
-	posts    []url.Values
-	updates  []url.Values
-	pinned   []string
-	messages int
+	// existing are the workspace's channels, including those the app created.
+	existing []fakeChannel
+	// failPosts is how many of the next messages fail to post.
+	failPosts int
+	posts     []url.Values
+	updates   []url.Values
+	pinned    []string
+	messages  int
 }
 
 func (f *fakeSlack) serve(w http.ResponseWriter, r *http.Request) {
@@ -62,9 +68,26 @@ func (f *fakeSlack) serve(w http.ResponseWriter, r *http.Request) {
 	response := map[string]any{"ok": true}
 	switch strings.TrimPrefix(r.URL.Path, "/") {
 	case "conversations.create":
-		f.channels = append(f.channels, r.PostForm.Get("name"))
-		response["channel"] = map[string]any{"id": "C0RESP", "name": r.PostForm.Get("name")}
+		name := r.PostForm.Get("name")
+		if slices.ContainsFunc(f.existing, func(c fakeChannel) bool { return c.name == name }) {
+			response = map[string]any{"ok": false, "error": "name_taken"}
+			break
+		}
+		f.channels = append(f.channels, name)
+		f.existing = append(f.existing, fakeChannel{id: "C0RESP", name: name, creator: testBotUser})
+		response["channel"] = map[string]any{"id": "C0RESP", "name": name}
+	case "conversations.list":
+		channels := make([]map[string]any, len(f.existing))
+		for i, c := range f.existing {
+			channels[i] = map[string]any{"id": c.id, "name": c.name, "creator": c.creator}
+		}
+		response["channels"] = channels
 	case "chat.postMessage", "chat.postEphemeral":
+		if f.failPosts > 0 {
+			f.failPosts--
+			response = map[string]any{"ok": false, "error": "internal_error"}
+			break
+		}
 		f.posts = append(f.posts, r.PostForm)
 		f.messages++
 		response["channel"] = r.PostForm.Get("channel")
@@ -93,6 +116,10 @@ func (f *fakeSlack) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(response)
+}
+
+type fakeChannel struct {
+	id, name, creator string
 }
 
 func (f *fakeSlack) postsTo(channel string) []url.Values {
@@ -239,4 +266,124 @@ func (s *AppSuite) TestIncidentEventCreatesChannelAndPinsDetails() {
 	s.Len(fake.postsTo("C0RESP"), 1, "a sync posts nothing new")
 	s.Require().Len(fake.updates, 2, "each sync edits the stored message")
 	s.Equal(inc.ChatDetailsMessageID, fake.updates[1].Get("ts"))
+}
+
+// channelJob is an app whose incident has no response channel yet, with the incident as the mocked service
+// stores it.
+type channelJob struct {
+	ctx  context.Context
+	db   rez.Database
+	app  *App
+	fake *fakeSlack
+	inc  *ent.Incident
+	// failChannelSaves is how many of the next attempts to store the channel fail.
+	failChannelSaves int
+}
+
+func (s *AppSuite) newChannelJob() *channelJob {
+	ctx, db := s.SetupTestDatabase()
+	createInstallation := db.Client(ctx).Integration.Create().
+		SetProvider("slack").
+		SetName(integrationName).
+		SetDisplayName("Rezible").
+		SetProviderInstallationRef("team:T1").
+		SetInstallationConfig(json.RawMessage(testInstallationConfig))
+	s.Require().NoError(createInstallation.Exec(ctx))
+
+	declarerID := uuid.New()
+	job := &channelJob{
+		ctx: ctx,
+		db:  db,
+		inc: &ent.Incident{ID: uuid.New(), Number: 12, Title: "Checkout errors", DeclaredByID: &declarerID},
+	}
+	incidents := mocks.NewMockIncidentDetailsService(s.T())
+	incidents.EXPECT().
+		GetIncident(mock.Anything, mock.Anything).
+		RunAndReturn(func(context.Context, predicate.Incident) (*ent.Incident, error) {
+			current := *job.inc
+			return &current, nil
+		})
+	incidents.EXPECT().
+		SetChatChannel(mock.Anything, job.inc.ID, mock.Anything).
+		RunAndReturn(func(_ context.Context, _ uuid.UUID, channelID string) error {
+			if job.failChannelSaves > 0 {
+				job.failChannelSaves--
+				return errors.New("database unavailable")
+			}
+			job.inc.ChatChannelID = channelID
+			job.inc.ChatDetailsMessageID = ""
+			return nil
+		}).
+		Maybe()
+	incidents.EXPECT().
+		SetChatDetailsMessage(mock.Anything, job.inc.ID, mock.Anything).
+		RunAndReturn(func(_ context.Context, _ uuid.UUID, messageID string) error {
+			job.inc.ChatDetailsMessageID = messageID
+			return nil
+		}).
+		Maybe()
+	orgs := mocks.NewMockOrganizationService(s.T())
+	orgs.EXPECT().IsIncidentManagementEnabled(mock.Anything).Return(true, nil)
+	job.app, job.fake = s.newApp(db, nil, orgs, incidents, nil)
+	return job
+}
+
+func (s *AppSuite) TestTakenChannelNameGetsTheNextFreeName() {
+	job := s.newChannelJob()
+	createOther := job.db.Client(job.ctx).Incident.Create().
+		SetNumber(3).
+		SetTitle("Earlier incident").
+		SetChatChannelID("C0CLAIMED")
+	s.Require().NoError(createOther.Exec(job.ctx))
+	job.fake.existing = []fakeChannel{
+		{id: "C0PERSON", name: "inc-12", creator: "U0AVA"},
+		{id: "C0CLAIMED", name: "inc-12-2", creator: testBotUser},
+	}
+
+	s.Require().NoError(job.app.createIncidentChannel(job.ctx, job.inc.ID))
+
+	s.Equal([]string{"inc-12-3"}, job.fake.channels,
+		"a channel someone else created, or another incident's channel, is skipped")
+	s.Equal("C0RESP", job.inc.ChatChannelID)
+}
+
+func (s *AppSuite) TestNumberedChannelNameFitsSlacksLimit() {
+	c := &incidentChannel{
+		inc:      &ent.Incident{Number: 12, Title: strings.Repeat("checkout ", 20)},
+		settings: &UserSettingsIncidents{ChannelNamePattern: "inc-{number}-{title}"},
+	}
+	name := c.channelName(12)
+	s.Len([]rune(name), maxChannelNameRunes)
+	s.True(strings.HasSuffix(name, "-12"), name)
+}
+
+func (s *AppSuite) TestChannelJobRetryUsesTheChannelItCreated() {
+	for name, fail := range map[string]func(*channelJob){
+		"storing the channel failed":         func(job *channelJob) { job.failChannelSaves = 1 },
+		"posting the details message failed": func(job *channelJob) { job.fake.failPosts = 1 },
+	} {
+		s.Run(name, func() {
+			job := s.newChannelJob()
+			fail(job)
+
+			s.Require().Error(job.app.createIncidentChannel(job.ctx, job.inc.ID))
+			s.Require().NoError(job.app.createIncidentChannel(job.ctx, job.inc.ID))
+
+			s.Equal([]string{"inc-12"}, job.fake.channels, "the retry creates no second channel")
+			s.Equal("C0RESP", job.inc.ChatChannelID)
+			s.Len(job.fake.postsTo("C0RESP"), 1, "the retry posts the details message")
+		})
+	}
+}
+
+func (s *AppSuite) TestNewChannelGetsFreshDetails() {
+	job := s.newChannelJob()
+	job.inc.ChatDetailsMessageID = "1600000000.000001"
+
+	s.Require().NoError(job.app.createIncidentChannel(job.ctx, job.inc.ID))
+
+	s.Equal("C0RESP", job.inc.ChatChannelID)
+	s.Len(job.fake.postsTo("C0RESP"), 1, "the details message is posted in the new channel")
+	s.NotEqual("1600000000.000001", job.inc.ChatDetailsMessageID, "the earlier channel's message is not kept")
+	s.Len(job.fake.postsTo(testInstallChannel), 1, "the incident is announced")
 }

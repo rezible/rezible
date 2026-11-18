@@ -61,7 +61,15 @@ export function retrospectiveStatus(
 ): StatusPresentation {
 	return reviewPanelModel(
 		state
-			? { state, outcome, reviews: [], documentId: "", systemAnalysisId: "", reportSections: [] }
+			? {
+					state,
+					outcome,
+					reviews: [],
+					documentId: "",
+					systemAnalysisId: "",
+					reportSections: [],
+					reviewerMessages: { delivery: "unknown" },
+				}
 			: undefined
 	).status;
 }

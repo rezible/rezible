@@ -37,6 +37,12 @@ type (
 		IntegrationId       *uuid.UUID          `json:"integrationId,omitempty"`
 		Attributes          []byte              `json:"attributes"`
 		Projection          *EventProjection    `json:"projection,omitempty"`
+		Failure             *EventFailure       `json:"failure,omitempty" doc:"Present when work on the event failed and will not be retried"`
+	}
+
+	EventFailure struct {
+		FailedAt time.Time `json:"failedAt"`
+		Reason   string    `json:"reason"`
 	}
 
 	EventProjection struct {
@@ -80,6 +86,9 @@ func EventFromEnt(e *ent.NormalizedEvent) Event {
 	if e.Edges.Projection != nil {
 		projection := EventProjectionFromEnt(e.Edges.Projection)
 		attr.Projection = &projection
+	}
+	if e.FailedAt != nil && e.FailureReason != nil {
+		attr.Failure = &EventFailure{FailedAt: *e.FailedAt, Reason: *e.FailureReason}
 	}
 
 	return Event{Id: e.ID, Attributes: attr}

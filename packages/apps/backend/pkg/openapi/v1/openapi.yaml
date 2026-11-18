@@ -2725,6 +2725,9 @@ components:
         attributes:
           contentEncoding: base64
           type: string
+        failure:
+          $ref: "#/components/schemas/EventFailure"
+          description: Present when work on the event failed and will not be retried
         integrationId:
           type: string
         kind:
@@ -2751,6 +2754,18 @@ components:
         - providerEventSource
         - providerEventRef
         - attributes
+      type: object
+    EventFailure:
+      additionalProperties: false
+      properties:
+        failedAt:
+          format: date-time
+          type: string
+        reason:
+          type: string
+      required:
+        - failedAt
+        - reason
       type: object
     EventProjection:
       additionalProperties: false
@@ -7481,6 +7496,9 @@ components:
           items:
             $ref: "#/components/schemas/RetrospectiveReportSection"
           type: array
+        reviewerMessages:
+          $ref: "#/components/schemas/RetrospectiveReviewerMessages"
+          description: How reviewers are told of a review request
         reviews:
           items:
             $ref: "#/components/schemas/RetrospectiveReview"
@@ -7501,6 +7519,7 @@ components:
         - state
         - reportSections
         - reviews
+        - reviewerMessages
       type: object
     RetrospectiveReportComposition:
       additionalProperties: false
@@ -7613,6 +7632,22 @@ components:
         - state
         - updatedAt
         - messageFailed
+      type: object
+    RetrospectiveReviewerMessages:
+      additionalProperties: false
+      properties:
+        delivery:
+          description: direct_message when a connected integration sends reviewers direct messages, none when no connected integration can, and unknown when that could not be established
+          enum:
+            - direct_message
+            - none
+            - unknown
+          type: string
+        description:
+          description: How a reviewer receives the message, such as 'a Slack direct message'; set when delivery is direct_message
+          type: string
+      required:
+        - delivery
       type: object
     RetrySituationNoticeResponseBody:
       additionalProperties: false

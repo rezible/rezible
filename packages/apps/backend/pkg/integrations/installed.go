@@ -361,6 +361,9 @@ func MeasureRead(ctx context.Context, provider, operation string, read func(cont
 // DirectMessageSender renders and sends plain text to a member's chat account.
 type DirectMessageSender interface {
 	SendDirectMessage(context.Context, *ent.User, *DirectMessage) error
+	// DirectMessageDescription says how a member receives a message sent this way, such as "a Slack direct
+	// message".
+	DirectMessageDescription() string
 }
 
 type DirectMessage struct {

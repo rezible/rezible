@@ -122,7 +122,7 @@ func (s *IncidentsHandlerSuite) TestReferencesToAnotherTenantAreNotFound() {
 	huma.Register(api, oapi.UpdateIncident, incidents.UpdateIncident)
 	huma.Register(api, oapi.CreateIncidentRoleAssignment, incidents.CreateIncidentRoleAssignment)
 	huma.Register(api, oapi.LinkIncidentSituation, incidents.LinkIncidentSituation)
-	huma.Register(api, oapi.SetRetrospectiveOwner, newRetrospectivesHandler(retros).SetRetrospectiveOwner)
+	huma.Register(api, oapi.SetRetrospectiveOwner, newRetrospectivesHandler(retros, mocks.NewMockIntegrationService(s.T())).SetRetrospectiveOwner)
 
 	attributes := func(attrs map[string]any) map[string]any { return map[string]any{"attributes": attrs} }
 	for name, call := range map[string]func() *httptest.ResponseRecorder{

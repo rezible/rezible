@@ -191,23 +191,28 @@ func (s *IncidentDetailsService) ArchiveIncident(ctx context.Context, id uuid.UU
 	})
 }
 
+// SetChatChannel records the incident's response channel and clears its details message, which can only belong
+// to an earlier channel. It publishes nothing: the channel is recorded as soon as it exists, before its details
+// message, and recording the details message publishes the update.
 func (s *IncidentDetailsService) SetChatChannel(ctx context.Context, id uuid.UUID, channelID string) error {
+	return s.db.Client(ctx).Incident.UpdateOneID(id).
+		SetChatChannelID(channelID).
+		ClearChatDetailsMessageID().
+		Exec(ctx)
+}
+
+// SetChatDetailsMessage records the response channel's details message and publishes an incident update, whose
+// channel sync edits the message with anything that changed since it was posted. The update is written to the
+// outbox in the same transaction, so it cannot fail separately from recording the message.
+func (s *IncidentDetailsService) SetChatDetailsMessage(ctx context.Context, id uuid.UUID, messageID string) error {
 	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		update := tx.Incident.UpdateOneID(id).
-			SetChatChannelID(channelID)
+			SetChatDetailsMessageID(messageID)
 		if updateErr := update.Exec(ctx); updateErr != nil {
-			return fmt.Errorf("set incident chat channel: %w", updateErr)
+			return fmt.Errorf("set incident details message: %w", updateErr)
 		}
 		return s.publishUpdated(ctx, id)
 	})
-}
-
-// SetChatDetailsMessage records the response channel's details message. It publishes nothing, so recording
-// the message cannot start another channel sync.
-func (s *IncidentDetailsService) SetChatDetailsMessage(ctx context.Context, id uuid.UUID, messageID string) error {
-	return s.db.Client(ctx).Incident.UpdateOneID(id).
-		SetChatDetailsMessageID(messageID).
-		Exec(ctx)
 }
 
 // RecordObservedIncident creates or updates the incident observed through a provider, and returns its ID. An

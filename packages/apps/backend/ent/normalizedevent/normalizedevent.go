@@ -42,6 +42,10 @@ const (
 	FieldLastOccurredAt = "last_occurred_at"
 	// FieldReceivedAt holds the string denoting the received_at field in the database.
 	FieldReceivedAt = "received_at"
+	// FieldFailedAt holds the string denoting the failed_at field in the database.
+	FieldFailedAt = "failed_at"
+	// FieldFailureReason holds the string denoting the failure_reason field in the database.
+	FieldFailureReason = "failure_reason"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeIntegration holds the string denoting the integration edge name in mutations.
@@ -89,6 +93,8 @@ var Columns = []string{
 	FieldOccurredAt,
 	FieldLastOccurredAt,
 	FieldReceivedAt,
+	FieldFailedAt,
+	FieldFailureReason,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -191,6 +197,16 @@ func ByLastOccurredAt(opts ...sql.OrderTermOption) OrderOption {
 // ByReceivedAt orders the results by the received_at field.
 func ByReceivedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReceivedAt, opts...).ToFunc()
+}
+
+// ByFailedAt orders the results by the failed_at field.
+func ByFailedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFailedAt, opts...).ToFunc()
+}
+
+// ByFailureReason orders the results by the failure_reason field.
+func ByFailureReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFailureReason, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

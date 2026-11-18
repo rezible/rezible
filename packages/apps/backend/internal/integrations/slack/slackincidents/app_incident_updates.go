@@ -24,6 +24,8 @@ const (
 	maxTopicRunes = 250
 	// maxChannelNameRunes is Slack's limit on a channel name.
 	maxChannelNameRunes = 80
+	// maxChannelNameAttempts is how many names are tried for a response channel before giving up.
+	maxChannelNameAttempts = 20
 )
 
 const bookmarkTitleIncident = "Open in Rezible"
@@ -130,36 +132,36 @@ func (a *App) syncIncidentChannel(ctx context.Context, incidentID uuid.UUID) err
 
 // createIncidentChannel creates the response channel when there is none, and posts and pins its details
 // message when there is none. Only this job, unique by incident, posts the details message, so concurrent
-// syncs cannot post it twice. The channel is stored last: that publishes an incident update, and its sync
-// edits the stored details message with anything that changed meanwhile. Then it announces the incident.
+// syncs cannot post it twice. The channel is stored as soon as it exists, so a retry after a later failure
+// uses it rather than creating another. Storing the details message publishes an incident update, and its
+// sync edits the message with anything that changed meanwhile. Then it announces the incident.
 func (a *App) createIncidentChannel(ctx context.Context, incidentID uuid.UUID) error {
 	c, loadErr := a.loadIncidentChannel(ctx, incidentID)
 	if loadErr != nil || c == nil {
 		return loadErr
 	}
-	created := c.inc.ChatChannelID == ""
-	if created {
-		channelID, createErr := c.createChannel(ctx)
+	if c.inc.ChatChannelID == "" {
+		channelID, createErr := a.createChannel(ctx, c)
 		if createErr != nil {
 			return createErr
 		}
+		if setErr := a.incidents.SetChatChannel(ctx, c.inc.ID, channelID); setErr != nil {
+			return fmt.Errorf("set incident chat channel: %w", setErr)
+		}
+		// Storing the channel clears any details message, which belonged to an earlier channel.
 		c.inc.ChatChannelID = channelID
+		c.inc.ChatDetailsMessageID = ""
 	}
-	if c.inc.ChatDetailsMessageID == "" {
-		messageID, postErr := c.postDetailsMessage(ctx)
-		if postErr != nil {
-			return postErr
-		}
-		if setErr := a.incidents.SetChatDetailsMessage(ctx, c.inc.ID, messageID); setErr != nil {
-			return fmt.Errorf("set incident details message: %w", setErr)
-		}
-	}
-	if !created {
+	if c.inc.ChatDetailsMessageID != "" {
 		return nil
 	}
 
-	if setErr := a.incidents.SetChatChannel(ctx, c.inc.ID, c.inc.ChatChannelID); setErr != nil {
-		return fmt.Errorf("set incident chat channel: %w", setErr)
+	messageID, postErr := c.postDetailsMessage(ctx)
+	if postErr != nil {
+		return postErr
+	}
+	if setErr := a.incidents.SetChatDetailsMessage(ctx, c.inc.ID, messageID); setErr != nil {
+		return fmt.Errorf("set incident details message: %w", setErr)
 	}
 	if announceErr := c.postAnnouncement(ctx); announceErr != nil {
 		slog.WarnContext(ctx, "failed to post incident announcement",
@@ -170,33 +172,84 @@ func (a *App) createIncidentChannel(ctx context.Context, incidentID uuid.UUID) e
 	return nil
 }
 
-// createChannel creates the response channel, or finds the one a failed attempt created.
-func (c *incidentChannel) createChannel(ctx context.Context) (string, error) {
-	channelName := c.channelName()
-	createParams := slack.CreateConversationParams{
-		ChannelName: channelName,
-		IsPrivate:   false,
+// createChannel creates the response channel under the first free name: the pattern's name, then that name
+// with -2, -3 and so on. A taken name is used only for a channel this app created that no incident in the
+// organization has: one an earlier attempt created but did not store, because storing it failed or the worker
+// stopped. Any other channel with the name belongs to something else.
+func (a *App) createChannel(ctx context.Context, c *incidentChannel) (string, error) {
+	for attempt := 1; attempt <= maxChannelNameAttempts; attempt++ {
+		name := c.channelName(attempt)
+		createParams := slack.CreateConversationParams{
+			ChannelName: name,
+			IsPrivate:   false,
+		}
+		channel, createErr := c.client.Client().CreateConversationContext(ctx, createParams)
+		if createErr == nil {
+			return channel.ID, nil
+		}
+		var apiErr slack.SlackErrorResponse
+		if !errors.As(createErr, &apiErr) || apiErr.Err != "name_taken" {
+			return "", fmt.Errorf("create channel %q: %w", name, createErr)
+		}
+		orphanID, orphanErr := a.findOrphanedChannel(ctx, c, name)
+		if orphanErr != nil {
+			return "", orphanErr
+		}
+		if orphanID != "" {
+			return orphanID, nil
+		}
 	}
-	channel, createErr := c.client.Client().CreateConversationContext(ctx, createParams)
-	if createErr != nil {
-		if !strings.Contains(createErr.Error(), "name_taken") {
-			return "", fmt.Errorf("create channel: %w", createErr)
-		}
-		slog.WarnContext(ctx, "slack incident channel already exists, attempting relink",
-			"error", createErr,
-			"incident_id", c.inc.ID.String(),
-			"channel_name", channelName,
-		)
-		existingChannel, lookupErr := c.findConversationByName(ctx, channelName)
-		if lookupErr != nil {
-			return "", fmt.Errorf("lookup existing channel after name_taken: %w", lookupErr)
-		}
-		if existingChannel == nil {
-			return "", fmt.Errorf("slack reported name_taken but no conversation named %q was found", channelName)
-		}
-		channel = existingChannel
+	return "", fmt.Errorf("every channel name from %q to %q is taken", c.channelName(1), c.channelName(maxChannelNameAttempts))
+}
+
+// findOrphanedChannel returns the unarchived channel with the name if this app created it and no incident in
+// the organization, archived or not, has it. Otherwise it returns empty.
+func (a *App) findOrphanedChannel(ctx context.Context, c *incidentChannel, name string) (string, error) {
+	channel, lookupErr := c.findConversationByName(ctx, name)
+	if lookupErr != nil {
+		return "", fmt.Errorf("look up taken channel %q: %w", name, lookupErr)
 	}
+	if channel == nil || channel.Creator != c.config.BotUserID {
+		return "", nil
+	}
+	withArchived := ent.IncludeArchived(ctx)
+	queryClaimed := a.db.Client(withArchived).Incident.Query().
+		Where(incident.ChatChannelID(channel.ID))
+	claimed, queryErr := queryClaimed.Exist(withArchived)
+	if queryErr != nil {
+		return "", fmt.Errorf("check incidents for channel: %w", queryErr)
+	}
+	if claimed {
+		return "", nil
+	}
+	slog.InfoContext(ctx, "using the incident channel an earlier attempt created",
+		"incident_id", c.inc.ID.String(),
+		"channel_id", channel.ID,
+	)
 	return channel.ID, nil
+}
+
+func (c *incidentChannel) findConversationByName(ctx context.Context, channelName string) (*slack.Channel, error) {
+	params := &slack.GetConversationsParameters{
+		ExcludeArchived: true,
+		Limit:           200,
+		Types:           []string{"public_channel"},
+	}
+	for {
+		channels, cursor, listErr := c.client.Client().GetConversationsContext(ctx, params)
+		if listErr != nil {
+			return nil, fmt.Errorf("list conversations: %w", listErr)
+		}
+		for _, channel := range channels {
+			if channel.Name == channelName || channel.NameNormalized == channelName {
+				return &channel, nil
+			}
+		}
+		if cursor == "" {
+			return nil, nil
+		}
+		params.Cursor = cursor
+	}
 }
 
 // postIncidentMilestone posts the milestone to the response channel, once. Before the channel exists there is
@@ -232,36 +285,18 @@ func (a *App) postIncidentMilestone(ctx context.Context, incidentID uuid.UUID, m
 	return nil
 }
 
-// channelName fills the pattern, in lowercase and within Slack's limit on channel names.
-func (c *incidentChannel) channelName() string {
+// channelName fills the pattern, in lowercase and within Slack's limit on channel names. Each attempt after
+// the first adds its number, as in inc-12-2.
+func (c *incidentChannel) channelName(attempt int) string {
 	name := strings.ReplaceAll(c.settings.ChannelNamePattern, "{id}", c.inc.ID.String())
 	name = strings.ReplaceAll(name, "{number}", strconv.Itoa(c.inc.Number))
 	name = strings.ReplaceAll(name, "{title}", slug.Make(c.inc.Title))
+	suffix := ""
+	if attempt > 1 {
+		suffix = "-" + strconv.Itoa(attempt)
+	}
 	runes := []rune(strings.ToLower(name))
-	return string(runes[:min(len(runes), maxChannelNameRunes)])
-}
-
-func (c *incidentChannel) findConversationByName(ctx context.Context, channelName string) (*slack.Channel, error) {
-	params := &slack.GetConversationsParameters{
-		ExcludeArchived: true,
-		Limit:           200,
-		Types:           []string{"public_channel"},
-	}
-	for {
-		channels, cursor, listErr := c.client.Client().GetConversationsContext(ctx, params)
-		if listErr != nil {
-			return nil, fmt.Errorf("list conversations: %w", listErr)
-		}
-		for _, channel := range channels {
-			if channel.Name == channelName || channel.NameNormalized == channelName {
-				return &channel, nil
-			}
-		}
-		if cursor == "" {
-			return nil, nil
-		}
-		params.Cursor = cursor
-	}
+	return string(runes[:min(len(runes), maxChannelNameRunes-len(suffix))]) + suffix
 }
 
 func (c *incidentChannel) postAnnouncement(ctx context.Context) error {

@@ -122,6 +122,16 @@ func ReceivedAt(v time.Time) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldReceivedAt, v))
 }
 
+// FailedAt applies equality check predicate on the "failed_at" field. It's identical to FailedAtEQ.
+func FailedAt(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldFailedAt, v))
+}
+
+// FailureReason applies equality check predicate on the "failure_reason" field. It's identical to FailureReasonEQ.
+func FailureReason(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldFailureReason, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldTenantID, v))
@@ -760,6 +770,131 @@ func ReceivedAtLT(v time.Time) predicate.NormalizedEvent {
 // ReceivedAtLTE applies the LTE predicate on the "received_at" field.
 func ReceivedAtLTE(v time.Time) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldLTE(FieldReceivedAt, v))
+}
+
+// FailedAtEQ applies the EQ predicate on the "failed_at" field.
+func FailedAtEQ(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldFailedAt, v))
+}
+
+// FailedAtNEQ applies the NEQ predicate on the "failed_at" field.
+func FailedAtNEQ(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldFailedAt, v))
+}
+
+// FailedAtIn applies the In predicate on the "failed_at" field.
+func FailedAtIn(vs ...time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldFailedAt, vs...))
+}
+
+// FailedAtNotIn applies the NotIn predicate on the "failed_at" field.
+func FailedAtNotIn(vs ...time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldFailedAt, vs...))
+}
+
+// FailedAtGT applies the GT predicate on the "failed_at" field.
+func FailedAtGT(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGT(FieldFailedAt, v))
+}
+
+// FailedAtGTE applies the GTE predicate on the "failed_at" field.
+func FailedAtGTE(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGTE(FieldFailedAt, v))
+}
+
+// FailedAtLT applies the LT predicate on the "failed_at" field.
+func FailedAtLT(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLT(FieldFailedAt, v))
+}
+
+// FailedAtLTE applies the LTE predicate on the "failed_at" field.
+func FailedAtLTE(v time.Time) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLTE(FieldFailedAt, v))
+}
+
+// FailedAtIsNil applies the IsNil predicate on the "failed_at" field.
+func FailedAtIsNil() predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIsNull(FieldFailedAt))
+}
+
+// FailedAtNotNil applies the NotNil predicate on the "failed_at" field.
+func FailedAtNotNil() predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotNull(FieldFailedAt))
+}
+
+// FailureReasonEQ applies the EQ predicate on the "failure_reason" field.
+func FailureReasonEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldFailureReason, v))
+}
+
+// FailureReasonNEQ applies the NEQ predicate on the "failure_reason" field.
+func FailureReasonNEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldFailureReason, v))
+}
+
+// FailureReasonIn applies the In predicate on the "failure_reason" field.
+func FailureReasonIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldFailureReason, vs...))
+}
+
+// FailureReasonNotIn applies the NotIn predicate on the "failure_reason" field.
+func FailureReasonNotIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldFailureReason, vs...))
+}
+
+// FailureReasonGT applies the GT predicate on the "failure_reason" field.
+func FailureReasonGT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGT(FieldFailureReason, v))
+}
+
+// FailureReasonGTE applies the GTE predicate on the "failure_reason" field.
+func FailureReasonGTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGTE(FieldFailureReason, v))
+}
+
+// FailureReasonLT applies the LT predicate on the "failure_reason" field.
+func FailureReasonLT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLT(FieldFailureReason, v))
+}
+
+// FailureReasonLTE applies the LTE predicate on the "failure_reason" field.
+func FailureReasonLTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLTE(FieldFailureReason, v))
+}
+
+// FailureReasonContains applies the Contains predicate on the "failure_reason" field.
+func FailureReasonContains(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContains(FieldFailureReason, v))
+}
+
+// FailureReasonHasPrefix applies the HasPrefix predicate on the "failure_reason" field.
+func FailureReasonHasPrefix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasPrefix(FieldFailureReason, v))
+}
+
+// FailureReasonHasSuffix applies the HasSuffix predicate on the "failure_reason" field.
+func FailureReasonHasSuffix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasSuffix(FieldFailureReason, v))
+}
+
+// FailureReasonIsNil applies the IsNil predicate on the "failure_reason" field.
+func FailureReasonIsNil() predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIsNull(FieldFailureReason))
+}
+
+// FailureReasonNotNil applies the NotNil predicate on the "failure_reason" field.
+func FailureReasonNotNil() predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotNull(FieldFailureReason))
+}
+
+// FailureReasonEqualFold applies the EqualFold predicate on the "failure_reason" field.
+func FailureReasonEqualFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEqualFold(FieldFailureReason, v))
+}
+
+// FailureReasonContainsFold applies the ContainsFold predicate on the "failure_reason" field.
+func FailureReasonContainsFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldFailureReason, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

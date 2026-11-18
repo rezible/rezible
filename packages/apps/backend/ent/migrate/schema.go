@@ -1073,6 +1073,14 @@ var (
 					Where: "provider IS NOT NULL",
 				},
 			},
+			{
+				Name:    "incident_tenant_id_chat_channel_id",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentsColumns[15], IncidentsColumns[10]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "chat_channel_id IS NOT NULL",
+				},
+			},
 		},
 	}
 	// IncidentDebriefsColumns holds the columns for the "incident_debriefs" table.
@@ -2906,6 +2914,8 @@ var (
 		{Name: "occurred_at", Type: field.TypeTime},
 		{Name: "last_occurred_at", Type: field.TypeTime},
 		{Name: "received_at", Type: field.TypeTime},
+		{Name: "failed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "failure_reason", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "integration_id", Type: field.TypeUUID, Nullable: true},
 	}
@@ -2917,13 +2927,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "normalized_events_tenants_tenant",
-				Columns:    []*schema.Column{NormalizedEventsColumns[12]},
+				Columns:    []*schema.Column{NormalizedEventsColumns[14]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "normalized_events_integrations_integration",
-				Columns:    []*schema.Column{NormalizedEventsColumns[13]},
+				Columns:    []*schema.Column{NormalizedEventsColumns[15]},
 				RefColumns: []*schema.Column{IntegrationsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -2932,17 +2942,17 @@ var (
 			{
 				Name:    "normalizedevent_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventsColumns[12]},
+				Columns: []*schema.Column{NormalizedEventsColumns[14]},
 			},
 			{
 				Name:    "normalizedevent_tenant_id_provider_provider_namespace_provider_event_source_provider_event_ref_provider_resource_ref",
 				Unique:  true,
-				Columns: []*schema.Column{NormalizedEventsColumns[12], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[6], NormalizedEventsColumns[3]},
+				Columns: []*schema.Column{NormalizedEventsColumns[14], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[6], NormalizedEventsColumns[3]},
 			},
 			{
 				Name:    "normalizedevent_tenant_id_provider_provider_namespace_provider_event_source_occurred_at",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventsColumns[12], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[9]},
+				Columns: []*schema.Column{NormalizedEventsColumns[14], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[5], NormalizedEventsColumns[9]},
 			},
 		},
 	}

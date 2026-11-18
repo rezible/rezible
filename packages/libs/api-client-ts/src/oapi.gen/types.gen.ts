@@ -1262,6 +1262,10 @@ export type EventAnnotationAttributes = {
 
 export type EventAttributes = {
     attributes: string;
+    /**
+     * Present when work on the event failed and will not be retried
+     */
+    failure?: EventFailure;
     integrationId?: string;
     kind: string;
     occurredAt: string;
@@ -1270,6 +1274,11 @@ export type EventAttributes = {
     providerEventSource: string;
     receivedAt: string;
     resourceRef: ProviderResourceRef;
+};
+
+export type EventFailure = {
+    failedAt: string;
+    reason: string;
 };
 
 export type EventProjection = {
@@ -3264,6 +3273,10 @@ export type RetrospectiveAttributes = {
     outcome?: 'reviewed' | 'closed_without_review' | 'skipped';
     owner?: ExpandableUserAttributes;
     reportSections: Array<RetrospectiveReportSection>;
+    /**
+     * How reviewers are told of a review request
+     */
+    reviewerMessages: RetrospectiveReviewerMessages;
     reviews: Array<RetrospectiveReview>;
     skipReason?: string;
     state: 'draft' | 'in_review' | 'closed';
@@ -3304,6 +3317,17 @@ export type RetrospectiveReview = {
     reviewer: ExpandableUserAttributes;
     state: 'waiting' | 'request_changes' | 'approved';
     updatedAt: string;
+};
+
+export type RetrospectiveReviewerMessages = {
+    /**
+     * direct_message when a connected integration sends reviewers direct messages, none when no connected integration can, and unknown when that could not be established
+     */
+    delivery: 'direct_message' | 'none' | 'unknown';
+    /**
+     * How a reviewer receives the message, such as 'a Slack direct message'; set when delivery is direct_message
+     */
+    description?: string;
 };
 
 export type RetrySituationNoticeResponseBody = {

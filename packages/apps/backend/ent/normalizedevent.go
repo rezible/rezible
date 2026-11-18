@@ -47,6 +47,10 @@ type NormalizedEvent struct {
 	LastOccurredAt time.Time `json:"last_occurred_at,omitempty"`
 	// ReceivedAt holds the value of the "received_at" field.
 	ReceivedAt time.Time `json:"received_at,omitempty"`
+	// When work on the event last failed in a way a retry would not fix.
+	FailedAt *time.Time `json:"failed_at,omitempty"`
+	// Why work on the event failed, in words safe to show to members.
+	FailureReason *string `json:"failure_reason,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NormalizedEventQuery when eager-loading is set.
 	Edges        NormalizedEventEdges `json:"edges"`
@@ -110,9 +114,9 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case normalizedevent.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case normalizedevent.FieldProvider, normalizedevent.FieldProviderNamespace, normalizedevent.FieldProviderResourceRef, normalizedevent.FieldKind, normalizedevent.FieldProviderEventSource, normalizedevent.FieldProviderEventRef:
+		case normalizedevent.FieldProvider, normalizedevent.FieldProviderNamespace, normalizedevent.FieldProviderResourceRef, normalizedevent.FieldKind, normalizedevent.FieldProviderEventSource, normalizedevent.FieldProviderEventRef, normalizedevent.FieldFailureReason:
 			values[i] = new(sql.NullString)
-		case normalizedevent.FieldCreatedAt, normalizedevent.FieldOccurredAt, normalizedevent.FieldLastOccurredAt, normalizedevent.FieldReceivedAt:
+		case normalizedevent.FieldCreatedAt, normalizedevent.FieldOccurredAt, normalizedevent.FieldLastOccurredAt, normalizedevent.FieldReceivedAt, normalizedevent.FieldFailedAt:
 			values[i] = new(sql.NullTime)
 		case normalizedevent.FieldID:
 			values[i] = new(uuid.UUID)
@@ -216,6 +220,20 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ReceivedAt = value.Time
 			}
+		case normalizedevent.FieldFailedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field failed_at", values[i])
+			} else if value.Valid {
+				_m.FailedAt = new(time.Time)
+				*_m.FailedAt = value.Time
+			}
+		case normalizedevent.FieldFailureReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field failure_reason", values[i])
+			} else if value.Valid {
+				_m.FailureReason = new(string)
+				*_m.FailureReason = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -307,6 +325,16 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("received_at=")
 	builder.WriteString(_m.ReceivedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.FailedAt; v != nil {
+		builder.WriteString("failed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.FailureReason; v != nil {
+		builder.WriteString("failure_reason=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

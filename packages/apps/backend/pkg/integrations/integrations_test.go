@@ -137,3 +137,34 @@ func (r *fakeLogReader) CountLogs(context.Context, LogCountParams) (*LogCountRes
 func (r *fakeLogReader) CheckLogsAvailable() error {
 	return r.unavailable
 }
+
+type fakeDirectMessageSender struct {
+	fakeInstallation
+}
+
+func (ii *fakeDirectMessageSender) SendDirectMessage(context.Context, *ent.User, *DirectMessage) error {
+	return nil
+}
+
+func (ii *fakeDirectMessageSender) DirectMessageDescription() string {
+	return "a chat direct message"
+}
+
+func (s *IntegrationsSuite) TestDirectMessageSendersDescription() {
+	unresolved := []error{errors.New("invalid installation config")}
+	cases := map[string]struct {
+		senders     DirectMessageSenders
+		description string
+		known       bool
+	}{
+		"a sender":                        {senders: DirectMessageSenders{Senders: []DirectMessageSender{&fakeDirectMessageSender{}}}, description: "a chat direct message", known: true},
+		"a sender and an unresolved one":  {senders: DirectMessageSenders{Senders: []DirectMessageSender{&fakeDirectMessageSender{}}, Unresolved: unresolved}, description: "a chat direct message", known: true},
+		"no sender":                       {senders: DirectMessageSenders{}, known: true},
+		"only an unresolved installation": {senders: DirectMessageSenders{Unresolved: unresolved}, known: false},
+	}
+	for name, tc := range cases {
+		description, known := tc.senders.Description()
+		s.Equal(tc.description, description, name)
+		s.Equal(tc.known, known, name)
+	}
+}

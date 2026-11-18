@@ -54,6 +54,10 @@ func (Incident) Indexes() []ent.Index {
 		index.Fields("tenant_id", "provider", "provider_namespace", "provider_resource_ref").
 			Unique().
 			Annotations(entsql.IndexWhere("provider IS NOT NULL")),
+		// A chat channel is the response channel of one incident.
+		index.Fields("tenant_id", "chat_channel_id").
+			Unique().
+			Annotations(entsql.IndexWhere("chat_channel_id IS NOT NULL")),
 	}
 }
 

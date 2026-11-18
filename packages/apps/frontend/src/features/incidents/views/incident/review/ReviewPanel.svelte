@@ -75,6 +75,9 @@
 			{/if}
 		</div>
 	{/each}
+	{#if model.reviewerNotice}
+		<p class="text-xs text-muted-foreground">{model.reviewerNotice}</p>
+	{/if}
 	{#if model.actions.changeReviewers}
 		<Button variant="link" size="sm" onclick={() => review.open("add")}>Add reviewer</Button>
 	{/if}
@@ -148,7 +151,7 @@
 				{:else if review.dialog === "skip"}
 					Shown with the incident.
 				{:else if review.dialog === "request" || review.dialog === "add"}
-					Each reviewer is messaged in chat if Rezible knows their account.
+					{model.reviewerNotice}
 				{:else}
 					Confirm this change to the retrospective.
 				{/if}

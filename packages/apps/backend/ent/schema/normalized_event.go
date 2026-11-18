@@ -42,6 +42,10 @@ func (NormalizedEvent) Fields() []ent.Field {
 		field.Time("occurred_at").Immutable(),
 		field.Time("last_occurred_at"),
 		field.Time("received_at").Immutable(),
+		field.Time("failed_at").Optional().Nillable().
+			Comment("When work on the event last failed in a way a retry would not fix."),
+		field.String("failure_reason").Optional().Nillable().
+			Comment("Why work on the event failed, in words safe to show to members."),
 	}
 }
 

@@ -395,24 +395,12 @@ func (w *sendReviewRequestMessageWorker) send(ctx context.Context, args jobs.Sen
 		Text:    fmt.Sprintf("%s asked you to review the retrospective for %s %q.", r.Edges.Requester.Name, inc.Reference(), inc.Title),
 		LinkURL: link.String(), LinkLabel: "Open the review",
 	}
-	installations, listErr := w.integrations.ListInstallations(ctx)
+	senders, listErr := integrations.ListDirectMessageSenders(ctx, w.integrations)
 	if listErr != nil {
 		return listErr
 	}
-	var deliveryErrs []error
-	for _, installation := range installations {
-		installed, installedErr := w.integrations.AsInstalledIntegration(installation)
-		if errors.Is(installedErr, integrations.ErrUnknownIntegration) {
-			continue
-		}
-		if installedErr != nil {
-			deliveryErrs = append(deliveryErrs, installedErr)
-			continue
-		}
-		sender, supported := installed.(integrations.DirectMessageSender)
-		if !supported {
-			continue
-		}
+	deliveryErrs := senders.Unresolved
+	for _, sender := range senders.Senders {
 		sendErr := sender.SendDirectMessage(ctx, r.Edges.Reviewer, &message)
 		if errors.Is(sendErr, integrations.ErrNoRecipient) {
 			continue

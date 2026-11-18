@@ -374,6 +374,10 @@ type reviewMessageSender struct {
 	sendErr   error
 }
 
+func (s *reviewMessageSender) DirectMessageDescription() string {
+	return "a test direct message"
+}
+
 func (s *reviewMessageSender) SendDirectMessage(_ context.Context, recipient *ent.User, message *integrations.DirectMessage) error {
 	s.recipient = recipient.ID
 	s.message = message

@@ -54,9 +54,22 @@ export function reviewPanelModel(
 			explanation = `Skipped by ${closer}${closedOn}.`;
 		}
 	}
+	let reviewerNotice = "";
+	if (retrospective && !closed) {
+		const messages = retrospective.reviewerMessages;
+		if (messages.delivery === "direct_message") {
+			reviewerNotice = `Reviewers are told by ${messages.description} when Rezible knows their account.`;
+		} else if (messages.delivery === "none") {
+			reviewerNotice =
+				"No connected integration can send direct messages, so reviewers will not be notified.";
+		} else {
+			reviewerNotice = "Rezible could not check whether reviewers can be notified.";
+		}
+	}
 	return {
 		status,
 		explanation,
+		reviewerNotice,
 		owner,
 		isOwner,
 		closed,

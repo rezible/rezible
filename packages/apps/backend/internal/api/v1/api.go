@@ -99,7 +99,7 @@ func NewHandler(
 		oncallMetricsHandler:    newOncallMetricsHandler(oncallMetrics),
 		organizationsHandler:    newOrganizationsHandler(orgs),
 		playbooksHandler:        newPlaybooksHandler(playbooks),
-		retrospectivesHandler:   newRetrospectivesHandler(retros),
+		retrospectivesHandler:   newRetrospectivesHandler(retros, integrations),
 		systemAnalysisHandler:   newSystemAnalysisHandler(clock, systemAnalysis),
 		knowledgeGraphHandler:   newKnowledgeGraphHandler(clock, knowledge, knowledgeAliases, proposals),
 		situationsHandler:       newSituationsHandler(bh, situations, situationBriefs, situationNotices),

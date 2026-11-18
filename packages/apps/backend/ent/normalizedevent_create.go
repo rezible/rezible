@@ -121,6 +121,34 @@ func (_c *NormalizedEventCreate) SetReceivedAt(v time.Time) *NormalizedEventCrea
 	return _c
 }
 
+// SetFailedAt sets the "failed_at" field.
+func (_c *NormalizedEventCreate) SetFailedAt(v time.Time) *NormalizedEventCreate {
+	_c.mutation.SetFailedAt(v)
+	return _c
+}
+
+// SetNillableFailedAt sets the "failed_at" field if the given value is not nil.
+func (_c *NormalizedEventCreate) SetNillableFailedAt(v *time.Time) *NormalizedEventCreate {
+	if v != nil {
+		_c.SetFailedAt(*v)
+	}
+	return _c
+}
+
+// SetFailureReason sets the "failure_reason" field.
+func (_c *NormalizedEventCreate) SetFailureReason(v string) *NormalizedEventCreate {
+	_c.mutation.SetFailureReason(v)
+	return _c
+}
+
+// SetNillableFailureReason sets the "failure_reason" field if the given value is not nil.
+func (_c *NormalizedEventCreate) SetNillableFailureReason(v *string) *NormalizedEventCreate {
+	if v != nil {
+		_c.SetFailureReason(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *NormalizedEventCreate) SetID(v uuid.UUID) *NormalizedEventCreate {
 	_c.mutation.SetID(v)
@@ -365,6 +393,14 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
 		_node.ReceivedAt = value
 	}
+	if value, ok := _c.mutation.FailedAt(); ok {
+		_spec.SetField(normalizedevent.FieldFailedAt, field.TypeTime, value)
+		_node.FailedAt = &value
+	}
+	if value, ok := _c.mutation.FailureReason(); ok {
+		_spec.SetField(normalizedevent.FieldFailureReason, field.TypeString, value)
+		_node.FailureReason = &value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -500,6 +536,42 @@ func (u *NormalizedEventUpsert) UpdateLastOccurredAt() *NormalizedEventUpsert {
 	return u
 }
 
+// SetFailedAt sets the "failed_at" field.
+func (u *NormalizedEventUpsert) SetFailedAt(v time.Time) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldFailedAt, v)
+	return u
+}
+
+// UpdateFailedAt sets the "failed_at" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateFailedAt() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldFailedAt)
+	return u
+}
+
+// ClearFailedAt clears the value of the "failed_at" field.
+func (u *NormalizedEventUpsert) ClearFailedAt() *NormalizedEventUpsert {
+	u.SetNull(normalizedevent.FieldFailedAt)
+	return u
+}
+
+// SetFailureReason sets the "failure_reason" field.
+func (u *NormalizedEventUpsert) SetFailureReason(v string) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldFailureReason, v)
+	return u
+}
+
+// UpdateFailureReason sets the "failure_reason" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateFailureReason() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldFailureReason)
+	return u
+}
+
+// ClearFailureReason clears the value of the "failure_reason" field.
+func (u *NormalizedEventUpsert) ClearFailureReason() *NormalizedEventUpsert {
+	u.SetNull(normalizedevent.FieldFailureReason)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -613,6 +685,48 @@ func (u *NormalizedEventUpsertOne) SetLastOccurredAt(v time.Time) *NormalizedEve
 func (u *NormalizedEventUpsertOne) UpdateLastOccurredAt() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.UpdateLastOccurredAt()
+	})
+}
+
+// SetFailedAt sets the "failed_at" field.
+func (u *NormalizedEventUpsertOne) SetFailedAt(v time.Time) *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetFailedAt(v)
+	})
+}
+
+// UpdateFailedAt sets the "failed_at" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateFailedAt() *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateFailedAt()
+	})
+}
+
+// ClearFailedAt clears the value of the "failed_at" field.
+func (u *NormalizedEventUpsertOne) ClearFailedAt() *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.ClearFailedAt()
+	})
+}
+
+// SetFailureReason sets the "failure_reason" field.
+func (u *NormalizedEventUpsertOne) SetFailureReason(v string) *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetFailureReason(v)
+	})
+}
+
+// UpdateFailureReason sets the "failure_reason" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateFailureReason() *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateFailureReason()
+	})
+}
+
+// ClearFailureReason clears the value of the "failure_reason" field.
+func (u *NormalizedEventUpsertOne) ClearFailureReason() *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.ClearFailureReason()
 	})
 }
 
@@ -896,6 +1010,48 @@ func (u *NormalizedEventUpsertBulk) SetLastOccurredAt(v time.Time) *NormalizedEv
 func (u *NormalizedEventUpsertBulk) UpdateLastOccurredAt() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.UpdateLastOccurredAt()
+	})
+}
+
+// SetFailedAt sets the "failed_at" field.
+func (u *NormalizedEventUpsertBulk) SetFailedAt(v time.Time) *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetFailedAt(v)
+	})
+}
+
+// UpdateFailedAt sets the "failed_at" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateFailedAt() *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateFailedAt()
+	})
+}
+
+// ClearFailedAt clears the value of the "failed_at" field.
+func (u *NormalizedEventUpsertBulk) ClearFailedAt() *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.ClearFailedAt()
+	})
+}
+
+// SetFailureReason sets the "failure_reason" field.
+func (u *NormalizedEventUpsertBulk) SetFailureReason(v string) *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetFailureReason(v)
+	})
+}
+
+// UpdateFailureReason sets the "failure_reason" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateFailureReason() *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateFailureReason()
+	})
+}
+
+// ClearFailureReason clears the value of the "failure_reason" field.
+func (u *NormalizedEventUpsertBulk) ClearFailureReason() *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.ClearFailureReason()
 	})
 }
 

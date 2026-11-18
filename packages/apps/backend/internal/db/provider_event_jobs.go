@@ -62,10 +62,23 @@ func NewProjectNormalizedEventWorker(service *ProviderEventPipelineService) jobs
 }
 
 func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Context, job *river.Job[jobs.ProjectNormalizedEvent]) error {
-	return s.classifyEventJobError(ctx, job.Args.EventId, "projection", s.ingester.ProjectNormalizedEvent(ctx, job.Args.EventId, job.Attempt < missingEndpointSkipAttempt))
+	return s.classifyEventJobError(ctx, job.Args.EventId, eventOperationProjection, s.ingester.ProjectNormalizedEvent(ctx, job.Args.EventId, job.Attempt < missingEndpointSkipAttempt))
 }
 
-func (s *ProviderEventPipelineService) classifyEventJobError(ctx context.Context, eventID uuid.UUID, operation string, jobErr error) error {
+// eventOperation is work on a stored normalized event, named for logs and described for members.
+type eventOperation struct {
+	name    string
+	failure string
+}
+
+var (
+	eventOperationProjection    = eventOperation{name: "projection", failure: "Processing this event failed"}
+	eventOperationReobservation = eventOperation{name: "re-observation", failure: "Recording a repeat of this event failed"}
+)
+
+// classifyEventJobError returns the error for River: retryable when a retry can succeed, and otherwise a
+// cancellation, after marking the event failed so the failure shows with it.
+func (s *ProviderEventPipelineService) classifyEventJobError(ctx context.Context, eventID uuid.UUID, operation eventOperation, jobErr error) error {
 	if jobErr == nil {
 		return nil
 	}
@@ -87,10 +100,18 @@ func (s *ProviderEventPipelineService) classifyEventJobError(ctx context.Context
 		return jobErr
 	}
 	slog.ErrorContext(ctx, "fatal event job error",
-		"operation", operation,
+		"operation", operation.name,
 		"error", jobErr.Error(),
 		"event_id", eventID,
 	)
+	// The cause stays in the log; members see only its public text.
+	reason := fmt.Sprintf("%s, and retrying will not help. %s", operation.failure, errs.PublicMessage(jobErr))
+	markFailed := s.db.Client(ctx).NormalizedEvent.UpdateOneID(eventID).
+		SetFailedAt(time.Now()).
+		SetFailureReason(reason)
+	if markErr := markFailed.Exec(ctx); markErr != nil && !ent.IsNotFound(markErr) {
+		return fmt.Errorf("mark event failed: %w", markErr)
+	}
 	return river.JobCancel(jobErr)
 }
 
@@ -99,5 +120,5 @@ func NewReobserveNormalizedEventWorker(service *ProviderEventPipelineService) jo
 }
 
 func (s *ProviderEventPipelineService) HandleEventReobservationJob(ctx context.Context, args jobs.ReobserveNormalizedEvent) error {
-	return s.classifyEventJobError(ctx, args.EventId, "re-observation", s.ingester.ReobserveNormalizedEvent(ctx, args.EventId, args.At))
+	return s.classifyEventJobError(ctx, args.EventId, eventOperationReobservation, s.ingester.ReobserveNormalizedEvent(ctx, args.EventId, args.At))
 }

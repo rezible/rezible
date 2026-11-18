@@ -20,6 +20,7 @@ const retrospective: RetrospectiveAttributes = {
 			messageFailed: false,
 		},
 	],
+	reviewerMessages: { delivery: "none" },
 };
 
 test("review actions follow ownership, reviewer membership and pending decisions", () => {
@@ -86,4 +87,18 @@ test("the closed banner line names the closer, time and outcome", () => {
 	expect(closedReviewLine({ ...closed, outcome: "skipped" })).toBe(
 		`Skipped by Ava Patel · ${time}: Duplicate of INC-12`
 	);
+});
+
+test("the panel says how reviewers are told, or that they will not be", () => {
+	const told = reviewPanelModel({
+		...retrospective,
+		reviewerMessages: { delivery: "direct_message", description: "a chat direct message" },
+	});
+	expect(told.reviewerNotice).toContain("a chat direct message");
+	expect(told.reviewerNotice).not.toContain("will not be notified");
+	expect(reviewPanelModel(retrospective).reviewerNotice).toContain("will not be notified");
+	const unknown = reviewPanelModel({ ...retrospective, reviewerMessages: { delivery: "unknown" } });
+	expect(unknown.reviewerNotice).not.toBe("");
+	expect(unknown.reviewerNotice).not.toContain("will not be notified");
+	expect(reviewPanelModel({ ...retrospective, state: "closed" }).reviewerNotice).toBe("");
 });

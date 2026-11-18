@@ -33,6 +33,8 @@ type NormalizedEventMutation struct {
 	occurred_at           *time.Time
 	last_occurred_at      *time.Time
 	received_at           *time.Time
+	failed_at             *time.Time
+	failure_reason        *string
 	clearedFields         map[string]struct{}
 	tenant                *int
 	clearedtenant         bool
@@ -630,6 +632,104 @@ func (m *NormalizedEventMutation) ResetReceivedAt() {
 	m.received_at = nil
 }
 
+// SetFailedAt sets the "failed_at" field.
+func (m *NormalizedEventMutation) SetFailedAt(t time.Time) {
+	m.failed_at = &t
+}
+
+// FailedAt returns the value of the "failed_at" field in the mutation.
+func (m *NormalizedEventMutation) FailedAt() (r time.Time, exists bool) {
+	v := m.failed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFailedAt returns the old "failed_at" field's value of the NormalizedEvent entity.
+// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NormalizedEventMutation) OldFailedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFailedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFailedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFailedAt: %w", err)
+	}
+	return oldValue.FailedAt, nil
+}
+
+// ClearFailedAt clears the value of the "failed_at" field.
+func (m *NormalizedEventMutation) ClearFailedAt() {
+	m.failed_at = nil
+	m.clearedFields[normalizedevent.FieldFailedAt] = struct{}{}
+}
+
+// FailedAtCleared returns if the "failed_at" field was cleared in this mutation.
+func (m *NormalizedEventMutation) FailedAtCleared() bool {
+	_, ok := m.clearedFields[normalizedevent.FieldFailedAt]
+	return ok
+}
+
+// ResetFailedAt resets all changes to the "failed_at" field.
+func (m *NormalizedEventMutation) ResetFailedAt() {
+	m.failed_at = nil
+	delete(m.clearedFields, normalizedevent.FieldFailedAt)
+}
+
+// SetFailureReason sets the "failure_reason" field.
+func (m *NormalizedEventMutation) SetFailureReason(s string) {
+	m.failure_reason = &s
+}
+
+// FailureReason returns the value of the "failure_reason" field in the mutation.
+func (m *NormalizedEventMutation) FailureReason() (r string, exists bool) {
+	v := m.failure_reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFailureReason returns the old "failure_reason" field's value of the NormalizedEvent entity.
+// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NormalizedEventMutation) OldFailureReason(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFailureReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFailureReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFailureReason: %w", err)
+	}
+	return oldValue.FailureReason, nil
+}
+
+// ClearFailureReason clears the value of the "failure_reason" field.
+func (m *NormalizedEventMutation) ClearFailureReason() {
+	m.failure_reason = nil
+	m.clearedFields[normalizedevent.FieldFailureReason] = struct{}{}
+}
+
+// FailureReasonCleared returns if the "failure_reason" field was cleared in this mutation.
+func (m *NormalizedEventMutation) FailureReasonCleared() bool {
+	_, ok := m.clearedFields[normalizedevent.FieldFailureReason]
+	return ok
+}
+
+// ResetFailureReason resets all changes to the "failure_reason" field.
+func (m *NormalizedEventMutation) ResetFailureReason() {
+	m.failure_reason = nil
+	delete(m.clearedFields, normalizedevent.FieldFailureReason)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *NormalizedEventMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -757,7 +857,7 @@ func (m *NormalizedEventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NormalizedEventMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 15)
 	if m.tenant != nil {
 		fields = append(fields, normalizedevent.FieldTenantID)
 	}
@@ -797,6 +897,12 @@ func (m *NormalizedEventMutation) Fields() []string {
 	if m.received_at != nil {
 		fields = append(fields, normalizedevent.FieldReceivedAt)
 	}
+	if m.failed_at != nil {
+		fields = append(fields, normalizedevent.FieldFailedAt)
+	}
+	if m.failure_reason != nil {
+		fields = append(fields, normalizedevent.FieldFailureReason)
+	}
 	return fields
 }
 
@@ -831,6 +937,10 @@ func (m *NormalizedEventMutation) Field(name string) (ent.Value, bool) {
 		return m.LastOccurredAt()
 	case normalizedevent.FieldReceivedAt:
 		return m.ReceivedAt()
+	case normalizedevent.FieldFailedAt:
+		return m.FailedAt()
+	case normalizedevent.FieldFailureReason:
+		return m.FailureReason()
 	}
 	return nil, false
 }
@@ -866,6 +976,10 @@ func (m *NormalizedEventMutation) OldField(ctx context.Context, name string) (en
 		return m.OldLastOccurredAt(ctx)
 	case normalizedevent.FieldReceivedAt:
 		return m.OldReceivedAt(ctx)
+	case normalizedevent.FieldFailedAt:
+		return m.OldFailedAt(ctx)
+	case normalizedevent.FieldFailureReason:
+		return m.OldFailureReason(ctx)
 	}
 	return nil, fmt.Errorf("unknown NormalizedEvent field %s", name)
 }
@@ -966,6 +1080,20 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetReceivedAt(v)
 		return nil
+	case normalizedevent.FieldFailedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFailedAt(v)
+		return nil
+	case normalizedevent.FieldFailureReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFailureReason(v)
+		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEvent field %s", name)
 }
@@ -1002,6 +1130,12 @@ func (m *NormalizedEventMutation) ClearedFields() []string {
 	if m.FieldCleared(normalizedevent.FieldIntegrationID) {
 		fields = append(fields, normalizedevent.FieldIntegrationID)
 	}
+	if m.FieldCleared(normalizedevent.FieldFailedAt) {
+		fields = append(fields, normalizedevent.FieldFailedAt)
+	}
+	if m.FieldCleared(normalizedevent.FieldFailureReason) {
+		fields = append(fields, normalizedevent.FieldFailureReason)
+	}
 	return fields
 }
 
@@ -1018,6 +1152,12 @@ func (m *NormalizedEventMutation) ClearField(name string) error {
 	switch name {
 	case normalizedevent.FieldIntegrationID:
 		m.ClearIntegrationID()
+		return nil
+	case normalizedevent.FieldFailedAt:
+		m.ClearFailedAt()
+		return nil
+	case normalizedevent.FieldFailureReason:
+		m.ClearFailureReason()
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEvent nullable field %s", name)
@@ -1065,6 +1205,12 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 		return nil
 	case normalizedevent.FieldReceivedAt:
 		m.ResetReceivedAt()
+		return nil
+	case normalizedevent.FieldFailedAt:
+		m.ResetFailedAt()
+		return nil
+	case normalizedevent.FieldFailureReason:
+		m.ResetFailureReason()
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEvent field %s", name)

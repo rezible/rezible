@@ -472,28 +472,47 @@ func (s *ProviderEventPipelineServiceSuite) TestEventWorkersClassifyFailures() {
 		"refused by a foreign key": {
 			projectionErr: fmt.Errorf("create annotation: %w", &pgconn.PgError{Code: "23503", ConstraintName: "discussion_threads_users_user"}),
 		},
+		"refused with a reason": {
+			projectionErr: fmt.Errorf("decode alert: %w", errs.New(errs.CodeUnprocessable, "The alert has no fingerprint.")),
+		},
 	}
 	for name, tc := range cases {
 		s.Run(name, func() {
 			projector := &transientDatabasePipelineProjector{projectionErr: tc.projectionErr}
 			svc := s.newPipelineService(tdb, mocks.NewMockJobService(s.T()), projector)
 			svc.db = transientDatabase{Database: tdb, transientErr: transientErr}
-			ev := s.createPipelineNormalizedEvent(ctx, tdb)
-
+			projected := s.createPipelineNormalizedEvent(ctx, tdb)
 			projectionErr := svc.HandleEventProjectionJob(ctx, &river.Job[jobs.ProjectNormalizedEvent]{JobRow: &rivertype.JobRow{Attempt: 1}, Args: jobs.ProjectNormalizedEvent{
-				EventId: ev.ID,
+				EventId: projected.ID,
 			}})
 
 			svc.ingester = &failingReobservationIngester{ProviderEventIngester: svc.ingester, failure: tc.projectionErr}
-			repeatErr := svc.HandleEventReobservationJob(ctx, jobs.ReobserveNormalizedEvent{EventId: ev.ID, At: ev.OccurredAt})
-			for _, jobErr := range []error{projectionErr, repeatErr} {
-				s.Require().Error(jobErr)
+			repeated := s.createPipelineNormalizedEvent(ctx, tdb)
+			repeatErr := svc.HandleEventReobservationJob(ctx, jobs.ReobserveNormalizedEvent{EventId: repeated.ID, At: repeated.OccurredAt})
+
+			for operation, run := range map[eventOperation]struct {
+				eventID uuid.UUID
+				jobErr  error
+			}{
+				eventOperationProjection:    {eventID: projected.ID, jobErr: projectionErr},
+				eventOperationReobservation: {eventID: repeated.ID, jobErr: repeatErr},
+			} {
+				s.Require().Error(run.jobErr, operation.name)
+				stored, getErr := tdb.Client(ctx).NormalizedEvent.Get(ctx, run.eventID)
+				s.Require().NoError(getErr)
 				if tc.retryable {
-					s.True(jobs.IsRetryableError(jobErr))
-				} else {
-					var cancelErr *river.JobCancelError
-					s.ErrorAs(jobErr, &cancelErr)
+					s.True(jobs.IsRetryableError(run.jobErr), operation.name)
+					s.Nil(stored.FailedAt, "an event whose %s will be retried has not failed", operation.name)
+					s.Nil(stored.FailureReason)
+					continue
 				}
+				var cancelErr *river.JobCancelError
+				s.ErrorAs(run.jobErr, &cancelErr, operation.name)
+				s.NotNil(stored.FailedAt, "an event whose %s was cancelled is marked failed", operation.name)
+				s.Require().NotNil(stored.FailureReason, operation.name)
+				s.Contains(*stored.FailureReason, operation.failure, "the reason names the work that failed")
+				s.Contains(*stored.FailureReason, errs.PublicMessage(tc.projectionErr), "the reason carries the error's public text")
+				s.NotContains(*stored.FailureReason, "create annotation", "the cause is not shown")
 			}
 		})
 	}

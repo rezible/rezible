@@ -1318,6 +1318,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 			normalizedevent.FieldOccurredAt:          {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
 			normalizedevent.FieldLastOccurredAt:      {Type: field.TypeTime, Column: normalizedevent.FieldLastOccurredAt},
 			normalizedevent.FieldReceivedAt:          {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
+			normalizedevent.FieldFailedAt:            {Type: field.TypeTime, Column: normalizedevent.FieldFailedAt},
+			normalizedevent.FieldFailureReason:       {Type: field.TypeString, Column: normalizedevent.FieldFailureReason},
 		},
 	}
 	graph.Nodes[58] = &sqlgraph.Node{
@@ -14669,6 +14671,16 @@ func (f *NormalizedEventFilter) WhereLastOccurredAt(p entql.TimeP) {
 // WhereReceivedAt applies the entql time.Time predicate on the received_at field.
 func (f *NormalizedEventFilter) WhereReceivedAt(p entql.TimeP) {
 	f.Where(p.Field(normalizedevent.FieldReceivedAt))
+}
+
+// WhereFailedAt applies the entql time.Time predicate on the failed_at field.
+func (f *NormalizedEventFilter) WhereFailedAt(p entql.TimeP) {
+	f.Where(p.Field(normalizedevent.FieldFailedAt))
+}
+
+// WhereFailureReason applies the entql string predicate on the failure_reason field.
+func (f *NormalizedEventFilter) WhereFailureReason(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldFailureReason))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

@@ -58,16 +58,17 @@ type (
 	}
 
 	RetrospectiveAttributes struct {
-		DocumentId       uuid.UUID                    `json:"documentId"`
-		SystemAnalysisId uuid.UUID                    `json:"systemAnalysisId"`
-		State            retrospective.State          `json:"state"`
-		ReportSections   []RetrospectiveReportSection `json:"reportSections"`
-		Owner            *Expandable[UserAttributes]  `json:"owner,omitempty"`
-		ClosedAt         *time.Time                   `json:"closedAt,omitempty"`
-		ClosedBy         *Expandable[UserAttributes]  `json:"closedBy,omitempty"`
-		SkipReason       *string                      `json:"skipReason,omitempty"`
-		Outcome          string                       `json:"outcome,omitempty" enum:"reviewed,closed_without_review,skipped"`
-		Reviews          []RetrospectiveReview        `json:"reviews"`
+		DocumentId       uuid.UUID                     `json:"documentId"`
+		SystemAnalysisId uuid.UUID                     `json:"systemAnalysisId"`
+		State            retrospective.State           `json:"state"`
+		ReportSections   []RetrospectiveReportSection  `json:"reportSections"`
+		Owner            *Expandable[UserAttributes]   `json:"owner,omitempty"`
+		ClosedAt         *time.Time                    `json:"closedAt,omitempty"`
+		ClosedBy         *Expandable[UserAttributes]   `json:"closedBy,omitempty"`
+		SkipReason       *string                       `json:"skipReason,omitempty"`
+		Outcome          string                        `json:"outcome,omitempty" enum:"reviewed,closed_without_review,skipped"`
+		Reviews          []RetrospectiveReview         `json:"reviews"`
+		ReviewerMessages RetrospectiveReviewerMessages `json:"reviewerMessages" doc:"How reviewers are told of a review request"`
 	}
 
 	RetrospectiveReportComposition struct {
@@ -98,6 +99,11 @@ type (
 		Description string `json:"description"`
 	}
 )
+
+type RetrospectiveReviewerMessages struct {
+	Delivery    string `json:"delivery" enum:"direct_message,none,unknown" doc:"direct_message when a connected integration sends reviewers direct messages, none when no connected integration can, and unknown when that could not be established"`
+	Description string `json:"description,omitempty" doc:"How a reviewer receives the message, such as 'a Slack direct message'; set when delivery is direct_message"`
+}
 
 type RetrospectiveReview struct {
 	Reviewer      Expandable[UserAttributes] `json:"reviewer"`

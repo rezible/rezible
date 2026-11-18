@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -86,6 +87,46 @@ func LookupInstallationAs[T any](ctx context.Context, getter rez.InstalledIntegr
 		return zero, getErr
 	}
 	return As[T](ii)
+}
+
+// DirectMessageSenders are the installations that can send members direct messages.
+type DirectMessageSenders struct {
+	Senders []DirectMessageSender
+	// Unresolved holds the errors of installations that could not be resolved, any of which might send.
+	Unresolved []error
+}
+
+// ListDirectMessageSenders returns the installations that can send direct messages, in installation order.
+// An installation of an integration that is no longer registered is skipped.
+func ListDirectMessageSenders(ctx context.Context, installations rez.IntegrationService) (*DirectMessageSenders, error) {
+	installed, listErr := installations.ListInstallations(ctx)
+	if listErr != nil {
+		return nil, fmt.Errorf("list installations: %w", listErr)
+	}
+	senders := &DirectMessageSenders{}
+	for _, installation := range installed {
+		ii, resolveErr := installations.AsInstalledIntegration(installation)
+		if errors.Is(resolveErr, ErrUnknownIntegration) {
+			continue
+		}
+		if resolveErr != nil {
+			senders.Unresolved = append(senders.Unresolved, resolveErr)
+			continue
+		}
+		if sender, supported := ii.(DirectMessageSender); supported {
+			senders.Senders = append(senders.Senders, sender)
+		}
+	}
+	return senders, nil
+}
+
+// Description says how members are sent direct messages, as the first sender describes it. It is empty when
+// there is no sender. known is false when there is no sender but an unresolved installation might be one.
+func (s *DirectMessageSenders) Description() (description string, known bool) {
+	if len(s.Senders) > 0 {
+		return s.Senders[0].DirectMessageDescription(), true
+	}
+	return "", len(s.Unresolved) == 0
 }
 
 // LogSource is an installation that reads logs.

@@ -67,6 +67,46 @@ func (_u *NormalizedEventUpdate) SetNillableLastOccurredAt(v *time.Time) *Normal
 	return _u
 }
 
+// SetFailedAt sets the "failed_at" field.
+func (_u *NormalizedEventUpdate) SetFailedAt(v time.Time) *NormalizedEventUpdate {
+	_u.mutation.SetFailedAt(v)
+	return _u
+}
+
+// SetNillableFailedAt sets the "failed_at" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableFailedAt(v *time.Time) *NormalizedEventUpdate {
+	if v != nil {
+		_u.SetFailedAt(*v)
+	}
+	return _u
+}
+
+// ClearFailedAt clears the value of the "failed_at" field.
+func (_u *NormalizedEventUpdate) ClearFailedAt() *NormalizedEventUpdate {
+	_u.mutation.ClearFailedAt()
+	return _u
+}
+
+// SetFailureReason sets the "failure_reason" field.
+func (_u *NormalizedEventUpdate) SetFailureReason(v string) *NormalizedEventUpdate {
+	_u.mutation.SetFailureReason(v)
+	return _u
+}
+
+// SetNillableFailureReason sets the "failure_reason" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableFailureReason(v *string) *NormalizedEventUpdate {
+	if v != nil {
+		_u.SetFailureReason(*v)
+	}
+	return _u
+}
+
+// ClearFailureReason clears the value of the "failure_reason" field.
+func (_u *NormalizedEventUpdate) ClearFailureReason() *NormalizedEventUpdate {
+	_u.mutation.ClearFailureReason()
+	return _u
+}
+
 // SetIntegration sets the "integration" edge to the Integration entity.
 func (_u *NormalizedEventUpdate) SetIntegration(v *Integration) *NormalizedEventUpdate {
 	return _u.SetIntegrationID(v.ID)
@@ -163,6 +203,18 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.LastOccurredAt(); ok {
 		_spec.SetField(normalizedevent.FieldLastOccurredAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.FailedAt(); ok {
+		_spec.SetField(normalizedevent.FieldFailedAt, field.TypeTime, value)
+	}
+	if _u.mutation.FailedAtCleared() {
+		_spec.ClearField(normalizedevent.FieldFailedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.FailureReason(); ok {
+		_spec.SetField(normalizedevent.FieldFailureReason, field.TypeString, value)
+	}
+	if _u.mutation.FailureReasonCleared() {
+		_spec.ClearField(normalizedevent.FieldFailureReason, field.TypeString)
 	}
 	if _u.mutation.IntegrationCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -281,6 +333,46 @@ func (_u *NormalizedEventUpdateOne) SetNillableLastOccurredAt(v *time.Time) *Nor
 	if v != nil {
 		_u.SetLastOccurredAt(*v)
 	}
+	return _u
+}
+
+// SetFailedAt sets the "failed_at" field.
+func (_u *NormalizedEventUpdateOne) SetFailedAt(v time.Time) *NormalizedEventUpdateOne {
+	_u.mutation.SetFailedAt(v)
+	return _u
+}
+
+// SetNillableFailedAt sets the "failed_at" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableFailedAt(v *time.Time) *NormalizedEventUpdateOne {
+	if v != nil {
+		_u.SetFailedAt(*v)
+	}
+	return _u
+}
+
+// ClearFailedAt clears the value of the "failed_at" field.
+func (_u *NormalizedEventUpdateOne) ClearFailedAt() *NormalizedEventUpdateOne {
+	_u.mutation.ClearFailedAt()
+	return _u
+}
+
+// SetFailureReason sets the "failure_reason" field.
+func (_u *NormalizedEventUpdateOne) SetFailureReason(v string) *NormalizedEventUpdateOne {
+	_u.mutation.SetFailureReason(v)
+	return _u
+}
+
+// SetNillableFailureReason sets the "failure_reason" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableFailureReason(v *string) *NormalizedEventUpdateOne {
+	if v != nil {
+		_u.SetFailureReason(*v)
+	}
+	return _u
+}
+
+// ClearFailureReason clears the value of the "failure_reason" field.
+func (_u *NormalizedEventUpdateOne) ClearFailureReason() *NormalizedEventUpdateOne {
+	_u.mutation.ClearFailureReason()
 	return _u
 }
 
@@ -410,6 +502,18 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	}
 	if value, ok := _u.mutation.LastOccurredAt(); ok {
 		_spec.SetField(normalizedevent.FieldLastOccurredAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.FailedAt(); ok {
+		_spec.SetField(normalizedevent.FieldFailedAt, field.TypeTime, value)
+	}
+	if _u.mutation.FailedAtCleared() {
+		_spec.ClearField(normalizedevent.FieldFailedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.FailureReason(); ok {
+		_spec.SetField(normalizedevent.FieldFailureReason, field.TypeString, value)
+	}
+	if _u.mutation.FailureReasonCleared() {
+		_spec.ClearField(normalizedevent.FieldFailureReason, field.TypeString)
 	}
 	if _u.mutation.IntegrationCleared() {
 		edge := &sqlgraph.EdgeSpec{
