@@ -29,7 +29,7 @@
 >
 	<AlertDialog.Content>
 		<AlertDialog.Header>
-			<AlertDialog.Title>Replace the webhook URL?</AlertDialog.Title>
+			<AlertDialog.Title>Regenerate the webhook URL?</AlertDialog.Title>
 			<AlertDialog.Description>
 				The current URL for this installation stops working at once. {users} using it must be updated with
 				the new URL.
@@ -46,7 +46,7 @@
 				{#if issuing}
 					<Spinner />
 				{/if}
-				Replace
+				Regenerate
 			</Button>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>

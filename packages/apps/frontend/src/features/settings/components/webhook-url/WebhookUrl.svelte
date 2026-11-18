@@ -59,5 +59,5 @@
 	onclick={() => webhookUrls.requestGenerate(installation)}
 >
 	<RiLinkM />
-	{hasUrl ? "Replace webhook URL" : "Generate webhook URL"}
+	{hasUrl ? "Regenerate URL" : "Generate webhook URL"}
 </Button>

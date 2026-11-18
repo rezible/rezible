@@ -22,6 +22,8 @@
 </script>
 
 <div class="flex max-w-4xl flex-col gap-4">
+	<p class="text-sm text-muted-foreground">Members and roles are managed in your Rezible account.</p>
+
 	<div class="max-w-sm">
 		<SearchInput label="Search members" value={view.search} oninput={view.setSearch} />
 	</div>
