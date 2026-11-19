@@ -30,6 +30,20 @@ func (p userObservedPayload) resourceRef() string {
 	return "demo:user:" + p.ExternalID
 }
 
+// MakeUserProviderEvent returns the provider event the demo delivers for a user with the given attributes, for
+// tests that ingest one. The user's email is its external ID.
+func MakeUserProviderEvent(attrs projections.UserEventAttributes) (rez.ProviderEvent, error) {
+	payload := userObservedPayload{
+		ExternalID: attrs.Email,
+		Name:       attrs.Name,
+		Email:      attrs.Email,
+		ChatID:     attrs.ChatId,
+		Timezone:   attrs.Timezone,
+		UpdatedAt:  demoObservedAt,
+	}
+	return makeProviderEvent(sourceUsers, payload.resourceRef(), demoObservedAt, payload)
+}
+
 var demoUserEvents = []userObservedPayload{
 	{
 		ExternalID: "ava-patel",

@@ -78,18 +78,10 @@ func pullPayloadEvents[P demoEventPayload](source string, items []P, cursor stri
 			if delivered, ok := any(p).(interface{ receivedAt() time.Time }); ok {
 				receivedAt = delivered.receivedAt()
 			}
-			enc, jsonErr := json.Marshal(p)
-			if jsonErr != nil {
-				yield(nil, fmt.Errorf("marshal demo event: %w", jsonErr))
+			ev, evErr := makeProviderEvent(source, providerEventRef, receivedAt, p)
+			if evErr != nil {
+				yield(nil, evErr)
 				return
-			}
-			ev := rez.ProviderEvent{
-				Provider:            ProviderName,
-				ProviderNamespace:   integrationName,
-				ProviderEventSource: source,
-				ProviderEventRef:    providerEventRef,
-				ReceivedAt:          receivedAt,
-				Attributes:          enc,
 			}
 			res := &rez.ProviderEventQueryResult{Event: ev, ProviderEventSourceCursorAfter: new(cursorAfter)}
 			if !yield(res, nil) {
@@ -97,4 +89,20 @@ func pullPayloadEvents[P demoEventPayload](source string, items []P, cursor stri
 			}
 		}
 	}
+}
+
+func makeProviderEvent(source, providerEventRef string, receivedAt time.Time, payload demoEventPayload) (rez.ProviderEvent, error) {
+	enc, jsonErr := json.Marshal(payload)
+	if jsonErr != nil {
+		return rez.ProviderEvent{}, fmt.Errorf("marshal demo event: %w", jsonErr)
+	}
+	ev := rez.ProviderEvent{
+		Provider:            ProviderName,
+		ProviderNamespace:   integrationName,
+		ProviderEventSource: source,
+		ProviderEventRef:    providerEventRef,
+		ReceivedAt:          receivedAt,
+		Attributes:          enc,
+	}
+	return ev, nil
 }
