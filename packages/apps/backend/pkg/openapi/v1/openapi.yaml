@@ -2466,6 +2466,22 @@ components:
       required:
         - attributes
       type: object
+    DirectMessageDelivery:
+      additionalProperties: false
+      properties:
+        delivery:
+          description: direct_message when a connected integration sends direct messages, none when no connected integration can, and unknown when an installation that might could not be resolved
+          enum:
+            - direct_message
+            - none
+            - unknown
+          type: string
+        description:
+          description: How a member receives the message, such as 'a Slack direct message'; set when delivery is direct_message
+          type: string
+      required:
+        - delivery
+      type: object
     DiscussionComment:
       additionalProperties: false
       properties:
@@ -3016,6 +3032,21 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/AlertMetrics"
+      required:
+        - data
+      type: object
+    GetDirectMessageDeliveryResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetDirectMessageDeliveryResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/DirectMessageDelivery"
       required:
         - data
       type: object
@@ -5146,6 +5177,9 @@ components:
           type: string
         displayName:
           type: string
+        expiresAt:
+          format: date-time
+          type: string
         kind:
           type: string
         lastObservedAt:
@@ -5169,8 +5203,6 @@ components:
           type: array
         parentRelationshipId:
           type: string
-        stale:
-          type: boolean
         state:
           $ref: "#/components/schemas/KnowledgeGraphSubjectState"
         stateSources:
@@ -5191,7 +5223,6 @@ components:
         - updatedAt
         - state
         - stateSources
-        - stale
       type: object
     KnowledgeGraphEntitySummary:
       additionalProperties: false
@@ -5212,6 +5243,9 @@ components:
           type: string
         displayName:
           type: string
+        expiresAt:
+          format: date-time
+          type: string
         id:
           type: string
         kind:
@@ -5222,14 +5256,11 @@ components:
           type: array
         parentId:
           type: string
-        stale:
-          type: boolean
       required:
         - id
         - category
         - kind
         - displayName
-        - stale
         - otherParentIds
       type: object
     KnowledgeGraphEvidence:
@@ -5464,6 +5495,9 @@ components:
         createdAt:
           format: date-time
           type: string
+        expiresAt:
+          format: date-time
+          type: string
         lastObservedAt:
           format: date-time
           type: string
@@ -5492,8 +5526,6 @@ components:
           type: string
         sourceEntityId:
           type: string
-        stale:
-          type: boolean
         state:
           $ref: "#/components/schemas/KnowledgeGraphSubjectState"
         stateSources:
@@ -5515,11 +5547,13 @@ components:
         - updatedAt
         - state
         - stateSources
-        - stale
       type: object
     KnowledgeGraphRelationshipSummary:
       additionalProperties: false
       properties:
+        expiresAt:
+          format: date-time
+          type: string
         id:
           type: string
         predicate:
@@ -5545,8 +5579,6 @@ components:
           type: string
         sourceId:
           type: string
-        stale:
-          type: boolean
         targetId:
           type: string
       required:
@@ -5554,7 +5586,6 @@ components:
         - sourceId
         - targetId
         - predicate
-        - stale
       type: object
     KnowledgeGraphRelationshipsPage:
       additionalProperties: false
@@ -5643,8 +5674,6 @@ components:
           type: string
         resourceRef:
           $ref: "#/components/schemas/ProviderResourceRef"
-        stale:
-          type: boolean
         state:
           $ref: "#/components/schemas/KnowledgeGraphAliasState"
         withdrawnAt:
@@ -5654,7 +5683,6 @@ components:
         - kind
         - resourceRef
         - state
-        - stale
       type: object
     KnowledgeGraphSubjectState:
       additionalProperties: false
@@ -7496,9 +7524,6 @@ components:
           items:
             $ref: "#/components/schemas/RetrospectiveReportSection"
           type: array
-        reviewerMessages:
-          $ref: "#/components/schemas/RetrospectiveReviewerMessages"
-          description: How reviewers are told of a review request
         reviews:
           items:
             $ref: "#/components/schemas/RetrospectiveReview"
@@ -7519,7 +7544,6 @@ components:
         - state
         - reportSections
         - reviews
-        - reviewerMessages
       type: object
     RetrospectiveReportComposition:
       additionalProperties: false
@@ -7632,22 +7656,6 @@ components:
         - state
         - updatedAt
         - messageFailed
-      type: object
-    RetrospectiveReviewerMessages:
-      additionalProperties: false
-      properties:
-        delivery:
-          description: direct_message when a connected integration sends reviewers direct messages, none when no connected integration can, and unknown when that could not be established
-          enum:
-            - direct_message
-            - none
-            - unknown
-          type: string
-        description:
-          description: How a reviewer receives the message, such as 'a Slack direct message'; set when delivery is direct_message
-          type: string
-      required:
-        - delivery
       type: object
     RetrySituationNoticeResponseBody:
       additionalProperties: false
@@ -8073,10 +8081,6 @@ components:
           description: When watching began
           format: date-time
           type: string
-        entities:
-          items:
-            $ref: "#/components/schemas/SituationEntity"
-          type: array
         holdUntil:
           format: date-time
           type: string
@@ -8146,7 +8150,6 @@ components:
         - linkedIncidentIds
         - observations
         - observationGroups
-        - entities
         - notices
       type: object
     SituationBaselineFacts:
@@ -8355,28 +8358,6 @@ components:
       required:
         - kind
         - text
-      type: object
-    SituationEntity:
-      additionalProperties: false
-      properties:
-        category:
-          type: string
-        displayName:
-          type: string
-        id:
-          description: The knowledge entity
-          type: string
-        kind:
-          type: string
-        matching:
-          description: Whether it attracts related observations
-          type: boolean
-      required:
-        - id
-        - matching
-        - category
-        - kind
-        - displayName
       type: object
     SituationEntityFacts:
       additionalProperties: false
@@ -15979,6 +15960,56 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Get Installable Integrations
+      tags:
+        - Integrations
+  /integrations/direct-messages:
+    get:
+      description: Says whether a connected integration can send members direct messages, such as review requests.
+      operationId: get-direct-message-delivery
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetDirectMessageDeliveryResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get how members are sent direct messages
       tags:
         - Integrations
   /integrations/install/{name}:

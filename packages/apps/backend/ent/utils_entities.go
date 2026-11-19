@@ -215,11 +215,3 @@ func (ke *KnowledgeEntity) ParentClaim() *KnowledgeRelationship {
 	}
 	return nil
 }
-
-// ParentEntityID returns the source of ParentClaim, nil when there is none.
-func (ke *KnowledgeEntity) ParentEntityID() *uuid.UUID {
-	if claim := ke.ParentClaim(); claim != nil {
-		return &claim.SourceEntityID
-	}
-	return nil
-}

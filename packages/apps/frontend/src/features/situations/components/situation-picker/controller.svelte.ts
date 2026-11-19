@@ -12,7 +12,6 @@ export type SituationPickerOption = {
 	title: string;
 	status: ReturnType<typeof situationStatus>;
 	openedAt: string;
-	services: string[];
 	situation: Situation;
 };
 
@@ -72,15 +71,11 @@ export class SituationPickerController {
 			if (situation.id === excludedId) {
 				continue;
 			}
-			const services = situation.attributes.entities
-				.filter((entity) => entity.kind === "service")
-				.map((entity) => entity.displayName);
 			options.push({
 				id: situation.id,
 				title: situation.attributes.title,
 				status: situationStatus(situation.attributes),
 				openedAt: situation.attributes.openedAt,
-				services,
 				situation,
 			});
 		}

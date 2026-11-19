@@ -65,11 +65,31 @@ describe("analysis graph adaptation", () => {
 		);
 
 		expect(model.graph.entities).toEqual([
-			{ id: "entity-1", category: "system", kind: "service", name: "entity-1", otherParentIds: [] },
-			{ id: "entity-2", category: "system", kind: "service", name: "entity-2", otherParentIds: [] },
+			{
+				id: "entity-1",
+				category: "system",
+				kind: "service",
+				name: "entity-1",
+				otherParentIds: [],
+				stale: false,
+			},
+			{
+				id: "entity-2",
+				category: "system",
+				kind: "service",
+				name: "entity-2",
+				otherParentIds: [],
+				stale: false,
+			},
 		]);
 		expect(model.graph.relationships).toEqual([
-			{ id: "relationship-1", source: "entity-1", target: "entity-2", predicate: "calls" },
+			{
+				id: "relationship-1",
+				source: "entity-1",
+				target: "entity-2",
+				predicate: "calls",
+				stale: false,
+			},
 		]);
 		expect(model.graph.unresolvedRelationships).toEqual([]);
 		expect(model.nodeByEntityId.get("entity-1")?.id).toBe("node-a");

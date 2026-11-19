@@ -1138,6 +1138,17 @@ export type DeleteSystemAnalysisEntryRequestBody = {
     attributes: DeleteSystemAnalysisEntryAttributes;
 };
 
+export type DirectMessageDelivery = {
+    /**
+     * direct_message when a connected integration sends direct messages, none when no connected integration can, and unknown when an installation that might could not be resolved
+     */
+    delivery: 'direct_message' | 'none' | 'unknown';
+    /**
+     * How a member receives the message, such as 'a Slack direct message'; set when delivery is direct_message
+     */
+    description?: string;
+};
+
 export type DiscussionComment = {
     attributes: DiscussionCommentAttributes;
     id: string;
@@ -1401,6 +1412,14 @@ export type GetAlertMetricsResponseBody = {
      */
     readonly $schema?: string;
     data: AlertMetrics;
+};
+
+export type GetDirectMessageDeliveryResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DirectMessageDelivery;
 };
 
 export type GetDiscussionCommentResponseBody = {
@@ -2339,6 +2358,7 @@ export type KnowledgeGraphEntityAttributes = {
     category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal';
     createdAt: string;
     displayName: string;
+    expiresAt?: string;
     kind: string;
     lastObservedAt?: string;
     linkingAttributes: Array<KnowledgeGraphLinkingAttribute>;
@@ -2347,7 +2367,6 @@ export type KnowledgeGraphEntityAttributes = {
     parentId?: string;
     parentProviders?: Array<string>;
     parentRelationshipId?: string;
-    stale: boolean;
     state: KnowledgeGraphSubjectState;
     stateSources: KnowledgeGraphStateSources;
     updatedAt: string;
@@ -2357,11 +2376,11 @@ export type KnowledgeGraphEntityAttributes = {
 export type KnowledgeGraphEntitySummary = {
     category: 'system_function' | 'system' | 'container' | 'component' | 'infrastructure' | 'code' | 'actor' | 'process' | 'concern' | 'decision' | 'signal';
     displayName: string;
+    expiresAt?: string;
     id: string;
     kind: string;
     otherParentIds: Array<string>;
     parentId?: string;
-    stale: boolean;
 };
 
 export type KnowledgeGraphEvidence = {
@@ -2419,11 +2438,11 @@ export type KnowledgeGraphRelationship = {
 export type KnowledgeGraphRelationshipAttributes = {
     aliases: Array<KnowledgeGraphSubjectAlias>;
     createdAt: string;
+    expiresAt?: string;
     lastObservedAt?: string;
     mergedIntoId?: string;
     predicate: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates';
     sourceEntityId: string;
-    stale: boolean;
     state: KnowledgeGraphSubjectState;
     stateSources: KnowledgeGraphStateSources;
     targetEntityId: string;
@@ -2432,10 +2451,10 @@ export type KnowledgeGraphRelationshipAttributes = {
 };
 
 export type KnowledgeGraphRelationshipSummary = {
+    expiresAt?: string;
     id: string;
     predicate: 'contains' | 'runs_on' | 'built_from' | 'owns' | 'member_of' | 'participates_in' | 'uses' | 'supports' | 'calls' | 'reads_from' | 'writes_to' | 'publishes_to' | 'consumes_from' | 'depends_on' | 'observes' | 'constrains' | 'addresses' | 'mitigates';
     sourceId: string;
-    stale: boolean;
     targetId: string;
 };
 
@@ -2475,7 +2494,6 @@ export type KnowledgeGraphSubjectAliasAttributes = {
     kind: 'entity' | 'relationship';
     lastObservedAt?: string;
     resourceRef: ProviderResourceRef;
-    stale: boolean;
     state: KnowledgeGraphAliasState;
     withdrawnAt?: string;
 };
@@ -3273,10 +3291,6 @@ export type RetrospectiveAttributes = {
     outcome?: 'reviewed' | 'closed_without_review' | 'skipped';
     owner?: ExpandableUserAttributes;
     reportSections: Array<RetrospectiveReportSection>;
-    /**
-     * How reviewers are told of a review request
-     */
-    reviewerMessages: RetrospectiveReviewerMessages;
     reviews: Array<RetrospectiveReview>;
     skipReason?: string;
     state: 'draft' | 'in_review' | 'closed';
@@ -3317,17 +3331,6 @@ export type RetrospectiveReview = {
     reviewer: ExpandableUserAttributes;
     state: 'waiting' | 'request_changes' | 'approved';
     updatedAt: string;
-};
-
-export type RetrospectiveReviewerMessages = {
-    /**
-     * direct_message when a connected integration sends reviewers direct messages, none when no connected integration can, and unknown when that could not be established
-     */
-    delivery: 'direct_message' | 'none' | 'unknown';
-    /**
-     * How a reviewer receives the message, such as 'a Slack direct message'; set when delivery is direct_message
-     */
-    description?: string;
 };
 
 export type RetrySituationNoticeResponseBody = {
@@ -3535,7 +3538,6 @@ export type SituationAttributes = {
      * When watching began
      */
     createdAt: string;
-    entities: Array<SituationEntity>;
     holdUntil?: string;
     investigationId?: string;
     /**
@@ -3647,20 +3649,6 @@ export type SituationBriefServiceChanges = {
 export type SituationBriefUnseen = {
     kind: 'source_unavailable' | 'services_cut' | 'not_read';
     text: string;
-};
-
-export type SituationEntity = {
-    category: string;
-    displayName: string;
-    /**
-     * The knowledge entity
-     */
-    id: string;
-    kind: string;
-    /**
-     * Whether it attracts related observations
-     */
-    matching: boolean;
 };
 
 export type SituationEntityFacts = {
@@ -8898,6 +8886,51 @@ export type GetInstallableIntegrationsResponses = {
 };
 
 export type GetInstallableIntegrationsResponse = GetInstallableIntegrationsResponses[keyof GetInstallableIntegrationsResponses];
+
+export type GetDirectMessageDeliveryData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/integrations/direct-messages';
+};
+
+export type GetDirectMessageDeliveryErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetDirectMessageDeliveryError = GetDirectMessageDeliveryErrors[keyof GetDirectMessageDeliveryErrors];
+
+export type GetDirectMessageDeliveryResponses = {
+    /**
+     * OK
+     */
+    200: GetDirectMessageDeliveryResponseBody;
+};
+
+export type GetDirectMessageDeliveryResponse = GetDirectMessageDeliveryResponses[keyof GetDirectMessageDeliveryResponses];
 
 export type InstallIntegrationData = {
     body: InstallIntegrationRequestBody;

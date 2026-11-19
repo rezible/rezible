@@ -63,7 +63,7 @@ func (s *IncidentsHandlerSuite) TestGetIncidentByReference() {
 	api.UseMiddleware(func(hctx huma.Context, next func(huma.Context)) {
 		next(huma.WithContext(hctx, execution.NewUserContext(hctx.Context(), identity.Session)))
 	})
-	huma.Register(api, oapi.GetIncident, newIncidentsHandler(nil, test.NewClock(time.Now()), details, nil).GetIncident)
+	huma.Register(api, oapi.GetIncident, newIncidentsHandler(nil, details, nil).GetIncident)
 
 	for _, key := range []string{"INC-2", "inc-2", "2", second.ID.String()} {
 		response := api.Get("/incidents/" + key)
@@ -117,12 +117,12 @@ func (s *IncidentsHandlerSuite) TestReferencesToAnotherTenantAreNotFound() {
 	api.UseMiddleware(func(hctx huma.Context, next func(huma.Context)) {
 		next(huma.WithContext(hctx, execution.NewUserContext(hctx.Context(), identity.Session)))
 	})
-	incidents := newIncidentsHandler(nil, test.NewClock(time.Now()), details, management)
+	incidents := newIncidentsHandler(nil, details, management)
 	huma.Register(api, oapi.GetIncident, incidents.GetIncident)
 	huma.Register(api, oapi.UpdateIncident, incidents.UpdateIncident)
 	huma.Register(api, oapi.CreateIncidentRoleAssignment, incidents.CreateIncidentRoleAssignment)
 	huma.Register(api, oapi.LinkIncidentSituation, incidents.LinkIncidentSituation)
-	huma.Register(api, oapi.SetRetrospectiveOwner, newRetrospectivesHandler(retros, mocks.NewMockIntegrationService(s.T())).SetRetrospectiveOwner)
+	huma.Register(api, oapi.SetRetrospectiveOwner, newRetrospectivesHandler(retros).SetRetrospectiveOwner)
 
 	attributes := func(attrs map[string]any) map[string]any { return map[string]any{"attributes": attrs} }
 	for name, call := range map[string]func() *httptest.ResponseRecorder{

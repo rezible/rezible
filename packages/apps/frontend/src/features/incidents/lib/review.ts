@@ -1,4 +1,4 @@
-import type { RetrospectiveAttributes } from "$lib/api";
+import type { DirectMessageDelivery, RetrospectiveAttributes } from "$lib/api";
 import type { StatusPresentation } from "$components/common/status-badge/status";
 import { formatTime } from "$lib/time";
 import RiDraftLine from "remixicon-svelte/icons/draft-line";
@@ -7,11 +7,13 @@ import RiEyeLine from "remixicon-svelte/icons/eye-line";
 import RiCheckboxCircleLine from "remixicon-svelte/icons/checkbox-circle-line";
 import RiSkipForwardLine from "remixicon-svelte/icons/skip-forward-line";
 
-// An admin can act as the owner, and can assign an owner to a review that has none.
+// An admin can act as the owner, and can assign an owner to a review that has none. directMessages says how
+// reviewers are sent messages; leave it unset until that is known.
 export function reviewPanelModel(
 	retrospective?: RetrospectiveAttributes,
 	currentUserId?: string,
-	isAdmin = false
+	isAdmin = false,
+	directMessages?: DirectMessageDelivery
 ) {
 	const reviews = retrospective?.reviews ?? [];
 	const owner = retrospective?.owner;
@@ -55,11 +57,10 @@ export function reviewPanelModel(
 		}
 	}
 	let reviewerNotice = "";
-	if (retrospective && !closed) {
-		const messages = retrospective.reviewerMessages;
-		if (messages.delivery === "direct_message") {
-			reviewerNotice = `Reviewers are told by ${messages.description} when Rezible knows their account.`;
-		} else if (messages.delivery === "none") {
+	if (retrospective && !closed && directMessages) {
+		if (directMessages.delivery === "direct_message") {
+			reviewerNotice = `Reviewers are told by ${directMessages.description} when Rezible knows their account.`;
+		} else if (directMessages.delivery === "none") {
 			reviewerNotice =
 				"No connected integration can send direct messages, so reviewers will not be notified.";
 		} else {

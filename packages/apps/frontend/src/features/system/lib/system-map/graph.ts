@@ -24,6 +24,14 @@ export type GraphRelationship = {
 	readonly stale?: boolean;
 };
 
+/** Whether a subject's sources stopped confirming it past their declared expiry; never when it has no expiry. */
+export function isStale(expiresAt: string | undefined, now = Date.now()): boolean {
+	if (!expiresAt) {
+		return false;
+	}
+	return new Date(expiresAt).getTime() < now;
+}
+
 /** Describes enumeration progress only within the named query, analysis, or fixture scope. */
 export type GraphEnumeration = {
 	readonly scope: "query" | "analysis" | "fixture";

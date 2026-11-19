@@ -66,9 +66,6 @@
 									{/if}
 								</div>
 								<span class="truncate text-xs text-muted-foreground">
-									{#if option.services.length}
-										{option.services.join(", ")} ·
-									{/if}
 									opened
 									<Timestamp value={option.openedAt} />
 								</span>

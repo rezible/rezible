@@ -1,4 +1,4 @@
-import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import {
 	setRetrospectiveOwnerMutation,
@@ -9,7 +9,9 @@ import {
 	closeRetrospectiveMutation,
 	skipRetrospectiveMutation,
 	getRetrospectiveQueryKey,
+	getDirectMessageDeliveryOptions,
 	type ApiError,
+	type DirectMessageDelivery,
 	type User,
 } from "$lib/api";
 import { useUserSessionState } from "$lib/user-session.svelte";
@@ -22,7 +24,16 @@ export class ReviewPanelController {
 	private view = useIncidentView();
 	private session = useUserSessionState();
 	private queryClient = useQueryClient();
-	model = $derived(reviewPanelModel(this.view.retrospective?.attributes, this.session.user?.id, this.session.isAdmin));
+	private directMessagesQuery = createQuery(() => getDirectMessageDeliveryOptions());
+	private directMessages = $derived(this.getDirectMessages());
+	model = $derived(
+		reviewPanelModel(
+			this.view.retrospective?.attributes,
+			this.session.user?.id,
+			this.session.isAdmin,
+			this.directMessages
+		)
+	);
 	skipReason = $derived(this.view.retrospective?.attributes.skipReason);
 	dialog = $state<ReviewDialog>();
 	selected = $state<User[]>([]);
@@ -46,6 +57,14 @@ export class ReviewPanelController {
 	private decisionMutation = createMutation(() => setRetrospectiveReviewDecisionMutation());
 	private closeMutation = createMutation(() => closeRetrospectiveMutation());
 	private skipMutation = createMutation(() => skipRetrospectiveMutation());
+
+	/** Unset while loading. A failed check reads as unknown, not as no delivery. */
+	private getDirectMessages(): DirectMessageDelivery | undefined {
+		if (this.directMessagesQuery.isError) {
+			return { delivery: "unknown" };
+		}
+		return this.directMessagesQuery.data?.data;
+	}
 
 	private buildExcluded() {
 		const ownerId = this.model.owner?.id;

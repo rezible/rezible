@@ -14,12 +14,11 @@ import (
 )
 
 type systemAnalysisHandler struct {
-	clock    rez.Clock
 	analysis rez.SystemAnalysisService
 }
 
-func newSystemAnalysisHandler(clock rez.Clock, analysis rez.SystemAnalysisService) *systemAnalysisHandler {
-	return &systemAnalysisHandler{clock: clock, analysis: analysis}
+func newSystemAnalysisHandler(analysis rez.SystemAnalysisService) *systemAnalysisHandler {
+	return &systemAnalysisHandler{analysis: analysis}
 }
 
 func (h *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *oapi.GetSystemAnalysisRequest) (*oapi.GetSystemAnalysisResponse, error) {
@@ -66,10 +65,7 @@ func (h *systemAnalysisHandler) ListSystemAnalysisNodes(ctx context.Context, req
 		return nil, oapi.Error(ctx, "list system analysis nodes", listErr)
 	}
 
-	now := h.clock.Now()
-	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(nodes, func(node *ent.SystemAnalysisEntity) (*oapi.SystemAnalysisNode, error) {
-		return oapi.SystemAnalysisNodeFromEnt(node, now)
-	})
+	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(nodes, oapi.SystemAnalysisNodeFromEnt)
 	if bodyErr != nil {
 		return nil, oapi.Error(ctx, "list system analysis nodes", bodyErr)
 	}
@@ -99,7 +95,7 @@ func (h *systemAnalysisHandler) AddSystemAnalysisNode(ctx context.Context, reque
 		return nil, oapi.Error(ctx, "add system analysis node", createErr)
 	}
 
-	data, dataErr := oapi.SystemAnalysisNodeFromEnt(node, h.clock.Now())
+	data, dataErr := oapi.SystemAnalysisNodeFromEnt(node)
 	if dataErr != nil {
 		return nil, oapi.Error(ctx, "add system analysis node", dataErr)
 	}
@@ -130,7 +126,7 @@ func (h *systemAnalysisHandler) UpdateSystemAnalysisNode(ctx context.Context, re
 		return nil, oapi.Error(ctx, "update system analysis node", updateErr)
 	}
 
-	data, dataErr := oapi.SystemAnalysisNodeFromEnt(node, h.clock.Now())
+	data, dataErr := oapi.SystemAnalysisNodeFromEnt(node)
 	if dataErr != nil {
 		return nil, oapi.Error(ctx, "add system analysis node", dataErr)
 	}
@@ -155,10 +151,7 @@ func (h *systemAnalysisHandler) ListSystemAnalysisEdges(ctx context.Context, req
 		return nil, oapi.Error(ctx, "list system analysis edges", listErr)
 	}
 
-	now := h.clock.Now()
-	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(edges, func(edge *ent.SystemAnalysisRelationship) (*oapi.SystemAnalysisEdge, error) {
-		return oapi.SystemAnalysisEdgeFromEnt(edge, now)
-	})
+	body, bodyErr := oapi.MaybeConvertPaginatedResultBody(edges, oapi.SystemAnalysisEdgeFromEnt)
 	if bodyErr != nil {
 		return nil, oapi.Error(ctx, "list system analysis edges", bodyErr)
 	}
@@ -187,7 +180,7 @@ func (h *systemAnalysisHandler) AddSystemAnalysisEdge(ctx context.Context, reque
 		return nil, oapi.Error(ctx, "add system analysis edge", createErr)
 	}
 
-	data, dataErr := oapi.SystemAnalysisEdgeFromEnt(edge, h.clock.Now())
+	data, dataErr := oapi.SystemAnalysisEdgeFromEnt(edge)
 	if dataErr != nil {
 		return nil, oapi.Error(ctx, "add system analysis edge", dataErr)
 	}
@@ -214,7 +207,7 @@ func (h *systemAnalysisHandler) UpdateSystemAnalysisEdge(ctx context.Context, re
 		return nil, oapi.Error(ctx, "update system analysis edge", updateErr)
 	}
 
-	data, dataErr := oapi.SystemAnalysisEdgeFromEnt(edge, h.clock.Now())
+	data, dataErr := oapi.SystemAnalysisEdgeFromEnt(edge)
 	if dataErr != nil {
 		return nil, oapi.Error(ctx, "convert edge", dataErr)
 	}

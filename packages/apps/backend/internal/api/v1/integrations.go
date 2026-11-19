@@ -3,7 +3,9 @@ package apiv1
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log/slog"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	rez "github.com/rezible/rezible"
@@ -257,6 +259,22 @@ func (h *integrationsHandler) CheckIntegrationHealth(ctx context.Context, req *o
 	if checkErr := checker.CheckHealth(ctx); checkErr != nil {
 		resp.Body.Data = oapi.IntegrationHealthCheck{Ok: false, Error: checkErr.Error()}
 	}
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) GetDirectMessageDelivery(ctx context.Context, _ *oapi.GetDirectMessageDeliveryRequest) (*oapi.GetDirectMessageDeliveryResponse, error) {
+	var resp oapi.GetDirectMessageDeliveryResponse
+
+	senders, listErr := integrations.ListDirectMessageSenders(ctx, h.integrations)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "failed to list direct message senders", listErr)
+	}
+	if len(senders.Unresolved) > 0 {
+		slog.WarnContext(ctx, "could not resolve an installation that might send direct messages",
+			"error", errors.Join(senders.Unresolved...))
+	}
+	resp.Body.Data = oapi.DirectMessageDeliveryFromSenders(senders)
 
 	return &resp, nil
 }

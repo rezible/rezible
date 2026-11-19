@@ -5,7 +5,12 @@ import {
 	type KnowledgeGraphEntitySummary,
 } from "$lib/api";
 import type { QueryClient } from "@tanstack/svelte-query";
-import type { GraphEntity, GraphRelationship, GraphSubset } from "$features/system/lib/system-map/graph";
+import {
+	isStale,
+	type GraphEntity,
+	type GraphRelationship,
+	type GraphSubset,
+} from "$features/system/lib/system-map/graph";
 import { mapCategories, mapModel, type MapModel } from "$features/system/lib/system-map/model";
 import { knowledgeModelOptions } from "$features/system/lib/knowledge-model";
 
@@ -69,7 +74,7 @@ function retainEntities(
 			name: entity.displayName,
 			parentId: entity.parentId,
 			otherParentIds: Object.freeze([...entity.otherParentIds]),
-			stale: entity.stale,
+			stale: isStale(entity.expiresAt),
 		});
 		if (retained.has(record.id)) {
 			retained.set(record.id, record);
@@ -88,7 +93,7 @@ function retainRelationships(
 		sourceId: string;
 		targetId: string;
 		predicate: string;
-		stale: boolean;
+		expiresAt?: string;
 	}[],
 	retained: Map<string, GraphRelationship>
 ): boolean {
@@ -99,7 +104,7 @@ function retainRelationships(
 			source: relationship.sourceId,
 			target: relationship.targetId,
 			predicate: relationship.predicate,
-			stale: relationship.stale,
+			stale: isStale(relationship.expiresAt),
 		});
 		if (retained.has(record.id)) {
 			retained.set(record.id, record);

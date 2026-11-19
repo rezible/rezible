@@ -68,7 +68,6 @@ export function retrospectiveStatus(
 					documentId: "",
 					systemAnalysisId: "",
 					reportSections: [],
-					reviewerMessages: { delivery: "unknown" },
 				}
 			: undefined
 	).status;

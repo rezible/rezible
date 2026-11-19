@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { RetrospectiveAttributes } from "$lib/api";
+import type { DirectMessageDelivery, RetrospectiveAttributes } from "$lib/api";
 import { formatTime } from "$lib/time";
 import { closedReviewLine, reviewPanelModel } from "./review";
 
@@ -20,7 +20,6 @@ const retrospective: RetrospectiveAttributes = {
 			messageFailed: false,
 		},
 	],
-	reviewerMessages: { delivery: "none" },
 };
 
 test("review actions follow ownership, reviewer membership and pending decisions", () => {
@@ -90,15 +89,16 @@ test("the closed banner line names the closer, time and outcome", () => {
 });
 
 test("the panel says how reviewers are told, or that they will not be", () => {
-	const told = reviewPanelModel({
-		...retrospective,
-		reviewerMessages: { delivery: "direct_message", description: "a chat direct message" },
-	});
-	expect(told.reviewerNotice).toContain("a chat direct message");
-	expect(told.reviewerNotice).not.toContain("will not be notified");
-	expect(reviewPanelModel(retrospective).reviewerNotice).toContain("will not be notified");
-	const unknown = reviewPanelModel({ ...retrospective, reviewerMessages: { delivery: "unknown" } });
-	expect(unknown.reviewerNotice).not.toBe("");
-	expect(unknown.reviewerNotice).not.toContain("will not be notified");
-	expect(reviewPanelModel({ ...retrospective, state: "closed" }).reviewerNotice).toBe("");
+	const notice = (delivery?: DirectMessageDelivery, attributes = retrospective) =>
+		reviewPanelModel(attributes, undefined, false, delivery).reviewerNotice;
+
+	const told = notice({ delivery: "direct_message", description: "a chat direct message" });
+	expect(told).toContain("a chat direct message");
+	expect(told).not.toContain("will not be notified");
+	expect(notice({ delivery: "none" })).toContain("will not be notified");
+	const unknown = notice({ delivery: "unknown" });
+	expect(unknown).not.toBe("");
+	expect(unknown).not.toContain("will not be notified");
+	expect(notice(undefined)).toBe("");
+	expect(notice({ delivery: "none" }, { ...retrospective, state: "closed" })).toBe("");
 });

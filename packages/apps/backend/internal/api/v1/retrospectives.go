@@ -2,50 +2,18 @@ package apiv1
 
 import (
 	"context"
-	"errors"
-	"log/slog"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/pkg/errs"
 	"github.com/rezible/rezible/pkg/execution"
-	"github.com/rezible/rezible/pkg/integrations"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
-type retrospectivesHandler struct {
-	retros       rez.RetrospectiveService
-	integrations rez.IntegrationService
-}
+type retrospectivesHandler struct{ retros rez.RetrospectiveService }
 
-func newRetrospectivesHandler(retros rez.RetrospectiveService, integrationService rez.IntegrationService) *retrospectivesHandler {
-	return &retrospectivesHandler{retros: retros, integrations: integrationService}
-}
-
-// retrospective converts the retrospective, with how its reviewers are told of a review request. Failing to
-// work that out leaves it unknown rather than failing the request, which may already have changed the
-// retrospective.
-func (h *retrospectivesHandler) retrospective(ctx context.Context, retro *ent.Retrospective) oapi.Retrospective {
-	dto := oapi.RetrospectiveFromEnt(retro)
-	dto.Attributes.ReviewerMessages = oapi.RetrospectiveReviewerMessages{Delivery: "unknown"}
-	senders, listErr := integrations.ListDirectMessageSenders(ctx, h.integrations)
-	if listErr != nil {
-		slog.WarnContext(ctx, "could not list direct message senders", "error", listErr)
-		return dto
-	}
-	description, known := senders.Description()
-	if !known {
-		slog.WarnContext(ctx, "could not resolve an installation that might send direct messages",
-			"error", errors.Join(senders.Unresolved...))
-		return dto
-	}
-	if description == "" {
-		dto.Attributes.ReviewerMessages.Delivery = "none"
-		return dto
-	}
-	dto.Attributes.ReviewerMessages = oapi.RetrospectiveReviewerMessages{Delivery: "direct_message", Description: description}
-	return dto
+func newRetrospectivesHandler(retros rez.RetrospectiveService) *retrospectivesHandler {
+	return &retrospectivesHandler{retros: retros}
 }
 
 func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oapi.GetRetrospectiveRequest) (*oapi.GetRetrospectiveResponse, error) {
@@ -54,7 +22,7 @@ func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oap
 		return nil, oapi.Error(ctx, "failed to get retrospective", retroErr)
 	}
 	var resp oapi.GetRetrospectiveResponse
-	resp.Body.Data = h.retrospective(ctx, retro)
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 	return &resp, nil
 }
 
@@ -78,7 +46,7 @@ func (h *retrospectivesHandler) SetRetrospectiveOwner(ctx context.Context, input
 		return nil, oapi.Error(ctx, "failed to set retrospective owner", updateErr)
 	}
 	var resp oapi.SetRetrospectiveOwnerResponse
-	resp.Body.Data = h.retrospective(ctx, retro)
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 	return &resp, nil
 }
 
@@ -88,7 +56,7 @@ func (h *retrospectivesHandler) RequestRetrospectiveReview(ctx context.Context, 
 		return nil, oapi.Error(ctx, "failed to request retrospective review", updateErr)
 	}
 	var resp oapi.RequestRetrospectiveReviewResponse
-	resp.Body.Data = h.retrospective(ctx, retro)
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 	return &resp, nil
 }
 
@@ -98,7 +66,7 @@ func (h *retrospectivesHandler) AddRetrospectiveReviewer(ctx context.Context, in
 		return nil, oapi.Error(ctx, "failed to add retrospective reviewer", updateErr)
 	}
 	var resp oapi.AddRetrospectiveReviewerResponse
-	resp.Body.Data = h.retrospective(ctx, retro)
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 	return &resp, nil
 }
 
@@ -108,7 +76,7 @@ func (h *retrospectivesHandler) RemoveRetrospectiveReviewer(ctx context.Context,
 		return nil, oapi.Error(ctx, "failed to remove retrospective reviewer", updateErr)
 	}
 	var resp oapi.RemoveRetrospectiveReviewerResponse
-	resp.Body.Data = h.retrospective(ctx, retro)
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 	return &resp, nil
 }
 
@@ -127,7 +95,7 @@ func (h *retrospectivesHandler) SetRetrospectiveReviewDecision(ctx context.Conte
 		return nil, oapi.Error(ctx, "failed to set review decision", updateErr)
 	}
 	var resp oapi.SetRetrospectiveReviewDecisionResponse
-	resp.Body.Data = h.retrospective(ctx, retro)
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 	return &resp, nil
 }
 
@@ -137,7 +105,7 @@ func (h *retrospectivesHandler) CloseRetrospective(ctx context.Context, input *o
 		return nil, oapi.Error(ctx, "failed to close retrospective", updateErr)
 	}
 	var resp oapi.CloseRetrospectiveResponse
-	resp.Body.Data = h.retrospective(ctx, retro)
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 	return &resp, nil
 }
 
@@ -147,6 +115,6 @@ func (h *retrospectivesHandler) SkipRetrospective(ctx context.Context, input *oa
 		return nil, oapi.Error(ctx, "failed to skip retrospective", updateErr)
 	}
 	var resp oapi.SkipRetrospectiveResponse
-	resp.Body.Data = h.retrospective(ctx, retro)
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 	return &resp, nil
 }

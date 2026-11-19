@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"github.com/rezible/rezible/pkg/situations"
 	"net/http"
 	"time"
 
@@ -76,7 +75,6 @@ type (
 		InvestigationId   *uuid.UUID                  `json:"investigationId,omitempty"`
 		Observations      []SituationObservation      `json:"observations"`
 		ObservationGroups []SituationObservationGroup `json:"observationGroups"`
-		Entities          []SituationEntity           `json:"entities"`
 		LatestJudgment    *SituationJudgment          `json:"latestJudgment,omitempty" doc:"Set when getting one situation"`
 		Notices           []SituationNotice           `json:"notices"`
 	}
@@ -130,14 +128,6 @@ type (
 		Detail string `json:"detail"`
 	}
 
-	SituationEntity struct {
-		Id          uuid.UUID `json:"id" doc:"The knowledge entity"`
-		Matching    bool      `json:"matching" doc:"Whether it attracts related observations"`
-		Category    string    `json:"category"`
-		Kind        string    `json:"kind"`
-		DisplayName string    `json:"displayName"`
-	}
-
 	SituationObservationGroup struct {
 		Id         uuid.UUID                           `json:"id"`
 		Attributes SituationObservationGroupAttributes `json:"attributes"`
@@ -188,16 +178,6 @@ func SituationObservationFromEnt(o *ent.SituationObservation) SituationObservati
 	}
 }
 
-func SituationEntityFromEnt(e situations.RuntimeEntity) SituationEntity {
-	return SituationEntity{
-		Id:          e.Entity.ID,
-		Matching:    e.Matching,
-		Category:    e.Entity.Category.String(),
-		Kind:        e.Entity.Kind,
-		DisplayName: e.Entity.State.DisplayName,
-	}
-}
-
 func SituationFromEnt(s *ent.Situation) Situation {
 	attrs := SituationAttributes{
 		Reference:         s.Reference(),
@@ -214,7 +194,6 @@ func SituationFromEnt(s *ent.Situation) Situation {
 		InvestigationId:   s.InvestigationID,
 		Observations:      ConvertSlice(s.Edges.Observations, SituationObservationFromEnt),
 		ObservationGroups: ConvertSlice(s.Edges.ObservationGroups, SituationObservationGroupFromEnt),
-		Entities:          ConvertSlice(situations.RuntimeEntities(s.Edges.Observations), SituationEntityFromEnt),
 		LinkedIncidentIds: make([]uuid.UUID, len(s.Edges.Incidents)),
 	}
 	for i, incident := range s.Edges.Incidents {

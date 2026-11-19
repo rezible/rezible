@@ -1,5 +1,10 @@
 import type { SystemAnalysisEdge, SystemAnalysisEntry, SystemAnalysisNode } from "$lib/api";
-import type { GraphEntity, GraphRelationship, GraphSubset } from "$features/system/lib/system-map/graph";
+import {
+	isStale,
+	type GraphEntity,
+	type GraphRelationship,
+	type GraphSubset,
+} from "$features/system/lib/system-map/graph";
 import type { MapModel } from "$features/system/lib/system-map/model";
 import type { ResponsePage } from "$lib/api/utils";
 
@@ -34,7 +39,7 @@ function canonicalNodeEntity(node: SystemAnalysisNode): GraphEntity {
 		name: entity.attributes.displayName,
 		parentId: entity.attributes.parentId,
 		otherParentIds: (entity.attributes.otherParentClaims ?? []).map((claim) => claim.parent.id),
-		stale: entity.attributes.stale,
+		stale: isStale(entity.attributes.expiresAt),
 	};
 }
 
@@ -45,7 +50,7 @@ function canonicalEdgeRelationship(edge: SystemAnalysisEdge): GraphRelationship 
 		source: relationship.attributes.sourceEntityId,
 		target: relationship.attributes.targetEntityId,
 		predicate: relationship.attributes.predicate,
-		stale: relationship.attributes.stale,
+		stale: isStale(relationship.attributes.expiresAt),
 	};
 }
 

@@ -709,7 +709,6 @@ var pkgOpenApiV1 = do.Package(
 		return apiv1.NewHandler(
 			do.MustInvoke[oapiv1.SecurityProvider](i),
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.Clock](i),
 			do.MustInvoke[rez.AiAgentCatalogue](i),
 			do.MustInvoke[rez.AiAgentSessionService](i),
 			do.MustInvoke[rez.MessageQueue](i),

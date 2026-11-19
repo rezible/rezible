@@ -22,7 +22,6 @@ import (
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/pkg/errs"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
-	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
 )
 
@@ -132,7 +131,7 @@ func TestListKnowledgeProposals(t *testing.T) {
 			return &ent.ListResult[rez.KnowledgeProposalWithValues]{Data: listed, Total: 1}, nil
 		})
 	_, api := humatest.New(t)
-	handler := newKnowledgeGraphHandler(test.NewClock(f.recordedAt), nil, nil, proposals)
+	handler := newKnowledgeGraphHandler(nil, nil, proposals)
 	huma.Register(api, oapi.ListKnowledgeProposals, handler.ListKnowledgeProposals)
 
 	response := api.Get("/knowledge/proposals?status=pending,rejected&entityId=" + f.checkout.ID.String() + "," + f.checkoutAPI.ID.String())
@@ -162,7 +161,7 @@ func TestGetKnowledgeProposal(t *testing.T) {
 	proposals.EXPECT().GetProposalWithValues(mock.Anything, f.proposal.ID).Return(f.proposalWithValues(), nil)
 	proposals.EXPECT().ListImpliedProposals(mock.Anything, f.proposal).Return([]*ent.KnowledgeProposal{f.rejected}, nil)
 	_, api := humatest.New(t)
-	handler := newKnowledgeGraphHandler(test.NewClock(f.recordedAt), nil, nil, proposals)
+	handler := newKnowledgeGraphHandler(nil, nil, proposals)
 	huma.Register(api, oapi.GetKnowledgeProposal, handler.GetKnowledgeProposal)
 
 	response := api.Get("/knowledge/proposals/" + f.proposal.ID.String())
@@ -205,7 +204,7 @@ func TestConfirmKnowledgeProposalConflict(t *testing.T) {
 	refused := errs.Wrap(errs.ErrConflict, errs.CodeConflict, "This proposal is already confirmed.")
 	proposals.EXPECT().ConfirmProposal(mock.Anything, f.proposal.ID).Return(nil, refused)
 	_, api := humatest.New(t)
-	handler := newKnowledgeGraphHandler(test.NewClock(f.recordedAt), nil, nil, proposals)
+	handler := newKnowledgeGraphHandler(nil, nil, proposals)
 	huma.Register(api, oapi.ConfirmKnowledgeProposal, handler.ConfirmKnowledgeProposal)
 
 	response := api.Post("/knowledge/proposals/" + f.proposal.ID.String() + "/confirm")
@@ -225,7 +224,7 @@ func TestListKnowledgeGraphEntitiesSearchAndAliases(t *testing.T) {
 			return &ent.ListResult[rez.KnowledgeEntityWithAliases]{Data: listed, Total: 1}, nil
 		})
 	_, api := humatest.New(t)
-	handler := newKnowledgeGraphHandler(test.NewClock(f.recordedAt), nil, aliases, nil)
+	handler := newKnowledgeGraphHandler(nil, aliases, nil)
 	huma.Register(api, oapi.ListKnowledgeGraphEntities, handler.ListKnowledgeGraphEntities)
 
 	response := api.Get("/knowledge/entities?search=check")
@@ -245,29 +244,4 @@ func TestListKnowledgeGraphEntitiesSearchAndAliases(t *testing.T) {
 	require.Equal(t, "Provider B", attrs.Aliases[0].IntegrationDisplayName)
 	require.Equal(t, "provider-b", attrs.Aliases[0].Provider)
 	require.Equal(t, "checkout", attrs.Aliases[0].Name)
-}
-
-func TestGetKnowledgeGraphEntityStaleness(t *testing.T) {
-	f := newKnowledgeFixture()
-	expiresAt := f.recordedAt.Add(time.Hour)
-	f.checkout.ExpiresAt = &expiresAt
-	aliases := mocks.NewMockKnowledgeEntityAliasService(t)
-	aliases.EXPECT().GetEntityWithAliases(mock.Anything, f.checkout.ID, mock.Anything).
-		Return(f.withAliases(f.checkout, "provider-b", "Provider B", "checkout"), nil)
-	clock := test.NewClock(expiresAt.Add(-time.Minute))
-	_, api := humatest.New(t)
-	handler := newKnowledgeGraphHandler(clock, nil, aliases, nil)
-	huma.Register(api, oapi.GetKnowledgeGraphEntity, handler.GetKnowledgeGraphEntity)
-	getStale := func() bool {
-		response := api.Get("/knowledge/entities/" + f.checkout.ID.String())
-		require.Equal(t, http.StatusOK, response.Code, response.Body.String())
-		var body oapi.GetKnowledgeGraphEntityResponse
-		require.NoError(t, json.Unmarshal(response.Body.Bytes(), &body.Body))
-		return body.Body.Data.Attributes.Stale
-	}
-
-	require.False(t, getStale(), "before its expiry")
-
-	clock.Advance(2 * time.Minute)
-	require.True(t, getStale(), "past its expiry")
 }

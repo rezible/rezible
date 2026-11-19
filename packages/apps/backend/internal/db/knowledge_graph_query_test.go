@@ -558,7 +558,9 @@ func (s *KnowledgeGraphQueryServiceSuite) TestListAncestors() {
 	page := s.selectEntities(ctx, service, rez.SelectKnowledgeGraphEntitiesParams{})
 	parents := make(map[uuid.UUID]*uuid.UUID)
 	for _, entity := range page.Entities {
-		parents[entity.ID] = entity.ParentEntityID()
+		if claim := entity.ParentClaim(); claim != nil {
+			parents[entity.ID] = &claim.SourceEntityID
+		}
 	}
 	s.Equal(&checkoutID, parents[orchestratorID])
 	s.Nil(parents[commerceID])
@@ -1247,7 +1249,7 @@ func (s *KnowledgeGraphQueryServiceSuite) TestGetEntityWithAliasesReadsParentCla
 	read, readErr := service.GetEntityWithAliases(ctx, checkoutID, rez.KnowledgeEntityExpand{})
 
 	s.Require().NoError(readErr)
-	response := v1.KnowledgeGraphEntityWithAliasesFromRez(read, time.Now()).Attributes
+	response := v1.KnowledgeGraphEntityWithAliasesFromRez(read).Attributes
 	s.Equal(&coreID, response.ParentId)
 	s.NotNil(response.ParentRelationshipId)
 	s.Equal([]string{"test"}, response.ParentProviders)

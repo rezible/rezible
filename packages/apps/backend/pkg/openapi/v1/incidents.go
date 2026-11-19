@@ -162,7 +162,7 @@ func (incidentResponseStateSchema) Schema(huma.Registry) *huma.Schema {
 	return makeEnumStringSchema(incident.ResponseStateValues)
 }
 
-func IncidentFromEnt(inc *ent.Incident, now time.Time) Incident {
+func IncidentFromEnt(inc *ent.Incident) Incident {
 	attr := IncidentAttributes{
 		Title:           inc.Title,
 		Summary:         inc.Summary,
@@ -242,9 +242,7 @@ func IncidentFromEnt(inc *ent.Incident, now time.Time) Incident {
 		}
 	}
 	if impacts, impactsErr := inc.Edges.ImpactsOrErr(); impactsErr == nil {
-		attr.Impacts = ConvertSlice(impacts, func(impact *ent.IncidentImpact) IncidentImpact {
-			return IncidentImpactFromEnt(impact, now)
-		})
+		attr.Impacts = ConvertSlice(impacts, IncidentImpactFromEnt)
 	}
 	if primaryVc := inc.Edges.GetPrimaryVideoConference(); primaryVc != nil {
 		attr.PrimaryVideoConference = new(VideoConferenceFromEnt(primaryVc))
@@ -296,7 +294,7 @@ func IncidentUserRoleAssignmentFromEnt(ra *ent.IncidentRoleAssignment) IncidentU
 	return IncidentUserRoleAssignment{Id: ra.ID, Attributes: attrs}
 }
 
-func IncidentImpactFromEnt(impact *ent.IncidentImpact, now time.Time) IncidentImpact {
+func IncidentImpactFromEnt(impact *ent.IncidentImpact) IncidentImpact {
 	result := IncidentImpact{
 		Id:              impact.ID,
 		KnowledgeEntity: Expandable[KnowledgeGraphEntityAttributes]{Id: impact.KnowledgeEntityID},
@@ -304,7 +302,7 @@ func IncidentImpactFromEnt(impact *ent.IncidentImpact, now time.Time) IncidentIm
 		Note:            impact.Note,
 	}
 	if kent := impact.Edges.KnowledgeEntity; kent != nil {
-		result.KnowledgeEntity.Attributes = new(KnowledgeGraphEntityFromEnt(impact.Edges.KnowledgeEntity, now).Attributes)
+		result.KnowledgeEntity.Attributes = new(KnowledgeGraphEntityFromEnt(kent, nil).Attributes)
 	}
 	return result
 }

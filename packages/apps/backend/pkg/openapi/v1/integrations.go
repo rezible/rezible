@@ -36,6 +36,8 @@ type IntegrationsHandler interface {
 
 	ListIntegrationChatChannels(context.Context, *ListIntegrationChatChannelsRequest) (*ListIntegrationChatChannelsResponse, error)
 	CheckIntegrationHealth(context.Context, *CheckIntegrationHealthRequest) (*CheckIntegrationHealthResponse, error)
+
+	GetDirectMessageDelivery(context.Context, *GetDirectMessageDeliveryRequest) (*GetDirectMessageDeliveryResponse, error)
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
@@ -59,6 +61,8 @@ func (o operations) RegisterIntegrations(api huma.API) {
 
 	huma.Register(api, ListIntegrationChatChannels, o.ListIntegrationChatChannels)
 	huma.Register(api, CheckIntegrationHealth, o.CheckIntegrationHealth)
+
+	huma.Register(api, GetDirectMessageDelivery, o.GetDirectMessageDelivery)
 }
 
 type (
@@ -141,6 +145,12 @@ type (
 	IntegrationHealthCheck struct {
 		Ok    bool   `json:"ok"`
 		Error string `json:"error,omitempty" doc:"Why the check failed, when it did"`
+	}
+
+	// DirectMessageDelivery says how the organization's connected integrations send members direct messages.
+	DirectMessageDelivery struct {
+		Delivery    string `json:"delivery" enum:"direct_message,none,unknown" doc:"direct_message when a connected integration sends direct messages, none when no connected integration can, and unknown when an installation that might could not be resolved"`
+		Description string `json:"description,omitempty" doc:"How a member receives the message, such as 'a Slack direct message'; set when delivery is direct_message"`
 	}
 )
 
@@ -238,6 +248,17 @@ func ChatChannelsPageFromIntegrations(page *integrations.ChatChannelPage) ChatCh
 		}
 	}
 	return ChatChannelsPage{Channels: channels, NextCursor: page.NextCursor}
+}
+
+func DirectMessageDeliveryFromSenders(senders *integrations.DirectMessageSenders) DirectMessageDelivery {
+	description, known := senders.Description()
+	if !known {
+		return DirectMessageDelivery{Delivery: "unknown"}
+	}
+	if description == "" {
+		return DirectMessageDelivery{Delivery: "none"}
+	}
+	return DirectMessageDelivery{Delivery: "direct_message", Description: description}
 }
 
 var integrationsTags = []string{"Integrations"}
@@ -462,3 +483,16 @@ var CheckIntegrationHealth = huma.Operation{
 
 type CheckIntegrationHealthRequest IdRequest
 type CheckIntegrationHealthResponse ItemResponse[IntegrationHealthCheck]
+
+var GetDirectMessageDelivery = huma.Operation{
+	OperationID: "get-direct-message-delivery",
+	Method:      http.MethodGet,
+	Path:        "/integrations/direct-messages",
+	Summary:     "Get how members are sent direct messages",
+	Description: "Says whether a connected integration can send members direct messages, such as review requests.",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetDirectMessageDeliveryRequest EmptyRequest
+type GetDirectMessageDeliveryResponse ItemResponse[DirectMessageDelivery]
